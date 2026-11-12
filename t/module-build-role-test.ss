@@ -21,7 +21,7 @@
         (only-in :yuanxu/module-system/building/configuration-source yuanxu-configuration-source))
 (import (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :yuanxu/module-system/building/artifacts current-build-output-directory))
-(export module-build-role-test)
+(export module-build-role-test module-build-import-inference-test)
 (import (only-in "./qualification/module-init/fixture.ss" import-fixture-init!))
 (def (assert name value)
   (unless value (error "assertion failed" name))
@@ -133,9 +133,15 @@
       (call-with-temporary-directory "module-build-make-spec"
         (lambda (root)
           (def owner (fixture root
-            ;; One source can produce distinct library and executable products.
-            "(def Build '((gxc: \"entry\" \"-O\") (exe: \"entry\" bin: \"entry-tool\" \"-debug\")))"))
+            ;; Distinct source files can carry independent compiler options.
+            "(def Build '((gxc: \"entry\" \"-O\") (exe: \"run\" bin: \"entry-tool\" \"-debug\")))"))
+          (def interface (path-expand "interface.ss" owner))
+          (write-source interface
+            (string-append "(import (for-template \"./entry.ss\")) "
+              (module-source-read interface)))
           (write-source (path-normalize (path-expand "entry.ss" owner))
+            "(def (main . args) (void)) (export main)")
+          (write-source (path-expand "run.ss" owner)
             "(def (main . args) (void)) (export main)")
           (def later (path-expand "modules/app/later" root))
           (for-each
@@ -156,7 +162,7 @@
             (filter (lambda (row) (equal? (car row) (path-normalize (path-expand "entry.ss" owner))))
                     (.get graph std-make-targets)))
           (check-equal? (map cdr rows)
-                        '((gxc: "entry" "-O") (exe: "entry" bin: "entry-tool" "-debug")))
+                        '((gxc: "entry" "-O")))
           (check-equal? (length (filter
             (lambda (entry) (equal? (.get entry path) (path-normalize (path-expand "entry.ss" owner))))
             (.get graph entries))) 1)
@@ -165,8 +171,9 @@
             (filter (lambda (target) (equal? (if (string? target) target (cadr target)) "modules/app/example/entry"))
                     (.get projection spec)))
           (check-equal? targets
-            '((gxc: "modules/app/example/entry" "-O")
-              (exe: "modules/app/example/entry" bin: "entry-tool" "-debug")))
+            '((gxc: "modules/app/example/entry" "-O")))
+          (check-equal? (and (member '(exe: "modules/app/example/run" bin: "entry-tool" "-debug")
+                                     (.get projection spec)) #t) #t)
           (check-equal?
             (filter (lambda (target)
                       (let (name (if (string? target) target (cadr target)))
@@ -211,16 +218,6 @@
               (check-exception ((.get projection admit-current)) error?))))
         '(#f #t)))
     (yuanxu-test-case "standard Module products refuse conflicting options and binary collisions"
-      (call-with-temporary-directory "module-build-programs"
-        (lambda (root)
-          (def owner (fixture root "(def Build '((exe: \"entry\" bin: \"entry-tool\") (exe: \"entry\" bin: \"other-tool\")))"))
-          (write-source (path-expand "entry.ss" owner) "(def (main . args) (void)) (export main)")
-          (def graph (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph))
-          (def targets
-            (map cdr (filter
-              (lambda (row) (equal? (car row) (path-normalize (path-expand "entry.ss" owner))))
-              (.get graph std-make-targets))))
-          (check-equal? targets '((exe: "entry" bin: "entry-tool") (exe: "entry" bin: "other-tool")))))
       (for-each
         (lambda (control)
           (call-with-temporary-directory "module-build-conflict"
@@ -236,6 +233,8 @@
               (cons "duplicate Module Make target" "(def Build '((gxc: \"entry\" \"-O\") (gxc: \"entry\" \"-O\")))")
               (cons "duplicate Module Make target" "(def Build '((exe: \"entry\" bin: \"tool\") (exe: \"entry\" bin: \"tool\")))")
               (cons "conflicting Module Make targets" "(def Build '((gxc: \"entry\" \"-O\") (gxc: \"entry\" \"-debug\")))")
+              (cons "conflicting Module Make targets" "(def Build '(\"entry\" (exe: \"entry\" bin: \"tool\")))")
+              (cons "conflicting Module Make targets" "(def Build '((exe: \"entry\" bin: \"tool\") (exe: \"entry\" bin: \"other-tool\")))")
               (cons "programs share one binary output" "(def Build '((exe: \"entry\" bin: \"tool\") (exe: \"other\" bin: \"tool\")))")
               (cons "build contribution must name an owner-relative source" "(def Build '(\"../entry\"))")
               (cons "invalid Module Make target" "(def Build '((exe: \"entry\" bin: \"../tool\")))"))))
@@ -1150,3 +1149,32 @@
           (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
             (assert 'root-init-source-import-denied
               (rejects? "admitted role|prebuilt library|owner" (lambda () (.get view build-graph))))))))))
+
+(def module-build-import-inference-test
+  (test-suite "Module build derives ordinary sources from imports"
+    (yuanxu-test-case "Module imports produce its spec without a Build inventory"
+      (call-with-temporary-directory "module-import-build-graph"
+        (lambda (root)
+          (def owner (fixture root "(def Build '())"))
+          (delete-file (path-expand "build.ss" owner))
+          (write-source (path-expand "init.ss" root)
+            "(import :yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit :app (example))")
+          (write-source (path-expand "interface.ss" owner)
+            "(import (only-in :clan/poo/object .o) (only-in :yuanxu/module-system/source/declaration .def)) (.def Example identity: 'app/example core: (.o requires: (.o) scope-contract: Scope exports: Defaults) features: (.o))")
+          (write-source (path-expand "objects.ss" owner)
+            "(import :clan/poo/object \"./helper.ss\") (.def Defaults) (export Defaults)")
+          (write-source (path-expand "helper.ss" owner)
+            "(import \"./leaf.ss\") (error \"build graph must not execute helper\") (def answer leaf) (export answer)")
+          (write-source (path-expand "leaf.ss" owner)
+            "(error \"build graph must not execute leaf\") (def leaf 42) (export leaf)")
+          (def exports (import-fixture-init! (path-expand "init.ss" root)))
+          (def spec (.get exports std-make-spec))
+          (for-each
+            (lambda (name)
+              (check-equal?
+                (length (filter (lambda (target)
+                                  (equal? (if (string? target) target (cadr target)) name)) spec)) 1))
+            '("modules/app/example/objects" "modules/app/example/helper" "modules/app/example/leaf"))
+          (check-equal? (file-exists? (path-expand "build.ss" owner)) #f)
+          (check-equal? (eq? spec (.get exports std-make-spec)) #t))))
+    ))

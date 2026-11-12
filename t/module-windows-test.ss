@@ -374,12 +374,12 @@
                         (yuanxu-module-source-ref-metadata left-source)))))
       (check-exception
         (admit-module-publication! forged right-id (.get left-record publication) (.get view context))
-        (message-is "root-qualified publication differs from standard source identity"))
+        (message-is "root-qualified publication differs from native source identity"))
       (check-equal? (.get view selected-graph module-order)
                     (list (fixture-owner root "modules/engine/interface.ss")
                           (fixture-owner root "scenarios/engine/interface.ss")))
       (check-exception (.call view .build-graph-for '(engine))
-        (message-is "unqualified module root requires one standard owner")))
+        (message-is "unqualified module root requires one native owner")))
     (yuanxu-test-fixture "a mounted local requirement follows its declared source location"
       (root Workspace)
       (fixture! root)
@@ -405,7 +405,7 @@
         '((yuanxu! :load-modules "./left/modules" mode: auto rename: Left
                     :load-modules "./right/modules" mode: auto rename: Right)))
       (check-exception (yuanxu-load-modules (path-expand "init.ss" root))
-        (message-is "standard root identity has multiple source owners")))
+        (message-is "native root identity has multiple source owners")))
     (yuanxu-test-fixture "a local requirement never falls back to another standard root"
       (root Workspace)
       (fixture! root)

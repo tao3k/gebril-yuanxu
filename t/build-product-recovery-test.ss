@@ -24,7 +24,7 @@
     (cut test-build-publication projection)
     (cut setenv "GERBIL_PATH" previous)))
 (def build-product-recovery-test
-  (test-suite "SDK product completion and selected marker recovery"
+  (test-suite "Gerbil product completion and selected marker recovery"
     (test-case "cross-package Make clean uses admitted targets without materializing source frames"
       (call-with-temporary-directory "clean-output-only"
         (lambda (root)
@@ -76,17 +76,17 @@
           (check-equal?
             (directory-files (list path: (path-expand ".yuanxu-source" libdir) ignore-hidden: 'dot-and-dot-dot))
             '()))))
-    (test-case "clean partitions the admitted targets by prefix without expanding the language"
+    (test-case "clean removes only admitted package outputs and refuses changed inputs"
       (call-with-temporary-directory "clean-target-prefix"
         (lambda (root)
           (def build (path-expand "build.ss" root))
           (def libdir (path-expand "lib" root))
           (write-product root "build.ss")
-          (write-product root "owned.ss")
+          (call-with-output-file (path-expand "owned.ss" root) (cut display "(export)\n" <>))
           (call-with-output-file (path-expand "gerbil.pkg" root)
             (cut display "(package: yuanxu prelude: :yuanxu/prelude)\n" <>))
           (call-with-output-file (path-expand "prelude.ss" root)
-            (cut display "package: yuanxu\n(import :no-such-clean-import/module)\n" <>))
+            (cut display "prelude: :gerbil/core\npackage: yuanxu\n(import :gerbil/core)\n(export (import: :gerbil/core))\n" <>))
           (def graph (.o entries: '() compiler-inputs: '()
                         other-projections: '() selected-graph: #f compiler-current: void))
           (def projection
@@ -144,7 +144,7 @@
           (repair-build-products! '(fixture/unit) root)
           (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #f)
           (check-equal? (file-exists? (path-expand "static/fixture__unselected.scm" root)) #t)
-          ;; Completed phases leave an ordinary SDK marker reusable.
+          ;; Completed phases leave an ordinary Gerbil marker reusable.
           (write-product root "fixture/unit~1.o1")
           (write-product root "static/fixture__unit.scm")
           (require-build-products! '(fixture/unit) root)
@@ -158,7 +158,7 @@
           (create-directory* (path-expand "fixture/unit.o1" root))
           (check-exception (repair-build-products! '(fixture/unit) root) error?)
           (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #t))))
-    (test-case "SDK directory aliases share one publication identity without crossing prefixes"
+    (test-case "Gerbil directory aliases share one publication identity without crossing prefixes"
       (call-with-temporary-directory "publication-prefix"
         (lambda (root)
           (def prefix (path-expand "state" root))

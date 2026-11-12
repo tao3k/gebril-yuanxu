@@ -58,16 +58,16 @@
           (def result (append first second))
           (validate BuildSpecContract (.o module-spec: first retained-spec: second spec: result))
           result)
-        (check-equal? (checked '("library") '((exe: "library" bin: "tool")))
-                      '("library" (exe: "library" bin: "tool")))
         (for-each
           (lambda (parts)
             (check-exception (apply checked parts) Error?))
           '((("library") ((gxc: "library")))
+            (((gxc: "library")) ((exe: "library" bin: "tool")))
+            (((exe: "entry" bin: "first")) ((exe: "entry" bin: "second")))
             (((gxc: "library" "-O")) ((gxc: "library" "-debug")))
             (((exe: "first" bin: "tool")) ((exe: "second" bin: "tool")))))
         (check-equal? (checked '("first") '("second")) '("first" "second")))
-      (test-case "standard library and executable products retain one source and independent options"
+      (test-case "a retained executable preserves its options; duplicate sources are refused"
         (call-with-temporary-directory "build-product-boundary"
           (lambda (temporary)
             (write-source (path-expand "gerbil.pkg" temporary) "(package: build-products)\n")
@@ -82,26 +82,22 @@
                 (path-expand "build.ss" temporary)))
             (def library '(gxc: "entry" "-O"))
             (def program '(exe: "entry" bin: "entry-tool" "-debug"))
+            (def selected-product (project (list program)))
+            (check-equal? (.get selected-product spec) (list program))
+            (check-equal? (.get selected-product compiler-identities) '(build-products/entry))
+            (check-equal? (.call selected-product .admit-spec (.get selected-product spec)) (list program))
             (for-each
               (lambda (spec)
-                (def projection (project spec))
-                (check-equal? (.get projection spec) spec)
-                (check-equal? (.get projection compiler-identities) '(build-products/entry))
-                (check-equal? (.call projection .admit-spec (.get projection spec)) spec)
-                ;; A different binary is another official product of this source.
-                (check-equal? (.get (project (append spec '((exe: "entry" bin: "other-tool")))) spec)
-                              (append spec '((exe: "entry" bin: "other-tool")))))
-              (list (list library program) (list program library)))
-            (check-equal? (rejects? "duplicate retained compiler target"
-                            (lambda () (project (list program program)))) #t)
-            ;; Reusing the selected compiler input must not erase the EXE kind.
+                (check-equal? (rejects? "duplicate retained compiler target" (lambda () (project spec))) #t))
+              (list (list library program) (list program library) (list program program)
+                    (list program '(exe: "entry" bin: "other-tool"))))
             (def source-inputs
               (retained-build-entries (list library) temporary "build-products" '()))
             (def selected-graph (.cc graph 'entries source-inputs))
-            (def selected-product
+            (def conflicting-products
               (yuanxu-project-source-spec (.o build-graph: selected-graph) (list program)
                 temporary (path-expand "build.ss" temporary)))
-            (check-equal? (.get selected-product spec) (list library program))
+            (check-exception (.call conflicting-products .admit-spec (.get conflicting-products spec)) Error?)
             (write-source (path-expand "entry.ss" temporary)
               "(def (main . args) (void)) (export main)\n;; changed\n")
             (check-exception ((.get selected-product admit-current)) Error?))))

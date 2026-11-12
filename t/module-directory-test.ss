@@ -57,7 +57,7 @@
 (def module-directory-test
   (test-suite "Directory and init source preparation without a runtime Loader"
     (yuanxu-test-case "hygienic init declaration lowers without filesystem access"
-      (check-equal? (procedure? (.get yuanxu/t/qualification/module-directory.init.exports std-make-spec)) #t)
+      (check-equal? (.slot? yuanxu/t/qualification/module-directory.init.exports 'std-make-spec) #t)
       (check-equal? (procedure? (.get yuanxu/t/qualification/module-directory.init.exports admit-current)) #t)
       (check-equal? (.get Intent mode) 'explicit)
       (check-equal? (.get Intent root) "./modules")
