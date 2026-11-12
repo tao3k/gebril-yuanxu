@@ -257,28 +257,11 @@
                            (and (car value) (.ref (.get self core) private))))))))
            rows))))
 
-(defsyntax (include-deferred-declaration input)
-  (syntax-case input ()
-    ((_ path roles resolver)
-     (let-values (((_prelude _id _namespace forms)
-                   (module-source-measure-operation 'reader-interface-read
-                     (lambda () (core-read-module/sexp (stx-e #'path))))))
-       (let split ((forms forms) (imports '()))
-         (if (and (pair? forms) (stx-pair? (car forms))
-                  (eq? (stx-e (stx-car (car forms))) 'import))
-           (split (cdr forms) (cons (car forms) imports))
-           ;; Splice original imports before expanding the declaration. The
-           ;; ordinary module expander establishes their bindings and phases.
-           (with-syntax (((import-form ...) (map syntax-local-rewrap (reverse imports)))
-                         ((declaration ...) (map syntax-local-rewrap forms)))
-             #'(begin import-form ...
-                 (expand-deferred-declaration roles resolver declaration ...)))))))))
-
-(defsyntax (expand-deferred-declaration input)
-  (syntax-case input ()
-    ((_ ((role exports ...) ...) resolver declaration ...)
+(begin-syntax
+  (def (rewrite-deferred-declaration input roles-value resolver-value forms rewrap?)
+    (with-syntax ((((role exports ...) ...) roles-value)
+                  (resolver resolver-value))
      (let ()
-       (def forms (syntax->list #'(declaration ...)))
        (def loader (genident 'role-loader))
        (def private (genident 'role-values))
        (def constructor (quote-syntax deferred-role-values))
@@ -601,7 +584,37 @@
                      ;; The reader supplies the owner through the existing
                      ;; parameter. Keep the binding private to this macro.
                      (resolver resolver-expression))
-         (stx-wrap-source
-           (core-cons 'begin
-             (if direct definitions (cons #'(def loader (resolver)) definitions)))
-           (stx-source input)))))))
+         (let (expanded
+                (stx-wrap-source
+                  (core-cons 'begin
+                    (if direct definitions (cons #'(def loader (resolver)) definitions)))
+                  (stx-source input)))
+           (if rewrap? (syntax-local-rewrap expanded) expanded)))))))
+
+(defsyntax (expand-deferred-declaration input)
+  (syntax-case input ()
+    ((_ roles resolver declaration ...)
+     (rewrite-deferred-declaration input #'roles #'resolver
+       (syntax->list #'(declaration ...)) #f))))
+
+(defsyntax (include-deferred-declaration input)
+  (syntax-case input ()
+    ((_ path roles resolver)
+     (let-values (((_prelude _id _namespace forms)
+                   (module-source-measure-operation 'reader-interface-read
+                     (lambda () (core-read-module/sexp (stx-e #'path))))))
+       (let split ((forms forms) (imports '()))
+         (cond
+          ((and (pair? forms) (stx-pair? (car forms))
+                (eq? (stx-e (stx-car (car forms))) 'import))
+           (split (cdr forms) (cons (car forms) imports)))
+          ((null? imports)
+           ;; Preserve the original reader marks and direct private delivery.
+           (rewrite-deferred-declaration input #'roles #'resolver forms #t))
+          (else
+           ;; Only authored imports need a continuation: Gerbil establishes
+           ;; their bindings and phases before expanding the declaration.
+           (with-syntax (((import-form ...) (map syntax-local-rewrap (reverse imports)))
+                         ((declaration ...) (map syntax-local-rewrap forms)))
+             #'(begin import-form ...
+                 (expand-deferred-declaration roles resolver declaration ...))))))))))
