@@ -13,7 +13,7 @@
         (only-in :yuanxu/module-system/feature/resolver resolve-feature-profile)
         (only-in :yuanxu/module-system/feature/feature-manifest feature-manifest-bundle)
         (only-in :yuanxu/module-system/feature/composition feature-composition-plan))
-(export select-module-graph)
+(export select-module-graph module-feature-declaration)
 
 ;; One complete value from the EXISTING Feature publisher. Runtime .cc copies
 ;; direct persistent specifications, never this prototype's evaluated cells.
@@ -69,6 +69,14 @@
     descriptors)
   (object<-alist
     (map (lambda (owner) (cons owner (reverse (hash-ref owners owner)))) (reverse order))))
+
+;; Source and compiled publications share the same native Feature defaults.
+(def (module-feature-declaration value owner name)
+  (if (and (object? value) (not (.slot? value 'kind)))
+    (.mix value
+      (feature-descriptor
+        (.o feature-id: (feature-node-id owner name) owner-module-id: owner)))
+    value))
 
 (def (select-module-graph context root-values read-publication current!
                           (read-dependencies #f))
@@ -166,11 +174,7 @@
                  ;; refinement, Contract or component payload while selecting.
                  ;; Explicit descriptors retain their identities and are checked
                  ;; below, including forged owner/identity refusal.
-                 (if (and (object? declared) (not (.slot? declared 'kind)))
-                   (.mix declared
-                     (feature-descriptor
-                       (.o feature-id: (feature-node-id owner name) owner-module-id: owner)))
-                   declared))
+                 (module-feature-declaration declared owner name))
                (id (feature-node-id owner-id name)))
           (unless (and (object? descriptor-value)
                        (andmap (cut .slot? descriptor-value <>)
@@ -192,11 +196,13 @@
                 (when (memv #\: (string->list (symbol->string required)))
                   (error "Feature dependency cannot name Module Core" id required origin)))
               (.ref descriptor-value slot))) '(requires optional-requires conflicts))
-          (if (eq? id (.ref descriptor-value 'feature-id)) descriptor-value
-            (.cc descriptor-value 'feature-id id 'owner-module-id owner-id
-              'requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'requires))
-              'optional-requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'optional-requires))
-              'conflicts (map (cut feature-key owner-id <>) (.ref descriptor-value 'conflicts))))))
+          (values
+            (if (eq? id (.ref descriptor-value 'feature-id)) descriptor-value
+              (.cc descriptor-value 'feature-id id 'owner-module-id owner-id
+                'requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'requires))
+                'optional-requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'optional-requires))
+                'conflicts (map (cut feature-key owner-id <>) (.ref descriptor-value 'conflicts))))
+            descriptor-value)))
     (let* ((core-selections
             (module-source-measure-operation 'selected-core-projection
              (lambda () (map (lambda (id)
@@ -228,14 +234,15 @@
                              (error "unknown init feature" owner-id name origin (.ref context 'generation)))
                            (if enabled?
                              (let* ((listed? (list? features))
-                                    (source (and listed? (feature-interface owner-id id name)))
-                                    (descriptor-value (feature-descriptor-for owner-id name features source))
-                                    (interface (if listed? source (feature-interface owner-id id name))))
-                               (hash-put! nodes id (.o kind: 'feature identity: id owner: owner-id interface
-                                                      descriptor: descriptor-value))
-                               (feature-selection
-                                (.+ descriptor-value
-                                    (.o requires: (cons (core-node-id owner-id) (.ref descriptor-value 'requires))))))
+                                    (source (and listed? (feature-interface owner-id id name))))
+                               (let-values (((descriptor-value declaration)
+                                             (feature-descriptor-for owner-id name features source)))
+                                 (def interface (if listed? source (feature-interface owner-id id name)))
+                                 (hash-put! nodes id (.o kind: 'feature identity: id owner: owner-id interface
+                                                        declaration descriptor: descriptor-value))
+                                 (feature-selection
+                                  (.+ descriptor-value
+                                      (.o requires: (cons (core-node-id owner-id) (.ref descriptor-value 'requires)))))))
                              #f))))
                      (.ref (.ref row 'selection) 'selection-flags)))))
               ;; Independent Features follow init declaration order, not DFS or

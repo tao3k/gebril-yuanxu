@@ -5,19 +5,19 @@
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/prototype-map prototype-map)
         (only-in :gerbil/expander datum->syntax eval-syntax resolve-identifier
-                 import-module current-expander-context expander-context-id
+                 current-expander-context expander-context-id
                  module-context? module-context-path make-top-context
                  current-expander-module-import core-import-module core-module->prelude-context
                  module-context-export module-export-name)
-        (only-in :gerbil/runtime/loader load-module)
         (only-in :clan/poo/io module-action)
+        (only-in :yuanxu/module-system/source/compiled-role compiled-role-values)
         (only-in :std/list/list delete-duplicates/hash append-map)
         (rename-in (only-in :yuanxu/module-system/source/declaration .def)
                    (.def publication-.def))
         (for-syntax :gerbil/expander (only-in :std/list/list append-map)
                     (only-in :yuanxu/module-system/source/observations
                              module-source-measure-operation)))
-(export module-deferred-role-exports include-deferred-declaration module-role-values module-import-role-values
+(export module-deferred-role-exports include-deferred-declaration module-role-values
         current-module-role-resolver module-entry-action module-binding-action deferred-role-values
         wrapper-delivery? wrapper-delivery-value)
 (def current-module-role-resolver (make-parameter #f))
@@ -62,8 +62,9 @@
                               (module-context-export language))))
       (parameterize ((current-expander-context
                       (make-top-context (and (not collision?)
-                                          (core-module->prelude-context language))))
-                     (current-expander-module-import core-import-module))
+                                          (core-module->prelude-context language)))))
+        ;; Preserve the invoking reader's import owner. Replacing its hook with
+        ;; core-import-module loses dependency provenance on cached imports.
         (when collision? (eval-syntax '(import :gerbil/core)))
         (eval-syntax `(import (only-in ,specifier ,binding)))
         (apply (eval-syntax binding) arguments)))))
@@ -129,16 +130,6 @@
     (map (lambda (name)
            (cons name (eval-syntax (datum->syntax #f name))))
       fields)))
-;; Runtime import owns context identity and its one-time initializer. The POO
-;; role slot owns demand; this function has no loaded-state or result registry.
-(def (module-import-role-values path names)
-  ;; Import supplies lexical bindings; only the official runtime loader
-  ;; initializes the compiled role. A context left by std/make's expansion is
-  ;; metadata, not permission to interpret its body a second time.
-  (def context (import-module path))
-  (load-module (symbol->string (expander-context-id context)))
-  (parameterize ((current-expander-context context))
-    (module-role-values names)))
 (def (module-deferred-role-exports interface-text role-texts
                                   interface-forms: (interface-forms #f)
                                   private-import: (observe-private-import void))
@@ -570,12 +561,23 @@
                         (module-source-measure-operation 'reader-shared-frame
                           (lambda () (set! direct private?) stock))
                         (rewrite form)))) forms))))
+       (def resolver-expression
+         (syntax-case #'resolver ()
+           ((kind (role owner (name ...)) ...)
+            (eq? (stx-e #'kind) 'compiled)
+            (with-syntax ((project (quote-syntax compiled-role-values)))
+              #'(lambda ()
+                  (lambda (selected _names)
+                    (case selected
+                      ((role) (project 'owner '(name ...))) ...
+                      (else (error "unknown published role" selected)))))))
+           (_ (if (eq? (stx-e #'resolver) #f)
+                (quote-syntax current-module-role-resolver)
+                #'resolver))))
        (with-syntax ((loader loader)
                      ;; The reader supplies the owner through the existing
                      ;; parameter. Keep the binding private to this macro.
-                     (resolver (if (eq? (stx-e #'resolver) #f)
-                                 (quote-syntax current-module-role-resolver)
-                                 #'resolver)))
+                     (resolver resolver-expression))
          (syntax-local-rewrap
            (stx-wrap-source
              (core-cons 'begin

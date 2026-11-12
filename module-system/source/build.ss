@@ -51,14 +51,27 @@
            (andmap string? (cddr value)))))
 (define-type (BuildTargetContract @ Type.)
   identity: 'module/build-target .element?: build-root?)
+;; Executables are native Make products, not test-only demands. Their source
+;; ownership and currentness are checked by the enclosing projection.
+(def (make-target? value)
+  (or (build-root? value)
+      (and (list? value) (>= (length value) 2) (eq? (car value) 'exe:)
+           (string? (cadr value)) (> (string-length (cadr value)) 0)
+           (let (options (cddr value))
+             (if (and (pair? options) (eq? (car options) 'bin:))
+               (and (pair? (cdr options)) (string? (cadr options))
+                    (module-source-name? (cadr options)) (andmap string? (cddr options)))
+               (andmap string? options))))))
+(define-type (MakeTargetContract @ Type.)
+  identity: 'module/make-target .element?: make-target?)
 ;; Pure native-spec shape and composition. Source/publication authentication
 ;; remains in the enclosing init-owned boundary, never in a claimed origin tag.
 (def BuildSpecContract
   (.cc ObjectContract. identity: 'module/build-spec
     responsibilities:
-    (.o module-spec: (List BuildTargetContract)
-        library-spec: (List BuildTargetContract)
-        spec: (List BuildTargetContract))
+    (.o module-spec: (List MakeTargetContract)
+        library-spec: (List MakeTargetContract)
+        spec: (List MakeTargetContract))
     obligations:
     (lambda (candidate location)
       (if (equal? (.ref candidate 'spec)
@@ -757,15 +770,18 @@
               (name (and (pair? parts) (car parts)))
               (raw-options (and (pair? parts) (cdr parts)))
               (program? (eq? make-kind 'exe:))
-              (bin-name (and program? (pair? raw-options) (eq? (car raw-options) bin:)
-                             (pair? (cdr raw-options)) (cadr raw-options)))
-              (options (if bin-name (cddr raw-options) raw-options)))
+              (explicit-bin? (and program? (pair? raw-options) (eq? (car raw-options) bin:)))
+              (bin-name (and program?
+                         (if explicit-bin?
+                           (and (pair? (cdr raw-options)) (cadr raw-options))
+                           (and (string? name) (path-strip-directory name)))))
+              (options (if explicit-bin? (and bin-name (cddr raw-options)) raw-options)))
          (unless (and (string? name) (list? options) (andmap string? options)
                       (andmap module-source-name? (string-split name #\/))
                       (not (string-suffix? ".ss" name)))
            (error "invalid retained Scheme target" spec))
          (when (and program? (not (and (string? bin-name) (module-source-name? bin-name))))
-           (error "retained program requires one safe bin name" spec))
+           (error "retained program requires a safe bin name" spec))
          ;; Check every unresolved component; normalization must not hide links.
          (def path
            (path-normalize

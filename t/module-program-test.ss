@@ -112,7 +112,11 @@
           (def source
             (string-append
               "(import (only-in :clan/poo/object .o .get))\n"
+              "(import (only-in :std/func repeat) (for-template :std/func)\n"
+              " (only-in :yuanxu/module-system/source/compiled-role compiled-role-values))\n"
               "(export main) (def (main . args) "
+              "(def role (compiled-role-values 'std/func '(repeat))) "
+              "(displayln \"COMPILED-ROLE-OK \" ((.get role repeat) (lambda () 42) 1)) "
               "(displayln \"NATIVE-PROGRAM-OK \" (.get (.o value: 42) value)))\n"))
           (put root "probe.ss" source)
           (call-with-output-file
@@ -135,19 +139,15 @@
                     libdir: (current-build-output-directory)
                     bindir: (and (current-build-output-directory)
                                  (path-expand "bin" (current-build-output-directory))))))))
-          ;; Explicit test programs do not widen the production Module API.
-          (check-exception
-            (yuanxu-project-source-spec #f '((exe: "probe" bin: "probe-test"))
-              root (path-expand "build.ss" root))
-            (lambda (failure)
-              (and (Error? failure)
-                   (equal? (Error-message failure)
-                     "native programs require an explicit init-owned test demand"))))
           (def pending (.get (demand root) build))
           ;; The native import graph, rather than a directory inventory, owns
           ;; the exact borrowed static inputs needed by the real executable.
           (check-equal? (pair? (.get pending static-inputs)) #t)
-          (def borrowed (car (.get pending static-inputs)))
+          ;; A reexport facade can have an empty runtime body. Mutate an
+          ;; observed input byte rather than assuming the first body is nonempty.
+          (def borrowed
+            (car (filter (lambda (input) (positive? (string-length (.get input contents))))
+                         (.get pending static-inputs))))
           (def text (.get borrowed contents))
           (def first-character (string-ref text 0))
           (dynamic-wind void
@@ -192,6 +192,19 @@
           (check-equal? (.get result status) 0)
           (check-equal? (and (string-contains (.get result output) "NATIVE-PROGRAM-OK") #t) #t)
           (check-equal? (and (string-contains (.get result output) "NATIVE-PROGRAM-OK 42") #t) #t)
+          (check-equal? (and (string-contains (.get result output) "COMPILED-ROLE-OK (42)") #t) #t)
+          ;; Publication still requires current inputs. Execution of the already
+          ;; admitted binary must not reopen the authoring package or its init.
+          (def hidden-source (string-append root "-hidden"))
+          (dynamic-wind
+            (cut rename-file root hidden-source)
+            (lambda ()
+              (def deployed
+                (.call (.cc ProcessScript. 'command (list binary "-:max-heap=2G,debug=q")
+                            'timeout 30) .run))
+              (check-equal? (.get deployed status) 0)
+              (check-equal? (and (string-contains (.get deployed output) "COMPILED-ROLE-OK (42)") #t) #t))
+            (cut rename-file hidden-source root))
           (check-exception (.call build .program 'program-fixture/other) error?)
           (def bytes (call-with-input-file binary read-all-as-u8vector))
           (dynamic-wind void

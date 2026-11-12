@@ -84,17 +84,18 @@
                (require-read-route! 'compiler-source #f (object-%instance value))
                (eq? checker (.ref/cached value 'admit-current (lambda () #f))))
              (ready?))))))
-(def (compiler-role-paths entries)
-  ;; Role identity comes from the admitted publication, not a basename or a
-  ;; caller-supplied strategy flag. The same inventory owns both routing/writing.
+(def (compiler-frame-paths entries)
+  ;; Module roles and the init publication are compiler-owned entries, not
+  ;; basename guesses or caller strategy flags. One inventory routes/writes both.
   (def roles (make-hash-table))
   (for-each
     (lambda (entry)
       (def input (.ref entry 'input))
-      (when (.slot? input 'role-sources)
+      (when (or (.slot? input 'role-sources) (and (.slot? entry 'kind) (eq? (.ref entry 'kind) 'init-publication)))
         (hash-put! roles (path-normalize (.ref entry 'path)) #t)
-        (for-each (lambda (path) (hash-put! roles (path-normalize path) #t))
-          (.ref input 'role-sources)))) entries)
+        (when (.slot? input 'role-sources)
+          (for-each (lambda (path) (hash-put! roles (path-normalize path) #t))
+            (.ref input 'role-sources))))) entries)
   roles)
 (def (module-compiler-source-input path)
   (let* ((inputs (compiler-source-inputs))
@@ -335,18 +336,14 @@
         (def (publication-forms imports (deferred #f) (compiled? #f))
           (let (resolver
                  (and deferred compiled?
-                     `(lambda ()
-                        (lambda (role names)
-                          (module-import-role-values
-                            (case role
-                              ,@(map (lambda (row)
-                                       `((,(car row))
-                                         ',(string->symbol
-                                            (string-append ":"
-                                              (substring id-text 0 (- (string-length id-text) (string-length "interface")))
-                                              (symbol->string (car row)))))) deferred)
-                              (else (error "unknown published role" role)))
-                            names)))))
+                   `(compiled
+                      ,@(map (lambda (row)
+                               (list (car row)
+                                 (string->symbol
+                                   (string-append
+                                     (substring id-text 0 (- (string-length id-text) (string-length "interface")))
+                                     (symbol->string (car row))))
+                                 (cdr row))) deferred))))
           (append
            (if shared-prelude?
              '(prelude: :yuanxu/module-system/source/config-prelude)
@@ -356,9 +353,8 @@
                  `(import ,@(if shared-prelude? '() '((except-in :clan/poo/object .def)))
                           (only-in :yuanxu/module-system/source/declaration .def define-module-build-binding)
                           ,@(if deferred
-                              `((only-in :yuanxu/module-system/source/deferred-declaration
-                                         include-deferred-declaration
-                                         ,@(if compiled? '(module-import-role-values) '())))
+                              '((only-in :yuanxu/module-system/source/deferred-declaration
+                                         include-deferred-declaration))
                               '())
                           ,@(if (and deferred compiled? (pair? roles))
                               `((for-template
@@ -568,7 +564,7 @@
         (hash-put! selected-sources (path-normalize (.ref entry 'path))
                    (make-compiler-input (.ref entry 'input) source-state source-owner entry))) entries)))
   (parameterize ((compiler-source-inputs selected-sources))
-    (let (roles (compiler-role-paths entries))
+    (let (roles (compiler-frame-paths entries))
       (if unified? (call-with-selected-source-view entries roles action source-reads source-import
                      refuse-input-context)
         (begin
@@ -578,11 +574,11 @@
               (artifact-files (map (cut .ref <> 'compiler-identity) recorded-entries) libdir #f)
               (create-directory* view)
               (prepare-compiler-view-entries! recorded-entries roles source-reads libdir view preserve-unrecorded?: #t)))
-          (call-with-role-compiler-inputs entries roles action source-reads source-import))))))
+          (call-with-prepared-compiler-inputs entries roles action source-reads source-import))))))
 (def (for-each-batch entries action) (action entries))
 (def (compiler-import/independent _entry _input _importer _target _identity action)
   (call-with-module-source-callback action))
-(def (call-with-role-compiler-inputs entries roles action (source-reads for-each-batch)
+(def (call-with-prepared-compiler-inputs entries roles action (source-reads for-each-batch)
                                       (source-import compiler-import/independent))
   (def (run directory materialize?)
       (def gerbil-import (current-expander-module-import))
@@ -638,8 +634,8 @@
               (hash-put! __module-registry key (hash-ref prior-catalog key))
               (hash-remove! __module-registry key))) staged-keys))
       (def inputs (make-hash-table))
-      ;; Reuse the publication's admitted role inventory. Ordinary retained
-      ;; libraries and private helpers retain their runtime source import path.
+      ;; Reuse the admitted publication frames, including the init closure.
+      ;; Ordinary libraries/private helpers retain their native source path.
       (source-reads
        (filter (lambda (entry) (hash-key? roles (path-normalize (.ref entry 'path)))) entries)
        (lambda (batch)
@@ -773,7 +769,7 @@
   (prepare-compiler-view-entries! entries roles source-reads libdir view)
   (def (compile)
     (parameterize ((current-build-source-directory view))
-      (call-with-role-compiler-inputs entries roles action source-reads source-import)))
+      (call-with-prepared-compiler-inputs entries roles action source-reads source-import)))
   (if refuse-input-context
     (call-with-build-input-path libdir compile refuse-input-context source-roots: (list view))
     (call-with-build-input-path libdir compile source-roots: (list view))))
@@ -830,10 +826,16 @@
                 ;; One escaped datum in a comment binds bytes, options and tools to
                 ;; this compiler input without storing any admission verdict.
                 (display ";; yuanxu-input " out)
-                (write-source-datum (list (.ref input 'source-inputs) (.ref entry 'options)
-                             (gerbil-version-string) (gerbil-home) (current-build-compiler-options)
-                             (map (lambda (key) (cons key (getenv key #f)))
-                               '("GERBIL_GSC" "GERBIL_GCC" "GERBIL_BUILD_OPTIMIZED" "GERBIL_BUILD_DEBUG" "GERBIL_BUILD_RELEASE"))) out)
+                (write-source-datum
+                  (append
+                    (list (.ref input 'source-inputs) (.ref entry 'options)
+                          (gerbil-version-string) (gerbil-home) (current-build-compiler-options)
+                          (map (lambda (key) (cons key (getenv key #f)))
+                            '("GERBIL_GSC" "GERBIL_GCC" "GERBIL_BUILD_OPTIMIZED" "GERBIL_BUILD_DEBUG" "GERBIL_BUILD_RELEASE")))
+                    ;; A different selected closure changes the init's native
+                    ;; imports even when its original declaration bytes match.
+                    (if (and (.slot? entry 'kind) (eq? (.ref entry 'kind) 'init-publication))
+                      (list (.ref input 'compiler-forms)) '())) out)
                 (newline out)
                 ;; Ordinary libraries retain only the EXISTING Make input stamp.
                 ;; Their source is neither copied as a module nor included/expanded

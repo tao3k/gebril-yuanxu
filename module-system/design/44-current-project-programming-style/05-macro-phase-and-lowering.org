@@ -86,6 +86,14 @@ whether optional =Config= is bound, reads the existing runtime bindings in
 that same context, and constructs a POO object. Syntax exports and
 phase initializers use the existing guarded reader.
 
+Compiled role delivery instead resolves the admitted =for-template= Context's
+public exports during expansion. Runtime demand initializes the native role
+and reads its canonical global bindings, without importing an expander Context.
+Identical explicit/implicit exports retain one binding identity; a syntax-only
+export cannot become a runtime value. The source reader's import hook remains
+the owner of dependency provenance. See
+[[file:../168-compiled-program-publication.org][the compiled program boundary and its open acceptance gates]].
+
 The source preparer's internal define-module-build-binding expands to a runtime
 POO lazy slot and an identifier-rules reference with fresh private bindings.
 Expansion performs no IO. The source reader captures an admitted resolver during

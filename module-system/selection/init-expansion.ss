@@ -9,17 +9,18 @@
 (import (for-syntax
           (only-in :gerbil/expander current-expander-context core-context-top
                    module-context? expander-context-id)
-          (only-in :yuanxu/module-system/source/role-forms module-init-mounts module-init-export-name)))
+          (only-in :yuanxu/module-system/source/role-forms module-init-mounts module-init-export-name)
+          (only-in :gerbil/compiler/base module-id->path-string)))
 (import (only-in :clan/poo/object .ref .o .+)
         (only-in :std/source this-source-file)
         (only-in :yuanxu/module-system/building/interface yuanxu-init-build)
 )
-(export expand-yuanxu-declaration)
+(export expand-yuanxu-declaration expand-yuanxu-program-declaration)
 
 ;;; Every named window uses the same module protocol. Profiles and Scenarios
 ;;; are namespace mounts, not alternate declaration or loading protocols.
 (begin-syntax
-  (def (expand-declaration stx)
+  (def (expand-declaration stx (program #f) (origin #f))
   (syntax-case stx ()
     ((ctx option value init-clause ...)
      (memq (syntax->datum (syntax option)) '(mode: source: :load-modules))
@@ -56,7 +57,14 @@
          ((exports-binding
             (datum->syntax (syntax ctx)
               (module-init-export-name (expander-context-id owner))))
+          (make-spec-binding (datum->syntax (syntax ctx) 'std-make-spec))
           (exports-base base-exports)
+          (compiled-program (or program #'#f))
+          (source-origin (or origin #'(this-source-file ctx)))
+          (native-unit
+            (datum->syntax (syntax ctx)
+              (string->symbol
+                (string-join (string-split (module-id->path-string (expander-context-id owner)) #\/) "__"))))
           (exports-value exports-value-id)
           ((mount-slot ...) (map namespace-slot mounts))
           (module-source-getter getter))
@@ -65,13 +73,20 @@
              ;; All projections close over this one init-owned selection.
              (defvalues (exports-base module-source-getter)
                (yuanxu-init-build
-                 (this-source-file ctx)
-                 '(yuanxu! option value init-clause ...)))
+                 source-origin
+                 '(yuanxu! option value init-clause ...)
+                 compiled-program 'native-unit))
              (def exports-value (.+ exports-base (.o mount-slot ...)))
              (defsyntax exports-binding
                (identifier-rules ()
                  (id (identifier? #'id) exports-value)))
-             (export exports-binding)
+             ;; A build consumer imports its projection directly. Reuse the
+             ;; same init-owned preparation; do not construct another Graph.
+             (defsyntax make-spec-binding
+               (identifier-rules ()
+                 (id (identifier? #'id)
+                     ((.ref exports-value 'std-make-spec) '()))))
+             (export exports-binding make-spec-binding)
              ;; Runtime runtime modules have one result, not projection values.
              (void))))))
     (_ (raise-syntax-error #f
@@ -81,3 +96,10 @@
 (defsyntax (expand-yuanxu-declaration stx)
   (syntax-case stx ()
     ((_ original) (expand-declaration #'original))))
+
+;; Only the admitted compiler source projection emits this form. The public
+;; yuanxu! declaration remains unchanged and cannot supply a runtime reader.
+(defsyntax (expand-yuanxu-program-declaration stx)
+  (syntax-case stx ()
+    ((_ declaration source program)
+     (expand-declaration #'declaration #'program #'source))))

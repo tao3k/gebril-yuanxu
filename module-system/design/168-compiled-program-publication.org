@@ -1,0 +1,724 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Compiled Program Publication Boundary
+
+* Ownership
+
+The init-owned =std-make-spec= selects the admitted Module and Feature closure.
+Gerbil owns compiler identities, imports, export aliases, initialization and
+linking. A compiled consumer must use that closure; it must not reconstruct a
+directory selection from the producer checkout at runtime. Rust consumes the
+resulting program through one Scheme VM. AITIA does not provide another loader.
+
+Source publication retains its byte, source-owner, dependency and generation
+checks. Compiled publication does not turn an earlier source check into live
+permission to read a checkout. Its exported values must retain the same POO
+composition, Contract, Feature selection and error semantics. The bridge owns
+packaging and VM lifecycle, not Module selection or a second dependency graph.
+
+* Build projection interface
+
+Module Build declarations and the selected dependency Graph own targets,
+compiler parameters and dependencies. =std-make-spec= is their projection to
+Gerbil Make data. It does not define a separate target policy or another
+command dispatcher. Production =exe:= targets do not require a test demand.
+Only the init-owned build entry contributes its native init publication; a
+generic source Graph projection does not silently add an init compile target.
+The projection preserves their native target kind, binary name and compiler
+options, including in a cross-package source view. A source shared with a
+library has one compiler-input identity and two distinct Make products.
+Source currentness and safe target naming still apply; projecting a program
+does not issue the test publication protocol's execution authority.
+
+An ordinary consumer can import the projection directly:
+
+#+begin_src scheme
+(import (only-in :yuanxu/module-system/building/script defbuild-script)
+        (only-in "./init.ss" std-make-spec))
+(defbuild-script std-make-spec)
+#+end_src
+
+The exported identifier demands the SAME init-owned projection in the shared
+build extent. It does not build a second Graph or retain another approval.
+The qualified init namespace remains useful for Module composition; a build
+consumer need not know its generated container name. Gerbil's =build= and
+=test= commands remain the execution entrypoints. An application build script
+must not recreate argument dispatch, load-path restoration or static-input
+ownership after receiving the projection.
+
+The compiled init is the compiler publication of the selected namespace root.
+It enters the existing prepared-input routing and Make freshness record,
+including the emitted import/binding forms. A changed closure must regenerate
+that publication even when the original init declaration is unchanged. Normal
+libraries continue through their existing native imports; no directory loader
+or contributor-supplied strategy flag is introduced.
+
+* Role projection
+
+The compiler's existing =for-template= import identifies the prepared role
+context. Re-resolving its public name can select an unwrapped source role or
+stale installed interface. =compiled-role-values= therefore reads that admitted
+context directly during expansion and resolves public aliases to canonical
+runtime identifiers. It rejects missing or non-runtime exports then, rather
+than postponing the error to a deployed binary.
+
+The emitted runtime expression uses the creating static unit's registered
+descriptor to distinguish a linked program from a dynamic library. Linked role
+demand activates the registered Gambit descriptor and refuses a missing unit
+before any file lookup. Dynamic library demand retains Gerbil's ordinary load
+protocol. It then reads the canonical globals. It does not import an expander context, capture a function
+value during compilation, or create a value/approval cache. Optional =Config=
+retains its existing absence semantics. Interface inclusion owns the hygienic
+resolver binding; generated role data does not supply executable loader code.
+
+Source value factories retain the invoking reader's import owner. Replacing
+=current-expander-module-import= with =core-import-module= bypasses the reader's
+dependency enrollment, especially when the imported context already exists.
+The factory may supply a fresh lexical frame; it must not replace that owner.
+
+This role correction alone does not establish standalone program acceptance.
+An init which still reconstructs a source selection, or an archive which omits
+its selected role objects, remains an open failure of the program boundary.
+
+* Executable acceptance
+
+| Boundary | Positive control | Rejection or preservation control |
+|----------+------------------+-----------------------------------|
+| Export projection | Public runtime values and renamed/reexported bindings | Missing and syntax-only exports fail during expansion |
+| Role demand | First scope demand initializes once | Namespace/Contract inspection does not initialize unused roles |
+| Source admission | Unchanged sources retain their existing support | Changed inputs and altered compiler paths still refuse |
+| Program closure | Selected Module and Feature objects are linked | Missing selected roles refuse preparation; no source fallback |
+| Deployment | Ordinary POO consumption without Gerbil installation paths | No checkout, SSI lookup or runtime compilation is required |
+| AITIA consumer | Real context, prepare, reviewed commit and evidence readback | Missing/stale evidence and changed candidates retain Open/refusal |
+
+The Core gates remain =t/module-deferred-projection-test.ss=,
+=t/module-publication-test.ss=, =t/module-testing-source-admission-test.ss=,
+=t/module-program-test.ss= and =just test-build-input-context-mutations=.
+The existing executable publication Cases retain their source/artifact lifecycle
+controls. They are not substituted for the real AITIA Rust consumer. Standalone
+acceptance uses that consumer's actual compiled program and package-managed
+dependencies; constructing a synthetic package manifest proves neither Module
+delivery nor absence of runtime source lookups. Existing Case, idle, process and
+heap fences remain acceptance conditions.
+
+* Observed AITIA delivery gap
+
+The current AITIA program manifest contains its =lambda-aitia/init= unit but
+no =lambda-aitia/modules/= units. This is a property of that existing artifact,
+not a result for a rebuilt candidate. Its draft operation first demands
+=modules/project-config= through the imported init export. The emitted init
+still calls =yuanxu-init-build=; its first namespace demand reads the original
+init declaration and constructs a directory selection. Linking the init alone
+therefore does not deliver the selected Module closure.
+
+There are two distinct obligations. The compiler must publish the init's
+selected Module/Feature namespace as compiled bindings, preserving POO
+composition, dependency contracts and lazy demand. Packaging must include the
+native units actually referenced by that publication, including deferred roles.
+Supplying more SSI metadata alone does not discharge the first obligation.
+Changing the consumer's load path or adding direct business imports discharges
+neither obligation. Source publication and its mutation controls remain intact.
+
+The source adapter has a further explicit filesystem obligation:
+=admit-module-publication!= checks a root-qualified declaration against
+=core-read-module/sexp=. A deployed publication cannot use that adapter and
+silently replace its check with a successful callback. Compilation must bind
+the verified native Module identity and public export to the emitted value;
+runtime value admission must preserve the same owner, dependency and Feature
+Contracts without reopening the producer file. Scope composition remains the
+existing POO/Module linker, not a second evaluator or merge algorithm.
+
+A native Gerbil import binds a public value; a subsequent =.get= consumes an
+object capability. These are not duplicate loads. Nevertheless an ordinary
+build consumer should not need a generated =package.init.exports= container
+merely to obtain its already selected build procedure. The owning export
+boundary must expose that capability directly. This API obligation is separate
+from delivering the complete compiled namespace; shortening its spelling cannot
+be used as evidence of standalone deployment.
+
+* Qualification status
+
+Before the compiled namespace implementation, the candidate's standard package
+build passed with the declared POO dependency installed through the package
+manager. After moving shared value admission beside publication contracts, the
+following historical invocations passed with the existing heap and watchdog limits and natural exit:
+
+- =just test-file t/module-deferred-projection-test.ss=
+- =just test-file t/module-publication-test.ss=
+- =just test-file t/module-testing-source-admission-test.ss=
+- =just test-file t/module-bootstrap-test.ss=
+- =just test-file t/module-program-test.ss=
+- =just test-build-input-context-mutations <artifact-dir>=
+
+The mutation run passed the order and admission suites before and after all
+four isolated faults. Output-first lookup, reversed prerequisite order, omitted
+restoration and accepted input mutation each reached the expected assertion
+rejection; none was counted from a timeout or compiler failure. The receipt
+reported =mutations=4 source-unchanged=true=. Raw logs and the machine receipt
+remain qualification artifacts rather than prose embedded in this document.
+
+The program suite initially failed at the host linker because OpenSSL's
+library directory was absent from its search path. Supplying =LDFLAGS= alone
+did not resolve that failure. The unchanged suite passed with the standard
+compiler =LIBRARY_PATH= set from =pkg-config --variable=libdir openssl= in the
+existing dependency environment. This is a build-environment qualification,
+not a runtime path fallback or a patch to the installed SDK. Both failed logs
+remain evidence. The earlier source-first diagnostics and cold image-loading
+idle failure also remain failed evidence, not interchangeable acceptance runs.
+
+The real AITIA consumer remains open: no corrected standalone artifact has yet passed
+context, prepare, reviewed commit and readback. The unsuccessful synthetic
+closure probe was withdrawn; its program lifecycle and resource-cleanup cases
+remain required. No push
+is justified by these partial results.
+
+The package-managed bridge generator was also rebuilt from the current source
+through =gerbil build=. This removed the withdrawn resolver interception from
+the installed compiler artifact as well as the source tree. Its maintained
+=t/program-metadata-test.ss= completed naturally: native compiler-option order
+was preserved; ordinary/expanded module counts were 21/86, with zero duplicate
+identities and zero missing inputs. This qualifies generator restoration only,
+not the open AITIA program closure.
+
+* Current implementation qualification
+
+The current PR candidate has been moved onto the latest PR head without the
+older checkout's unrelated package, observability and test edits. Its standard
+=gerbil build= completed under the existing build fence. The maintained
+projection suite passed through the official =gerbil test= entrypoint, including
+the actual JsonSchema publication, relabeled declaration rejection, unknown
+dependency rejection and Feature owner/identity/dependency substitution. A POO
+parameter/slot name collision found by that suite was fixed; its failing log is
+retained. Direct =std-make-spec= import was verified to return the identical
+init-owned specification object.
+
+Native CLI status alone is not the test verdict: the installed CLI returned
+zero for the preceding failing harness as well. Qualification inspects the
+native harness result and its final =OK= marker together with natural process
+completion. The failed output is not counted as a pass.
+
+The full source/admission/mutation and compiled-consumer gates must run again
+for these implementation changes. The first actual AITIA build rejected
+colliding public names in unfiltered template imports. The emitted dependencies
+now use Gerbil's no-binding runtime import sets. The full AITIA build then
+completed through =gerbil build= with its declared SDLC Build roots. Standalone
+Rust execution remains open. No push has occurred.
+
+* Template dependency packaging investigation
+
+A successful source build did not establish a complete native program closure.
+The staged consumer initially contained a selected Interface without its
+value-role code. Following only binding-bearing runtime dependencies and
+observed macro carriers is insufficient: Gerbil also represents template
+imports as negative-phase import sets and no-binding =runtime:= imports as
+direct Module Contexts.
+
+The bridge compiler adapter now traverses those native Context edges and their
+runtime dependencies. It does not parse Scheme source, scan a directory or
+install another runtime loader. Existing eager bootstrap modules retain their
+order; additional template code is marked deferred. The maintained metadata
+suite passed after adding both forms of import, preserving compiler-option
+order and reporting zero duplicate identities and zero missing native inputs.
+The first narrow fixture passed while the actual consumer still lacked its
+selected Interfaces; that result is explicitly insufficient for consumer
+acceptance. The full AITIA staging and standalone execution must be repeated
+with the corrected Context traversal.
+
+The former blanket =exe:= refusal and its test-demand coupling have been
+removed. =std-make-spec= projects the selected Build Graph; it does not classify
+an executable as production or test use. The target kind and options pass to
+the ordinary build consumer. The passing projection cases retain library and
+program products over the same admitted source without duplicating compiler
+inputs, and still refuse an escaping binary name. Standalone consumer execution
+is a separate gate, not a reason to prohibit a target in the projection.
+
+
+* Latest local qualification
+
+The current Core PR head was fast-forwarded while preserving concurrent scale
+work. =gerbil build= passed with the unchanged build and heap fences. The
+following official =gerbil test= suites each reported their final harness =OK=
+and completed naturally:
+
+- =t/package-owned-prelude-test.ss=: library/program overlap, explicit and
+  standard default binary names, one compiler input and escaping-name refusal.
+- =t/module-publication-test.ss=: real Gerbil compilation, lazy role execution,
+  source currentness and publication rejection.
+- =t/module-testing-source-admission-test.ss=: source/admission boundaries.
+- =t/module-bootstrap-test.ss=: original importer ownership and bootstrap.
+- =t/module-deferred-projection-test.ss=: actual POO publication and compiled
+  export/Feature correspondence.
+
+The publication suite first exposed an ownership mistake: generic Graph
+projection silently added an init compile target to a direct source consumer.
+Only the init-owned build entry now supplies that publication. The generic
+projection does not acquire another target-selection responsibility. Its failed
+run remains evidence, followed by the successful unchanged suite.
+
+The AITIA staging command also selected source =init.ss= ahead of compiled
+=init.ssi= because its build-time search path included the checkout first.
+Staging now resolves only the current package's compiled library output and
+installed dependencies. This is a compiler-input choice, not a deployed runtime
+file fallback. The broad metadata-import candidate contained 1,048 units and was refused by
+the Rust reader's unchanged 1,024-unit limit. That is a failed candidate, not
+an accepted archive. The obsolete extra init metadata import has now been
+removed: the compiled init already declares the selected namespace, and the
+compiler adapter follows its value templates directly. The new manifest has
+722 units, including 89 AITIA units. In particular,
+=project-config/interface= and its =objects=, =types=, =func= and =config=
+units are all present; the four value roles remain deferred. These counts
+establish the observed packaging difference, not completeness of every runtime
+operation.
+
+The bridge Context traversal also distinguishes Module Contexts from Prelude
+Contexts before calling the native module dependency driver, and deduplicates
+by native compiler identity. A maintained custom-prelude/template fixture
+passed together with native option ordering, zero duplicate identities and
+zero missing native inputs.
+
+The native linker control also completed naturally, preserving deferred
+initialization context and once-only activation.
+
+The build-input mutation gate failed in its =before-admission= positive
+control: an existing minimal compiler row has no =kind= slot. The new init
+frame classification now checks for that slot before reading it. That repair
+still needs a rebuilt Core and the complete gate; no mutant rejection is
+claimed from this failed run.
+
+Open: rebuilt qualification of that frame fix, the complete build-input
+mutation gate, full native program-publication suite, and the rebuilt AITIA
+Rust consumer's real context/prepare/review/readback operations. Native compilation is being performed separately from the fixed
+functional-test window. No source-free deployment or push approval is inferred
+from a successful build or from these partial gates.
+
+
+* Runtime role initialization qualification
+
+Packaging a role's code did not initialize the role's imported runtime values.
+The actual linked consumer refused the Assurance and Project Config Scope
+Contracts even though their role units were present. The compiled role demand
+now emits Gerbil's ordered runtime dependency closure before its own unit.
+Gambit owns registered descriptors, initialization state and once-only
+activation. There is no additional registry or successful-admission cache.
+Pure reexport facades need no body descriptor; roles defining their own exported
+values still refuse a missing unit. Source/Gxi consumption keeps the ordinary
+Gerbil loader path. The dependency driver is resolved during macro expansion,
+not by a deployed consumer.
+
+The standard Core build and deferred projection suite passed after this change.
+The real AITIA Scheme build, 722-unit staging and Rust compilation completed.
+The complete linked test invocation then passed its persistent Session Graph,
+GitOps and ORG operations, normal close, CLI Graph/ORG operations, and the
+signed commit replay. The preceding Scope admission failures disappeared.
+The original ignored loopback-Provider case remains ignored; it has not been
+counted as executed.
+
+The complete invocation still failed: the reviewed-push case's JJ fixture
+creation returned =No child processes= before reaching review or push. The
+one-shot VM starts in the same host process as another test's child waits.
+The pinned bridge captures and restores host signal dispositions around
+Gambit setup, but that does not by itself prove safety while a concurrent
+child exits during setup. This remains a separate bridge/host-lifecycle
+investigation; neither test serialization nor an incomplete run is acceptance.
+
+The bridge was also rebuilt once from a ghq checkout containing concurrent
+Scheme Runtime edits. That mixed candidate is not qualification evidence.
+It was replaced by the installed package's pinned PR checkout, with only this
+round's compiler helper and three maintained fixture/test files added. No
+parallel Runtime implementation or installed Gambit was changed. The corrected
+package build passed. A subsequent Apple linker invocation crashed with a Bus
+error; one identical cached link replay succeeded without changing compiler,
+SDK, flags or guards. Both observations remain in the local evidence.
+
+The build-input mutation gate's two positive controls now pass. Its first
+mutant triggers the expected load-path assertion, but native =gerbil test=
+returns zero instead of the gate's required 42. The original exit-status
+condition is unchanged. The complete four-mutant gate therefore remains open;
+no compiler error, timeout, or dropped CLI result is counted as rejection.
+
+A small AITIA binding now consumes the pinned bridge's existing bounded,
+owner-local exception diagnostic on failed calls, using the bridge's safe
+bytevector ownership API. It retains the original failure status and does not
+add a debug mode, a VM, a loader or a retry. This exposed the actual Scope
+failure rather than treating generic code 3 as proof of a file-loading fault.
+
+Open: complete reviewed-push execution and actual commit/GQL readback without
+Gerbil compiler tools; current-head source regression refresh after the role
+initialization change; the native CLI status issue and full mutation gate;
+producer publication and package-managed dependency synchronization. No push
+has occurred and standalone deployment is not yet claimed complete.
+
+** External metadata denial control
+
+Hiding compiler executables is insufficient to establish standalone execution.
+The real PR consumer completed =commit-context= and =commit-prepare= with
+Gerbil environment variables unset and a system-only executable search path.
+However, an operating-system file-access control denying Scheme source,
+interface metadata and dynamic Scheme objects rejected =commit-context= at
+runtime initialization. The corresponding attempt to read the actual source
+file was denied too, confirming that the negative control was active.
+
+The program entry explicitly initialized the Gerbil expander. That operation
+reopened external interface metadata even though the selected roles and their
+runtime bindings were already compiled. The consumer entry no longer starts
+the interpreter, and compiled role values now read the compiler-resolved Gambit
+global bindings directly, refusing uninitialized values. Compiler-side export
+resolution and native dependency initialization retain their existing owners.
+The new candidate requires renewed positive and negative file-access controls;
+the earlier compiler-hidden success does not close this stronger obligation.
+
+The renewed controls now pass for the same recorded consumer candidate:
+
+- Reading its actual =init.ss= is denied by the operating-system rule.
+- =commit-context= and =commit-prepare= exit normally with that rule active,
+  Gerbil environment variables unset and only system executables searchable.
+- Preparation accepts the current support and produces an attempt. Its rendered
+  English description matches the supplied draft apart from the renderer's
+  trailing newline. This is preparation, not a commit or push.
+- Replaying the earlier candidate's draft is refused with exit status one.
+  Source changes therefore do not silently inherit the old narration receipt.
+
+Publication, testing-source admission, bootstrap and package-owned language
+regressions were refreshed against the direct-global-binding implementation;
+all recorded their required module/harness/final success markers and no failure
+markers. The executable regression additionally exercises a compiler-resolved
+role export and direct execution after hiding the authoring package. Its result
+is a separate gate, not inferred from the earlier simpler executable fixture.
+That extended executable gate now passes with its original heap and timeout
+fences, including output checks before and after the source-directory move,
+reexported role evaluation, tampered executable refusal and changed-source
+refusal. A first fixture run incorrectly assumed the first static input had a
+nonempty body; the mutation now selects an actual observed byte, preserving the
+same admission-refusal assertion. A subsequent link failed to find the platform
+crypto library; the passing run uses the standard pkg-config-discovered library
+search directory, without changing the linker, SDK or limits. Both failed
+observations remain in local artifacts.
+
+The bridge's maintained metadata and actual-link qualification programs were
+also rerun from the installed pinned package checkout with only the owned
+compiler helper and fixture changes. Both exit normally: template runtime code
+is present and deferred, native compiler options keep their order, the ordinary
+and expanded closures contain 21 and 86 unique inputs without missing files,
+and the lazy-metadata initialization link control succeeds. These results do
+not replace the still-failing joint host child-process gate.
+
+** Remaining host child-process failure
+
+The complete linked consumer suite still fails: one case passes, two commit
+replay cases report =No child processes= while waiting for their JJ fixture
+children, and the existing Provider case remains ignored. No case was filtered
+or serialized to make this result pass.
+
+A diagnostic-only observation of native signal disposition changes records
+Gambit's =sigchld_signal_handler= being installed in the joint test process
+during VM initialization, before the host disposition is restored. Disassembly
+of that exact executable shows the handler calling =waitpid= with PID minus
+one and nonblocking mode, before looking for a matching Scheme device. This
+explains how a concurrently exiting host child can lose its wait status in the
+setup window. The observer does not change signal actions and is not deployed
+code or acceptance evidence. A fix belongs to the bridge's scoped native
+lifecycle, not to test serialization or AITIA business modules. The installed
+Gambit and the existing functional-test budget remain unchanged.
+
+** Bridge lifecycle corrective candidate
+
+A fresh PR-head audit found newer upstream package-export and build-parallelism
+support. The installed bridge checkout was advanced to that public head after
+backing up the owned changes; only the owned patch was reapplied. The existing
+untracked manifest was preserved. The owned corrective files were subsequently
+synchronized to the ghq checkout with byte comparisons and backups; its
+parallel changes were preserved. Qualification uses the public-head package
+checkout plus the owned patch, not the entire dirty ghq tree. The signal window
+is still present in that upstream head.
+
+The corrective bridge candidate scopes the paired SDK's internal signal-helper
+calls during VM setup and cleanup. A Scheme child handler is recorded without
+installing it over the host's handler in those phases. Explicit package calls
+still activate the recorded SDK handler through the SDK's original helper.
+Restoration does not overwrite a genuine host child-policy update when the
+scope itself never changed that policy. Timer signals remain under Scheme.
+
+Linux retains the existing relocatable-object wrapping boundary. Darwin uses
+the platform linker's private alias and symbol-localization operations for
+each SDK caller, forwarding to the same owner-side guard. It does not replace
+host libc, add a transport/runtime, edit the installed SDK or require another
+binary-rewriting tool. The existing instance-image compiler uses the same
+scope declaration as the ordinary linked program.
+
+Verified against the corrective producer source:
+
+| Gate | Actual local result |
+|------+---------------------|
+| Paired archive and unbound control | Guarded child wait succeeds; removing the internal binding changes host policy and exits 42 |
+| Complete builder library | 38 passed, 7 existing ignored, no filtered cases |
+| Actual VM lifecycle | 1 passed, 1 existing latency experiment ignored; real host children run during setup and cleanup |
+| Existing package build/test/export suite | 3 passed; unchanged per-case 15-second wall and 5-second idle fences, automatic host cores |
+| Builder Clippy including tests | Passed with warnings denied and ASP gate enabled |
+
+Adding the real child-wait regression exceeded the old lifecycle file's
+absolute source-size limit. Host child waiting, broken-pipe and affinity checks
+now live in one test owner module; the assertions and policy limit remain.
+The initial cache-write permission failure and subsequent ASP refusal were
+retained as failed build observations, not accepted test runs.
+
+The existing external-program object-graph case also passes with its four
+subprocesses and natural cleanup. This uses the ordinary linked consumer route,
+not a latency experiment.
+
+The final shared entry-status implementation was rebuilt and the complete
+existing package and runtime targets were rerun together. Package operations
+passed all three cases, with natural exit and automatic host cores; runtime
+passed its functional case while retaining the original ignored latency
+experiment. The outer 120-second fence and inner package fences were unchanged.
+Builder, runtime/package and image-target Clippy passed with warnings denied.
+
+Open: publication of this producer candidate through the reviewed commit
+protocol; package-managed
+dependency synchronization and the complete AITIA joint replay against that
+published revision. Earlier consumer successes and failures retain their own
+candidate and dependency scope. The corrective source is not yet consumer or
+remote-CI acceptance, and no PR2 push has occurred.
+
+** Root discovery and execution-denied consumer controls
+
+Blocking every other executable exposed one remaining application-owned Git
+process: root discovery still used =git rev-parse=. The JJ adapter now uses the
+same version of gix as JJ for its read-only discovery primitive, including
+bootstrap before a JJ workspace exists. Recorded tree access, description
+transactions, recovery and publication retain the JJ owner. The obsolete
+stdout path parser and subprocess error variant were removed.
+
+All seven JJ integration cases pass, including trailing-space directories,
+nested projects, linked-worktree Git files, bare and invalid-repository refusal,
+stale proposals, remote leases and preserved unpublished work. Its Clippy gate
+passes with warnings denied. The Rust manifests and all five bridge lock rows
+now select the inspected public bridge revision. Other package versions and
+sources are unchanged; Cargo recomputed four existing Windows dependency edges.
+The Lab Scheme dependency declaration was not changed.
+
+For the recorded consumer candidate, both =commit-context= and =commit-prepare=
+now exit normally while all Scheme source/interface/dynamic-object reads and
+every other executable are denied. An attempt to start the installed Gerbil
+under that execution rule is refused before startup. The prepared English
+description matches its supplied provisional draft. This is not Human approval,
+an applied commit or a push. Its two configured NASA support checks do not
+discharge the engineering Open items described in that draft.
+The maintained compiled-program consumer test also passes strict Clippy; this
+is compilation and lint evidence, not execution of its still-failing joint gate.
+
+The maintained Darwin reviewed-push case now includes source-file denial,
+compiler-execution denial and execution-denied pure review operations. Its
+negative controls require actual permission refusals. The full public-pin
+consumer run still fails before reaching that case's review boundary because
+VM startup reaps a fixture child. In its latest complete run, two cases passed,
+one failed and the original Provider case remained ignored. No single-case
+success or serialized execution is substituted for that joint gate.
+
+** Canonical image admission and owner retirement
+
+A new ordinary functional target exercises the public image builder, without
+running the pre-existing image benchmarks. The signal declaration belongs to
+the common C image owner. The raw SDK diagnostic explicitly keeps its existing
+unprotected reference behavior; it is not a fallback when an owner is missing.
+
+The functional target found that repeated setup returned already-initialized
+only after touching the existing timer and thread directory; subsequent cleanup
+returned minus two. Runtime and image setup now share one entry-status check,
+and the image applies it before any resource acquisition. The same test retains
+the repeated-setup refusal, single processor, cleanup and terminal replay checks.
+
+The first unload test also used the wrong owner order. Its crash report shows
+a pthread TLS destructor entering code after the image was unloaded. The test
+now follows the existing owner contract: initialize and clean up on a dedicated
+thread, join that thread including SDK TLS destruction, then unload. Neither
+SDK cleanup nor image unload is skipped. The corrected functional case passes;
+the cleanup failure and test-ordering crash remain failed observations.
+Its ordinary functional target and strict Clippy both pass. This establishes
+the tested owner order locally; published-dependency consumer and remote CI
+acceptance remain separate obligations.
+
+** Public dependency refresh and remaining producer boundary
+
+The public bridge subsequently added owner-configurable package-resolution
+progress. That change does not scope the SDK child handler. Before refreshing
+qualification, all owned tracked changes were backed up and three-way merged
+onto the new public head; untracked files were retained. No private ghq commit
+or parallel runtime change was used as a dependency.
+
+The consumer's three Rust dependency declarations and all five bridge lock
+rows now select that public head through Cargo. There is no local Cargo patch
+override. The Scheme package declaration remains unchanged, so this update
+does not claim a synchronized cold installation.
+
+Strict producer Clippy initially rejected an import placed after statements
+in the new upstream test. Moving that import to the existing block's import
+group preserves the checks and makes strict Clippy pass. The initial refusal
+remains a failed observation. Complete producer execution and the rebuilt
+public-pin consumer joint gate are separate checks; a successful lint cannot
+discharge either gate.
+
+The first complete execution on that refreshed base passed two package cases
+and hit the original 15-second wall fence in the remaining case, after entering cleanup.
+A separate consumer compilation was active during this run. After that
+compilation completed, the same complete package/runtime targets were rerun
+serially: all three package cases passed and exited naturally; the runtime
+functional case passed, with its original latency experiment still ignored.
+The package cases retained their 15-second wall and 5-second idle fences and
+automatic host cores. This observation is consistent with resource competition
+but does not prove that competition was the sole cause of the earlier failure.
+No failure record, assertion or case was removed.
+
+The rebuilt consumer was then run serially against the refreshed public Cargo
+revision, without the local producer correction. Its complete joint target
+recorded two passes, one failure and the original ignored Provider case. The
+reviewed-push fixture again failed waiting for its child with =No child
+processes=, before the guarded review operations. This is current public-pin
+evidence; the locally corrected producer's passes do not replace it.
+
+For the same recorded 27-path PR2 candidate, =commit-context= and
+=commit-prepare= both completed normally with external Scheme source,
+interface and dynamic-object reads denied and every other executable blocked.
+Preparation reported a valid draft and an attempt; its rendered title and body
+matched the supplied provisional English description. These operations neither
+apply a commit nor record Human approval. The empty configured-policy Open list
+still covers only the two declared support checks; the description retains the
+broader engineering Open items.
+Reusing the earlier candidate's draft under the same denial rules exits with
+application status 1 and the current-support/Contract refusal. A stale draft
+is not accepted merely because its prose is otherwise well formed.
+
+** Closure audit
+
+| Required boundary | Current evidence and remaining obligation |
+|-------------------+-------------------------------------------|
+| Build Graph declaration and projection | One init-owned spec; executable products retained; publication, source-admission and projection suites pass |
+| Compiled dependency closure | Template Context and runtime closure controls pass; compiled role demand uses registered descriptors and compiler-resolved globals |
+| External metadata and compiler independence | Real current candidate context/prepare pass with module reads and other executable starts denied; stale draft refused |
+| Reviewed commit, actual body and local-remote readback | Complete target passes on the published runtime correction and its formatting head, including guarded reviewed-push and local-remote readback |
+| Producer host-child ownership | Published correction passes guarded/unbound controls and complete consumer replay; retained-image TLS correction passes local resource/lifecycle gates and is published; its exact-head CI remains open |
+| Input-context mutation gate | Correct mutant diagnostic is observed, but installed CLI reports exit zero instead of required 42; gate remains failed |
+| Package-managed installation and downstream acceptance | Rust declarations and all five bridge lock rows select the published formatting head; its complete consumer target passes; synchronized cold installation remains open |
+| Budgets and shared work | Existing fences and ignored experiments retained; owned changes backed up; no whole dirty producer tree used as qualification |
+
+Read-only inspection of the toolchain producer confirms that its existing
+tool-entry PR already fixes the CLI status boundary: the test tool invokes
+=exit= with the result of its test entry. The currently installed source
+instead returns that result to a dispatcher which does not use it as the
+process status. No additional fix belongs in Yuanxu's mutation assertions or
+AITIA's loader. The installed toolchain was not modified, and producer source
+inspection is not acceptance of an installed replacement.
+
+** Producer publication review
+
+The bridge candidate is frozen as 22 owned changed paths for review. The
+pre-existing untracked manifest and parallel ghq changes are excluded. A
+reverse-apply check verifies that the complete review patch corresponds to
+the current candidate, including its eight new source/test files; no commit
+or push was performed.
+
+Inspection of the current public bridge CI finds eight failed jobs sharing
+the same final strict-lint refusal in the package test file: the first test
+function exceeds its line limit, and a newly added import follows statements.
+The owned candidate already extracts the core-selection assertions and places
+that import with the block's imports; its strict Clippy check passes locally.
+The remote Arrow and binding job labels do not establish separate Arrow or
+binding defects from these logs. Publication and exact-head CI of the fix
+remain open.
+
+The toolchain producer's existing entry-status PR has successful Darwin and
+Linux jobs. This is producer CI evidence only; it does not change the failed
+mutation gate under the currently installed CLI.
+
+Human review subsequently accepted the producer description. The 22-path
+candidate was recorded with JJ using the existing Git identity. Its actual
+description matched the approved text byte-for-byte, its only parent was the
+inspected public PR head, and its path set matched the review scope. JJ then
+pushed the existing bookmark forward normally. Remote PR and commit readback
+confirmed the published head and matching description. The excluded manifest
+was preserved; no parallel ghq commit or PR2 change was pushed.
+
+The consumer now selects that published correction through ordinary Cargo
+declarations and lock rows. Its compilation is separate from the functional
+test fence. The obsolete =build-user-interface= alias has also been removed:
+staging, lifecycle checking and integration now use =build-scheme= directly,
+and integration no longer invokes the same build twice. Just's parsed recipe
+output confirms the dependencies; no test case or acceptance limit changed.
+
+The published runtime correction rebuilt successfully in the normal consumer
+Cargo route. Compilation took 6 minutes 49 seconds and completed naturally;
+it was separate from the unchanged 120-second functional gate. The complete
+consumer target then passed all three functional cases in 22.64 seconds,
+retaining the original ignored Provider case and filtering no case. In
+particular, reviewed-push executed its compiler/source denial controls and
+actual commit/local-remote body readback without the former host-child error.
+This supersedes the failed public-baseline joint run for that corrected
+dependency, not the other outstanding gates.
+
+CI on the published correction exposed an omitted formatter-order adjustment
+in the lifecycle test imports. The exact difference reproduced locally and
+the complete formatter check passes after the single import move. A follow-up
+commit was added above the reviewed repair and pushed forward normally; the
+published repair was not rewritten. It changes no assertion or runtime code.
+The consumer declarations and lock are now being advanced to that formatting
+head for a final separate compilation and complete functional confirmation.
+
+That formatting-head confirmation completed naturally: separate compilation
+took 4 minutes 55 seconds, then the unchanged complete consumer target passed
+all three functional cases in 32.00 seconds, with one original Provider case
+ignored and no cases filtered.
+
+The same head's Darwin fixed-owner CI subsequently reported a separate resource
+regression: after an owner has actually joined, a deliberately retained code
+image consumes one TLS key (available capacity 509 becomes 508). The existing
+capacity equality assertion remains failed. The new signal-scope state uses
+C thread-local storage, which is being investigated as a source of this
+additional Darwin image resource. A passing AITIA joint target does not close
+that producer lifecycle gate. No capacity assertion or timing gate is relaxed.
+
+The ordinary canonical-image functional case now measures TLS capacity after
+owner join but before image unload. It reproduces the CI regression without
+running a benchmark: the original signal scope leaves 508 keys available
+against a baseline of 509. Cleanup and image unload still complete before the
+assertion reports failure.
+
+The corrective scope state belongs to the unique VM image rather than caller
+TLS. Scope entry and exit remain serialized by its existing owner; atomic
+state makes SDK helper accesses race-free without acquiring a Darwin TLS key.
+The Linux-only SIGPIPE cleanup scope retains its existing thread-local form.
+The same retained-image functional case now passes in 0.82 seconds with exact
+capacity equality. Default VM, package and complete builder regressions and
+strict lint are being rerun serially; this local pass is not yet remote CI
+acceptance of the correction.
+
+Serial qualification of that correction completed: both strict Clippy targets
+pass; the complete builder passes 38 cases with its seven original ignored
+experiments; package tools pass all three cases with natural exits; the actual
+VM functional case passes with its original latency experiment ignored. The
+ordinary retained-image test and complete formatter check also pass. Its
+initial raw-pointer style refusal was fixed without an allow or policy change.
+
+The two-file follow-up was recorded above the existing published head, its
+actual description and path set were read back, and the existing PR bookmark
+was pushed forward normally. Exact-base comparisons allowed only these two
+owned corrections to be mirrored into ghq; its parallel changes were preserved.
+Consumer declarations and lock rows now select the public correction, with
+compilation and complete downstream confirmation in progress. No PR2 commit
+or push was applied.
+
+** Standard-entry alignment and publication checkpoint
+
+The public Core branch advanced to its direct standard-build entry while this
+qualification was running. The owned patch was backed up and merged onto that
+head. The retired =building/script.ss= adapter remains removed; the program
+fixture keeps the standard entry and explicit POO publication boundary, while
+the obsolete production =exe:= refusal stays removed. AITIA's build entry now
+imports =defbuild-script= from =:std/build-script= directly.
+
+The first merged Core build failed with =No space left on device= during native
+compilation. It is not a passed build or a semantic rejection. After the user
+reported disk recovery, publication was prioritized to preserve the owned work
+before further disk cleanup. Post-merge build/regression, cold-install and
+exact-head CI obligations remain open; the earlier passing observations retain
+their preceding Core-base scope. Raw logs and local intermediates are excluded
+from the source commits.

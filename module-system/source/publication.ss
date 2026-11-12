@@ -10,12 +10,25 @@
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/slot-observation slot-read-revision slot-read-instance slot-read-value)
         (only-in :clan/poo/mop Type Type. Bool Object define-type element?)
-        (only-in :clan/poo/type Record Symbol List Or))
+        (only-in :clan/poo/type Record Symbol List Or)
+        (only-in :yuanxu/object-types/contracts yuanxu-value-admit yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/module-system/source/observations module-source-measure-operation))
 (export ModulePublicationContract ModuleScopeContextContract ContributionRouteContract ModuleInterfaceViewContract
-        ModuleFeatureRefinementContract
+        ModuleFeatureRefinementContract admit-module-value!
         module-publication? module-scope-context? requirement-option
         module-publication-contract-current? module-publication-dependency-projection
         module-publication-recorded-dependencies)
+;; Value admission is shared by interpreted and compiled consumers. It does
+;; not acquire the authoring, filesystem or compiler capability of admission.ss.
+(def (admit-module-value! contract candidate context-value)
+  (let (evidence
+        (module-source-measure-operation 'reader-value-admission
+          (cut yuanxu-value-admit contract candidate context-value)))
+    (unless (module-source-measure-operation 'reader-admission-evidence
+              (cut yuanxu-validation-evidence-accepted? evidence))
+      (error "module scope admission refused" (.ref contract 'identity) evidence))
+    evidence))
+
 (def (has-slots? value names)
   (and (object? value) (andmap (cut .slot? value <>) names)))
 (define-type (Callable @ Type.) .element?: procedure?)

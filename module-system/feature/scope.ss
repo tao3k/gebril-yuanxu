@@ -4,8 +4,8 @@
 ;;; Selected Feature refinements and dependency edges share the same scope write fence.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/mop Type. define-type element? validate)
-        (only-in :yuanxu/module-system/source/publication ModuleFeatureRefinementContract)
-        (only-in :yuanxu/module-system/source/admission admit-module-value!))
+        (only-in :yuanxu/module-system/source/publication
+                 ModuleFeatureRefinementContract admit-module-value!))
 (export refine-module-scope compose-module-features module-feature-scope-contract)
 
 (def (call-with-scope-protection candidate ancestor action)

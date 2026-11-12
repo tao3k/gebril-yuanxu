@@ -113,7 +113,7 @@
 
 ;; Init exports inert values. Source preparation begins only on demand.
 ;; One init module owns one source epoch; changed input requires a fresh session.
-(def (yuanxu-init-build source declaration)
+(def (yuanxu-init-build source declaration (program #f) (unit #f))
   ;; Owned by this init projection, not a global root of the last source Graph.
   ;; Cache offsets/receiver layouts, never successful checks or unrelated cells.
   (def source-current-site (make-slot-cache 'admit-current))
@@ -126,6 +126,7 @@
   (def input-context-refused? #f)
   (def retained #f)
   (def selection #f)
+  (def compiled (and program (.o modules: (program))))
   (def tests (make-hash-table))
   ;; Publish guarded test inputs and native Make specifications. No
   ;; Graph acquisition, test discovery or process creation occurs here.
@@ -297,7 +298,8 @@
             (lambda ()
               (call-with-build-expansion-accounting 'module-projection
                 (lambda ()
-                  (build-projector (list (selected!) roots root entry-source)))))))
+                  (build-projector (list (selected!) roots root entry-source
+                                         init-source: init-file)))))))
         (set! retained request)))
     (call-with-build-stage 'spec-current check-prepared!)
     (def value (.ref/inline prepared source-spec-site))
@@ -309,7 +311,11 @@
     value)
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
-  (def (module-namespace) (.get (selected!) modules))
+  (def (module-namespace)
+    (if (and unit (##lookup-registered-module unit))
+      (if compiled (.get compiled modules)
+        (error "init has no compiled Module publication" unit))
+      (.get (selected!) modules)))
   ;; The init consumer already owns this exact specification. Its preparation
   ;; is not a second request: preserve the independent compiler-entry/return
   ;; guards below instead of entering build-spec again during that handoff.

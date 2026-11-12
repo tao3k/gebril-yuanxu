@@ -12,7 +12,7 @@
         (only-in :yuanxu/module-system/source/role-forms yuanxu-module-allowed-entrypoint-roles
                  yuanxu-module-required-role-files module-role-file)
         (only-in :std/list/list any)
-        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-value-admit yuanxu-validation-evidence-accepted?)
+        (only-in :yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
         :yuanxu/module-system/source/observations
         :yuanxu/module-system/source/objects
         :yuanxu/module-system/source/publication
@@ -264,14 +264,6 @@
     (cons ModulePublicationContract (module-source-style-policy-support))
     reject-protocols?: #f))
 
-(def (admit-module-value! contract candidate context-value)
-  (let (evidence
-        (module-source-measure-operation 'reader-value-admission
-          (cut yuanxu-value-admit contract candidate context-value)))
-    (unless (module-source-measure-operation 'reader-admission-evidence
-              (cut yuanxu-validation-evidence-accepted? evidence))
-      (error "module scope admission refused" (.ref contract 'identity) evidence))
-    evidence))
 
 ;; Resolve an existing declaration path. Missing associations are programmer
 ;; errors and must not turn into a permissive user configuration Type.

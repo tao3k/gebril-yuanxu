@@ -8,7 +8,7 @@
                  resolve-identifier datum->syntax import-set? import-set-source
                  import-set-phi import-set-imports make-module-context
                  make-module-import make-module-export make-import-set
-                 current-expander-context expander-context-table make-top-context eval-syntax module-export-phi
+                 current-expander-context current-expander-module-import expander-context-table make-top-context eval-syntax module-export-phi
                  module-export-weak? module-export-key module-export-context core-module->prelude-context
                  make-prelude-context prelude-context-import)
         (only-in :std/list/list find)
@@ -179,6 +179,18 @@
         (lambda () ((module-binding-action "std/list/list" 'missing-factory-binding) '())))
       (check-equal? (not (not failure)) #t)
       (check-equal? (eq? before (current-expander-context)) #t))
+    (yuanxu-test-case "binding factories preserve the invoking import owner"
+      (def import-owner (current-expander-module-import))
+      (def imports '())
+      (parameterize ((current-expander-module-import
+                       (lambda arguments
+                         (let (context (apply import-owner arguments))
+                           (set! imports (cons (expander-context-id context) imports))
+                           context))))
+        (check-equal?
+          ((module-binding-action "std/func" 'repeat) (list (lambda () 42) 2))
+          '(42 42)))
+      (check-equal? (and (memq 'std/func imports) #t) #t))
     (yuanxu-test-case "direct SDK preludes retain their complete module association"
       (def language (core-import-module ':gerbil/core))
       ;; The SDK constructor is valid independently of its registry-caching

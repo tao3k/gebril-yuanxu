@@ -4,6 +4,7 @@
 ;;; Project selected sources to ordinary std/build-script specifications.
 ;;; std/make owns compilation, dependency scheduling and clean.
 (import (only-in :std/string/path path-absolute?)
+        (only-in :yuanxu/module-system/building/program-publication project-program-init)
         (only-in :gerbil/expander core-import-module expander-context-id)
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module call-with-build-stage)
         (only-in :yuanxu/module-system/building/products build-output-directory
@@ -74,20 +75,26 @@
            #f))
      (else (hash-put! seen id entry) #t)))
   (def modules (filter first? selected))
-  (def libraries (filter-map (lambda (entry target) (and (first? entry) (cons entry target)))
-                            kept retained))
+  (def libraries
+    (filter-map
+      (lambda (entry target)
+        (def fresh? (first? entry))
+        ;; A library and an executable may share their compiler input. Only
+        ;; identical library targets collapse; an executable is a distinct product.
+        (and (or fresh? (and (pair? target) (eq? (car target) exe:)))
+             (cons entry target)))
+      kept retained))
   (values modules libraries (hash-get seen 'tao3k/yuanxu/prelude)))
 
-(def (yuanxu-project-source-spec source retained root entry-source demand: (demand #f))
+(def (yuanxu-project-source-spec source retained root entry-source demand: (demand #f)
+                                 init-source: (init-source #f))
   (if demand
     (module-test-source-spec source demand root entry-source retained)
-    (project-selected-source-spec source retained root entry-source)))
+    (project-selected-source-spec source retained root entry-source init-source)))
 
-(def (project-selected-source-spec source retained root entry-source)
+(def (project-selected-source-spec source retained root entry-source init-source)
   (when (current-module-build-phase?)
     (error "Module build phase cannot recursively project the root specification"))
-  (when (ormap (lambda (target) (and (pair? target) (eq? (car target) exe:))) retained)
-    (error "native programs require an explicit init-owned test demand"))
   (unless (and (string? root) (path-absolute? root)
                (string? entry-source) (path-absolute? entry-source))
     (error "build projection requires absolute source and entry roots"))
@@ -111,6 +118,22 @@
                             ((.ref view '.build-graph-for) roots)
                             (.ref view 'build-graph))))))))
          (graph-entries (.ref graph 'entries))
+         ;; Init is the native publication of this selected closure. A package
+         ;; need not repeat the infrastructure target in its ordinary libraries.
+         (init-input
+           (and init-source
+             (begin
+               (unless (and (.slot? view 'context)
+                            (equal? init-source (.ref (.ref view 'context) 'init-source)))
+                 (error "init publication differs from the selected Graph owner" init-source))
+               (yuanxu-prepare-module-retained-source init-source void))))
+         (init-target (and init-input
+                          (build-target-name (.ref init-input 'compiler-identity) package-prefix)))
+         (retained
+           (if (or (not init-target)
+                   (ormap (lambda (target)
+                            (equal? init-target (if (string? target) target (cadr target)))) retained))
+             retained (append retained (list init-target))))
          (retained-states (make-hash-table-eq))
          ;; Preparing retained headers only observes source and package metadata.
          ;; Share the existing pure read window across their own source guards.
@@ -121,7 +144,7 @@
                    (call-with-module-source-read-cache
                      (lambda ()
                        (retained-build-entries retained root package-prefix graph-entries
-                     capture:
+                     programs?: #t capture:
                      (lambda (value checker path ready? state)
                        ;; These procedures are captured at the native constructor,
                        ;; not read from an author-supplied object property.
@@ -130,13 +153,23 @@
                            (lambda (input actual)
                              (and (eq? input value) (eq? actual checker) (state)))))
                        value)))))))
+         (kept (map (lambda (entry) (project-program-init view graph entry)) kept))
+         ;; A declared package library may itself reach init. Project that
+         ;; same native owner once, regardless of which edge discovered it.
+         (graph-entries (map (lambda (entry) (project-program-init view graph entry)) graph-entries))
          ;; Graph entries are already admitted selected-owner SOURCE obligations.
          ;; A package prefix names a target; it cannot demote a selected source
          ;; to an installed prerequisite. Native imports outside this set remain
          ;; Gerbil prerequisites and never enter the compiler source view.
          ((values module-entries library-entries language)
           (collect-build-entries graph-entries kept retained))
-         (entries (append module-entries (map car library-entries)))
+         (target-entries (append module-entries (map car library-entries)))
+         (entries
+           (let (seen (make-hash-table-eq))
+             (filter (lambda (entry)
+                       (def id (.ref entry 'compiler-identity))
+                       (and (not (hash-key? seen id))
+                            (begin (hash-put! seen id #t) #t))) target-entries)))
          (foreign? (ormap (lambda (entry) (not (local-entry? entry))) entries))
          (observed (unique-build-inputs
                      (append (.ref entry-input 'source-inputs) (.ref graph 'compiler-inputs)
@@ -160,8 +193,10 @@
            (map (lambda (row)
                   (let (entry (car row))
                     (if foreign?
-                      `(gxc: ,(build-target-name (.ref entry 'compiler-identity) "")
-                             ,@(.ref entry 'options))
+                      (let (target (cdr row))
+                        `(,(if (pair? target) (car target) gxc:)
+                          ,(build-target-name (.ref entry 'compiler-identity) "")
+                          ,@(if (pair? target) (cddr target) (.ref entry 'options))))
                       (cdr row))))
                 library-entries))
          (build-value (append module-value library-value)))
@@ -225,7 +260,7 @@
         ;; Prefix batches partition the exact admitted Make targets.
         .make-groups: (lambda (compile?)
                         (if (and language (not foreign?) (equal? package-prefix "yuanxu"))
-                          (project-std-make-specs entries build-value language compile?)
+                          (project-std-make-specs target-entries build-value language compile?)
                           '()))
         compiler-identities: (map (cut .ref <> 'compiler-identity) entries)
         ;; Installed imports are resolved by Gerbil, not manufactured from a
@@ -245,9 +280,10 @@
               (lambda ()
                 (call-with-module-compiler-inputs entries action unified?: foreign?
                       recorded-entries:
-                      (if (and record-selected-view? (not foreign?) (equal? package-prefix "yuanxu"))
-                        module-entries
-                        '())
+                      (append
+                        (filter (lambda (entry) (eq? (.ref entry 'kind) 'init-publication)) entries)
+                        (if (and record-selected-view? (not foreign?) (equal? package-prefix "yuanxu"))
+                          module-entries '()))
                       source-reads: (.ref graph '.with-compiler-source-reads)
                       source-import: (.ref graph '.with-compiler-source-import)
                       source-state: source-state source-owner: graph

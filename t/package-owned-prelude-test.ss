@@ -64,6 +64,37 @@
             (yuanxu-project-source-spec (yuanxu-load-modules (path-expand "modules" root))
                                        '() root (path-expand "init.ss" root)))
           (check-equal? (and (memq identity (.get projection compiler-identities)) #t) #t)
+          ;; A production executable is a separate product of the same
+          ;; admitted source, without requesting the test publication protocol.
+          (def program-view (yuanxu-load-modules (path-expand "modules" root)))
+          ;; Match the library's compiler options; bin: belongs to Make, not gxc.
+          (def native-target '(exe: "consumer" bin: "consumer-program"))
+          (def program-projection
+            (yuanxu-project-source-spec program-view (list native-target)
+              root (path-expand "init.ss" root)))
+          (def native-name (string-append (symbol->string package) "/consumer"))
+          (check-equal?
+            (filter (lambda (target) (and (pair? target) (eq? (car target) exe:)))
+              (.get program-projection spec))
+            (list `(exe: ,native-name bin: "consumer-program")))
+          (check-equal?
+            (length (filter (lambda (target)
+                              (and (pair? target) (eq? (car target) gxc:)
+                                   (equal? (cadr target) native-name)))
+                      (.get program-projection spec))) 1)
+          (check-equal? (length (filter (lambda (id) (eq? id (string->symbol (string-append (symbol->string package) "/consumer"))))
+                                (.get program-projection compiler-identities))) 1)
+          ((.get program-projection admit-current))
+          (def default-bin
+            (yuanxu-project-source-spec program-view '((exe: "consumer"))
+              root (path-expand "init.ss" root)))
+          (check-equal?
+            (filter (lambda (target) (and (pair? target) (eq? (car target) exe:)))
+              (.get default-bin spec))
+            (list `(exe: ,native-name)))
+          (check-exception
+            (yuanxu-project-source-spec program-view
+              '((exe: "consumer" bin: "../escape")) root (path-expand "init.ss" root)) error?)
           ;; Holding resolved naming metadata never approves changed sources.
           ;; The actual projected language remains part of compiler-current.
           (def path (path-expand "prelude.ss" root))

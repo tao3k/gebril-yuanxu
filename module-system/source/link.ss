@@ -19,7 +19,7 @@
         (only-in :yuanxu/module-system/source/reader-support call-with-publication-reads
                  merge-publication-read-roots)
         (only-in :yuanxu/module-system/source/declaration current-module-build-phase?))
-(export yuanxu-load-modules module-namespace-project call-with-linked-prepared-guards
+(export yuanxu-load-modules module-namespace-project module-program-namespace module-program-feature call-with-linked-prepared-guards
         linked-configuration-guard-active?)
 
 ;; Closed, branch-local projection of an admitted POO capability. Bindings are
@@ -199,6 +199,62 @@
           (else (scope-tree (map (lambda (row) (cons (cdar row) (cdr row))) children)
                             resolve)))))
      keys: names)))
+;; Compare native declaration facts before projecting qualified identities.
+;; Relabeling must never hide a forged owner or a changed dependency contract.
+(def (module-program-feature value owner name expected id qualified constraints)
+  (def declaration (module-feature-declaration value owner name))
+  (for-each
+    (lambda (row)
+      (unless (equal? (.ref declaration (car row)) (cdr row))
+        (error "compiled Feature declaration changed" id (car row)))) expected)
+  (.cc declaration 'feature-id id 'owner-module-id qualified
+    'requires (car constraints) 'optional-requires (cadr constraints) 'conflicts (caddr constraints)))
+
+;; A compiler publication supplies native bindings, not filenames or a reader.
+;; Keep dependency linking, Feature refinement and value Contracts in the same
+;; linker as source consumption. Only the source acquisition capability differs.
+(def (module-program-namespace identity publications resolutions decision-rows namespace-rows)
+  (def ids (.all-slots publications))
+  (def generation (symbol->string identity))
+  (def (resolve-id owner reference)
+    (cond
+     ((memq reference ids) reference)
+     ((and (.slot? resolutions owner) (.slot? (.ref resolutions owner) reference))
+      (.ref (.ref resolutions owner) reference))
+     (else (error "dependency is outside compiled Module closure" owner reference))))
+  (def context
+    (.o generation module-ids: ids selected: ids denied-modules: '()
+        intent:
+        (.o mode: 'explicit
+            decisions: (map (lambda (row)
+                              (.o identity: (car row)
+                                  selection: (.o selection-flags: (cdr row)))) decision-rows))
+        current?: (lambda (requested) (equal? requested generation))
+        locate:
+        (lambda (id)
+          (unless (memq id ids) (error "Module is outside compiled closure" id))
+          (make-yuanxu-module-generated-source (symbol->string id)))
+        resolve-module-id: resolve-id
+        namespace: (lambda (resolve) (scope-tree namespace-rows resolve))
+        read-publication:
+        (lambda (source)
+          (def id (string->symbol (yuanxu-module-source-ref-value source)))
+          (unless (memq id ids) (error "publication is outside compiled Module closure" id))
+          (def descriptor (.ref publications id))
+          (def value (.ref descriptor 'publication))
+          ;; The compiler resolved this export in its native owner Context.
+          ;; A changed runtime declaration cannot be relabeled as that owner.
+          (unless (eq? (.ref value 'identity) (.ref descriptor 'declaration))
+            (error "compiled Module declaration identity changed" id))
+          (def declared-features (.ref value 'features))
+          (def names (cond ((list? declared-features) declared-features)
+                           ((object? declared-features) (.all-slots declared-features))
+                           (else (error "invalid compiled Module Feature inventory" id))))
+          (unless (equal? names (.all-slots (.ref descriptor 'features)))
+            (error "compiled Module Feature inventory changed" id))
+          (.cc value 'identity id 'features (.ref descriptor 'features)))))
+  (.ref (yuanxu-load-modules context) 'modules))
+
 (def (yuanxu-load-modules source read-publication: (publication-reader #f)
                            module-view: (module-view #f))
   (load-module-source source publication-reader module-view make-publication-reader))
