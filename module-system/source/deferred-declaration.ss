@@ -139,7 +139,13 @@
   (with-catch
     (lambda (_open) #f)
     (lambda ()
-      (match (or interface-forms (call-with-input-string interface-text read-all))
+      ;; Imports belong to Gerbil's binding phase, not to the role payload.
+      ;; A normal authored Interface may import its declaration macro explicitly.
+      (def declarations
+        (let loop ((forms (or interface-forms (call-with-input-string interface-text read-all))))
+          (if (and (pair? forms) (pair? (car forms)) (eq? (caar forms) 'import))
+            (loop (cdr forms)) forms)))
+      (match declarations
         ([['.def (? symbol?) . body]]
          (def rows (closed-rows body))
          (closed-symbol (closed-field rows 'identity:))
@@ -253,10 +259,26 @@
 
 (defsyntax (include-deferred-declaration input)
   (syntax-case input ()
-    ((_ path ((role exports ...) ...) resolver)
+    ((_ path roles resolver)
      (let-values (((_prelude _id _namespace forms)
                    (module-source-measure-operation 'reader-interface-read
                      (lambda () (core-read-module/sexp (stx-e #'path))))))
+       (let split ((forms forms) (imports '()))
+         (if (and (pair? forms) (stx-pair? (car forms))
+                  (eq? (stx-e (stx-car (car forms))) 'import))
+           (split (cdr forms) (cons (car forms) imports))
+           ;; Splice original imports before expanding the declaration. The
+           ;; ordinary module expander establishes their bindings and phases.
+           (with-syntax (((import-form ...) (map syntax-local-rewrap (reverse imports)))
+                         ((declaration ...) (map syntax-local-rewrap forms)))
+             #'(begin import-form ...
+                 (expand-deferred-declaration roles resolver declaration ...)))))))))
+
+(defsyntax (expand-deferred-declaration input)
+  (syntax-case input ()
+    ((_ ((role exports ...) ...) resolver declaration ...)
+     (let ()
+       (def forms (syntax->list #'(declaration ...)))
        (def loader (genident 'role-loader))
        (def private (genident 'role-values))
        (def constructor (quote-syntax deferred-role-values))
@@ -579,8 +601,7 @@
                      ;; The reader supplies the owner through the existing
                      ;; parameter. Keep the binding private to this macro.
                      (resolver resolver-expression))
-         (syntax-local-rewrap
-           (stx-wrap-source
-             (core-cons 'begin
-               (if direct definitions (cons #'(def loader (resolver)) definitions)))
-             (stx-source input))))))))
+         (stx-wrap-source
+           (core-cons 'begin
+             (if direct definitions (cons #'(def loader (resolver)) definitions)))
+           (stx-source input)))))))

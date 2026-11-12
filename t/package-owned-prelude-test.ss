@@ -65,29 +65,26 @@
             (yuanxu-project-source-spec (yuanxu-load-modules (path-expand "modules" root))
                                        '() root (path-expand "init.ss" root)))
           (check-equal? (and (memq identity (.get projection compiler-identities)) #t) #t)
-          ;; A production executable is a separate product of the same
-          ;; admitted source, without requesting the test publication protocol.
+          ;; An executable has its own source; STD Make rejects a second
+          ;; target for the same source even when it would name another product.
+          (call-with-output-file (path-expand "run.ss" root)
+            (lambda (port) (display "(def (main . args) (void)) (export main)\n" port)))
           (def program-view (yuanxu-load-modules (path-expand "modules" root)))
-          ;; Match the library's compiler options; bin: belongs to Make, not gxc.
-          (def build-target '(exe: "consumer" bin: "consumer-program"))
+          (def build-target '(exe: "run" bin: "consumer-program"))
           (def program-projection
             (yuanxu-project-source-spec program-view (list build-target)
               root (path-expand "init.ss" root)))
-          (def build-name (string-append (symbol->string package) "/consumer"))
+          (def build-name (string-append (symbol->string package) "/run"))
           (check-equal?
             (filter (lambda (target) (and (pair? target) (eq? (car target) exe:)))
               (.get program-projection spec))
             (list `(exe: ,build-name bin: "consumer-program")))
           (check-equal?
-            (length (filter (lambda (target)
-                              (and (pair? target) (eq? (car target) gxc:)
-                                   (equal? (cadr target) build-name)))
-                      (.get program-projection spec))) 1)
-          (check-equal? (length (filter (lambda (id) (eq? id (string->symbol (string-append (symbol->string package) "/consumer"))))
-                                (.get program-projection compiler-identities))) 1)
+            (length (filter (cut eq? <> (string->symbol build-name))
+                            (.get program-projection compiler-identities))) 1)
           ((.get program-projection admit-current))
           (def default-bin
-            (yuanxu-project-source-spec program-view '((exe: "consumer"))
+            (yuanxu-project-source-spec program-view '((exe: "run"))
               root (path-expand "init.ss" root)))
           (check-equal?
             (filter (lambda (target) (and (pair? target) (eq? (car target) exe:)))
@@ -95,7 +92,7 @@
             (list `(exe: ,build-name)))
           (check-exception
             (yuanxu-project-source-spec program-view
-              '((exe: "consumer" bin: "../escape")) root (path-expand "init.ss" root)) error?)
+              '((exe: "run" bin: "../escape")) root (path-expand "init.ss" root)) error?)
           ;; Holding resolved naming metadata never approves changed sources.
           ;; The actual projected language remains part of compiler-current.
           (def path (path-expand "prelude.ss" root))

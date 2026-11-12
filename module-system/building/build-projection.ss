@@ -4,6 +4,7 @@
 ;;; Project selected sources to ordinary std/build-script specifications.
 ;;; std/make owns compilation, dependency scheduling and clean.
 (import (only-in :std/string/path path-absolute?)
+        (only-in :yuanxu/module-system/building/source-package package-prelude-identity)
         (only-in :yuanxu/module-system/building/program-publication project-program-init)
         (only-in :gerbil/expander core-import-module expander-context-id module-context-path import-module current-expander-compiling?)
         (only-in :yuanxu/module-system/building/source-closure for-each-build-module call-with-build-stage package-library-spec/source-context)
@@ -98,10 +99,13 @@
                (filter (lambda (entry) (eq? (.ref entry 'kind) 'publication)) graph-entries)))
          (init-source
           (and (.slot? view 'context) (.ref (.ref view 'context) 'init-source)))
+         (language (package-prelude-identity root))
          (module-source?
           (lambda (entry)
             (def path (.ref entry 'path))
             (or (null? module-roots) (equal? path init-source)
+                (and language (eq? (.ref entry 'compiler-identity) language)
+                     (equal? path (path-normalize (path-expand "prelude.ss" root))))
                 (ormap (lambda (directory) (string-prefix? directory path)) module-roots))))
          (native-target-index
           (and (.slot? graph 'std-make-targets)

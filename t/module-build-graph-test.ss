@@ -138,7 +138,7 @@
             ("namespace" ";; comment\nnamespace: explicit\n(def value 7) (export value)" #f)
             ("prelude" "prelude: :gerbil/core\n(def value 7) (export value)" #f)
             ("package" "package: #f\n(def value 7) (export value)" #f)))
-         ;; This SDK rejects an explicit false namespace under gerbil.pkg.
+         ;; This Gerbil rejects an explicit false namespace under gerbil.pkg.
          ;; Preparation must preserve that runtime refusal rather than normalize it.
          (def path (path-expand "namespace-false.ss" root))
          (write-file path "namespace: #f\n(def value 7) (export value)")
@@ -347,7 +347,7 @@
            ;; The compiler projection consumes the reader's exact role input,
            ;; including its guard; it must not create a duplicate source object.
            (let* ((prepared (.call view prepare-publication 'app/web))
-                  (path (path-normalize (path-expand "modules/app/web/config.ss" root)))
+                  (path (path-normalize (path-expand "modules/app/web/types.ss" root)))
                   (observed (find (lambda (input) (equal? (.get input path) path))
                                   (.get prepared source-dependencies)))
                   (entry (find (lambda (entry) (equal? (.get entry path) path))
@@ -360,7 +360,7 @@
                    ($constant-slot-spec? (cdr (assq name (object-slots entry)))) #t))
                '(kind path compiler-identity input options owner contributor)))
            (let (names (map symbol->string (entry-names graph)))
-             ;; Contribution targets belong to the contribution package. SDK
+             ;; Contribution targets belong to the contribution package. Gerbil
              ;; tools stay guarded, but must not become its compiler targets.
              (check-equal? (length (filter (lambda (name)
                                             (string-prefix? (string-append prefix "/") name)) names)) 10)
