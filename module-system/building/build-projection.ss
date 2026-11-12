@@ -104,7 +104,11 @@
           (lambda (entry)
             (def path (.ref entry 'path))
             (or (null? module-roots) (equal? path init-source)
-                (and language (eq? (.ref entry 'compiler-identity) language)
+                ;; A prelude in this package is an ordinary package target.
+                ;; A reached language with its own identity needs the
+                ;; selected source view to preserve its compiler namespace.
+                (and language (not (local-entry? entry))
+                     (eq? (.ref entry 'compiler-identity) language)
                      (equal? path (path-normalize (path-expand "prelude.ss" root))))
                 (ormap (lambda (directory) (string-prefix? directory path)) module-roots))))
          (native-target-index
