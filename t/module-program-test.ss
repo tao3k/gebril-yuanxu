@@ -133,6 +133,15 @@
       (check-equal? (hash-ref cold-counts '(calls build-spec-contract) 0) (if generated? 1 0))
       (check-equal? (hash-ref hot-counts '(calls build-projection) 0) 0)
       (check-equal? (hash-ref hot-counts '(calls build-spec-contract) 0) 0)
+      (for-each
+        (lambda (counts)
+          (check-equal? (hash-ref counts '(calls scope-factory) 0) 0)
+          (for-each
+            (lambda (name)
+              (check-equal?
+                (hash-ref counts (list 'calls (list 'scope-factory (string->symbol name))) 0) 0))
+            modules))
+        (list cold-counts hot-counts))
       (displayln "STD-BUILD-ENTRY-BENCHMARK implementation=" (if generated? 'generated 'official-literal)
         " modules=" (length modules) " import-seconds=" import-seconds
         " cold-spec-seconds=" cold-seconds " hot-spec-seconds=" hot-seconds
