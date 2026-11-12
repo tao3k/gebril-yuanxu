@@ -138,7 +138,11 @@
              (plan (resolve-feature-profile
                     (test-profile 'cyclic (list feature-a feature-b)))))
         (check (.ref plan 'status) => 'rejected)
-        (check (plan-has-diagnostic? plan 'dependency-cycle) => #t)))
+        (check (.ref plan 'feature-ids) => '())
+        (check (map (lambda (diagnostic)
+                      (cons (.ref diagnostic 'code) (.ref diagnostic 'detail)))
+                    (.ref plan 'diagnostics))
+               => '((dependency-cycle feature-a feature-b)))))
 
     (yuanxu-test-case "256-Feature graph reuses constant-slot construction"
       (let* ((features (linear-test-features 256))
