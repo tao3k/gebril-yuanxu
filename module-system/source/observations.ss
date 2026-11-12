@@ -4,8 +4,9 @@
 ;;; Source observation, replay and currentness share one runtime owner.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-observation %slot-read-active? without-observation)
-        (only-in :std/list/list any)
-        (only-in :std/misc/ports read-all-as-string))
+        (only-in :std/list/list any take)
+        (only-in :gerbil/expander call-with-input-source-file source-file-settings)
+        (only-in :std/misc/ports read-all-as-string read-all-as-u8vector))
 (export observe-source
         module-source-type module-source-read module-source-name? module-source-admit-current!
         module-source-text-guard
@@ -348,6 +349,7 @@
 ;; A matched large read already has an exact private text snapshot. Expose a
 ;; mutable copy only when an ordinary reader asks for the text in this window.
 (defstruct source-text-read (snapshot materialized) final: #t)
+(defstruct source-text-snapshot (text chunks) final: #t)
 (def current-source-text-snapshot (make-parameter #f))
 (def (source-text-content text)
   (if (source-text-read? text)
@@ -367,37 +369,63 @@
   (unless (eq? (module-source-type path) 'regular)
     (error "module role must be a regular file" path))
   (read-regular-source path expected-length))
-(def (read-source-chunks port expected capture?)
-  (def capacity 8192)
-  (def length (string-length expected))
-  (def buffer (make-string capacity))
-  (let read-next ((offset 0) (matching? #t))
-    (let* ((count (read-substring buffer 0 capacity port))
-           (end (+ offset count)))
-      (cond
-       ((zero? count)
-        (values
-          (if capture?
-            (if (= offset length) (make-source-text-read expected #f) (substring expected 0 offset))
-            (and matching? (= offset length)))
-          offset))
-       ((and matching? (<= end length) (string-prefix? buffer expected 0 count offset end))
-        (read-next end #t))
-       (capture?
-        ;; The already decoded prefix matched exactly. Read the remainder
-        ;; of this same port through EOF so a late decoder error still wins.
-        (let (text (string-append (substring expected 0 offset)
-                                  (substring buffer 0 count)
-                                  (read-all-as-string port)))
-          (values text (string-length text))))
-       (else (read-next end #f))))))
-(def (read-source-text path expected-length)
-  (call-with-input-file path
+(def (scheme-source-path? path)
+  (equal? (path-extension path) ".ss"))
+(def source-read-chunk-size 8192)
+(def (source-text->snapshot text)
+  (def snapshot (string-copy text))
+  (def bytes (string->utf8 snapshot))
+  (def size (u8vector-length bytes))
+  (make-source-text-snapshot snapshot
+    (let loop ((start 0))
+      (if (= start size) '()
+        (let (end (min (+ start source-read-chunk-size) size))
+          (cons (subu8vector bytes start end) (loop end)))))))
+(def (decode-source-bytes bytes)
+  (def port (open-input-u8vector (cons* init: bytes source-file-settings)))
+  (dynamic-wind void
+    (lambda ()
+      (call-with-output-string
+        (lambda (out)
+          (def buffer (make-string source-read-chunk-size))
+          (let loop ()
+            (let (count (read-substring buffer 0 source-read-chunk-size port))
+              (unless (zero? count)
+                (write-substring buffer 0 count out)
+                (loop)))))))
+    (lambda () (close-input-port port))))
+(def (read-source-snapshot path snapshot)
+  ;; Gerbil owns the decoding settings. A canonical byte match already
+  ;; proves the decoded text. Otherwise decode the bytes from this same
+  ;; open file, including the matched prefix and the rest through EOF.
+  (call-with-input-source-file path
     (lambda (port)
-      (let (expected (and expected-length (current-source-text-snapshot)))
-        (if expected
-          (let-values (((text _characters) (read-source-chunks port expected #t))) text)
-          (read-all-as-string port))))))
+      (def expected (source-text-snapshot-chunks snapshot))
+      (def buffer (make-u8vector source-read-chunk-size))
+      (def (decode-change matched tail)
+        (decode-source-bytes
+          (u8vector-concatenate
+            (append (take expected matched) (list tail (read-all-as-u8vector port))))))
+      (let loop ((chunks expected) (matched 0))
+        (if (null? chunks)
+          (let (next (read-u8 port))
+            (if (eof-object? next)
+              (make-source-text-read (source-text-snapshot-text snapshot) #f)
+              (decode-change matched (u8vector next))))
+          (let* ((chunk (car chunks))
+                 (size (u8vector-length chunk))
+                 (target (if (= size source-read-chunk-size) buffer (make-u8vector size)))
+                 (count (read-subu8vector target 0 size port)))
+            (if (and (= count size) (equal? target chunk))
+              (loop (cdr chunks) (1+ matched))
+              (begin
+                (u8vector-shrink! target count)
+                (decode-change matched target)))))))))
+(def (read-source-text path expected-length)
+  (let (snapshot (and expected-length (current-source-text-snapshot)))
+    (cond (snapshot (read-source-snapshot path snapshot))
+          ((scheme-source-path? path) (call-with-input-source-file path read-all-as-string))
+          (else (call-with-input-file path read-all-as-string)))))
 (def (read-regular-source path (expected-length #f))
   ;; Private content path: the caller already checked regular-file status.
   ;; The path entry and the observed query share the same actual read value.
@@ -413,20 +441,20 @@
           read)))
     (if expected-length text (materialize-source-text text))))
 
-(def (read-large-source-matches? path expected)
+(def (read-large-source-matches? path expected snapshot)
   (observe-read path)
-  (defvalues (matches? characters)
-    (module-source-measure-operation 'source-read
-      (lambda ()
-        (call-with-input-file path (lambda (port) (read-source-chunks port expected #f))))))
-  (record-physical-source-read! characters)
-  matches?)
+  (def text
+    (source-text-content
+      (module-source-measure-operation 'source-read
+        (lambda () (read-source-snapshot path snapshot)))))
+  (record-physical-source-read! (string-length text))
+  (equal? expected text))
 
 (def (module-source-text-guard path expected)
   (def expected-length (string-length expected))
-  (if (< expected-length 32768)
+  (if (or (< expected-length 32768) (not (scheme-source-path? path)))
     (lambda () (equal? expected (module-source-observe module-source-read path)))
-    (let (snapshot (string-copy expected))
+    (let (snapshot (source-text->snapshot expected))
       (def (large-text-current?)
         (observe-read-request path)
         (unless (eq? (module-source-type path) 'regular)
@@ -434,12 +462,12 @@
         (def cache (source-read-cache))
         (def cached (if cache (hash-ref cache path missing-source-query) missing-source-query))
         (if (eq? cached missing-source-query)
-          (read-large-source-matches? path expected)
+          (read-large-source-matches? path expected snapshot)
           (equal? expected (source-text-content cached))))
       (lambda ()
         (if (current-module-source-observer)
-          ;; Keep the original query key and read notifications. The private
-          ;; snapshot only changes the allocation of a matching text read.
+          ;; Keep the original query key and read notifications. Ordinary
+          ;; reads still receive their own mutable view of the cached text.
           (parameterize ((current-source-text-snapshot snapshot))
             (equal? expected
               (source-text-content (module-source-observe read-module-source path expected-length))))

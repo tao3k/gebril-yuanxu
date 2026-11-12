@@ -88,6 +88,7 @@
        (def interface-wrapper #f)
        (def interface-context #f)
        (def delivered #f)
+       (def delivered-interface? #f)
        (def feature-inputs #f)
        (def reading-feature? #f)
        ;; Runtime import provenance is separate from compiler-tool authority.
@@ -132,6 +133,7 @@
                          (unless (and (eq? context interface-context) (not delivered))
                            (error "unexpected private Interface delivery" (module-context-path context)))
                          (set! delivered (car results))
+                         (set! delivered-interface? #t)
                          ;; Gerbil's initializer promise must not retain the delivered value.
                          (list (void)))
                        results))))))
@@ -704,6 +706,15 @@
                 (hash-put! (reader-session-dependencies session) interface-path (publication-inputs))
                 result))))
         (lambda ()
+          ;; Gerbil indexes the temporary Interface by both path and ID.
+          ;; Native delivery already returned the value for a closed wrapper.
+          ;; Retire that expansion's own aliases along with its temporary file.
+          (when (and delivered-interface? interface-context)
+            (for-each
+              (lambda (key)
+                (when (eq? (hash-get __module-registry key) interface-context)
+                  (hash-remove! __module-registry key)))
+              (list interface-wrapper (expander-context-id interface-context))))
           (set! delivered #f)
           (set! interface-context #f)
           (set! interface-wrapper #f)

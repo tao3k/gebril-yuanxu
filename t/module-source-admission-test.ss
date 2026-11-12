@@ -303,7 +303,21 @@
                           (lambda (key _amount)
                             (when (and (pair? key) (eq? (car key) 'file-read))
                               (write-role root "types" different)))))
-            (check-equal? (current?) #f)))))
+            (check-equal? (current?) #f))
+          (def (write-bytes bytes)
+            (call-with-output-file (list path: file truncate: #t)
+              (lambda (out) (write-subu8vector bytes 0 (u8vector-length bytes) out))))
+          ;; Gambit's native decoder may return a prefix at an invalid byte.
+          ;; The changed suffix must still be checked through EOF.
+          (write-bytes (u8vector-append (string->utf8 large) #u8(255 97)))
+          (check-equal? (current?) #f)
+          (parameterize ((current-module-source-observer void))
+            (check-equal? (current?) #f))
+          (write-bytes (u8vector-append #u8(255) (string->utf8 large)))
+          (check-exception (module-source-read file) os-exception?)
+          (check-exception (current?) os-exception?)
+          (parameterize ((current-module-source-observer void))
+            (check-exception (current?) os-exception?)))))
     (yuanxu-test-case "nested pure guards reuse reads but independent validation observes changes"
       (with-module
        (lambda (root)
