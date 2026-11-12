@@ -14,7 +14,7 @@
 (extern namespace: yuanxu/t/qualification/mop-state/precompiled-stores precompiled-store precompiled-subjects)
 (def root (path-expand (getenv "CORE_STORE_ROOT")))
 (def original-path (load-path))
-(def captured-sdk-entry load-module)
+(def captured-loader-entry load-module)
 (def observations '())
 (def legacy-observation #f)
 (def entry "yuanxu/t/qualification/mop-state/precompiled-stores")
@@ -185,10 +185,10 @@
         (write-datum record (compiler-code-facts entry '())))
       (lambda ()
         (attempt "cached-record-replacement" (cut load-module entry) "issued source or record changed")
-        ;; Measurement, not a claimed safe route: an Gerbil procedure value saved
+        ;; Measurement, not a claimed safe route: a Gerbil procedure value saved
         ;; before installation may retain an old compiled internal call edge.
         (def before (length (.get (authority-status state) events)))
-        (def result (with-catch values (cut captured-sdk-entry entry)))
+        (def result (with-catch values (cut captured-loader-entry entry)))
         (def after (length (.get (authority-status state) events)))
         (if (Error? result)
           (check-equal? (Error-message result) "issued source or record changed")

@@ -191,9 +191,9 @@
           ((module-binding-action "std/func" 'repeat) (list (lambda () 42) 2))
           '(42 42)))
       (check-equal? (and (memq 'std/func imports) #t) #t))
-    (yuanxu-test-case "direct SDK preludes retain their complete module association"
+    (yuanxu-test-case "direct Gerbil preludes retain their complete module association"
       (def language (core-import-module ':gerbil/core))
-      ;; The SDK constructor is valid independently of its registry-caching
+      ;; The Gerbil constructor is valid independently of its registry-caching
       ;; helper. Do not register it just to make traversal succeed.
       (def prelude (make-prelude-context language))
       (def context (make-module-context 'direct-prelude/root #f #f #f))

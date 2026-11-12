@@ -1,6 +1,6 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Runtime SDK instances are capabilities; matching names and paths are not.
+;;; Runtime Gerbil instances are capabilities; matching names and paths are not.
 (import :std/test :clan/poo/object
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :gerbil/expander core-import-module current-expander-module-import
@@ -65,7 +65,7 @@
               (begin (set! injected? #t) forged)
               (gerbil-import path reload?)))
           (parameterize ((current-expander-module-import intercept))
-            ;; Capture the real SDK closure before introducing the impostor.
+            ;; Capture the real Gerbil closure before introducing the impostor.
             (def reader (module-publication-reader))
             (set! active? #t)
             ;; Known exact paths return their captured instance before asking

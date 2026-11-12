@@ -78,7 +78,7 @@
     (hash-for-each
       (lambda (role value)
         (yuanxu-write-observation-line!
-          "reader-sdk-roots role=%s contexts=%s bindings=%s code-bodies=%s expanded=%s programs=%s"
+          "reader-expander-roots role=%s contexts=%s bindings=%s code-bodies=%s expanded=%s programs=%s"
           role (vector-ref value 0) (vector-ref value 1) (vector-ref value 2)
           (vector-ref value 3) (vector-ref value 4))) rows))
   (def publications 0)
@@ -259,7 +259,7 @@
     ;; Trace-only transitive raw payload accounting. Never force a slot, promise,
     ;; interface method or checker. Receiver and Gerbil expander context identities are
     ;; frontiers, not recursively expanded into the entire running process.
-    (def sdk-contexts (make-hash-table-eq))
+    (def expander-contexts (make-hash-table-eq))
     ;; Raw shell projection never invokes a getter or prepares a receiver.
     ;; Descriptors are external roots, and nested owner contexts remain boundaries.
     (def (shell-fields value)
@@ -292,7 +292,7 @@
                  (gambit-table? value)
                  (and (##structure? value)
                    (##structure-instance-of? value 'gerbil#__gc-table::t)))
-             (when (expander-context? value) (hash-put! sdk-contexts value #t))
+             (when (expander-context? value) (hash-put! expander-contexts value #t))
              (hash-put! frontiers value #t) (walk tail))
             ((and structural?
                (or (##closure? value)
@@ -559,10 +559,10 @@
       (let* ((receiver-payload
                (deep-payload (apply append (map shell-fields (hash-keys receivers)))
                  'receiver-shell-payload))
-             (context-count (hash-length sdk-contexts))
-             (sdk-payload
-               (deep-payload (apply append (map shell-fields (hash-keys sdk-contexts)))
-                 'sdk-context-shell-payload))
+             (context-count (hash-length expander-contexts))
+             (expander-payload
+               (deep-payload (apply append (map shell-fields (hash-keys expander-contexts)))
+                 'expander-context-shell-payload))
              (union (make-hash-table-eq)))
         (def union-scope (gensym 'classified-union-nodes))
         (def union-work 0)
@@ -585,20 +585,20 @@
         ;; Count the final union by intersection; do not copy the million-node
         ;; Gerbil support into a second table. Both tables enumerate unique ids.
         (let ((shared 0)
-              (smaller (if (< (hash-length union) (hash-length sdk-payload))
-                         union sdk-payload))
-              (larger (if (< (hash-length union) (hash-length sdk-payload))
-                        sdk-payload union)))
+              (smaller (if (< (hash-length union) (hash-length expander-payload))
+                         union expander-payload))
+              (larger (if (< (hash-length union) (hash-length expander-payload))
+                        expander-payload union)))
           (hash-for-each (lambda (node _)
             (union-step!)
             (when (hash-key? larger node) (set! shared (1+ shared)))) smaller)
           (yuanxu-write-observation-line!
-            "slot-payload-union kind=sdk-shell overlap=%s added=%s union=%s scanned=%s"
-            shared (- (hash-length sdk-payload) shared)
-            (- (+ (hash-length union) (hash-length sdk-payload)) shared)
+            "slot-payload-union kind=expander-shell overlap=%s added=%s union=%s scanned=%s"
+            shared (- (hash-length expander-payload) shared)
+            (- (+ (hash-length union) (hash-length expander-payload)) shared)
             (hash-length smaller)))
         (yuanxu-write-observation-line!
-          "slot-owner-shells receivers=%s sdk-contexts=%s nested-policy=frontier exclusive-bytes=unknown"
+          "slot-owner-shells receivers=%s expander-contexts=%s nested-policy=frontier exclusive-bytes=unknown"
           (hash-length receivers) context-count)))
     (let ((known-targets 0) (callback-targets 0))
       (hash-for-each (lambda (target _)

@@ -124,7 +124,7 @@ verify-mop-store-boundary-runtime directory:
     just test-file t/qualification/mop-state/store-boundary-driver.ss
     shasum -a 256 -c "$CORE_STORE_ROOT/callback-artifacts.sha256"
     shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
-    shasum -a 256 -c "$CORE_STORE_ROOT/sdk-inputs.sha256"
+    shasum -a 256 -c "$CORE_STORE_ROOT/gerbil-inputs.sha256"
 
 test-artifact-authority directory:
     CORE_STORE_ROOT="{{ directory }}" just test-file t/artifact-authority-test.ss

@@ -46,7 +46,7 @@
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax '(import :gerbil/core))
     (import-fixture-init! (path-expand "init.ss" root))))
-;; Observe the SDK loader itself; do not substitute a hand-maintained module
+;; Observe the Gerbil loader itself; do not substitute a hand-maintained module
 ;; table. The nonempty support Case below is the positive matcher control.
 (def (artifact-runtime-loaded?)
   (ormap (lambda (entry)

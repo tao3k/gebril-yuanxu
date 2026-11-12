@@ -163,7 +163,7 @@ library directory was absent from its search path. Supplying =LDFLAGS= alone
 did not resolve that failure. The unchanged suite passed with the standard
 compiler =LIBRARY_PATH= set from =pkg-config --variable=libdir openssl= in the
 existing dependency environment. This is a build-environment qualification,
-not a runtime path fallback or a patch to the installed SDK. Both failed logs
+not a runtime path fallback or a patch to the installed Gerbil distribution. Both failed logs
 remain evidence. The earlier source-first diagnostics and cold image-loading
 idle failure also remain failed evidence, not interchangeable acceptance runs.
 
@@ -329,7 +329,7 @@ round's compiler helper and three maintained fixture/test files added. No
 parallel Runtime implementation or installed Gambit was changed. The corrected
 package build passed. A subsequent Apple linker invocation crashed with a Bus
 error; one identical cached link replay succeeded without changing compiler,
-SDK, flags or guards. Both observations remain in the local evidence.
+platform toolchain, flags or guards. Both observations remain in the local evidence.
 
 The build-input mutation gate's two positive controls now pass. Its first
 mutant triggers the expected load-path assertion, but native =gerbil test=
@@ -392,7 +392,7 @@ refusal. A first fixture run incorrectly assumed the first static input had a
 nonempty body; the mutation now selects an actual observed byte, preserving the
 same admission-refusal assertion. A subsequent link failed to find the platform
 crypto library; the passing run uses the standard pkg-config-discovered library
-search directory, without changing the linker, SDK or limits. Both failed
+search directory, without changing the linker, Gerbil release or limits. Both failed
 observations remain in local artifacts.
 
 The bridge's maintained metadata and actual-link qualification programs were
@@ -432,17 +432,17 @@ parallel changes were preserved. Qualification uses the public-head package
 checkout plus the owned patch, not the entire dirty ghq tree. The signal window
 is still present in that upstream head.
 
-The corrective bridge candidate scopes the paired SDK's internal signal-helper
+The corrective bridge candidate scopes the paired Gambit runtime's internal signal-helper
 calls during VM setup and cleanup. A Scheme child handler is recorded without
 installing it over the host's handler in those phases. Explicit package calls
-still activate the recorded SDK handler through the SDK's original helper.
+still activate the recorded Gambit signal handler through the Gambit's original helper.
 Restoration does not overwrite a genuine host child-policy update when the
 scope itself never changed that policy. Timer signals remain under Scheme.
 
 Linux retains the existing relocatable-object wrapping boundary. Darwin uses
 the platform linker's private alias and symbol-localization operations for
-each SDK caller, forwarding to the same owner-side guard. It does not replace
-host libc, add a transport/runtime, edit the installed SDK or require another
+each Gambit caller, forwarding to the same owner-side guard. It does not replace
+host libc, add a transport/runtime, edit the installed Gerbil distribution or require another
 binary-rewriting tool. The existing instance-image compiler uses the same
 scope declaration as the ordinary linked program.
 
@@ -519,7 +519,7 @@ success or serialized execution is substituted for that joint gate.
 
 A new ordinary functional target exercises the public image builder, without
 running the pre-existing image benchmarks. The signal declaration belongs to
-the common C image owner. The raw SDK diagnostic explicitly keeps its existing
+the common C image owner. The raw Gambit runtime diagnostic explicitly keeps its existing
 unprotected reference behavior; it is not a fallback when an owner is missing.
 
 The functional target found that repeated setup returned already-initialized
@@ -531,8 +531,8 @@ the repeated-setup refusal, single processor, cleanup and terminal replay checks
 The first unload test also used the wrong owner order. Its crash report shows
 a pthread TLS destructor entering code after the image was unloaded. The test
 now follows the existing owner contract: initialize and clean up on a dedicated
-thread, join that thread including SDK TLS destruction, then unload. Neither
-SDK cleanup nor image unload is skipped. The corrected functional case passes;
+thread, join that thread including Gambit TLS destruction, then unload. Neither
+Gambit cleanup nor image unload is skipped. The corrected functional case passes;
 the cleanup failure and test-ordering crash remain failed observations.
 Its ordinary functional target and strict Clippy both pass. This establishes
 the tested owner order locally; published-dependency consumer and remote CI
@@ -541,7 +541,7 @@ acceptance remain separate obligations.
 ** Public dependency refresh and remaining producer boundary
 
 The public bridge subsequently added owner-configurable package-resolution
-progress. That change does not scope the SDK child handler. Before refreshing
+progress. That change does not scope the Gambit child handler. Before refreshing
 qualification, all owned tracked changes were backed up and three-way merged
 onto the new public head; untracked files were retained. No private ghq commit
 or parallel runtime change was used as a dependency.
@@ -684,7 +684,7 @@ assertion reports failure.
 
 The corrective scope state belongs to the unique VM image rather than caller
 TLS. Scope entry and exit remain serialized by its existing owner; atomic
-state makes SDK helper accesses race-free without acquiring a Darwin TLS key.
+state makes Gambit helper accesses race-free without acquiring a Darwin TLS key.
 The Linux-only SIGPIPE cleanup scope retains its existing thread-local form.
 The same retained-image functional case now passes in 0.82 seconds with exact
 capacity equality. Default VM, package and complete builder regressions and
@@ -734,7 +734,7 @@ These are open findings; successful narrower controls do not close them.
 |---------+---------------------+---------------------|
 | Residual command adapter | =building/interface.ss=: =current-build-spec-consumer=, =call-with-init-build-spec=, =run-spec/current=; Weaver =build.ss= still calls it | Migrate the actual consumer to standard =defbuild-script= values and explicit artifact/publication APIs, then remove implicit registration and duplicate command dispatch. Preserve source/spec/product refusal controls at their real owner. |
 | Cross-package virtual target names | =building/build-projection.ss= emits prefix-free identities while standard Make resolves sources relative to its script | Project actual admitted native source targets; preserve compiler identities, source currentness and dependency closure. Do not restore the deleted adapter or a consumer load-path workaround. |
-| Compiler product identity | Gerbil =std/make= predicts outputs from directory package rather than authored headers | Reuse Gerbil's native identity reader and compiler filename encoding, with standard EXE declarations and cleanup. The SDK candidate is not a qualified immutable release. |
+| Compiler product identity | Gerbil =std/make= predicts outputs from directory package rather than authored headers | Reuse Gerbil's native identity reader and compiler filename encoding, with standard EXE declarations and cleanup. The Gerbil build candidate is not a qualified immutable release. |
 | Dynamic loading authority | =source/compiled-role.ss= uses compiler-resolved exports plus native Gambit activation; =preparation.ss= restores temporary expander contexts | Verify whether each action is required compiler lowering or reproduces official registry, initialization or loading behavior. Remove duplicate authority/state only after source-hidden runtime, once-only initialization and failure controls establish the official replacement. |
 
 The runtime loader already owns its module table, loading synchronization,
@@ -766,7 +766,7 @@ refusal. Standard package success itself grants no publication authority.
 The independent Ops/test progress controls remain in their existing suites.
 Candidate Core builds pass; complete source, mutation, consumer and remote
 qualification is still required. These changes do not close the loader audit
-or qualify an unpublished SDK.
+or qualify an unpublished Gerbil build.
 
 ** Native generation boundary repair (in progress)
 
@@ -779,7 +779,10 @@ with the standard =append= directly in =defbuild-script=. There is no public
 =BuildSpecContract= checks the final list for duplicate product declarations,
 including string/=gxc:= aliases, while preserving distinct library/EXE products.
 =core-spec.ss= must not acquire a runtime dependency on init just to compose
-build metadata. Funflow declares its own roots in its Module =build.ss=.
+build metadata. Module role imports and their official Gerbil import closure
+supply ordinary source targets. Funflow does not repeat that inventory in a
+Module =build.ss=. Build contributions are optional extra build requirements,
+such as official target kinds and compiler options, not a second source graph.
 
 Module contributions can supply native string, =gxc:= and =exe:= targets.
 Collection preserves product kinds, options and declaration order, separates
@@ -814,15 +817,15 @@ That timeout is retained; it is neither a first-load performance pass nor full
 source-free Scope acceptance. The callback-enabled probe and ordinary native
 loading must be measured separately.
 
-All SDK modifications made during earlier experiments were reverted. This
-repair and its remaining qualification use the unmodified released SDK
+All Gerbil toolchain modifications made during earlier experiments were reverted. This
+repair and its remaining qualification use the unmodified released Gerbil distribution
 Gerbil =2591dcd= / Gambit =dcd677c= and POO =7f6e68a1=. No new exact-head remote
 CI result is established by these local, uncommitted changes.
 
 ** In-process official entry qualification
 
 Compiler conformance tests import the actual =build.ss= through Gerbil's
-=import-module= with runtime evaluation enabled, then invoke its SDK-generated
+=import-module= with runtime evaluation enabled, then invoke its STD-generated
 =main= in the current test process for spec, compile, hot compile and clean.
 They do not parse/evaluate the script body themselves, implement a dispatcher,
 or start another Gerbil interpreter through =ProcessScript= / =run-process=.
@@ -832,7 +835,7 @@ The existing test heap and Case watchdog budgets remain unchanged.
 
 Single-Module and multi-Module collection are compared with independently
 written literal target lists through the same official =defbuild-script=.
-Compiler backend processes remain owned by the SDK; executable acceptance
+Compiler backend processes remain owned by Gerbil and Gambit; executable acceptance
 still runs actual binaries, including the source-hidden first-Scope check.
 Progress output and the existing watchdog thread are not OS process launches.
 These checks do not by themselves establish a loader performance benchmark or
@@ -851,11 +854,11 @@ there is no benchmark launcher or second test dispatcher.
 | Extra interpreter for a build action | =module-program-test= | Actual official entry records five PIDs for spec/spec/compile/hot/clean; every PID equals the enclosing test VM |
 | Divergence from STD Make | =module-program-test= | Independent literal reference for one and two Modules; same normalized specs, declared products, runtime result, hot behavior and cleanup residuals |
 | Startup/spec cost | =module-program-test= | Report module import, cold spec and hot spec time separately for generated and literal entries, alongside operation counts |
-| Repeated dynamic loading | =module-build-role-test= | Same SDK module identity loads twice without reinitializing Config; existing watchdog remains authoritative |
+| Repeated dynamic loading | =module-build-role-test= | Same Gerbil module identity loads twice without reinitializing Config; existing watchdog remains authoritative |
 
 PID probes cover the processes that actually evaluate the build entry, not an
 OS-wide exec trace. Compiler backend and executable acceptance processes are
-separate effects. Timings in this suite share a test VM and warmed SDK imports;
+separate effects. Timings in this suite share a test VM and warmed Gerbil imports;
 they are observations, not independent cold-VM samples or a matched loader
 performance acceptance. Use the existing =test-profile= entry for whole-suite
 wall/CPU time. Do not infer a speedup from these single local samples.

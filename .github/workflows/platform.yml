@@ -148,7 +148,7 @@ jobs:
         run: |
           shasum -a 256 -c "$CORE_STORE_ROOT/callback-artifacts.sha256"
           shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
-          shasum -a 256 -c "$CORE_STORE_ROOT/sdk-inputs.sha256"
+          shasum -a 256 -c "$CORE_STORE_ROOT/gerbil-inputs.sha256"
       - name: Show failure context
         if: failure()
         run: tail -n 80 "$YUANXU_TEST_REPORT_DIR"/*.log

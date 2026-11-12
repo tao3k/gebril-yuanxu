@@ -84,10 +84,10 @@
           (check-equal? (file-exists? (path-expand ".gerbil/module-build" root)) #f)
           (check-equal? (file-exists? (path-expand "bootstrap.ss" root)) #f)
           (run "compile")
-          ;; This acceptance check is explicit, outside the SDK main.
+          ;; This acceptance check is explicit, outside the STD-generated main.
           (current!)
           (def lib (path-expand "lib" (getenv "GERBIL_PATH")))
-          ;; An ordinary SDK package build must not mint a module-publication
+          ;; An ordinary Gerbil package build must not mint a module-publication
           ;; receipt. Explicit graph compilation is tested by publication cases.
           (check-equal?
             (filter (cut string-prefix? ".yuanxu-build-issuance-" <>)

@@ -274,7 +274,7 @@
           (check-exception (.get view selected-graph) error?)
           (check-equal? calls 1)
           (check-equal? (file-exists? marker) #f))))
-    (yuanxu-test-case "interfaces share the SDK POO prelude without per-module alias copies"
+    (yuanxu-test-case "interfaces share the POO prelude without per-module alias copies"
       (with-publication-source
         (lambda (_root _module-root source _view)
           (def reader (module-publication-reader))
@@ -340,7 +340,7 @@
             (check-equal? (> requests preparations) #t)
             (check-equal? preparations first-preparations)
             (.call reader admit-current))
-          ;; Do not modify the installed SDK. This external public source is
+          ;; Do not modify the installed Gerbil distribution. This external public source is
           ;; owned by the fixture and published through the real runtime resolver.
           (write-file (.get library path)
             "(def ExternalValue \"changed\") (export ExternalValue)")
@@ -374,9 +374,9 @@
          (write-file (path-expand "objects.ss" module-root)
            "(import (only-in :clan/poo/object .o)) (defrules fixture-answer () ((_) 42)) (def FixtureScope (.o retained: 'upstream)) (export FixtureScope fixture-answer)")
          (def reader (module-publication-reader))
-         (def sdk-context (core-import-module ':clan/poo/object))
-         (def sdk-code (module-context-code sdk-context))
-         (check-equal? (not (not sdk-code)) #t)
+         (def poo-context (core-import-module ':clan/poo/object))
+         (def poo-code (module-context-code poo-context))
+         (check-equal? (not (not poo-code)) #t)
          (def gerbil-eval (current-expander-eval))
          (def evaluated (make-hash-table-eq))
          (def runtime-state (make-hash-table-eq))
@@ -434,7 +434,7 @@
          (check-equal? (< cut-visits full-visits) #t)
          (yuanxu-test-observe 'private-closure-oracle-visits full-visits)
          (yuanxu-test-observe 'private-closure-cut-visits cut-visits)
-         (check-equal? (eq? sdk-code (module-context-code sdk-context)) #t)
+         (check-equal? (eq? poo-code (module-context-code poo-context)) #t)
          (hash-for-each
            (lambda (context state)
              (check-equal? (eq? (car state) (slot-ref context 'e)) #t)
@@ -444,7 +444,7 @@
          (parameterize ((current-expander-context macro-context))
            (check-equal? (eval-syntax '(fixture-answer)) 42)
            (check-equal? (eval-syntax '(fixture-answer)) 42))
-         ;; Reader cleanup must never erase canonical SDK/tool bodies.
+         ;; Reader cleanup must never erase canonical Gerbil and tool bodies.
          (hash-for-each
            (lambda (context code)
              (let (path (module-context-path context))
@@ -516,7 +516,7 @@
                (write '(def Config #f) port)
                (write '(def Greeting "hello") port)
                (write '(export Greeting Config) port))))
-         ;; Registration is local to the test; the SDK still resolves package
+         ;; Registration is local to the test; Gerbil still resolves package
          ;; prefixes and the reader still enforces the original owner boundary.
          (def previous (load-path))
          (def closure-requests 0)
@@ -551,7 +551,7 @@
                  (check-equal? (call-with-input-file marker read-line) "once")
                  (check-equal? (> closure-walks 0) #t)
                  (check-equal? (> closure-requests closure-walks) #t)
-                 ;; Actual SDK identities, not a hand-maintained dependency list:
+                 ;; Actual Gerbil identities, not a hand-maintained dependency list:
                  ;; every child is first-discovered once per requested closure.
                  (check-equal? (> (hash-length discovered) 0) #t)
                  (check-equal? (andmap
@@ -564,7 +564,7 @@
                  ;; Private projections now stream on every demand. Only the
                  ;; independent canonical compiler-tool index keeps closures.
                  (check-equal? kernel-requests kernel-walks)
-                 ;; Negative control: the SDK's independent canonical context
+                 ;; Negative control: Gerbil's independent canonical context
                  ;; really would rerun the initializer if confinement were lost.
                  (check-exception (core-import-module library) error?)
                  (check-equal? (call-with-input-file marker read-line) "once"))))

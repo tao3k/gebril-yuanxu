@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Runtime loader SOURCE compiled before procedure capture; no SDK rebinding.
+;;; Runtime loader SOURCE compiled before procedure capture; no Gerbil rebinding.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :std/encoding/json write-json)
@@ -20,7 +20,7 @@
   precompiled-subjects precompiled-store)
 (def root (path-expand (getenv "CORE_STORE_ROOT")))
 (def original-path (load-path))
-(def old-sdk-entry load-module)
+(def original-loader-entry load-module)
 (def observations '())
 (.def (SourceLoaderFixture @ DirectoryFixture)
   prefix: (path-expand "source-issuer-" root)
@@ -61,7 +61,7 @@
     (yuanxu/t/qualification/mop-state/source-loader#set-load-path! (load-path))
     ;; Capture the actual compiled runtime entry BEFORE first target loading.
     (def saved yuanxu/t/qualification/mop-state/source-loader#load-module)
-    (check-equal? (eq? load-module old-sdk-entry) #t)
+    (check-equal? (eq? load-module original-loader-entry) #t)
     (displayln "AUTHORITY-PHASE saved-entry-start") (force-output)
     (check-equal? (string? (saved entry)) #t)
     (displayln "AUTHORITY-PHASE saved-entry-complete") (force-output)
@@ -88,12 +88,12 @@
         (expect-refusal "saved-hot-changed-record" saved)
         (expect-refusal "direct-hot-changed-record"
           yuanxu/t/qualification/mop-state/source-loader#load-module)
-        ;; Same-path reload is itself a cached early-return path in the SDK.
+        ;; Same-path reload is itself a cached early-return path in the Gerbil runtime.
         (expect-refusal "reload-hot-changed-record"
           yuanxu/t/qualification/mop-state/source-loader#reload-module!))
       (lambda () (write-bytes record original-record) (write-bytes binary original-binary)))
     (check-equal? (string? (saved entry)) #t)
-    (check-equal? (eq? load-module old-sdk-entry) #t)
+    (check-equal? (eq? load-module original-loader-entry) #t)
     ;; The genuinely loaded lowered callback still refuses shared-owner writes.
     (def subjects (precompiled-subjects))
     (def Parent (.get subjects parent))
@@ -112,7 +112,7 @@
     (check-equal? (.get Parent port) 5432)
     (check-equal? (.get Hot port) 5432)
     (check-equal? (.get Cold port) 5432)
-    (displayln "SOURCE-LOADER: saved source-built entry, direct entry and reload checked; SDK globals untouched"))))
+    (displayln "SOURCE-LOADER: saved source-built entry, direct entry and reload checked; Gerbil globals untouched"))))
 (def (test-cleanup!)
   (deactivate-authority!)
   (set-load-path! original-path)

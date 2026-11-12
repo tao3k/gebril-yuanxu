@@ -1,11 +1,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Bounded lowering experiment over actual SDK-emitted Scheme. No source patch.
+;;; Bounded lowering experiment over actual Gerbil compiler-emitted Scheme. No source patch.
 (import :gerbil/compiler :gerbil/compiler/compile
         (only-in :gerbil/expander import-module module-context-export module-export-name module-export-phi)
         (only-in :gerbil/runtime/system gerbil-runtime-smp?)
         (only-in "./artifact-closure" file-digest compiler-code-facts read-forms))
 (def root (path-expand (getenv "CORE_STORE_ROOT")))
-(def sdk (path-expand (getenv "GERBIL_HOME")))
+(def gerbil-home (path-expand (getenv "GERBIL_HOME")))
 (def core (current-directory))
 (def output (path-expand "lib" root))
 (def primitive-stores '(##structure-set! ##direct-structure-set! ##unchecked-structure-set!))
@@ -57,7 +57,7 @@
   (cond ((symbol? form) (memq form names))
         ((or (not (pair? form)) (quoted? form)) #f)
         (else (or (references? (car form) names) (references? (cdr form) names)))))
-(read-definitions (path-expand "lib/gerbil/runtime/mop~0.scm" sdk)
+(read-definitions (path-expand "lib/gerbil/runtime/mop~0.scm" gerbil-home)
   (lambda (form) (and (pair? (caddr form)) (eq? (car (caddr form)) 'lambda))))
 ;; Follow runtime constructor callers too: optimized .def can bypass dynamic
 ;; :init! dispatch, while .cc/.+ can reach it through ordinary runtime calls.
@@ -97,8 +97,8 @@
     (else (rewrite-list form))))
 (create-directory* output)
 ;; Build the runtime SOURCE in an isolated namespace, including its own cache,
-;; recursive edges and reload entry. No live SDK binding is replaced here.
-(def runtime-loader-source (path-expand "src/gerbil/runtime/loader.ss" sdk))
+;; recursive edges and reload entry. No live Gerbil binding is replaced here.
+(def runtime-loader-source (path-expand "src/gerbil/runtime/loader.ss" gerbil-home))
 (observe-input! runtime-loader-source)
 (def source-loader-path (path-expand "source-loader.ss" root))
 (def (emit-source-line text port) (display text port) (newline port))
@@ -134,7 +134,7 @@
   [output-dir: output optimize: #t generate-ssxi: #t invoke-gsc: #t keep-scm: #t])
 (execute-pending-compile-jobs!)
 ;; Isolated derivation of the ACTUAL runtime loader bodies. No public wrapper.
-(def loader-source (path-expand "lib/gerbil/runtime/loader~0.scm" sdk))
+(def loader-source (path-expand "lib/gerbil/runtime/loader~0.scm" gerbil-home))
 (observe-input! loader-source)
 (def loader-definitions '())
 (def (collect-loader form)
@@ -175,9 +175,9 @@
     (pretty-print '(set! __load-module authority-cut#__load-module) port)
     (pretty-print '(set! load-module authority-cut#load-module) port)))
 (unless (= loader-cuts 1) (error "runtime loader load site changed" loader-cuts))
-(call-with-output-file (list path: (path-expand "sdk-home" root) truncate: #t)
-  (lambda (port) (display sdk port)))
-(call-with-output-file (list path: (path-expand "sdk-smp" root) truncate: #t)
+(call-with-output-file (list path: (path-expand "gerbil-home" root) truncate: #t)
+  (lambda (port) (display gerbil-home port)))
+(call-with-output-file (list path: (path-expand "gerbil-smp" root) truncate: #t)
   (lambda (port) (display (if (gerbil-runtime-smp?) "true" "false") port)))
 (call-with-output-file (list path: (path-expand "store-runtime.scm" root) truncate: #t)
   (lambda (port)
@@ -232,4 +232,4 @@
     (let (path (path-expand name root)) (cons path (file-digest path))))
     '("compiler-inputs.ss" "compiler-closure.ss" "forbidden-bindings.ss"))))
 (newline)
-(displayln "STORE-LOWERING-COMPILED: " (length selected) " SDK/setter bindings; three primitive families")
+(displayln "STORE-LOWERING-COMPILED: " (length selected) " Gerbil runtime/setter bindings; three primitive families")

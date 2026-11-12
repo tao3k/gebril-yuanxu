@@ -330,7 +330,7 @@ This section supersedes the design-only status of the preceding vertical cut,
 not the unfinished global export audit. Core now declares producer
 =e281ad2e33784cfb9951c684b6be78bd2f4b7fca=. The producer's standard library
 build completed in a separate GERBIL_PATH, using the installed unmodified
-Gerbil SDK and the upstream build entry's existing 180-second limit. Core's
+Gerbil distribution and the upstream build entry's existing 180-second limit. Core's
 changed production modules were compiled with runtime std/make. The package
 checkout used by other sessions was not reset or overwritten. Tests use the
 default bounded Just entry with that fixed producer library, not an eval-import

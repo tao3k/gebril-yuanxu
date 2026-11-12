@@ -48,15 +48,15 @@ build-mop-store-boundary-runtime directory:
     export GERBIL_LOADPATH="$CORE_STORE_ROOT/lib${GERBIL_LOADPATH:+:$GERBIL_LOADPATH}:$GERBIL_PATH/lib"
     shasum -a 256 -c "$CORE_STORE_ROOT/inputs.sha256"
     shasum -a 256 "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/precompiled-stores~0.scm" "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/precompiled-stores~0.o1" "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/unlowered-store~0.scm" "$CORE_STORE_ROOT/lib/yuanxu/t/qualification/mop-state/unlowered-store~0.o1" > "$CORE_STORE_ROOT/callback-artifacts.sha256"
-    sdk_home="$(cat "$CORE_STORE_ROOT/sdk-home")"
-    export GAMBOPT="${GAMBOPT:+$GAMBOPT,}~~=$sdk_home,~~bin=$sdk_home/bin,~~lib=$sdk_home/lib"
+    gerbil_home="$(cat "$CORE_STORE_ROOT/gerbil-home")"
+    export GAMBOPT="${GAMBOPT:+$GAMBOPT,}~~=$gerbil_home,~~bin=$gerbil_home/bin,~~lib=$gerbil_home/lib"
     gsc_features=()
-    if [[ "$(cat "$CORE_STORE_ROOT/sdk-smp")" == true ]]; then
+    if [[ "$(cat "$CORE_STORE_ROOT/gerbil-smp")" == true ]]; then
         gsc_features=(-e '(define-cond-expand-feature|enable-smp|)')
     fi
-    shasum -a 256 "$sdk_home/lib/gerbil/runtime/mop~0.scm" "$sdk_home/lib/_gambit#.scm" "$sdk_home/lib/_thread#.scm" "$sdk_home/include/gambit.h" > "$CORE_STORE_ROOT/sdk-inputs.sha256"
-    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s "$sdk_home/bin/gsc" {{ gerbil_test_runtime_options }} -dynamic -o "$CORE_STORE_ROOT/store-runtime.o1" "${gsc_features[@]}" "$CORE_STORE_ROOT/store-runtime.scm"
-    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s "$sdk_home/bin/gsc" {{ gerbil_test_runtime_options }} -dynamic -o "$CORE_STORE_ROOT/loader-runtime.o1" "${gsc_features[@]}" "$CORE_STORE_ROOT/loader-runtime.scm"
+    shasum -a 256 "$gerbil_home/lib/gerbil/runtime/mop~0.scm" "$gerbil_home/lib/_gambit#.scm" "$gerbil_home/lib/_thread#.scm" "$gerbil_home/include/gambit.h" > "$CORE_STORE_ROOT/gerbil-inputs.sha256"
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s "$gerbil_home/bin/gsc" {{ gerbil_test_runtime_options }} -dynamic -o "$CORE_STORE_ROOT/store-runtime.o1" "${gsc_features[@]}" "$CORE_STORE_ROOT/store-runtime.scm"
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s "$gerbil_home/bin/gsc" {{ gerbil_test_runtime_options }} -dynamic -o "$CORE_STORE_ROOT/loader-runtime.o1" "${gsc_features[@]}" "$CORE_STORE_ROOT/loader-runtime.scm"
     env -u SDKROOT timeout --signal=TERM --kill-after=5s 120s gerbil env gxi {{ gerbil_test_runtime_options }} t/qualification/mop-state/seal-artifact-closure.ss
 
 compile-build-publication directory:
