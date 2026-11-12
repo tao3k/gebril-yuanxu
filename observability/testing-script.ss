@@ -37,6 +37,7 @@
     (lambda (line)
       (when (or (string-prefix? "... compile " line)
                 (string-prefix? "... invoke " line)
+                (string-prefix? "invoke (" line)
                 (string-prefix? "... remove " line)
                 (string-prefix? "... execute compile job " line)
                 (and (string-prefix? "TAG " line) (> (string-length line) 4)))

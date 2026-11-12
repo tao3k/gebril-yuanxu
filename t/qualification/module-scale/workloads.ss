@@ -225,8 +225,8 @@
   (measure-runtime count 'first-namespace
     (lambda () (check-equal? (length (.all-slots (.get FixtureExports modules))) count)))
   (def graph
-    (measure-runtime-source count 'first-graph
-      (lambda () (.get FixtureExports tests selected-graph)) #f))
+    (measure-runtime count 'first-graph
+      (lambda () (.get FixtureExports tests selected-graph))))
   (check-equal? (length (.get graph module-order)) count)
   (check-equal? (.ref/cached (.get FixtureExports modules) 'module-1) #f)
   (check-equal? (eq? graph (.get FixtureExports tests selected-graph)) #t)

@@ -33,6 +33,8 @@
           (set! now 10001)
           (next "ordinary diagnostic output\n")
           (check-equal? (execution-progress-idle-milliseconds state) 1)
+          (next "invoke (gsc -obj prelude.c)\n")
+          (check-equal? (execution-progress-idle-milliseconds state) 0)
           (set! now 20000)
           (def cleanup (make-compiler-progress-reader))
           ;; Runtime clean removes real products between the hot and rebuild

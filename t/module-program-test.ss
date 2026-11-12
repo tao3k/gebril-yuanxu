@@ -216,26 +216,26 @@
         "(export main) (def (main . args) (displayln \"STD-OPTIONS-EXE-OK\"))")
       (def run (official-options-script root "build"
                   (list (list kind "command" bin: "option-tool"))
-                  (append '(parallelize: 1 verbose: 0) keys)))
-      (def compiler-log (path-expand "compiler.log" root))
+                  (append '(parallelize: 1 verbose: 9) keys)))
       (def failure
-        (call-with-output-file compiler-log
-          (lambda (out)
-            (parameterize ((current-output-port out) (current-error-port out))
-              (with-catch identity (lambda () (run "compile") #f))))))
+        (with-catch identity
+          (lambda () (with-compiler-progress (cut run "compile")) #f)))
       (def binary (path-expand "bin/option-tool" prefix))
       (if failure
-        (let (message (call-with-output-string (cut display-exception failure <>)))
-          (cond-expand
-            (darwin
-              ;; STD forced-static targets request -static on Darwin; the system linker has no
-              ;; crt0.o. Preserve the actual linker-stage refusal as a limit.
-              (check-equal? (and (memq kind '(static-exe: optimized-static-exe:))
-                                (string-contains message "Compilation error")
-                                (string-contains message "\"-static\"") #t) #t)
-              (check-equal? (file-exists? binary) #f)
-              (displayln "STD-OPTIONS-PLATFORM-REFUSAL target=" kind " stage=static-link"))
-            (else (raise failure))))
+        (let (expected-static-refusal?
+               (cond-expand
+                 (darwin
+                   ;; Forced static targets request -static on Darwin.
+                   (and (memq kind '(static-exe: optimized-static-exe:))
+                        (let (message (call-with-output-string (cut display-exception failure <>)))
+                          (and (string-contains message "Compilation error")
+                               (string-contains message "\"-static\"")))))
+                 (else #f)))
+          (unless expected-static-refusal?
+            (displayln "UNEXPECTED-STD-EXE-FAILURE target=" kind " options=" keys)
+            (raise failure))
+          (check-equal? (file-exists? binary) #f)
+          (displayln "STD-OPTIONS-PLATFORM-REFUSAL target=" kind " stage=static-link"))
         (let ()
           (check-equal? (file-exists? binary) #t)
           ;; Executable acceptance is separate from interpreter/build startup.

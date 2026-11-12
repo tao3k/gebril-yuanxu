@@ -3,5 +3,4 @@
 (export module-runtime-selection-10000-test)
 (def module-runtime-selection-10000-test
   (test-suite "Complete unobserved ten-thousand-declaration admission"
-    ;; Temporary CI timing diagnostic; functional/currentness checks remain.
     (declaration-scale-case "ten thousand complete selected declarations" 10000 RuntimeSelectionFixture #f)))
