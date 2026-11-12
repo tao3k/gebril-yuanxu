@@ -346,11 +346,24 @@
       (hash-update! times (list 'source-characters (current-module-source-phase))
         (cut + <> characters) 0))))
 (def (module-source-read path)
+  (read-module-source path #f))
+(def (read-module-source path expected-length)
   (observe-read-request path)
   (unless (eq? (module-source-type path) 'regular)
     (error "module role must be a regular file" path))
-  (read-regular-source path))
-(def (read-regular-source path)
+  (read-regular-source path expected-length))
+(def (read-source-text path expected-length)
+  ;; This length is an allocation hint. Consume the original decoder through
+  ;; EOF so shorter, longer and same-length revisions all compare as text.
+  (call-with-input-file path
+    (lambda (port)
+      (if (not expected-length) (read-all-as-string port)
+        (let* ((buffer (make-string expected-length))
+               (count (read-substring buffer 0 expected-length port))
+               (head (if (= count expected-length) buffer (substring buffer 0 count)))
+               (tail (read-all-as-string port)))
+          (if (zero? (string-length tail)) head (string-append head tail)))))))
+(def (read-regular-source path (expected-length #f))
   ;; Private content path: the caller has ALREADY checked the file kind in
   ;; this same synchronous operation. Public reads keep their original entry
   ;; sequence; closed positive guards need not repeat that query a second time.
@@ -359,7 +372,7 @@
     (if (not (eq? cached missing-source-query)) cached
       (let (text (begin (observe-read path)
                        (module-source-measure-operation 'source-read
-                         (lambda () (call-with-input-file path read-all-as-string)))))
+                         (lambda () (read-source-text path expected-length)))))
         (record-physical-source-read! (string-length text))
         (when cache (hash-put! cache path text))
         text))))
@@ -388,9 +401,14 @@
   matches?)
 
 (def (module-source-text-guard path expected)
+  (def expected-length (string-length expected))
+  (def large? (>= expected-length 32768))
   (def (whole-text-current?)
-    (equal? expected (module-source-observe module-source-read path)))
-  (if (< (string-length expected) 32768) whole-text-current?
+    (equal? expected
+      (if large?
+        (module-source-observe read-module-source path expected-length)
+        (module-source-observe module-source-read path))))
+  (if (not large?) whole-text-current?
     (let ()
       (def (large-text-current?)
         (observe-read-request path)

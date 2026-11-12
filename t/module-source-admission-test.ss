@@ -263,16 +263,32 @@
           (def suffix (make-string 32768 #\a))
           (def large (string-append prefix "猫" suffix "\n"))
           (def current? (module-source-text-guard file large))
-          (parameterize ((current-module-source-observer #f))
+          (def different (string-append prefix "犬" suffix "\n"))
+          (def (check-large-revisions)
             (write-role root "types" large)
             (check-equal? (current?) #t)
             (for-each
               (lambda (changed)
                 (write-role root "types" changed)
                 (check-equal? (current?) #f))
-              (list (string-append prefix "犬" suffix "\n")
+              (list different
                     (string-append prefix "猫" suffix)
-                    (string-append large "λ")))))))
+                    (string-append large "λ"))))
+          (parameterize ((current-module-source-observer #f))
+            (check-large-revisions))
+          (def reads 0)
+          (parameterize ((current-module-source-observer
+                          (lambda (key amount)
+                            (when (and (pair? key) (eq? (car key) 'file-read))
+                              (set! reads (+ reads amount))))))
+            (check-large-revisions))
+          (check-equal? reads 4)
+          (write-role root "types" large)
+          (parameterize ((current-module-source-observer
+                          (lambda (key _amount)
+                            (when (and (pair? key) (eq? (car key) 'file-read))
+                              (write-role root "types" different)))))
+            (check-equal? (current?) #f)))))
     (yuanxu-test-case "nested pure guards reuse reads but independent validation observes changes"
       (with-module
        (lambda (root)
