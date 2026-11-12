@@ -7,8 +7,10 @@
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
         (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :tao3k/yuanxu/ops/progress current-execution-progress execution-progress!)
         (only-in :tao3k/yuanxu/module-system/graph/funs module-closure)
-        (only-in :tao3k/yuanxu/module-system/source/observations module-source-measure-operation)
+        (only-in :tao3k/yuanxu/module-system/source/observations
+                 call-with-module-source-callback module-source-measure-operation)
         (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor feature-selection feature-profile)
         (only-in :tao3k/yuanxu/module-system/feature/resolver resolve-feature-profile)
         (only-in :tao3k/yuanxu/module-system/feature/feature-manifest feature-manifest-bundle)
@@ -267,6 +269,11 @@
                               (cons 'denied? (and (memq required negative) #t))
                               (cons 'detail (.ref diagnostic 'detail))))) diagnostics)))
       (let (ordered (map (cut hash-ref nodes <>) (.ref resolution 'feature-ids)))
+        ;; Report completed topology before revalidating sources so the
+        ;; progress hook cannot leave an unchecked publication.
+        (when (pair? (current-execution-progress))
+          (call-with-module-source-callback
+            (lambda () (execution-progress! 'selected-topology (length ordered)))))
         ;; Slot evaluation above can run author code. Never publish the candidate
         ;; on the strength of an earlier source check.
         (current!)

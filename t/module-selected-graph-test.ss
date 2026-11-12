@@ -12,6 +12,8 @@
                  call-with-slot-read-observer slot-read-receiver slot-read-key slot-read-value)
         (prefix-in (only-in :gerbil/runtime/mop find-method bind-method!) runtime.)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress
+                 execution-progress-idle-milliseconds)
         (only-in :clan/poo/mop Type.)
         :tao3k/yuanxu/module-system/feature/model
         :tao3k/yuanxu/module-system/source/init
@@ -91,6 +93,21 @@
         (.o feature-id: 'app/web/:core owner-module-id: 'app/web requires: '(core/schema/:core))))
       (for-each (lambda (name) (check-equal? (.ref descriptor name) (.ref expected name)))
                 (.all-slots expected)))
+    (yuanxu-test-case "completed topology reports progress before final currentness"
+      (def now 0)
+      (def refused (gensym 'stale-selection))
+      (call-with-execution-progress #f #f
+        (lambda (state)
+          (set! now 10)
+          (check-exception
+            (core-sample
+              (lambda (context roots read-publication _current!)
+                (select-module-graph context roots read-publication
+                  (lambda ()
+                    (check-equal? (execution-progress-idle-milliseconds state) 0)
+                    (raise refused)))))
+            (lambda (error) (eq? error refused))))
+        clock: (lambda () now)))
     (yuanxu-test-case "unknown observation retains ordinary Core Feature specifications"
       (call-with-slot-read-observer (lambda (_read) (void))
         (lambda ()
