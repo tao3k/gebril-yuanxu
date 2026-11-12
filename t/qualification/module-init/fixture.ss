@@ -5,10 +5,12 @@
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :gerbil/expander core-read-module/sexp eval-syntax import-module
                  current-expander-context make-top-context)
+        (only-in :tao3k/yuanxu/ops/progress current-execution-progress)
+        (only-in :tao3k/yuanxu/observability/testing-script make-compiler-progress-reader)
         (only-in :tao3k/yuanxu/observability/testing-fixture call-with-yuanxu-fixture)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-export-name))
 (export import-fixture-init! prepared-package-fixture call-with-prepared-package prepared-package-tests
-        import-build-script!)
+        import-build-script! with-compiler-progress)
 (def (import-fixture-init! path (fresh? #f))
   ;; A fresh top context has no import transformers until its prelude is bound.
   (eval-syntax '(import :gerbil/core))
@@ -69,3 +71,27 @@
   (def context (import-module path reload? #t))
   (parameterize ((current-expander-context context))
     (eval-syntax 'main)))
+
+;; Forward native in-process compiler messages to the Case watchdog.
+(def (with-compiler-progress action)
+  (defvalues (reader writer) (open-string-pipe '(direction: input)))
+  (def output (current-output-port))
+  (def progress (current-execution-progress))
+  (def receive (make-compiler-progress-reader))
+  (def drain
+    (make-thread
+      (lambda ()
+        (parameterize ((current-execution-progress progress))
+          (let loop ((line (read-line reader #\newline #t)))
+            (unless (eof-object? line)
+              (receive line)
+              (display line output)
+              (force-output output)
+              (loop (read-line reader #\newline #t))))))))
+  (thread-start! drain)
+  (dynamic-wind void
+    (lambda () (parameterize ((current-output-port writer)) (action)))
+    (lambda ()
+      (close-output-port writer)
+      (dynamic-wind void (lambda () (thread-join! drain))
+        (lambda () (close-input-port reader))))))

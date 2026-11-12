@@ -28,7 +28,7 @@
         (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :tao3k/yuanxu/module-system/building/artifacts current-build-output-directory)
         (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
-        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint yuanxu-test-observe)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         :tao3k/yuanxu/module-system/source/objects
         (only-in :tao3k/yuanxu/module-system/source/collection
@@ -40,6 +40,7 @@
         :tao3k/yuanxu/module-system/interface)
 (import (only-in "qualification/module-publication/fixtures.ss" write-file remove-tree with-publication-source domain-entry-count gerbil-import-value exception-message PublicLibraryFixture core-source-root)
         (only-in "qualification/module-publication/controls.ss" register-reader-root-collection-cases! register-build-support-control-cases!))
+(import (only-in "qualification/module-init/fixture.ss" with-compiler-progress))
 (export module-publication-test)
 (def module-publication-test
   (test-suite "Runtime Module imports and source currentness"
@@ -639,10 +640,14 @@
            (def projection (yuanxu-project-source-spec view '() root (path-expand "build.ss" root)))
            (check-equal? (pair? (.get projection spec)) #t)
            (def lib (path-expand "lib" root))
-           (.call projection .compile lib
+           (yuanxu-test-checkpoint 'compiler-projection-prepared)
+           (with-compiler-progress
              (lambda ()
-               (make (.get projection spec) srcdir: root
-                 libdir: (or (current-build-output-directory) lib) optimize: #f)))
+               (.call projection .compile lib
+                 (lambda ()
+                   (make (.get projection spec) srcdir: root
+                     libdir: (or (current-build-output-directory) lib) optimize: #f)))))
+           (yuanxu-test-checkpoint 'native-compilation-complete)
            (def previous-path (load-path))
            (dynamic-wind
             (lambda () (set-load-path! (cons lib previous-path)))

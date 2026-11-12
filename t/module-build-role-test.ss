@@ -13,7 +13,7 @@
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-write-module-publication
                  yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source
                  call-with-module-compiler-inputs module-compiler-source-input module-compiler-source-input-compatible?)
-        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/source/admission module-source-read module-source-type
                  call-with-module-source-operation-measurement call-with-module-source-read-cache
@@ -22,7 +22,7 @@
 (import (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :tao3k/yuanxu/module-system/building/artifacts current-build-output-directory))
 (export module-build-role-test module-build-import-inference-test)
-(import (only-in "./qualification/module-init/fixture.ss" import-fixture-init!))
+(import (only-in "./qualification/module-init/fixture.ss" import-fixture-init! with-compiler-progress))
 (def (assert name value)
   (unless value (error "assertion failed" name))
   (displayln "ASSERT-OK " name) (force-output))
@@ -1017,10 +1017,14 @@
           (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
           (def projection (yuanxu-project-source-spec selection '() root (path-expand "build.ss" root)))
           (def lib (path-expand "lib" root))
-          (.call projection .compile lib
+          (yuanxu-test-checkpoint 'compiler-projection-prepared)
+          (with-compiler-progress
             (lambda ()
-              (make (.get projection spec) srcdir: root
-                libdir: (or (current-build-output-directory) lib) optimize: #f)))
+              (.call projection .compile lib
+                (lambda ()
+                  (make (.get projection spec) srcdir: root
+                    libdir: (or (current-build-output-directory) lib) optimize: #f)))))
+          (yuanxu-test-checkpoint 'native-compilation-complete)
           (check-equal? (file-exists? marker) #f)
           (def publication (.call selection prepare-publication 'app/example))
           (def id (symbol->string (.get publication compiler-identity)))
