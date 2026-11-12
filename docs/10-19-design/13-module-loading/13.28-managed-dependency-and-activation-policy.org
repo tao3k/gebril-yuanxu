@@ -665,7 +665,7 @@ is introduced. Three workloads must remain distinguishable:
 | Workload | Existing entry | What is actually demanded |
 |----------+----------------+---------------------------|
 | Observed qualification | =module-declaration-1000-test.ss= / =module-declaration-10000-test.ss= | Complete declaration graph with the original source-event assertions |
-| Ordinary complete admission | =module-runtime-selection-1000-test.ss= / =module-runtime-selection-10000-test.ss= | Complete declaration graph without a source observer; business scopes remain cold |
+| Ordinary complete admission | =module-eval-once-1000-test.ss= / =module-runtime-selection-10000-test.ss= | Complete declaration graph without a source observer; business scopes remain cold |
 | Ordinary values | =module-runtime-values-1000-test.ss= / =module-runtime-values-10000-test.ss= | A real thousand/ten-thousand-name namespace; demanded provider/consumer scopes, hot value and one Config receiver edit |
 
 The ordinary value workload does NOT claim that all business scopes were

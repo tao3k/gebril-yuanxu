@@ -79,6 +79,8 @@ jobs:
       GERBIL_PATH: ${{ github.workspace }}/.gerbil
       YUANXU_TEST_FILES: ${{ matrix.files }}
       YUANXU_TEST_HEAP: ${{ matrix.heap }}
+      YUANXU_TEST_BATCH: ${{ matrix.batch }}
+      YUANXU_TEST_DEADLINE: ${{ matrix.deadline }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
       - uses: ./.github/actions/restore-yuanxu
@@ -130,11 +132,24 @@ jobs:
           if [[ -n "${CORE_SOURCE_TAIL_ROOT:-}" ]]; then
             cd "$CORE_SOURCE_TAIL_ROOT/source/tao3k/yuanxu"
           fi
+          run_tests() {
+            env -u SDKROOT timeout --signal=TERM --kill-after=5s "$YUANXU_TEST_DEADLINE" \
+              gerbil "-:max-heap=$YUANXU_TEST_HEAP,debug=q" test -v 0 "$@"
+          }
+          if [[ "$YUANXU_TEST_BATCH" == true ]]; then
+            if run_tests "${files[@]}" > "$YUANXU_TEST_REPORT_DIR/domain.log" 2>&1; then
+              printf 'PASS %s\n' "${files[@]}"
+              exit 0
+            else
+              result=$?
+              echo "FAIL shared Gerbil harness exit=$result"
+              exit 1
+            fi
+          fi
           failed=0
           for file in "${files[@]}"; do
             log="$YUANXU_TEST_REPORT_DIR/${file##*/}.log"
-            if env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s \
-              gerbil "-:max-heap=$YUANXU_TEST_HEAP,debug=q" test -v 0 "$file" > "$log" 2>&1; then
+            if run_tests "$file" > "$log" 2>&1; then
               echo "PASS $file"
             else
               result=$?

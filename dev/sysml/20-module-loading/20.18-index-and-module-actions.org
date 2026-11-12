@@ -130,7 +130,7 @@ must not be conflated with declaration loading or MOP read authentication.
 
 Reproduce the producer's graph work/count controls in its checkout with
 =just test-file t/feedback/graph-algorithms-test.ss=. In Core, use
-=just test-file t/module-runtime-selection-1000-test.ss= for complete declaration
+=just test-file t/module-eval-once-1000-test.ss= for complete declaration
 loading; do not substitute the producer's inert graph metadata workload for it.
 Consumer protection gates remain =just test-build-input-context-mutations
 <artifact-dir>=, =just test-file t/module-feature-interface-test.ss= and

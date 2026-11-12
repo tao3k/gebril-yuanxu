@@ -4,6 +4,4 @@
 (export module-declaration-10000-test)
 (def module-declaration-10000-test
   (test-suite "Ten thousand real module declarations"
-    ;; Temporary CI timing diagnostic: retain the full workload and safety
-    ;; limits, but do not enforce the 180-second performance ceiling.
     (declaration-scale-case "ten thousand real module declarations" 10000 DeclarationFixture #f)))

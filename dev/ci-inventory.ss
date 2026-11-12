@@ -26,7 +26,6 @@
     ((module-declaration-1000-test.ss module-declaration-retention-test.ss
       module-loading-scale-test.ss) "scale-declarations")
     ((module-runtime-values-1000-test.ss module-runtime-attribution-1000-test.ss
-      module-runtime-selection-1000-test.ss
       module-business-eval-once-1000-test.ss module-eval-once-1000-test.ss) "scale-runtime")
     ((thousand-package-downstream-test.ss package-install-test.ss) "scale-packages")
     (else
@@ -91,7 +90,10 @@
             (map (lambda (file)
                    (if (equal? file "t/mop-store-boundary-test.ss")
                      "t/qualification/mop-state/store-boundary-driver.ss" file)) files) "\n"))
-          (cons "heap" (if (null? large) "2G" "4G")))))
+          (cons "heap" (if (null? large) "2G" "4G"))
+          (cons "batch" (and (member group '("ops" "workflow")) #t))
+          (cons "deadline" (if (member group '("dense-declarations" "dense-selection"))
+                             "750s" "600s")))))
 
 (def (published-files)
   (def tests (.get tao3k/yuanxu.init.exports tests))

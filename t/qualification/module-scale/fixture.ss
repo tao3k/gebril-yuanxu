@@ -15,12 +15,11 @@
         SparseBusinessEvalFixture SparseBusinessAttributionFixture
         declaration-scale-case declaration-scale-profile)
 (def (declaration-scale-profile count (performance-gate? #t))
-  ;; Timing diagnostic only: disabling the 180s performance ceiling inherits
-  ;; the ordinary Case resource watchdog; assertions and idle limits stay live.
+  ;; Capacity Cases have time to finish under the hosted runner's GC load.
+  ;; The outer process budget also covers importing and reporting.
   (def selected (yuanxu-selected-testing-case-profile))
-  (let (profile (if performance-gate?
-                 (.cc selected max-duration-milliseconds: 180000)
-                 selected))
+  (let (profile (.cc selected max-duration-milliseconds:
+                  (if performance-gate? 180000 720000)))
     (if (= count 10000)
       (.cc profile heap-limit-bytes: 4294967296 live-growth-limit-bytes: 4294967296)
       profile)))

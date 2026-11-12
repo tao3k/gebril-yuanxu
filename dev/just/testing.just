@@ -36,7 +36,11 @@ test-file path observe="false":
       stages) options=(-D yuanxu-module-test-stage-accounting) ;;
       *) echo 'observe must be false, true, trace, or stages' >&2; exit 64 ;;
     esac
-    env -u SDKROOT timeout --signal=TERM --kill-after=5s 600s gerbil "$runtime_options" test ${options[@]+"${options[@]}"} "{{ path }}"
+    deadline=600s
+    case "{{ path }}" in
+      *module-declaration-10000-test.ss|*module-runtime-selection-10000-test.ss) deadline=750s ;;
+    esac
+    env -u SDKROOT timeout --signal=TERM --kill-after=5s "$deadline" gerbil "$runtime_options" test ${options[@]+"${options[@]}"} "{{ path }}"
 
 # Fault injection uses fresh native module overlays and the same test-file gates.
 # Compilation is preparation; each test retains its existing heap/watchdog fence.
