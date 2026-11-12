@@ -6,7 +6,7 @@
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-string)
-        (only-in :yuanxu/observability/testing-script TestingScript. admit-testing-result
+        (only-in :yuanxu/testing TestingScript. admit-testing-result
                  admit-testing-process-result make-compiler-progress-reader)
         (only-in :yuanxu/ops/progress call-with-execution-progress
                  execution-progress-idle-milliseconds))

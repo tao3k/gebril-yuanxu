@@ -198,6 +198,7 @@
     "profile-composition/user-profile"
     "profile-composition/gate"
     "profile-composition/policy"
+    "testing"
     "module-system/catalog/values"
     "module-system/authoring/syntax"
     "module-system/selection/init-syntax"

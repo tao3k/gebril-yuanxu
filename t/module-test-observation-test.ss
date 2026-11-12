@@ -13,11 +13,10 @@
                  poo-clos-any-specializer make-effective-method make-invocation-frame)
         (only-in :yuanxu/module-system/source/admission current-module-source-observer
                  current-module-process-trace-budget)
-        (only-in :yuanxu/observability/testing-case
+        (only-in :yuanxu/testing
                  yuanxu-default-testing-case-profile yuanxu-test-observe
-                 yuanxu-test-checkpoint)
-        (only-in :yuanxu/observability/testing-fixture
-                 yuanxu-test-fixture with-yuanxu-fixture))
+                 yuanxu-test-checkpoint yuanxu-test-fixture
+                 with-yuanxu-fixture))
 (export module-test-observation-test)
 
 (def released 0)
