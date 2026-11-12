@@ -4,8 +4,11 @@
 
 ;;; Boundary: resolves feature-profile selections into deterministic feature sets.
 ;;; Invariant: dependency closure cannot introduce an undeclared feature identity.
-(import (only-in :std/list/list fold fold-right map filter-map)
+(import (only-in :std/list/list fold-right map filter-map)
         (runtime: :clan/poo/object)
+        (prefix-in :clan/poo/generalized-graph graph.)
+        (prefix-in :clan/poo/strong-components scc.)
+        (only-in :clan/poo/dependency-analysis Computation.)
         :yuanxu/module-system/feature/model
         :yuanxu/utilities/functional)
 
@@ -17,29 +20,20 @@
 (def (selection-descriptor selection)
   (.ref selection 'descriptor))
 
-(def (hash-ref/default table key default-value)
-  (if (hash-key? table key)
-    (hash-get table key)
-    default-value))
-
 (def (index-feature-selections selections)
-  (let ((index (make-hash-table)))
-    (values
-     index
-     (reverse
-      (fold
-       (lambda (selection diagnostics)
-         (let ((feature-id (selection-id selection)))
-           (if (hash-key? index feature-id)
-             (cons
-              (feature-diagnostic
-               'duplicate-selection feature-id feature-id #f)
-              diagnostics)
-             (begin
-               (hash-put! index feature-id selection)
-               diagnostics))))
-       '()
-       selections)))))
+  (def index (make-hash-table-eq))
+  (def keys '())
+  (def diagnostics '())
+  (for-each
+    (lambda (selection)
+      (let (id (selection-id selection))
+        (if (hash-key? index id)
+          (set! diagnostics (cons (feature-diagnostic 'duplicate-selection id id #f) diagnostics))
+          (begin
+            (hash-put! index id selection)
+            (set! keys (cons id keys))))))
+    selections)
+  (values index (reverse keys) (reverse diagnostics)))
 
 (def (missing-dependency-diagnostics selections index)
   (fold-right
@@ -84,42 +78,41 @@
       (and (hash-key? index optional-id) optional-id))
     (.ref descriptor 'optional-requires))))
 
-(def (topological-feature-selections selections index)
-  (let ((states (make-hash-table))
-        (ordered '())
-        (diagnostics '()))
-    (def (visit feature-id path)
-      (case (hash-ref/default states feature-id 'unseen)
-        ((done) (void))
-        ((visiting)
-         (set! diagnostics
-           (cons
-            (feature-diagnostic
-             'dependency-cycle feature-id feature-id
-             (reverse (cons feature-id path)))
-            diagnostics)))
-        (else
-         (hash-put! states feature-id 'visiting)
-         (let* ((selection (hash-get index feature-id))
-                (descriptor (selection-descriptor selection)))
-           (for-each
-            (lambda (dependency-id)
-              (visit dependency-id (cons feature-id path)))
-            (selected-dependencies descriptor index))
-           (hash-put! states feature-id 'done)
-           (set! ordered (cons selection ordered))))))
-    (for-each
-     (lambda (selection)
-       (visit (selection-id selection) '()))
-     selections)
-    (values (reverse ordered) (reverse diagnostics))))
+(def (topological-feature-selections keys index)
+  ;; Admission owns the payload index; POO owns the structural schedule.
+  ;; One row per accepted selection, with no Feature payload evaluation.
+  (def codes
+    (filter-map
+      (lambda (key)
+        (let (reads (selected-dependencies (selection-descriptor (hash-ref index key)) index))
+          (and (pair? reads) (cons key (.cc Computation. reads: reads)))))
+      keys))
+  (def scheduled
+    (with-catch
+      (lambda (cause)
+        (if (and (graph.failure? cause) (eq? (graph.failure-kind cause) 'cycle))
+          #f
+          (raise cause)))
+      (lambda () (graph.schedule-owned keys codes))))
+  (if scheduled
+    (values (map (cut hash-ref index <>) (graph.schedule-order scheduled)) '())
+    ;; An invalid graph has no execution order. Use the same captured rows
+    ;; for POO's compact SCC diagnostics; do not reread authored slots.
+    (let (partition (scc.partition (graph.declaration keys codes)))
+      (values '()
+        (filter-map
+          (lambda (group)
+            (let (key (car group))
+              (and (or (pair? (cdr group)) (memq key ((scc.partition-reads partition) key)))
+                   (feature-diagnostic 'dependency-cycle key key group))))
+          (scc.partition-groups partition))))))
 
 (def (resolve-feature-profile profile)
   (let ((selections (.ref profile 'selections)))
-    (let-values (((index duplicate-diagnostics)
+    (let-values (((index keys duplicate-diagnostics)
                   (index-feature-selections selections)))
       (let-values (((ordered cycle-diagnostics)
-                    (topological-feature-selections selections index)))
+                    (topological-feature-selections keys index)))
         (let* ((diagnostics
                 (append
                  duplicate-diagnostics
