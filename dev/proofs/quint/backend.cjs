@@ -62,8 +62,9 @@ async function startBackend(executable) {
   const port=await availablePort();
   const started=performance.now();
   let lastOutput=started,output='';
+  // HotSpot reports completed VM initialization stages before Apalache can log.
   const child=spawn(program,['server',`--port=${port}`],{detached:true,
-    env:{...process.env,JVM_ARGS:'-Xmx1G -XX:TieredStopAtLevel=1'},stdio:['ignore','pipe','pipe']});
+    env:{...process.env,JVM_ARGS:'-Xmx1G -XX:TieredStopAtLevel=1 -Xlog:startuptime=info'},stdio:['ignore','pipe','pipe']});
   const closed=new Promise(resolve=>child.once('close',resolve));
   let spawnError;
   child.once('error',error=>{spawnError=error;});
