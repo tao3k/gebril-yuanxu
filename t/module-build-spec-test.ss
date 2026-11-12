@@ -187,7 +187,8 @@
             (unless overlap
               (error "build-spec fixture requires a selected package input"))
             (def overlap-name
-              (substring (symbol->string (.get overlap compiler-identity)) 7
+              (substring (symbol->string (.get overlap compiler-identity))
+                         (string-length "tao3k/yuanxu/")
                          (string-length (symbol->string (.get overlap compiler-identity)))))
             (def overlap-spec `(gxc: ,overlap-name ,@(.get overlap options)))
             (def artifact (project (list "utilities/algorithms" overlap-spec)))

@@ -86,7 +86,7 @@
           (call-with-output-file (path-expand "gerbil.pkg" root)
             (cut display "(package: tao3k/yuanxu prelude: :tao3k/yuanxu/prelude)\n" <>))
           (call-with-output-file (path-expand "prelude.ss" root)
-            (cut display "prelude: :gerbil/core\npackage: yuanxu\n(import :gerbil/core)\n(export (import: :gerbil/core))\n" <>))
+            (cut display "prelude: :gerbil/core\npackage: tao3k/yuanxu\n(import :gerbil/core)\n(export (import: :gerbil/core))\n" <>))
           (def graph (.o entries: '() compiler-inputs: '()
                         other-projections: '() selected-graph: #f compiler-current: void))
           (def projection

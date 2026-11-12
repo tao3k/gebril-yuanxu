@@ -20,7 +20,7 @@
             (lambda (out) (parameterize ((current-output-port out)) (main "spec")))) read))
       (def targets (map (lambda (target) (if (string? target) target (cadr target))) spec))
       (def roots
-        (package-library-spec root 'yuanxu
+        (package-library-spec root 'tao3k/yuanxu
           '("modules/funflow/control-plane/api.ss" "modules/funflow/scenario.ss"
             "modules/funflow/workload.ss" "modules/funflow/bundle-v1.ss")))
       (check-equal? (and (member "modules/funflow/control-plane/api" roots) #t) #t)
