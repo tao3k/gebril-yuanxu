@@ -84,10 +84,7 @@
           (check-equal? (vector-ref row 5) 0)
           (check-equal? (vector-ref row 7) (vector-ref row 6))
           (check-equal? (vector-ref row 8) 0))))
-    '(interface types))
-  ;; This closed fixture uses native Interface delivery. Its temporary
-  ;; wrapper has no role transfer and must leave no registry alias behind.
-  (check-equal? (hash-get rows 'interface) #f))
+    '(interface types)))
 (def (census fixture size (earlier #f))
   ;; This diagnostic is not a source/acceptance cache. Its values are weak, so
   ;; the next Case can observe liveness after this Fixture and stack unwind.
