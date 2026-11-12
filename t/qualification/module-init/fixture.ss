@@ -63,7 +63,7 @@
   (parameterize ((current-expander-context (make-top-context)))
     (.get (import-fixture-init! (path-expand "init.ss" root-value) #t) tests)))
 
-;; Read the actual SDK entry from its owning module context. The test invokes
+;; Read the actual STD build entry from its owning module context. The test invokes
 ;; this procedure directly, without another interpreter or script dispatcher.
 (def (import-build-script! path (reload? #f))
   (def context (import-module path reload? #t))

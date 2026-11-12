@@ -5,6 +5,7 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/misc/ports read-all-as-u8vector read-all-as-string)
         (only-in :std/error Error? Error-message)
+        (only-in :std/text/pregexp pregexp-match)
         (only-in :std/os/pid getpid)
         (only-in :yuanxu/module-system/source/observations call-with-module-source-operation-measurement)
         (only-in :gerbil/expander core-import-module)
@@ -14,7 +15,7 @@
         (only-in :yuanxu/ops/process-script ProcessScript.)
         (only-in :yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         "./qualification/module-init/fixture.ss")
-(export module-program-test)
+(export module-program-test build-script-options-test)
 (def (put root name text)
   (def path (path-expand name root))
   (create-directory* (path-directory path))
@@ -37,7 +38,7 @@
         (cut setenv "GERBIL_PATH" prefix)
         (cut action root prefix)
         (lambda ()
-          ;; SDK make prepends srcdir. Restore fixture-owned process state before
+          ;; STD Make prepends srcdir. Restore fixture-owned process state before
           ;; the temporary source directory is removed.
           (set-load-path! previous-paths)
           (setenv "GERBIL_PATH" previous))))))
@@ -57,7 +58,7 @@
 (def (build-script-oracle modules generated?)
   (with-program-workspace
     (lambda (root prefix)
-      ;; Separate SDK module identities for the two in-process reference builds.
+      ;; Separate Gerbil module identities for the two in-process reference builds.
       (def package-name
         (string-append "std-build-oracle-" (number->string (length modules))
                        (if generated? "-generated" "-reference")))
@@ -190,6 +191,59 @@
                  path)) paths))
       (list (canonical-inventory products)
             (canonical-inventory (product-inventory prefix))))))
+;; These are authored official scripts, not a second option parser. Only the
+;; STD-generated main decides whether a target or keyword is accepted.
+(def (official-options-script root name spec (keys '()))
+  (def path (path-expand (string-append name ".ss") root))
+  (call-with-output-file (list path: path truncate: #t)
+    (lambda (out)
+      (pretty-print '(import :std/source :std/build-script) out)
+      (pretty-print `(defbuild-script ',spec ,@keys) out)))
+  (import-build-script! path))
+(def (official-options-refuse? pattern action)
+  (with-catch
+    (lambda (exception)
+      (def message (call-with-output-string (cut display-exception exception <>)))
+      (if (pregexp-match pattern message) #t
+        (begin (displayln "UNEXPECTED-STD-REFUSAL " message) #f)))
+    (lambda () (action) #f)))
+(def (official-executable-options kind (keys '()))
+  (with-program-workspace
+    (lambda (root prefix)
+      (put root "gerbil.pkg"
+        (string-append "(package: " (symbol->string (gensym 'std-exe-options-)) ")"))
+      (put root "command.ss"
+        "(export main) (def (main . args) (displayln \"STD-OPTIONS-EXE-OK\"))")
+      (def run (official-options-script root "build"
+                  (list (list kind "command" bin: "option-tool"))
+                  (append '(parallelize: 1 verbose: 0) keys)))
+      (def compiler-log (path-expand "compiler.log" root))
+      (def failure
+        (call-with-output-file compiler-log
+          (lambda (out)
+            (parameterize ((current-output-port out) (current-error-port out))
+              (with-catch identity (lambda () (run "compile") #f))))))
+      (def binary (path-expand "bin/option-tool" prefix))
+      (if failure
+        (let (message (call-with-output-string (cut display-exception failure <>)))
+          (cond-expand
+            (darwin
+              ;; STD forced-static targets request -static on Darwin; the system linker has no
+              ;; crt0.o. Preserve the actual linker-stage refusal as a limit.
+              (check-equal? (and (memq kind '(static-exe: optimized-static-exe:))
+                                (string-contains message "Compilation error")
+                                (string-contains message "\"-static\"") #t) #t)
+              (check-equal? (file-exists? binary) #f)
+              (displayln "STD-OPTIONS-PLATFORM-REFUSAL target=" kind " stage=static-link"))
+            (else (raise failure))))
+        (let ()
+          (check-equal? (file-exists? binary) #t)
+          ;; Executable acceptance is separate from interpreter/build startup.
+          (def result (.call (.cc ProcessScript. command: (list binary "-:max-heap=2G,debug=q") timeout: 30) .run))
+          (check-equal? (.get result status) 0)
+          (check-equal? (and (string-contains (.get result output) "STD-OPTIONS-EXE-OK") #t) #t)
+          (run "clean")
+          (check-equal? (file-exists? binary) #f))))))
 (def module-program-test
   (test-suite "STD build-script conformance and program publication"
     (yuanxu-test-case "single Module spec matches an explicit official build script"
@@ -427,3 +481,140 @@
               (check-exception (.call build .program 'program-fixture/probe) error?))
             (lambda () (put root "probe.ss" source)))
           (check-equal? (.call build .program 'program-fixture/probe) binary))))))
+
+(def build-script-options-test
+  (test-suite "Official STD build-script option behavior"
+    (yuanxu-test-case "official defbuild-script accepts keyword settings and GXC plist options"
+      (with-program-workspace
+        (lambda (root prefix)
+          (def package-name (symbol->string (gensym 'std-gxc-options-)))
+          (put root "gerbil.pkg" (string-append "(package: " package-name ")"))
+          (put root "library.ss"
+            "(import (only-in :std/ffi C-declare)) (C-declare \"#ifndef STD_OPTIONS_PROBE\n#error missing official compiler flag\n#endif\n\") (def value 42) (export value)")
+          (put root "input.txt" "first")
+          (def spec '((gxc: "library" (extra-inputs: ("input.txt"))
+                           "-cc-options" "-DSTD_OPTIONS_PROBE")))
+          (def run (official-options-script root "build" spec
+            '(optimize: #f debug: #f parallelize: 1 force: #f verbose: 0
+              static: #t target: 'C build-deps: "option-build-deps"
+              full-program-optimization: #f build-release: #f build-optimized: #f)))
+          (check-equal? (call-with-input-string
+            (call-with-output-string
+              (lambda (out) (parameterize ((current-output-port out)) (run "spec")))) read) spec)
+          (run "compile")
+          (def product (path-expand (string-append "lib/" package-name "/library.ssi") prefix))
+          (check-equal? (file-exists? product) #t)
+          (def hot (call-with-output-string
+            (lambda (out) (parameterize ((current-output-port out)) (run "compile")))))
+          (check-equal? (and (string-contains hot "... compile ") #t) #f)
+          ;; Cross the filesystem's timestamp granularity before asking Make
+          ;; to observe a newer dependency; this is not a timing benchmark.
+          (thread-sleep! 1.1)
+          (put root "input.txt" "second")
+          (def newer?
+            (> (time->seconds (file-info-last-modification-time
+                               (file-info (path-expand "input.txt" root))))
+               (time->seconds (file-info-last-modification-time (file-info product)))))
+          (check-equal? newer? #t)
+          (def changed (call-with-output-string
+            (lambda (out) (parameterize ((current-output-port out)) (run "compile")))))
+          (check-equal? (and (string-contains changed "... compile library") #t) #t)
+          (displayln "STD-EXTRA-INPUT newer=" newer?
+            " recompiled=" (and (string-contains changed "... compile library") #t))
+          (run "clean")
+          (check-equal? (file-exists? product) #f))))
+    (yuanxu-test-case "official defbuild-script builds GSC SSI copy and static include submodules"
+      (with-program-workspace
+        (lambda (root prefix)
+          (def package-name (symbol->string (gensym 'std-submodule-options-)))
+          (put root "gerbil.pkg" (string-append "(package: " package-name ")"))
+          (put root "library.ss" "(def value 42) (export value)")
+          (def seed (official-options-script root "seed" '("library") '(parallelize: 1)))
+          (seed "compile")
+          (def directory (path-expand (string-append "lib/" package-name) prefix))
+          (copy-file (path-expand "library.ssi" directory) (path-expand "copied.ssi" root))
+          (put root "support.scm" "(define std-options-support 42)")
+          (put root "attached.scm" ";; official static include payload")
+          (put root "payload.dat" "official copy payload")
+          (def run (official-options-script root "build"
+            '((gsc: "support") (static-include: "attached.scm")
+              (copy: "payload.dat") (ssi: "copied")) '(parallelize: 1)))
+          (run "compile")
+          (check-equal? (file-exists? (path-expand "copied.ssi" directory)) #t)
+          (check-equal? (call-with-input-file (path-expand "payload.dat" directory) read-all-as-string)
+                        "official copy payload")
+          (check-equal? (file-exists? (path-expand "attached.scm" directory)) #t)
+          (check-equal? (file-exists? (path-expand
+            (string-append "lib/static/" package-name "__support.scm") prefix)) #t)
+          (run "clean")
+          (check-equal? (file-exists? (path-expand "copied.ssi" directory)) #f))))
+    (yuanxu-test-case "official defbuild-script builds EXE options"
+      (official-executable-options exe:))
+    (yuanxu-test-case "official defbuild-script builds static EXE options"
+      (official-executable-options static-exe:))
+    (yuanxu-test-case "official defbuild-script builds optimized EXE options"
+      (official-executable-options optimized-exe:))
+    (yuanxu-test-case "official defbuild-script builds optimized static EXE options"
+      (official-executable-options optimized-static-exe:))
+    (yuanxu-test-case "official release options use the STD platform linkage strategy"
+      (official-executable-options exe: '(build-release: #t)))
+    (yuanxu-test-case "official optimized release options use the STD platform linkage strategy"
+      (official-executable-options exe: '(build-release: #t build-optimized: #t)))
+    (yuanxu-test-case "official pkg-config options link an external library used by a real executable"
+      (with-program-workspace
+        (lambda (root prefix)
+          (put root "gerbil.pkg"
+            (string-append "(package: " (symbol->string (gensym 'std-library-options-)) ")"))
+          (put root "library.ss"
+            "(import (only-in :std/ffi C-declare def-C-lambda)) (C-declare \"#include <openssl/crypto.h>\") (def-C-lambda openssl-version () unsigned-long \"OpenSSL_version_num\") (export openssl-version)")
+          (put root "command.ss"
+            "(import \"./library.ss\") (export main) (def (main . args) (unless (> (openssl-version) 0) (error \"OpenSSL version unavailable\")) (displayln \"STD-LIBRARY-OPTIONS-OK\"))")
+          ;; The declaration invokes STD helpers in the authored build script.
+          ;; No copied linker flag table or dependency parser is involved.
+          (def path (path-expand "build.ss" root))
+          (call-with-output-file path
+            (lambda (out)
+              (pretty-print '(import :std/source :std/build-script
+                                (only-in :std/make pkg-config-libs pkg-config-cflags)) out)
+              (pretty-print
+                '(defbuild-script
+                   (let ((cc (pkg-config-cflags "openssl"))
+                         (ld (pkg-config-libs "openssl")))
+                     `((gxc: "library" "-cc-options" ,cc "-ld-options" ,ld)
+                       (exe: "command" bin: "library-option-tool"
+                             "-cc-options" ,cc "-ld-options" ,ld)))
+                   parallelize: 1) out)))
+          (def run (import-build-script! path))
+          (run "compile")
+          (def binary (path-expand "bin/library-option-tool" prefix))
+          (check-equal? (file-exists? binary) #t)
+          (def result (.call (.cc ProcessScript. command: (list binary "-:max-heap=2G,debug=q") timeout: 30) .run))
+          (check-equal? (.get result status) 0)
+          (check-equal? (and (string-contains (.get result output) "STD-LIBRARY-OPTIONS-OK") #t) #t)
+          (run "clean")
+          (check-equal? (file-exists? binary) #f))))
+    (yuanxu-test-case "official defbuild-script rejects invalid options and duplicate source targets"
+      (with-program-workspace
+        (lambda (root _prefix)
+          (put root "gerbil.pkg" "(package: std-invalid-options)")
+          (put root "library.ss" "(def value 42) (export value)")
+          (put root "support.scm" "(define support 42)")
+          (def normal (official-options-script root "normal" '("library")))
+          (check-equal? (official-options-refuse? "Unexpected"
+            (lambda () (normal "compile" "--not-a-build-option"))) #t)
+          (def invalid-key (official-options-script root "invalid-key" '("library")
+            '(not-a-make-setting: #t)))
+          (check-equal? (official-options-refuse? "[Uu]nknown keyword|[Uu]nexpected keyword"
+            (lambda () (invalid-key "compile"))) #t)
+          (for-each
+            (lambda (control)
+              (def run (official-options-script root (symbol->string (gensym 'invalid-)) (cdr control)))
+              (check-equal? (official-options-refuse? (car control) (lambda () (run "compile"))) #t))
+            (list
+              (cons "Unrecognized spec type" '((not-a-target: "library")))
+              (cons "incompatible sequence" '((gsc: "support")))
+              (cons "Duplicate files in buildspec" '("library" (gxc: "library")))
+              (cons "Duplicate files in buildspec" '("library" (exe: "library" bin: "tool")))
+              (cons "Duplicate files in buildspec"
+                '((exe: "library" bin: "first") (exe: "library" bin: "second"))))))))
+    ))
