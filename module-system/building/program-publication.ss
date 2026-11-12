@@ -16,6 +16,7 @@
            (ids (.ref graph 'module-order))
            (nodes (.ref graph 'nodes))
            (inputs (.ref build 'entries))
+           (aliases (make-hash-table))
            (imports '()))
       (def (current!)
         ((.ref input 'admit-current))
@@ -23,12 +24,15 @@
       (current!)
       (def (role-value input binding)
         (def identity (.ref input 'compiler-identity))
-        (def previous
-          (find (lambda (row) (and (eq? (car row) identity) (eq? (caddr row) binding))) imports))
-        (if previous (cadddr previous)
-          (let (name (gensym 'publication))
-            ;; An ordinary value import exposes the actual runtime edge to
-            ;; Gerbil. Template-only imports cannot link a runtime publication.
+        (def key (cons identity binding))
+        (or (hash-get aliases key)
+          ;; These imports and references are serialized together in a private
+          ;; compiler input. An uninterned symbol loses identity on read-back
+          ;; and makes an unchanged source view differ on each build.
+          (let (name (string->symbol (string-append "%yuanxu-publication-"
+                                       (number->string (hash-length aliases)))))
+            (hash-put! aliases key name)
+            ;; This value import is the runtime edge to the publication.
             (set! imports (cons (list identity (.ref input 'path) binding name) imports))
             name)))
       (def (publication-input id)
