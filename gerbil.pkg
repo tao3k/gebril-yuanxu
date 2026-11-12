@@ -7,4 +7,4 @@
  prelude: :tao3k/yuanxu/prelude
  depend:
  ;; Graph, protected reads and method preparation from POO PR #17.
- ("github.com/tao3k/gerbil-poo@9416a377dc71ab10215662fb1bf54bd6eb884bc8"))
+ ("github.com/tao3k/gerbil-poo@4b8cd9a32163dd22edecca2608f03af3d27c4b78"))
