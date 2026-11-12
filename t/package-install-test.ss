@@ -43,10 +43,7 @@
         (string-append (let (inherited-options (getenv "GAMBOPT" #f))
                        (if inherited-options (string-append inherited-options ",") ""))
                        (substring runtime-option 2 (string-length runtime-option))
-                       ;; The official package/tagging tools emit actual TAG
-                       ;; records. Preserve them across redirected stdio while
-                       ;; the tool is running, rather than only at process exit.
-                       ;; This changes buffering, never the idle/total budgets.
+                       ;; Relay compiler output as it is written to the pipe.
                        ",1n,2n"))
       (call-with-temporary-directory "selected-package-"
         (lambda (temporary)
@@ -61,11 +58,11 @@
           (write-source git-config
             (string-append "[url \"file://" remotes "/\"]\n  insteadOf = https://qualification.invalid/haumea/\n  insteadOf = git@qualification.invalid:haumea/\n"))
           (def actions 0)
-          (def (invoke command directory state (stdout-only? #f))
+          (def (invoke command directory state (stdout-only? #f) idle-timeout: (idle-timeout 60))
             (def result
               (run-script
                 (.cc (.get Ops prototypes Script)
-                  command: command directory: directory timeout: 180 idle-timeout: 60
+                  command: command directory: directory timeout: 180 idle-timeout: idle-timeout
                   progress: make-compiler-progress-reader
                   environment: (.o GERBIL_PATH: state GIT_CONFIG_GLOBAL: git-config
                     GAMBOPT: runtime-environment
@@ -79,11 +76,11 @@
             (set! actions (1+ actions))
             (execution-progress! 'package-actions actions)
             output)
-          (def (pkg state directory . arguments)
+          (def (pkg state directory idle-timeout: (idle-timeout 60) . arguments)
             ;; Use the standard concurrency setting at the command boundary.
             ;; No local tagger override or package-manager patch participates.
             (invoke (append (list "env" (string-append "GERBIL_BUILD_CORES=" build-cores)
-                                  "gerbil" "pkg") arguments) directory state))
+                                  "gerbil" "pkg") arguments) directory state idle-timeout: idle-timeout))
           (def (ordinary state directory operation)
             (invoke (if (equal? operation "use") '("gxi" "use.ss")
                         (list "./build.ss" operation)) directory state))
@@ -117,7 +114,9 @@
           ;; Exercise the user's standard command, including its real TAGS index.
           (def install-started (real-time))
           (displayln "INSTALL-CORES " build-cores) (force-output)
-          (def install-output (pkg installed managed-consumer "deps" "--install"))
+          ;; gerbil pkg captures the tagger's output until indexing finishes.
+          ;; The existing 180-second action deadline still bounds the install.
+          (def install-output (pkg installed managed-consumer idle-timeout: #f "deps" "--install"))
           (displayln "INSTALL-WITH-TAGS seconds=" (- (real-time) install-started))
           (check-equal? (compile-events install-output) '())
           (let (index (call-with-input-file (path-expand "TAGS" package-root) read-all-as-string))
