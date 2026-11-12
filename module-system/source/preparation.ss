@@ -306,16 +306,17 @@
           (module-source-admit-current! prelude-inputs "stale Module prelude source")
           ;; Unchanged role/header bytes plus runtime package lookup determine
           ;; identity; do not parse interface.ss again on every guard.
-          (unless (and (package-snapshot-current? package-sources)
-                       (andmap
-                         (lambda (role)
-                           (let* ((file (path-expand (module-role-file role) root))
-                                  (expected (hash-get texts file)))
-                             (if expected
-                               (equal? expected (module-source-read file))
-                               (not (module-source-type file)))))
-                         yuanxu-module-allowed-entrypoint-roles))
-            (error "stale prepared Module publication" owner path)))
+          (unless (package-snapshot-current? package-sources)
+            (error "stale prepared Module publication" owner path))
+          (for-each
+            (lambda (role)
+              (let* ((file (path-expand (module-role-file role) root))
+                     (expected (hash-get texts file)))
+                (unless (if expected
+                          (equal? expected (module-source-read file))
+                          (not (module-source-type file)))
+                  (error "stale prepared Module publication" owner path file))))
+            yuanxu-module-allowed-entrypoint-roles))
         ;; The native no-context route is the source checker itself, not a
         ;; wrapper annotated as pure. Open contexts retain both actual calls.
         (def current!
