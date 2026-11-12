@@ -285,6 +285,21 @@
           (check-equal? reads 4)
           (write-role root "types" large)
           (parameterize ((current-module-source-observer
+                          (lambda (key amount)
+                            (when (and (pair? key) (eq? (car key) 'file-read))
+                              (set! reads (+ reads amount))))))
+            (call-with-module-source-read-cache
+              (lambda ()
+                (check-equal? (current?) #t)
+                (def borrowed (module-source-read file))
+                (check-equal? borrowed large)
+                (string-set! borrowed 0 #\z)
+                (check-equal? (eq? borrowed (module-source-read file)) #t)
+                (check-equal? (current?) #f)))
+            (check-equal? (current?) #t))
+          (check-equal? reads 6)
+          (write-role root "types" large)
+          (parameterize ((current-module-source-observer
                           (lambda (key _amount)
                             (when (and (pair? key) (eq? (car key) 'file-read))
                               (write-role root "types" different)))))
