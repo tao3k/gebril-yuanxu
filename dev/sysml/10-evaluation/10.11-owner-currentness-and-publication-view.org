@@ -189,6 +189,13 @@ still needs fresh checks across opaque expansion and author effects. Reducing
 the wider work requires binding exact Init input to authenticated source
 revisions, then invalidating its registered consumers when that input changes.
 
+=exact_effect_separated_probe_iff_complete= treats each byte observation as
+a pair of checkpoint and byte position. If effects may change source freely
+between checkpoints, omitting any pair admits an undetected edit at that
+checkpoint. This bounds exact byte-probe schemes for arbitrary input states.
+An authenticated revision with complete changed-input registration gives a
+different premise, covered by the tracked edit laws above.
+
 In the fallback for unrestricted source writes,
 =PublicationReads.exact_source_probe_iff_complete= proves that an exact
 comparison must cover every position. A same-length edit can change any

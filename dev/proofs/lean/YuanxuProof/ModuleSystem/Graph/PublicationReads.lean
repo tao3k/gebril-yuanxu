@@ -2118,6 +2118,30 @@ theorem exact_source_probe_iff_complete {size : Nat}
     funext position
     exact agrees position (complete position)
 
+/-- With independent effects, every checkpoint has its own possible source
+state. A byte read before an effect cannot cover a byte at the next checkpoint.
+Pairs identify observations by both checkpoint and byte position. -/
+theorem exact_effect_separated_probe_iff_complete {checkpoints size : Nat}
+    (expected : Fin checkpoints × Fin size → Bool)
+    (probes : List (Fin checkpoints × Fin size)) :
+    (∀ live : Fin checkpoints × Fin size → Bool,
+      (∀ probe ∈ probes, live probe = expected probe) → live = expected) ↔
+      ∀ probe, probe ∈ probes := by
+  constructor
+  · intro exactProbe probe
+    by_cases member : probe ∈ probes
+    · exact member
+    · let live := fun position => if position = probe then !expected position else expected position
+      have agrees : ∀ position ∈ probes, live position = expected position := by
+        intro position present
+        have distinct : position ≠ probe := fun equal => member (equal ▸ present)
+        simp [live, distinct]
+      have atProbe := congrFun (exactProbe live agrees) probe
+      cases bit : expected probe <;> simp [live, bit] at atProbe
+  · intro complete live agrees
+    funext probe
+    exact agrees probe (complete probe)
+
 -- Runtime correspondence premises remain: eq?-identity normalization,
 -- unmodified original dependency lists, public replay's final recheck,
 -- unchanged real observer delivery, and no nonlocal continuation escape.

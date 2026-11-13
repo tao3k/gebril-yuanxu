@@ -407,7 +407,10 @@ package YuanxuSelectedPackageBuilds {
                the original query and callback order. In a closed window, an
                exact byte match may return the text guard's own immutable
                capture by identity. Distinct captures and mutable reader views
-               require value comparison. Lean SourceClosureWork
+               require value comparison. Without authenticated revisions, an
+               exact probe covers each byte position at each independent
+               checkpoint, as proved by PublicationReads
+               exact_effect_separated_probe_iff_complete. Lean SourceClosureWork
                prepend_only_same_size_same_rows and existing Quint index replace,
                dropped-support and stale-approval controls bound this refinement.
                A compiler inventory traversal uses the origin supplied by its
