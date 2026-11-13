@@ -71,10 +71,10 @@
         (eval-syntax '(import :gerbil/core :tao3k/yuanxu/module-system/selection/init-syntax))
         (check-exception
           (eval-syntax '(yuanxu! :test-dir "./t" Profile Registry (profile developer) :sandbox (nono-sandbox)))
-          syntax-error?)
+          (message-is "expected a literal module row"))
         (check-exception
           (eval-syntax '(yuanxu! :test-dir "./t" Profile Registry (profile developer (extends Base)) :sandbox (nono-sandbox)))
-          syntax-error?)))
+          (message-is "expected a literal module row"))))
     (yuanxu-test-case "header and identity collisions reject without evaluation"
       (for-each
         (lambda (body) (check-exception (module-init-intent (list (cons 'yuanxu! body)) #f) error?))
