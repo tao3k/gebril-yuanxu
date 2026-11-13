@@ -206,6 +206,10 @@
           ;; inert preparation was cached. Both views share this one guard.
           (reader-derived-input session prepared source
             (hash-ref (reader-session-dependencies session) (path-normalize (yuanxu-module-source-ref-value source))))))
+      import-owners:
+      (lambda (source)
+        (hash-ref (reader-session-imported-owners session)
+                  (path-normalize (yuanxu-module-source-ref-value source))))
       inputs: (lambda (source)
                 (parameterize ((current-module-source-phase 'publication-inputs)) (reader-current! session))
                 (hash-ref (reader-session-dependencies session) (path-normalize (yuanxu-module-source-ref-value source))))))

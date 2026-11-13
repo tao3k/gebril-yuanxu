@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Generation-local linking over admitted source capabilities. The filesystem source adapter remains separate from runtime loading.
-(import (only-in :std/list/list delete-duplicates/hash find foldl foldr)
+(import (only-in :std/list/list delete-duplicates/hash foldl foldr)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
         (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
         (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
@@ -234,7 +234,9 @@
           (unless (memq id ids) (error "Module is outside compiled closure" id))
           (make-yuanxu-module-generated-source (symbol->string id)))
         compiled-leaves: publications
-        import-owners: (lambda (id) (.ref (.ref publications id) 'imports))
+        import-owners:
+        (lambda (source)
+          (.ref (.ref publications (string->symbol (yuanxu-module-source-ref-value source))) 'imports))
         namespace: (lambda (resolve) (scope-tree namespace-rows resolve))
         read-publication:
         (lambda (source)
@@ -705,7 +707,7 @@
                            (let (source (locate))
                              (values source ((.ref context-value 'read-publication) source)
                                (if (.slot? context-value 'import-owners)
-                                 ((.ref context-value 'import-owners) id) '())))))
+                                 ((.ref context-value 'import-owners) source) '())))))
                        list))))
                (source-value (car result))
                (publication-value (cadr result))
@@ -781,12 +783,8 @@
                   (publication-evidence-value (linked-publication-evidence published)))
              (let* ((baseline (.ref publication-value 'core))
                     (_imports
-                     (let (node (find (lambda (node)
-                                        (and (eq? (.ref node 'kind) 'module-core)
-                                             (eq? (.ref node 'owner) id)))
-                                      (.ref graph 'nodes)))
-                       (for-each (lambda (owner) (link owner (cons id path) graph))
-                                 (.ref node 'imports))))
+                     (for-each (lambda (owner) (link owner (cons id path) graph))
+                               (linked-publication-dependencies published)))
                     (construction-checks '())
                     (retain-construction!
                      (lambda (check!) (set! construction-checks (cons check! construction-checks))))

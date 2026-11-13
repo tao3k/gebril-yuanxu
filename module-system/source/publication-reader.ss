@@ -583,13 +583,21 @@
                          (and (string? artifact-path)
                               (string=? (path-extension artifact-path) ".ss")
                               artifact-path)))
-                  (owner (and source-tree owned-path
-                              ((.ref source-tree 'locate-owner) owned-path))))
+                  (selected-path
+                    (and source-tree
+                         (or owned-path
+                             (and (not (hash-key? (reader-session-tool-contexts session) identity))
+                                  (let loop ((roots (.ref source-tree 'package-roots)))
+                                    (and (pair? roots)
+                                         (or (module-build-source-path context (car roots))
+                                             (loop (cdr roots)))))))))
+                  (owner (and selected-path ((.ref source-tree 'locate-owner) selected-path))))
+
              ;; Symbol and exact source-path imports share the same
              ;; observed compiler-context and currentness boundary.
              (cond
               ((hash-key? (reader-session-tool-contexts session) identity) (tool-context context reload?))
-              (owner (source-context owned-path reload?))
+              (owner (source-context selected-path reload?))
               (else
                (let (source
                      (and owned-path
@@ -701,6 +709,7 @@
                                    (native-spec))))
                     value))
                 (def owners (reverse owner-order))
+                (hash-put! (reader-session-imported-owners session) interface-path owners)
                 (def result (if consume (consume source-value publication owners) publication))
                 ;; A deferred Build resolver shares this outer interpreter
                 ;; frame. Do not retain the completed candidate's support

@@ -11,7 +11,7 @@
 (defstruct candidate-support (guards tools tool-rows open? epoch-current metadata-current) final: #t)
 
 (defstruct reader-session
-  (guard-support dependencies refused? evaluated-interface-bindings
+  (guard-support dependencies imported-owners refused? evaluated-interface-bindings
    input-origins kernel-contexts kernel-inputs kernel-source-count kernel-progress-key kernel-owners kernel-data
    kernel-initializers preparations public-prepared-count publication-prepared-count
    candidate tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts
@@ -39,7 +39,7 @@
   (def candidate (make-parameter #f))
   (defvalues (tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts)
     (module-import-provenance))
-  (make-reader-session (cons '() 0) dependencies #f 0
+  (make-reader-session (cons '() 0) dependencies (make-hash-table) #f 0
     (make-hash-table-eq) kernel-contexts kernel-inputs 0 (gensym 'reader-native-imports)
     kernel-owners kernel-data kernel-initializers
     preparations 0 0 candidate

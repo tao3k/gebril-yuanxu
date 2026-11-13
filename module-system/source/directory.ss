@@ -501,7 +501,7 @@
       ;; A window prefix is not Module ownership. The indexed ancestor walk
       ;; above refuses actual closed boundaries; #f denotes an ordinary library.
       (def source-tree
-        (.o locate-owner: source-owner
+        (.o locate-owner: source-owner package-roots: (delete-duplicates/hash (hash-values kernel-roots))
             package-kernel: (lambda (file) (find (lambda (root) (inside? file root)) package-kernels))
             within-window?:
             (lambda (file) (any (lambda (root) (inside? file root)) declared-window-roots))))
