@@ -117,6 +117,22 @@ module file reads in =publication-current=. This Case installs an
 open source callback. Its repeated checks are evidence about the
 observed route and cannot be charged to the callback-free route.
 
+The declaration capacity workload now uses the reader's scalar operation
+accounting. It requires one candidate admission and protected return
+per owner, two native initializer calls per owner (Interface and Types),
+and zero scope factories. Every namespace leaf must remain cold after
+Graph selection. The same Graph must reject an edit to its actual init
+source at the independent currentness boundary. The focused
+=module-deferred-reader-test.ss= and =module-dependency-continuation-test.ss=
+retain open-observer checks, deferred role effects, and source mutation
+controls. The Case and heap limits remain those of the existing workload.
+
+The guarded local 1,000-owner run completed in 58.01 seconds at 1.24 GiB.
+First Graph took 47.31 seconds wall and 40.80 seconds CPU. It recorded
+1,000 wrapper expansions, 2,000 initializers and 5,870,024 issued-read
+visits. The 16-owner calibration also passed with the zero-scope-factory
+assertion enabled.
+
 =PublicationReads.shared_wrapper_projection_keeps_order_and_failure=
 requires exact per-phase binding lookup and preserves the result of the
 original ordered import checks. =wrapper_import_refusal_precedes_missing_binding=

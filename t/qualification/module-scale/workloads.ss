@@ -2,7 +2,6 @@
 ;;; Assertion workloads called by the existing std/test Case in this process.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :tao3k/yuanxu/ops/progress execution-progress!)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-checkpoint)
         (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-memory-snapshot)
@@ -13,127 +12,44 @@
         verify-module-eval-once verify-business-eval-once
         verify-sparse-business-eval verify-sparse-business-attribution)
 
-(def (verify-declaration-scale FixtureExports SelectedCount source-root)
-  (def count (length (.all-slots (.get FixtureExports modules))))
-  (check-equal? count SelectedCount)
-  (def counts (make-hash-table-eq))
-  ;; Bounded phase/family totals, never per-module paths or retained records.
-  ;; Derive the boundary from the acquired fixture's actual source owner.
-  (def source-prefix
-    (path-normalize source-root))
-  (def source-reads (make-hash-table))
-  (def class-construction-reads 0)
-  (def completed-declarations 0)
-  (def replayed-reads 0)
-  (def previous (current-module-source-observer))
-  (def (observe key amount)
-    (def category (if (pair? key) (car key) key))
-    (when (eq? category 'file-read)
-      (let ((phase (if (memq (cadr key)
-                            '(source publication-current declaration-before candidate-admitted
-                              publication-inputs slot-replay return-currentness))
-                    (cadr key) 'other))
-            (family (if (string-prefix? source-prefix (caddr key)) 'module 'runtime)))
-        (hash-update! source-reads (cons phase family) (cut + <> amount) 0)))
-    (when (and (eq? category 'file-read)
-               (string-suffix? "/poo-clos/classes.ss" (caddr key)))
-      (set! class-construction-reads (+ class-construction-reads amount)))
-    ;; This fixture imports only maintained Core/Gerbil libraries and its own roles.
-    ;; Fail at an unexpected fallback rather than spending the full
-    ;; thousand-entry budget proving the same wrong import classification.
-    ;; A warm known import need not import new code. Completion of an
-    ;; actual declaration still advances the Case's scalar progress frame.
-    ;; Do not construct typed checkpoint receipts inside an active reader.
-    ;; Final admission replays every retained publication after discovery. Its
-    ;; existing observer reports actual validated visits, including a rejected
-    ;; prefix. Count work, never output or elapsed time; the Case still owns
-    ;; refusal and the authoritative stop runs before progress can advance.
-    (when (and (eq? category 'metadata-replay-visits) (positive? amount))
-      (set! replayed-reads (+ replayed-reads amount))
-      (execution-progress! '(declaration-replayed-reads) replayed-reads))
-    (when (eq? category 'publication-end)
-      (set! completed-declarations (+ completed-declarations amount))
-      (execution-progress! '(declaration-completed) completed-declarations)
-      ;; Scalar snapshots follow real completed publications, not a timer.
-      ;; Do not force GC or construct POO diagnostics inside this observer.
-      (when (zero? (modulo completed-declarations 100))
-        (let (stats (##process-statistics))
-          (displayln "DECLARATION-MEMORY completed=" completed-declarations
-                     " heap=" (f64vector-ref stats 15)
-                     " live=" (f64vector-ref stats 17)
-                     " build-vm-account=" (f64vector-ref stats 7)
-                     " vm-account-qualified?=false")
-          (force-output))))
-    (cond-expand
-      (yuanxu-module-test-stage-accounting
-        (when (eq? category 'reader-binding-roots)
-          ;; The reader already samples these scalar counts at powers of two.
-          ;; Do not retain a Context, demand a binding, or repeat the walk.
-          (displayln "DECLARATION-CONTEXT-ROOTS " (cdr key))
-          (force-output)))
-      (else (void)))
-    (when (eq? category 'candidate-open-boundary)
-      ;; Scalar-only failure attribution: constructing a typed receipt here
-      ;; would reenter the admission whose refusal we are diagnosing.
-      (let (stats (##process-statistics))
-        (displayln "DECLARATION-REFUSAL heap=" (f64vector-ref stats 15)
-                   " live=" (f64vector-ref stats 17)
-                   " build-vm-account=" (f64vector-ref stats 7)
-                   " vm-account-qualified?=false")
-        (force-output))
-      (error "closed runtime declaration crossed an unexpected open boundary" (cdr key)))
-    (when (memq category '(publication-start publication-discovered candidate-local-guard candidate-open-guard
-                          reader-declaration reader-body-expanded reader-body-evaluated
-                          compiler-source-import-start publication-guard-run file-read))
-      (hash-update! counts category (cut + <> amount) 0))
-    (when previous (previous key amount)))
-  (def graph
-    (with-catch
-      (lambda (failure)
-        ;; Counters already belong to this observed run. Emit only their
-        ;; bounded summaries once the failed graph has unwound.
-        (yuanxu-write-observation-line!
-          "declaration-source-incomplete modules=%s completed=%s events=%s reads=%s"
-          count completed-declarations (hash->list counts) (hash->list source-reads))
-        (raise failure))
+(def (verify-declaration-scale FixtureExports count source-root)
+  (check-equal? (current-module-source-observer) #f)
+  (def modules (.get FixtureExports modules))
+  (def names (.all-slots modules))
+  (check-equal? (length names) count)
+  (def measured
+    (measure-runtime count 'runtime-graph-start
       (lambda ()
-        (measure-runtime count 'runtime-graph-start
+        (call-with-values
           (lambda ()
-            (parameterize ((current-module-source-observer observe))
-              (cond-expand
-                (yuanxu-module-test-stage-accounting
-                  (measure-runtime-source count 'observed-declaration
-                    (lambda () (.get FixtureExports tests selected-graph)) 'stages
-                    observer: 'present))
-                (else (.get FixtureExports tests selected-graph)))))
-          observer: 'present))))
+            (call-with-module-source-operation-measurement
+              (lambda () (.get FixtureExports tests selected-graph))
+              accounting?: (cond-expand (yuanxu-module-test-stage-accounting 'stages)
+                                         (else #f))))
+          cons))))
+  (def graph (car measured))
+  (def counts (cdr measured))
+  (def (calls operation) (hash-ref counts (list 'calls operation) 0))
   (yuanxu-test-checkpoint 'runtime-graph-ready)
-  (check-equal? source-prefix (path-normalize (path-directory (.get graph init-source))))
-  (yuanxu-write-observation-line! "declaration-source-reads modules=%s counts=%s"
-    count (hash->list source-reads))
-  (check-equal? (eq? graph (.get FixtureExports tests selected-graph)) #t)
+  (check-equal? (path-normalize source-root) (path-normalize (path-directory (.get graph init-source))))
   (check-equal? (length (.get graph module-order)) count)
   (check-equal? (car (.get graph module-order)) 'module-0)
-  (check-equal? (hash-ref counts 'publication-start) count)
-  (check-equal? (hash-ref counts 'publication-discovered) count)
-  ;; Deferred Type construction has its own before/after source checks.
-  ;; Keep those additional guards; never reuse a preflight verdict.
-  (check-equal? (hash-ref counts 'candidate-local-guard) (* 6 count))
-  (check-equal? (hash-get counts 'candidate-open-guard) #f)
-  ;; Prototype-only dispatch queries descriptor values; it must not import
-  ;; or register the optional logical Class construction implementation.
-  (check-equal? class-construction-reads 0)
-  ;; Each interface retains all declaration snapshots. Closed selection
-  ;; expands interface and real Types only; Config/Objects stay cold.
-  ;; module-deferred-reader-test verifies both activate on actual access
-  ;; and invalid Type descriptors still fail before scope linking.
-  (check-equal? (hash-ref counts 'reader-declaration) (* 3 count))
-  (check-equal? (hash-ref counts 'reader-body-expanded) (* 2 count))
-  (check-equal? (hash-ref counts 'reader-body-evaluated) (* 2 count))
-  (check-equal? (.ref/cached (.get FixtureExports modules) 'module-0) #f)
-  ;; The delegated observer already recorded these events. Replaying the
-  ;; assertion counters would double the published work totals.
-  ;; The path is supplied by the actual Graph, never a guessed fixture root.
+  (check-equal? (calls 'candidate-read) count)
+  (check-equal? (calls 'publication-read) 0)
+  (check-equal? (calls 'reader-candidate-fused-return-replay) count)
+  (check-equal? (calls 'reader-wrapper-expansion) count)
+  ;; Only the Interface and Types initialize. The focused deferred-reader
+  ;; tests exercise the open observer, cold Config/Objects and invalid Types.
+  (check-equal? (calls 'reader-compile-start) (* 2 count))
+  (check-equal? (calls 'reader-eval-start) (* 2 count))
+  (check-equal? (calls 'scope-factory) 0)
+  (for-each (lambda (id) (check-equal? (.ref/cached modules id) #f)) names)
+  (yuanxu-write-observation-line!
+    "declaration-source modules=%s wrappers=%s initializers=%s metadata-replay-visits=%s"
+    count (calls 'reader-wrapper-expansion) (calls 'reader-eval-start)
+    (hash-ref counts '(visits metadata-replay) 0))
+  ;; Resolve the exact init through the selected Graph before testing a
+  ;; separate currentness refusal against that same Graph.
   (def path (.get graph init-source))
   (def original (module-source-read path))
   (def current! (.get graph admit-current))
