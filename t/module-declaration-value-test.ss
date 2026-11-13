@@ -49,8 +49,9 @@
 (publication-definition ConsumerPublication
   identity: 'custom/consumer
   core: (.o scope-contract: ScopeContract
-            exports: (let (provider (.call CheckedDependency .validate provider-scope))
-                       (.o provider: provider run: (lambda (value) (.call provider run value)))))
+            exports: (let (checked-provider (.call CheckedDependency .validate provider-scope))
+                       (.o provider: checked-provider
+                           run: (lambda (value) (.call checked-provider run value)))))
   features: (.o))
 
 (def module-declaration-value-test

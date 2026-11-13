@@ -31,9 +31,9 @@
                 (set! reads (cons id reads))
                 (.o identity: id features: (.o)
                     core: (.o scope-contract: ObjectScope
-                              link: (lambda (_dependencies)
-                                      (set! forced (cons id forced))
-                                      (.o identity: id revision: captured))))))))
+                              exports: (begin
+                                         (set! forced (cons id forced))
+                                         (.o identity: id revision: captured))))))))
       (def owner (session "g1"))
       (def source (.get owner modules fleet))
       ;; Selected ordinary slots, without inheriting hidden source names.

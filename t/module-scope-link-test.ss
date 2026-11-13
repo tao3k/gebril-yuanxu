@@ -78,10 +78,10 @@
         (lambda (_dependencies)
           (let (captured revision)
             (.o revision: captured))))
-      (def declarations (.o core/schema: (publication 'core/schema (.o) factory)))
       (def (select)
         (yuanxu-load-modules
-          (context declarations '(core/schema) '() void (lambda (_generation) #t))))
+          (context (.o core/schema: (publication 'core/schema (.o) factory))
+                   '(core/schema) '() void (lambda (_generation) #t))))
       (def old (.call (select) .selected-record 'core/schema))
       (check-equal? (.get old scope revision) 1)
       (set! revision 2)

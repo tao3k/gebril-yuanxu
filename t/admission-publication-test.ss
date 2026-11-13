@@ -51,7 +51,7 @@
                         denied-modules: '() init-source: #f))
   (def selected
     (select-module-graph graph-context '(app/web)
-      (lambda (_id) (.o features: (.o))) current!))
+      (lambda (id) (.o identity: id core: (.o) features: (.o))) current!))
   (def build
     (module-build-graph selected
       (lambda (id)
