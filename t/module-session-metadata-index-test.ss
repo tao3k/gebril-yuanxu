@@ -8,7 +8,7 @@
                  module-source-measure-replay)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
         (only-in :tao3k/yuanxu/module-system/source/reader-support
-                 merge-publication-read-roots publication-read-current)
+                 merge-publication-root-segments publication-read-current)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export module-session-metadata-index-test)
 (def (checked-work view (accounting? #t))
@@ -34,9 +34,12 @@
       (def second (.o right: 2))
       (defvalues (_left left) (%call-with-recorded-slot-reads (lambda () (.ref first 'left))))
       (defvalues (_right right) (%call-with-recorded-slot-reads (lambda () (.ref second 'right))))
-      (def rows (list left (append left right) right))
-      (def original (apply append rows))
-      (def projected (merge-publication-read-roots rows))
+      ;; Ten thousand rows exercise the production aggregation without
+      ;; re-expanding ten thousand native Interfaces in this focused Case.
+      (def rows (cons (cons left (append left right))
+                      (cons #f (make-list 9998 (cons right left)))))
+      (def original (append left left right right left))
+      (def projected (merge-publication-root-segments rows values))
       (check-equal? (< (length projected) (length original)) #t)
       (def (trace roots)
         (def events '())
@@ -166,7 +169,7 @@
       (with-other-source
         (lambda (root _first _other)
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: auto)"))
+            "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :custom (example) (other))"))
         (lambda (_root _first _other view)
           (def modules (.get view modules custom))
           (check-equal? (.ref/cached modules 'example) #f)
@@ -179,7 +182,7 @@
           (check-equal? (hash-key? scalar '(cpu-user source-read)) #f)
           (check-equal? (hash-ref scalar '(calls metadata-replay))
                         (hash-ref before '(calls metadata-replay)))
-          ;; A separate auto demand appends an actual standard publication to
+          ;; A separate leaf demand appends an actual standard publication to
           ;; the SAME session, rather than reconstructing a second loader.
           (check-equal? (.get modules other greeting) "hello")
           (def after (checked-work view))
