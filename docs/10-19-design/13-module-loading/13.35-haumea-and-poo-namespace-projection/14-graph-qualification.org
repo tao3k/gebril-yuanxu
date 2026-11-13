@@ -179,6 +179,17 @@ under =reader-read-publication=. This identifies the operation at interruption;
 the stack sample does not attribute the preceding span. The outer command
 returned 137 and the Harness recorded the duration failure.
 
+The instrumented repeat at =3c5ca80= also stopped during owner admission.
+It reached 6,166 candidates and completed 6,165 value admissions. The partial
+Graph span used 633.46 seconds wall and 212.27 seconds CPU, with 52.93 seconds
+of GC wall time. Its nested attribution reported 45.43 seconds of CPU for
+36,994 metadata replays (35,062,185 visited reads) and 22.58 seconds of CPU for
+6,166 Interface wrapper expansions. It had recorded 289,769 source reads and
+no selected topological resolution call. The counts precede the interruption.
+Stage instrumentation and overlapping spans prevent using this run as a
+normal-path timing comparison. The local process timer could not report RSS
+because its =sysctl= access was denied.
+
 * Publication checklist
 
 - [X] POO implementation branch =feat/indexed-graph-algorithms= created from the
