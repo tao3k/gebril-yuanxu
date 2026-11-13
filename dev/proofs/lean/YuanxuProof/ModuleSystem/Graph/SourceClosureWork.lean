@@ -785,6 +785,43 @@ theorem omitted_profile_candidate_blocks_global_certification [DecidableEq Node]
     omitted_support_can_escape checked owner omitted
   exact ⟨before, after, same, fun all => changed (all owner eligible)⟩
 
+def candidateDecision [DecidableEq Node] (enabled denied : List Node)
+    (owner : Node) : Option Bool :=
+  if owner ∈ denied then some false
+  else if owner ∈ enabled then some true else none
+
+/-- An index can supply eligibility if it projects the current membership of
+both lists. Separate predicates preserve denial priority even on overlap. -/
+theorem indexed_candidate_decision [DecidableEq Node]
+    (enabled denied : List Node) (allows refuses : Node → Bool)
+    (owner : Node)
+    (allowExact : (allows owner = true) ↔ owner ∈ enabled)
+    (refuseExact : (refuses owner = true) ↔ owner ∈ denied) :
+    (if refuses owner then some false
+      else if allows owner then some true else none) =
+    candidateDecision enabled denied owner := by
+  simp only [candidateDecision, allowExact, refuseExact]
+
+/-- Replacing the head of an exposed enabled list can revoke a previously
+indexed owner while leaving the receiver and list length unchanged. -/
+theorem enabled_head_edit_invalidates_decision [DecidableEq Node]
+    (oldOwner newOwner : Node) (rest denied : List Node)
+    (distinct : oldOwner ≠ newOwner) (absent : oldOwner ∉ rest)
+    (permitted : oldOwner ∉ denied) :
+    candidateDecision (oldOwner :: rest) denied oldOwner = some true ∧
+    candidateDecision (newOwner :: rest) denied oldOwner = none := by
+  simp [candidateDecision, permitted, distinct, absent]
+
+/-- Replacing the head of an exposed denied list can add a denial even when
+the owner continues to appear in the enabled list. -/
+theorem denied_head_edit_invalidates_decision [DecidableEq Node]
+    (oldOwner newOwner : Node) (enabled rest : List Node)
+    (distinct : newOwner ≠ oldOwner) (absent : newOwner ∉ rest)
+    (permitted : newOwner ∈ enabled) :
+    candidateDecision enabled (oldOwner :: rest) newOwner = some true ∧
+    candidateDecision enabled (newOwner :: rest) newOwner = some false := by
+  simp [candidateDecision, permitted, distinct, absent]
+
 -- A certified operation's cost is its real support width. The theorem does
 -- not manufacture the certification from runtime import edges or object names.
 def operationReads (widths : List Nat) : Nat := widths.sum
