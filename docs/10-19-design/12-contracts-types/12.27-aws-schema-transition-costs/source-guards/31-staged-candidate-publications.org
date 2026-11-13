@@ -54,6 +54,17 @@ validate the complete observed epoch. Lean's
 =admitted_owner_edges_handoff= checks that projecting the same record
 preserves the admission and commit result.
 
+The matched 64-owner diagnostic reduced complete Link checks from 70 to 8
+and metadata root merges from 62 to 1. Both runs admitted 62 new owners and
+performed 62 protected return checks. The 1,000-owner handoff candidate
+completed in 155.4 seconds at 1.24 GiB peak process-tree footprint with
+stage accounting. Its full-Graph phase took 136.5 seconds wall and 59.2
+seconds CPU, including GC. Wrapper expansion accounted for 87.5 seconds
+wall and 33.4 seconds CPU within that phase. These are nested measurements.
+A run including the retained-role origin change reached the 180-second
+guard during first Graph demand at 10,000 owners, with a 3.32 GiB peak.
+This leaves full-scale qualification open.
+
 * SDK support is an identity relationship
 
 Compiler discovery already captures SDK module contexts. The reader now puts

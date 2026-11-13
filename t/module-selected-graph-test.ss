@@ -2,6 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/test test-suite check-equal? check-exception)
+        (only-in :std/error Error? Error-message)
         (only-in :std/list/list find)
         (only-in :std/source this-source-file)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax
@@ -98,6 +99,7 @@
                 (.all-slots expected)))
     (yuanxu-test-case "completed topology reports progress before final currentness"
       (def now 0)
+      (def checks 0)
       (def refused (gensym 'stale-selection))
       (call-with-execution-progress #f #f
         (lambda (state)
@@ -107,10 +109,14 @@
               (lambda (context roots read-publication _current! imported-owners)
                 (select-module-graph context roots read-publication
                   (lambda ()
-                    (check-equal? (execution-progress-idle-milliseconds state) 0)
-                    (raise refused)) imported-owners)))
+                    (set! checks (+ checks 1))
+                    (case checks
+                      ((1) (check-equal? (execution-progress-idle-milliseconds state) 10))
+                      ((2) (check-equal? (execution-progress-idle-milliseconds state) 0)
+                           (raise refused)))) imported-owners)))
             (lambda (error) (eq? error refused))))
-        clock: (lambda () now)))
+        clock: (lambda () now))
+      (check-equal? checks 2))
     (yuanxu-test-case "unknown observation retains ordinary Core Feature specifications"
       (call-with-slot-read-observer (lambda (_read) (void))
         (lambda ()
@@ -175,7 +181,7 @@
     (yuanxu-test-case "publication admission may force author slots; its post-check remains independent"
       (def current? #t)
       (def p
-        (.o identity: 'app/web features: (.o)
+        (.o identity: 'app/web features: (.o) imports: '()
             core: (begin
                     (set! current? #f)
                     (.o scope-contract: Scope exports: (.o)))))
@@ -184,7 +190,10 @@
                '((yuanxu! mode: explicit :app (web))))
           'current? (lambda (_generation) current?)))
       (def v (yuanxu-load-modules c))
-      (check-exception (.get v selected-graph) error?)
+      (check-exception (.get v selected-graph)
+        (lambda (cause)
+          (and (Error? cause)
+               (equal? (Error-message cause) "stale module scope generation"))))
       (check-equal? current? #f))
     (yuanxu-test-case "candidate Graph reuses publication identity and checks after lazy author code"
       (def reads 0)
@@ -202,7 +211,7 @@
         (select-module-graph c '(app/web)
           (lambda (_id) (set! reads (+ reads 1)) p) current!) error?)
       (check-equal? reads 1)
-      (check-equal? checks 1))
+      (check-equal? checks 2))
     (yuanxu-test-case "metadata admission stays cold until demanded and never runs scope factories"
       (let* ((reads '()) (factories 0)
              (declarations
