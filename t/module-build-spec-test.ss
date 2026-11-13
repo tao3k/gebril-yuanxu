@@ -213,7 +213,7 @@
             (let* ((links (path-expand "links" temporary))
                    (link (path-expand "types/contracts.ss" links))
                    (build (path-expand "build.ss" links)))
-              (create-directory* (path-expand "object-types" links))
+              (create-directory* (path-directory link))
               (write-source (path-expand "gerbil.pkg" links) "(package: tao3k/yuanxu)\n")
               (write-source build "(export #t)")
               (dynamic-wind

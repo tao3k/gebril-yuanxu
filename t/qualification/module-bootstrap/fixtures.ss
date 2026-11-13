@@ -63,6 +63,7 @@
           (write `(yuanxu! :test-dir "./t" mode: explicit source: "./modules" (,selected)) port)))
       (call-with-output-file (list path: (path-expand "core-spec.ss" fixture-root) truncate: #t)
         (lambda (port)
+          (display "prelude: :gerbil/core\n" port)
           (write '(export core-spec) port) (newline port)
           ;; These package libraries are separate from the selected Module.
           ;; Keep their compiled interfaces in the cold fixture too, so Make

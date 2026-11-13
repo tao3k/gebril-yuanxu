@@ -45,11 +45,16 @@ The declaration can live in any Gerbil module, such as =yuanxu-init.ss=. It keep
 input identities and target order. The package build entry consumes that
 spec through =defbuild-script=.
 
-Declare =:test-dir "./t"= before the module windows in =yuanxu!= to set the
-consumer's qualification directory. The path is relative to the declaration
-file and defaults to =t=. Qualification discovery follows the selected mount
-and module path below that directory, for example =t/Lab/services/opentofu=.
-Module-owned tests remain in the selected source owner's =tests/= directory.
+Each Loader requires an explicit =:test-dir=. Declare =:test-dir "./t"=
+before the module windows in =yuanxu!= to share the standard directory, or
+declare it inside a window to set that window's directory. The path is
+relative to the declaration file. Qualification discovery follows
+=<test-dir>/yanxu/<mount>/<module-name>/=, for example
+=t/yanxu/Lab/services/opentofu/=. The mount uses =rename:= when supplied,
+otherwise it uses the Loader directory name. A missing qualification
+directory contributes no tests. Gerbil runs =*-test.ss= files in the
+qualification directory and may import other Scheme files there as helpers.
+Module-owned tests live in the selected source owner's =tests/= directory.
 
 * Closed role values
 
