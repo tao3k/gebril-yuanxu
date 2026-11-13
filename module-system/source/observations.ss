@@ -150,10 +150,11 @@
                                          reader-candidate-replay-site)))
                   (memq name '(reader-initialization reader-initializer-body
                            build-main build-specification build-dispatch std-make build-current
-                           profile-interface-scan reader-bootstrap reader-preparation-start reader-interface-start
+                           profile-interface-scan directory-current-observations link-current
+                           reader-bootstrap reader-preparation-start reader-interface-start
                            selected-owner-closure selected-core-projection selected-topological-resolution
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
-                           reader-admission-start reader-value-admission reader-admission-evidence
+                           reader-admission-start reader-value-admission reader-admission-evidence scope-factory
                            reader-current metadata-replay observed-metadata-replay publication-guard-sweep
                            reader-candidate-fused-return-replay
                            metadata-index metadata-root-merge metadata-cache-miss-receivers

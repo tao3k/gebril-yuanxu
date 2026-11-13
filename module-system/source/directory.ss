@@ -623,7 +623,9 @@
                                     (intent-current?)
                                     (or (not key-intact?) (key-intact?))
                                     (current-sources?)
-                                    (andmap (lambda (entry) ((cdr entry))) observations)))))
+                                    (module-source-measure-operation 'directory-current-observations
+                                      (lambda ()
+                                        (andmap (lambda (entry) ((cdr entry))) observations)))))))
       (def (tree resolve directory prefix (window #f) (branch-paths #f))
         (let* ((node (and (eq? (observe! module-source-type directory) 'directory) (snapshot directory)))
                ;; One immutable namespace generation, not another graph/cache.

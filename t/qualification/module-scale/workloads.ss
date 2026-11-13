@@ -398,9 +398,24 @@
   (def (measured phase action)
     (measure-runtime count phase
       (lambda ()
-        (call-with-values
-          (lambda () (call-with-module-source-operation-measurement action accounting?: #f))
-          cons))))
+        (defvalues (value work)
+          (call-with-module-source-operation-measurement action
+            accounting?: (cond-expand (yuanxu-module-test-stage-accounting 'stages)
+                                       (else #f))))
+        (cond-expand
+          (yuanxu-module-test-stage-accounting
+            (for-each
+              (lambda (stage)
+                (yuanxu-write-observation-line!
+                  "sparse-stage modules=%s phase=%s stage=%s calls=%s wall=%s cpu=%s"
+                  count phase stage (hash-ref work (list 'calls stage) 0)
+                  (hash-ref work stage 0.)
+                  (+ (hash-ref work (list 'cpu-user stage) 0.)
+                     (hash-ref work (list 'cpu-system stage) 0.))))
+              '(profile-interface-scan directory-current-observations link-current
+                reader-wrapper-expansion reader-admission-start metadata-replay scope-factory)))
+          (else (void)))
+        (cons value work))))
   (def (calls measured key) (hash-ref (cdr measured) (list 'calls key) 0))
   (def (admissions measured)
     (+ (calls measured 'candidate-read) (calls measured 'publication-read)))
@@ -414,5 +429,9 @@
   (check-equal? (calls scope '(scope-factory module-0)) 1)
   (check-equal? (calls scope '(scope-factory module-1)) 1)
   (check-sparse-business-result exports (car scope))
+  (def hot (measured 'sparse-business-hot (lambda () (.get exports modules module-1 plan))))
+  (check-equal? (eq? (car hot) (car scope)) #t)
+  (check-equal? (admissions hot) 0)
+  (check-equal? (calls hot 'scope-factory) 0)
   (yuanxu-write-observation-line!
     "sparse-attribution-ok catalog=%s roots=1 admissions=2 scopes=2 owners=module-0,module-1" count))
