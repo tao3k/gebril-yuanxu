@@ -52,7 +52,7 @@
 (def (publication)
   (.o identity: 'custom/example features: (.o)
       core: (.o scope-contract: ScopeContract
-                link: (lambda (_dependencies) (.o ready: #t)))))
+                exports: (.o ready: #t))))
 (def (collection-source root)
   (let (collection (make-yuanxu-module-source-collection
                    'fixture 'test root "modules/custom"))

@@ -29,10 +29,10 @@
                        (lambda _ (error "compiled scope must not import metadata"))))
         (check-equal? (procedure? (.get (.get namespace json-schema) normalize)) #t)))
     (test-case "compiled namespace refuses relabeled declarations and undeclared dependencies"
-      (def (consume value declared (imports '()))
+      (def (consume value declared (dependencies '()))
         (.get (module-program-namespace 'tao3k/yuanxu/init
                 (.o (tao3k/yuanxu/modules/json-schema/interface
-                      (.o declaration: declared publication: value imports: imports features: (.o))))
+                      (.o declaration: declared publication: value imports: dependencies features: (.o))))
                 '((tao3k/yuanxu/modules/json-schema/interface))
                 '(((json-schema) . tao3k/yuanxu/modules/json-schema/interface))) json-schema))
       (check-exception (consume JsonSchema 'forged) error?)

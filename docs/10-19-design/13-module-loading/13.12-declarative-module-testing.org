@@ -130,8 +130,12 @@ alone does not establish that transition or a performance measurement.
 in =t/yanxu/scenarios/aws/=, not in the AWS author's test directory. The existing
 =module-test-projection= discovers
 =<test-dir>/yanxu/<mount>/<module-path>/*-test.ss= only on explicit qualification
-demand. The =yuanxu!= declaration requires a literal =:test-dir= relative to
-the declaring file. Use =:test-dir "./t"= for the standard =t/= directory.
+demand. Each loader requires a literal =:test-dir= relative to the declaring
+file. Use =:test-dir "./t"= for the standard =t/= directory. An init-wide
+declaration supplies the directory for loaders without a local value.
+An auto loader discovers module owners from their Interface declarations.
+Rows in an auto loader may select features, disable a module, or bind an
+explicit source path.
 Without =rename:=, the mount segment is the loader directory's name. Discovery
 observes all immediate Scheme sources, executes only =*-test.ss=, and binds
 directory/helper/test snapshots to the same selection guard. No caller builds

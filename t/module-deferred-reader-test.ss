@@ -107,7 +107,7 @@
           (def publication (.call (module-publication-reader) read source))
           (def core (.get publication core))
           (def private-keys
-            (filter (lambda (name) (not (memq name '(requires scope-contract link))))
+            (filter (lambda (name) (not (memq name '(scope-contract exports))))
               (.all-slots core)))
           (check-equal? (length private-keys) 1)
           (def roles (.ref core (car private-keys)))

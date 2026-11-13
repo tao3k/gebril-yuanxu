@@ -778,6 +778,10 @@
                selection)))))
     (def (resolve-selection-graph roots)
       (linked-selection-graph (resolve-linked-selection roots)))
+    (def (selection-roots)
+      (if (.slot? context-value 'loader-roots)
+        (.ref context-value 'loader-roots)
+        (.ref context-value 'selected)))
     (def (link id path graph)
       (eligible! id path)
       (cond
@@ -1010,7 +1014,7 @@
         (lambda (owner)
           ;; Private Graph/member lookups precede link's fresh eligibility
           ;; guard. New roots still require the resolver's full admission.
-          (let* ((roots (.ref context-value 'selected))
+          (let* ((roots (selection-roots))
                  (graph (linked-selection-graph
                           (or (hash-get graphs roots) (resolve-linked-selection roots)))))
             (unless (memq owner (.ref graph 'module-order))
@@ -1036,8 +1040,8 @@
                    ((.ref context-value 'namespace) resolve-scope))
               (scope-tree (map (lambda (id) (cons (module-id-parts id) id))
                                (.ref context-value 'selected)) resolve-scope)))
-        ;; This immutable snapshot has exactly the init roots. Auto namespace
-        ;; reads admit an additional bounded demand; they do not rewrite init.
+        ;; Aggregate graph demand includes the auto catalog. Individual
+        ;; namespace reads still admit only their requested closure.
         build-graph:
         (or original-graph
             (let (graph selected-graph)
@@ -1050,11 +1054,12 @@
                 (map (.ref context-value 'resolve-root) roots) roots)))
           (build-selected (linked-selection-graph selection) selection))
         selected-graph:
-        (let (selection (resolve-linked-selection (.ref context-value 'selected)))
+        (let (selection (resolve-linked-selection (selection-roots)))
           (set! init-selection selection)
           (linked-selection-graph selection))
-        selected-records: (begin (resolve-selection-graph (.ref context-value 'selected))
-                                 (map resolve (.ref context-value 'selected)))
+        selected-records:
+        (let* ((roots (selection-roots)) (graph (resolve-selection-graph roots)))
+          (map (lambda (id) (link id '() graph)) roots))
         dependency-order:
-        (.ref (resolve-selection-graph (.ref context-value 'selected)) 'module-order)))
+        (.ref (resolve-selection-graph (selection-roots)) 'module-order)))
     selection-value))

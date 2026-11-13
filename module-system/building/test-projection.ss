@@ -41,9 +41,8 @@
   (def context (.ref selection 'context))
   (when (and owners (.slot? context 'resolve-root) (list? owners) (andmap symbol? owners))
     (set! owners (map (.ref context 'resolve-root) owners)))
-  ;; Ordinary test discovery follows init roots without composing a Graph.
-  ;; Profile defaults below instead use the product's shared dependency closure.
-  ;; Auto leaves may make bounded explicit demands through the same policy.
+  ;; Explicit test demands stay bounded. Aggregate discovery includes the
+  ;; auto catalog; profile defaults use the product's dependency closure.
   (def order (.ref context 'selected))
   (def (eligible? owner)
     (and (not (memq owner (.ref context 'denied-modules)))
@@ -54,18 +53,17 @@
                    (= (length owners) (length (delete-duplicates/hash owners from-end?: #t)))
                    (andmap eligible? owners)))
     (error "test owners must be distinct eligible members of the selection" owners order))
-  (def profiled?
-    (and (.slot? context 'intent)
-         (let (intent (.ref context 'intent))
-           (any (lambda (window) (and (.slot? window 'profile) (.ref window 'profile)))
-                (if (.slot? intent 'windows) (.ref intent 'windows) (list intent))))))
   ;; A category selects a dependency-closed product, shared with native Make.
   ;; Ordinary explicit test discovery remains narrow (and Graph-lazy); an
   ;; explicitly requested owner list remains bounded by the eligibility check.
   (def selected-owners
     (cond (owners owners)
-          (profiled? (.ref (.ref selection 'selected-graph) 'module-order))
-          ((.slot? context 'test-owners) (.ref context 'test-owners))
+          ((and (.slot? context 'intent)
+                (let (intent (.ref context 'intent))
+                  (any (lambda (window) (and (.slot? window 'profile) (.ref window 'profile)))
+                       (if (.slot? intent 'windows) (.ref intent 'windows) (list intent)))))
+           (.ref (.ref selection 'selected-graph) 'module-order))
+          ((.slot? context 'loader-roots) (.ref context 'loader-roots))
           (else order)))
   (if (and (not suite) (.slot? selection '.module-test-source))
     (let* ((sources (map (.ref selection '.module-test-source) selected-owners))
@@ -94,7 +92,7 @@
       (set! parents (cons (cons directory kind) parents))))
   ;; Qualification belongs to the init owner, never to a module implementation.
   ;; Observe ancestor kinds without enumerating sibling owners or Core suites.
-  (def (qualification-root metadata)
+  (def (owner-qualification-root metadata)
     (and (eq? suite 'qualification)
          (let (init (and (.slot? context 'init-source) (.ref context 'init-source)))
            (unless (string? init) (error "qualification discovery requires an init source"))
@@ -115,7 +113,7 @@
    (lambda (owner)
      (let* ((source ((.ref context 'locate) owner))
             (metadata (yuanxu-module-source-ref-metadata source))
-            (qualification-root (qualification-root metadata))
+            (qualification-root (owner-qualification-root metadata))
             (mount (assq 'namespace-mount metadata))
             (declaration (assq 'declaration-id metadata))
             (qualification-name

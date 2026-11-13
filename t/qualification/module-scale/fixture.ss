@@ -41,7 +41,6 @@
   runtime-values?: #f
   poison-unselected?: #f
   profile-selection?: #f
-  sparse-selection?: #f
   open-role-payloads?: #f
   .verify: verify-declaration-scale
   .acquire:
@@ -67,15 +66,11 @@
         (write-fixture-source (path-expand "gerbil.pkg" fixture-root)
           (list (list 'package: (string->symbol (symbol->string (gensym 'declaration-scale-))))))
         (write-fixture-source (path-expand "init.ss" fixture-root)
-          (cond (profile-selection?
+          (if profile-selection?
                  '((import :tao3k/yuanxu/module-system/selection/init-syntax)
-                   (yuanxu! :test-dir "./t" source: "./modules" mode: auto profile: security)))
-                (sparse-selection?
-                 '((import :tao3k/yuanxu/module-system/selection/init-syntax)
-                   (yuanxu! :test-dir "./t" source: "./modules" mode: auto)))
-                (else
+                   (yuanxu! :test-dir "./t" source: "./modules" mode: auto profile: security))
                  `((import :tao3k/yuanxu/module-system/selection/init-syntax)
-                   (yuanxu! :test-dir "./t" source: "./modules" mode: explicit ,@(map list ids))))))
+                   (yuanxu! :test-dir "./t" source: "./modules" mode: explicit ,@(map list ids)))))
         (for-each
           (lambda (id)
             (def directory (path-expand (symbol->string id) (path-expand "modules" fixture-root)))
@@ -160,7 +155,7 @@
   poison-unselected?: #t
   .verify: verify-business-eval-once)
 (.def (SparseBusinessEvalFixture @ BusinessEvalOnceFixture)
-  sparse-selection?: #t
+  profile-selection?: #t
   .verify: verify-sparse-business-eval)
 (.def (SparseBusinessAttributionFixture @ SparseBusinessEvalFixture)
   .verify: verify-sparse-business-attribution)

@@ -47,7 +47,7 @@
         '(json-schema funflow))
       (def init (path-expand "yuanxu-init.ss" root))
       (write-source init
-        "(yuanxu! :test-dir \"./checks/t\" :load-modules \"./modules\" mode: explicit rename: Libraries (json-schema) (funflow) (poison disable: #t))\n")
+        "(yuanxu! :load-modules \"./modules\" mode: explicit rename: Libraries :test-dir \"./checks/t\" (json-schema) (funflow) (poison disable: #t))\n")
       (def json (path-expand "checks/t/yanxu/Libraries/json-schema/value-test.ss" root))
       (def flow (path-expand "checks/t/yanxu/Libraries/funflow/job-test.ss" root))
       (def helper (path-expand "checks/t/yanxu/Libraries/json-schema/fixtures.ss" root))
@@ -82,10 +82,15 @@
       (check-exception ((.get fresh admit-current)) error?)
       (def auto-file (path-expand "t/yanxu/modules/json-schema/auto-test.ss" root))
       (write-source auto-file "(error \"discovery stays inert\")\n")
+      (write-source (path-expand "modules/facade/interface.ss" root)
+        "(import \"ordinary.ss\") (export (import: \"ordinary.ss\"))\n")
       (def auto-view (yuanxu-load-modules init read-publication: read-publication))
       (check-equal?
-        (.get (module-test-projection auto-view '(json-schema) 'qualification) spec)
-        (list auto-file)))
+        (.get (module-test-projection auto-view #f 'qualification) spec)
+        (list auto-file))
+      (check-equal? (.get auto-view selected-graph module-order)
+        '(qualification-projection/modules/funflow/interface
+          qualification-projection/modules/json-schema/interface)))
     (yuanxu-test-fixture "bounded discovery, helper guards, rename and selection rejection"
       (root Workspace)
       ;; A single-root loader uses its directory name when rename is absent.

@@ -260,8 +260,9 @@ prelude: :gerbil/core
       (error "Loader requires :test-dir; use :test-dir \"./t\" for the standard t/ directory" source-path)))
   (if (or (null? body) (not (eq? (car body) ':load-modules)))
     (let (window (parse-init-window body source-path))
-      (require-test-dir (list-ref window 7))
-      (values (list window) #f test-dir))
+      (with ([_ _ _ _ _ _ _ local-tests] window)
+        (require-test-dir local-tests)
+        (values (list window) #f test-dir)))
     (let ((windows (parse-init-windows body source-path))
           (names (make-hash-table)) (roots (make-hash-table)) (ids (make-hash-table-eq)))
       (for-each
