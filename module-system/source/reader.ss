@@ -187,7 +187,9 @@
                               ;; issued roots for the linker's POO topology
                               ;; slot. No successful check or purity flag.
                               (list (append (car results)
-                                      (list owners guard entry! tail! root-segments)))))) prepared))
+                                      (list owners guard entry! tail! root-segments
+                                            (and fused-return?
+                                                 (not (candidate-support-open? scope))))))))) prepared))
                     )))))))
       admit-current: (cut reader-full-current! session <...>)
       read-only-current?: (cut reader-source-state-current? session <...>)

@@ -96,7 +96,7 @@
 ;; Private admission carrier, not another namespace or semantic Graph. The
 ;; dependency list is the final receiver's already demanded symbol projection.
 (defstruct linked-publication
-  (source value evidence dependencies metadata-current metadata-entry metadata-tail metadata-roots)
+  (source value evidence dependencies metadata-current metadata-entry metadata-tail metadata-roots closed-candidate?)
   final: #t)
 (defstruct linked-preparation (value metadata) final: #t)
 (defstruct linked-selection (graph guard state) final: #t)
@@ -718,7 +718,7 @@
                      (admit-module-publication! source-value id publication-value context-value))))
                (checked-publication (.ref evidence-value 'candidate))
                (record (make-linked-publication source-value checked-publication
-                                                evidence-value dependency-ids #f #f #f #f)))
+                                                evidence-value dependency-ids #f #f #f #f #f)))
           ;; Only the runtime paired selection can postpone this check across
           ;; a private symbol/hash walk. No POO getter or author callback is
           ;; allowed in that continuation. Context changes retain the full tail.
@@ -757,7 +757,18 @@
                      (lambda (id) (linked-publication-value (publication-for id)))
                      graph-current!
                      (lambda (id)
-                       (linked-publication-dependencies (publication-for id))))))
+                       (linked-publication-dependencies (publication-for id)))
+                     owner-record:
+                     (and candidate-read paired-context-current?
+                          (paired-context-current?)
+                          (not (current-module-source-observer))
+                          (lambda (id)
+                            (def fresh? (not (hash-key? publications id)))
+                            (def record (publication-for id))
+                            (values (linked-publication-value record)
+                                    (linked-publication-dependencies
+                                      (if (and fresh? (linked-publication-closed-candidate? record))
+                                        record (publication-for id)))))))))
                ;; Only private bookkeeping follows selection's final check.
                (def selection
                  (make-linked-selection graph graph-current!

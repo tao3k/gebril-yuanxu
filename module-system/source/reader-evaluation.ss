@@ -28,7 +28,8 @@
 
 (def (reader-evaluation-observers owned completed
                                   (initialize (lambda (_context action) (action)))
-                                  (runtime-context? (lambda (_context) #f)))
+                                  (runtime-context? (lambda (_context) #f))
+                                  (retained-origin (lambda (_context) #f)))
   ;; Gerbil runtime imports bypass current-expander-module-eval. Pair the exact
   ;; phi-zero module body with its compiled program, then observe successful
   ;; evaluation of that same program. Macro-phase or partial evaluation alone
@@ -130,7 +131,8 @@
     (and (module-context? context) (zero? (current-expander-phi))
          (eq? form (module-context-code context))
          (string? (module-context-path context))
-         (hash-get owned (module-context-path context))))
+         (or (hash-get owned (module-context-path context))
+             (retained-origin context))))
   (def (compile form)
     (let* ((context (current-expander-context))
            (origin (owned-body-origin context form)))

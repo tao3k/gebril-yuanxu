@@ -16,6 +16,16 @@ def firstError : List (Option Nat) → Option Nat
   | none :: rest => firstError rest
   | some error :: _ => some error
 
+/-- The closure consumes edges of the exact admitted record. A private table
+handoff preserves the admission failure and the independent commit check. -/
+theorem admitted_owner_edges_handoff {Record Edge Fault : Type}
+    (admit : Except Fault Record) (edges : Record → List Edge)
+    (lookup : Record → Record) (same : ∀ record, lookup record = record)
+    (commit : List Edge → Except Fault (List Edge)) :
+    (admit >>= fun record => commit (edges (lookup record))) =
+    (admit >>= fun record => commit (edges record)) := by
+  cases admit <;> simp [same]
+
 /-- One runtime private operation, with no callback between the two issuance
 queries. The second predicate's failure spelling is irrelevant: on failure the
 first guard has already refused, and on success both see the same runtime state.

@@ -433,6 +433,14 @@ package YuanxuSelectedPackageBuilds {
                Gerbil expansion, role execution or author Contract cannot
                inherit a successful verdict from a prior checkpoint. */
     }
+    requirement def AdmittedOwnerEdgeHandoff {
+        doc /* A closed private candidate supplies its publication and import
+               edges from the same admitted record to the owner closure.
+               The projection invokes no callback between those field reads.
+               Earlier admissions and open candidates keep their independent
+               checks. Closure completion and Graph publication still check
+               the complete observed epoch. */
+    }
     requirement def ProtectedMetadataCheckpoint {
         doc /* Source/policy checkpoints from the paired native producer are
                validation work, not user initialization. One native protected

@@ -80,7 +80,8 @@
     value))
 
 (def (select-module-graph context root-values read-publication current!
-                          (imported-owners (lambda (_id) '())))
+                          (imported-owners (lambda (_id) '()))
+                          owner-record: (read-owner-record #f))
   (def (module-key owner required)
     (if (.slot? context 'resolve-module-id)
       ((.ref context 'resolve-module-id) owner required) required))
@@ -110,8 +111,14 @@
           (module-source-measure-operation 'selected-owner-closure
            (lambda () (module-closure root-values identity
            (lambda (id)
-             (publication-for id)
-             (let (owners (imported-owners id))
+             (let (owners
+                    (if read-owner-record
+                      ;; The Linker supplies both fields from one admitted
+                      ;; record without an intervening callback.
+                      (let-values (((publication owners) (read-owner-record id)))
+                        (hash-put! publications id publication)
+                        owners)
+                      (begin (publication-for id) (imported-owners id))))
                (for-each
                  (lambda (required)
                    (when (hash-get denied-index required)

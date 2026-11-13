@@ -110,6 +110,9 @@
 (def (reader-full-current! session)
   (parameterize (((reader-session-candidate session) #f) (current-owned-read-open-guard #f)) (reader-current! session)))
 (def (reader-open-boundary! session (reason (current-module-source-phase)))
+  (module-source-measure-operation
+    (list 'reader-open-boundary (if (pair? reason) (car reason) reason))
+    void)
   (when ((reader-session-candidate session)) ((candidate-support-metadata-current ((reader-session-candidate session)))))
   (when (and ((reader-session-candidate session)) (not (candidate-support-open? ((reader-session-candidate session))))
              (current-module-source-observer))

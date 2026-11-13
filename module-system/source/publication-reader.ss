@@ -141,7 +141,13 @@
                          ;; Gerbil's initializer promise must not retain the delivered value.
                          (list (void)))
                        results))))))
-           runtime-context?))
+           runtime-context?
+           (lambda (context)
+             ;; A delayed role can be initialized while reading a later
+             ;; publication. Its wrapper belongs to the session, even after
+             ;; the earlier publication's temporary directory is removed.
+             (let (input (hash-get (reader-session-kernel-inputs session) context))
+               (and input (.ref input 'path))))))
        (def (write-wrapper path forms runtime-identity)
          (let* ((name (string-append (number->string (hash-length wrappers)) "-" (path-strip-directory path)))
                 (target (path-expand name directory)))
