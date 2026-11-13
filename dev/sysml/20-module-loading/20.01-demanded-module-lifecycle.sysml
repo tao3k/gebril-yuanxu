@@ -18,6 +18,13 @@ package YuanxuModuleLoading {
                decisions, role locations and source association. Dependency
                closure is not a list of linked business scopes. */
     }
+    requirement def IndexedOwnerEligibility {
+        doc /* Apply denial before selection, and consult policy only on a
+               selection miss. Indexed membership may replace the list search
+               when both symbol sequences are the live payloads of the same
+               observation window. A matching receiver revision alone does not
+               establish that a separately mutable sequence is unchanged. */
+    }
     part def PublicationPreflight {
         ref part declaration : SelectedDeclarations;
         attribute descriptorsValid : Boolean;

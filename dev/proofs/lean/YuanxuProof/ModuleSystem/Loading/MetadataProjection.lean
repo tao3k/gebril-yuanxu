@@ -38,6 +38,41 @@ theorem first_missing_unchanged (names selected : List String) :
     selected.find? (fun name => !(build names).contains name) =
       selected.find? (fun name => !names.contains name) := by
   simp only [lookup_exact]
+
+inductive Eligibility where
+  | denied | selected | consultPolicy
+  deriving DecidableEq
+
+def eligibility (denied selected : Bool) : Eligibility :=
+  if denied then .denied else if selected then .selected else .consultPolicy
+
+theorem indexed_eligibility_preserves_precedence (denied selected : List String)
+    (name : String) :
+    eligibility ((build denied).contains name) ((build selected).contains name) =
+    eligibility (denied.contains name) (selected.contains name) := by
+  simp only [lookup_exact]
+
+def indexedEligibility (captured live : List String × List String)
+    (sameWindow : Bool) (name : String) : Eligibility :=
+  if sameWindow then
+    eligibility ((build captured.1).contains name) ((build captured.2).contains name)
+  else
+    eligibility (live.1.contains name) (live.2.contains name)
+
+theorem indexed_eligibility_requires_live_payload
+    (captured live : List String × List String) (sameWindow : Bool)
+    (stable : sameWindow = true → captured = live) (name : String) :
+    indexedEligibility captured live sameWindow name =
+      eligibility (live.1.contains name) (live.2.contains name) := by
+  cases sameWindow with
+  | false => rfl
+  | true =>
+    rw [stable rfl]
+    exact indexed_eligibility_preserves_precedence _ _ _
+
+example : indexedEligibility ([], ["owner"]) (["owner"], ["owner"]) true "owner" ≠
+    indexedEligibility ([], ["owner"]) (["owner"], ["owner"]) false "owner" := by
+  simp [indexedEligibility, lookup_exact, eligibility]
 end SelectionIndex
 
 structure Dependency where

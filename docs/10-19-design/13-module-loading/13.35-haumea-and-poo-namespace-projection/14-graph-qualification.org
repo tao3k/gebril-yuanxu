@@ -190,6 +190,16 @@ Stage instrumentation and overlapping spans prevent using this run as a
 normal-path timing comparison. The local process timer could not report RSS
 because its =sysctl= access was denied.
 
+The linker still scans =module-ids= in =eligible!= for each selected owner,
+even though =select-module-graph= indexes selection membership for its own
+dependency checks. =MetadataProjection.SelectionIndex= proves that indexed
+membership preserves denial, selection and policy-fallback precedence. The
+same model gives a counterexample to using a captured index after its input
+sequence changes. The Scheme path still uses live membership here. Replacing
+it requires ownership of the list payload across the read window, including
+in-place changes that do not bump the receiver revision. Custom Contexts and
+effectful policy fallback retain their independent checks.
+
 * Publication checklist
 
 - [X] POO implementation branch =feat/indexed-graph-algorithms= created from the
