@@ -29,10 +29,11 @@
      (memq (syntax->datum (syntax option)) '(mode: source: :load-modules :test-dir))
      ;; Normalize literal data only. One private getter is shared by all mounts;
      ;; expansion does not demand a Module scope or a test executor.
-     (let* ((mounts
+     (let* ((owner (core-context-top (current-expander-context) module-context?))
+            (mounts
              (module-init-mounts
-               (list (cons 'yuanxu! (cdr (syntax->datum stx))))))
-            (owner (core-context-top (current-expander-context) module-context?))
+               (list (cons 'yuanxu! (cdr (syntax->datum stx))))
+               (or (and origin (syntax->datum origin)) (and owner (module-context-path owner)))))
             (getter (genident 'init-modules-getter))
             (base-exports (genident 'init-exports))
             ;; An exported identifier transformer needs a stable private runtime

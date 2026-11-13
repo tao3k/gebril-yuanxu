@@ -26,6 +26,16 @@ theorem admitted_owner_edges_handoff {Record Edge Fault : Type}
     (admit >>= fun record => commit (edges record)) := by
   cases admit <;> simp [same]
 
+/-- For the same pure parser, an unchanged source has the initially parsed
+tags. Changed source must still be classified by the original parser. -/
+theorem profile_reclassification_on_change {Source Tags : Type} [DecidableEq Source]
+    (classify : Source → Tags) (original current : Source) :
+    (if current = original then classify original else classify current) =
+      classify current := by
+  split
+  next unchanged => rw [unchanged]
+  next _ => rfl
+
 /-- One runtime private operation, with no callback between the two issuance
 queries. The second predicate's failure spelling is irrelevant: on failure the
 first guard has already refused, and on success both see the same runtime state.

@@ -328,6 +328,23 @@
                       (or windows (list intent-value))))))
       (def (roots-for window)
         (or (hash-get profile-roots window) '()))
+      (def (auto-test-owners window)
+        (def intent (or window intent-value))
+        (if (or (not (eq? (.ref intent 'mode) 'auto)) (profile-tag intent)) '()
+          (let walk ((directory (if window (window-root window) root-path)) (prefix ""))
+            (foldr append '()
+              (map (lambda (name)
+                     (def child (path-expand name directory))
+                     (def path (string-append prefix name))
+                     (def owner (window-key window (string->symbol path)))
+                     (def file (path-expand "interface.ss" child))
+                     (if (and (directory-snapshot-interface? (snapshot child))
+                              (observe! (lambda (source)
+                                          (module-interface-declaration? source (module-source-read source)))
+                                        file))
+                       (if (decision-row owner) '() (list owner))
+                       (walk child (string-append path "/"))))
+                   (directory-snapshot-children (snapshot directory)))))))
       (let ((profile-selected
                (foldr append '()
                  (map (lambda (window) (map (cut window-key window <>) (roots-for window)))
@@ -551,7 +568,11 @@
                                     (cons 'kernel-root (hash-ref kernel-roots (canonical owner-root)))
                                     ;; Mount is organization, never publication identity.
                                     (cons 'namespace-mount
-                                      (and window (.ref window 'mount)))
+                                      (if window (.ref window 'mount)
+                                        (string->symbol
+                                          (path-strip-directory
+                                            (path-strip-trailing-directory-separator owner-root)))))
+                                    (cons 'test-dir (.ref (or window intent-value) 'test-dir))
                                     (cons 'source-binding (if origin 'explicit 'directory))
                                     (cons 'source-tree source-tree)
                                     (cons 'init-source init-path) (cons 'generation generation-value)))))
@@ -676,6 +697,8 @@
                    (andmap (lambda (check) (check)) location-inputs)
                    (or (not entry) ((directory-source-current? entry))))))))
       (.o generation: generation-value module-ids: selected-values selected: selected-values
+          test-owners: (append selected-values
+                         (foldr append '() (map auto-test-owners (or windows '(#f)))))
           (feature-roots)
           denied-modules: denied-values intent: scoped-intent init-source: init-path source-root: root-path
           locate: (lambda (id) (locate-source (resolve-request-root id)))

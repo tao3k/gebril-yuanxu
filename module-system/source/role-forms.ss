@@ -91,10 +91,21 @@ prelude: :gerbil/core
        (let (text (symbol->string name))
          (and (> (string-length text) 0) (not (member text '("." "..")))
               (andmap (lambda (c) (not (memv c '(#\/ #\\ #\:)))) (string->list text))))))
+(def (test-directory-value directory source-path)
+  (unless (string? directory) (error "test directory requires a literal path" source-path))
+  (def relative (if (string-prefix? "./" directory)
+                  (substring directory 2 (string-length directory)) directory))
+  (unless (and (not (string-empty? relative))
+               (andmap (lambda (part) (init-name? (string->symbol part)))
+                       (string-split relative #\/)))
+    (error "test directory must be relative to the yuanxu! declaration" directory source-path))
+  relative)
+
 (def (parse-init-window body source-path (window? #f))
   (def mount-value #f)
   (def profile-value #f)
   (def package-value #f)
+  (def test-dir #f)
   (def seen (make-hash-table-eq))
   (let parse ((tail body) (mode-value 'explicit) (root-value "modules")
               (group #f) (rows '()) (options '()))
@@ -115,13 +126,14 @@ prelude: :gerbil/core
                              (string-split root-value #\/)))
           (error "package window requires a confined relative source" root-value)))
       [mode-value root-value mount-value profile-value
-       (and (memq 'source: options) #t) (reverse rows) package-value])
+       (and (memq 'source: options) #t) (reverse rows) package-value test-dir])
      ((not (pair? tail)) (error "improper init declaration" source-path))
-     ((memq (car tail) '(mode: source: rename: profile: package:))
+     ((memq (car tail) '(mode: source: rename: profile: package: :test-dir))
       (unless (and (pair? (cdr tail)) (not group) (null? rows) (not (memq (car tail) options)))
         (error "duplicate or misplaced init option" (car tail) source-path))
       (let ((key (car tail)) (value (cadr tail)))
         (case key
+          ((:test-dir) (set! test-dir (test-directory-value value source-path)))
           ((mode:) (unless (memq value '(auto explicit)) (error "invalid init mode" value)))
           ((source:) (unless (and (string? value) (> (string-length value) 0))
                        (error "invalid init source" value)))
@@ -193,6 +205,9 @@ prelude: :gerbil/core
                       (flags-loop (cdr rest) (cons flag result) disable-seen?)))
                    (else (error "unsupported init flag or computed source" row source-path))))))
           (when (hash-key? seen id) (error "duplicate init module decision" id source-path))
+          (when (and (eq? mode-value 'auto) (not source-root-value)
+                     (not disabled-value) (null? flags))
+            (error "auto Loader discovers modules; omit the redundant module row" id source-path))
           (hash-put! seen id #t)
           (parse (cdr tail) mode-value root-value group
                  (cons [id group (car row) flags disabled-value
@@ -207,10 +222,15 @@ prelude: :gerbil/core
     ([':load-modules (? string? root) . tail]
      (let split ((rest tail) (clauses '()))
        (if (or (null? rest) (eq? (car rest) ':load-modules))
-         (with ([mode directory mount profile explicit? decisions package]
+         (with ([mode directory mount profile explicit? decisions package test-dir]
                 (parse-init-window (cons* 'source: root (reverse clauses)) source-path #t))
-           (def name (or mount (string->symbol (path-strip-directory
-                                  (path-strip-trailing-directory-separator (path-expand root))))))
+           (def name
+             (or mount
+                 (string->symbol
+                   (path-strip-directory
+                     (path-strip-trailing-directory-separator
+                       (path-expand root
+                         (if source-path (path-directory source-path) (current-directory))))))))
            ;; The declared window is the boundary. Like source: in a single
            ;; window, a relative path may reach a separate package checkout.
            (unless (> (string-length root) 0)
@@ -218,7 +238,7 @@ prelude: :gerbil/core
            (unless (and (init-name? name)
                         (not (memq name '(build-spec build-current! test-spec test-current! tests))))
              (error "invalid or reserved directory mount" name))
-           (cons [mode directory name profile explicit? decisions package]
+           (cons [mode directory name profile explicit? decisions package test-dir]
                  (parse-init-windows rest source-path)))
          (split (cdr rest) (cons (car rest) clauses)))))
     (_ (error "directory window requires a literal source path" source-path))))
@@ -232,23 +252,22 @@ prelude: :gerbil/core
   (defvalues (body test-dir)
     (match (cdar declarations)
       ([':test-dir (? string? directory) . rest]
-       (def relative (if (string-prefix? "./" directory)
-                       (substring directory 2 (string-length directory)) directory))
-       (unless (and (not (string-empty? relative))
-                    (andmap (lambda (part) (and (not (string-empty? part))
-                                               (init-name? (string->symbol part))))
-                            (string-split relative #\/)))
-         (error "test directory must be relative to the yuanxu! declaration" directory source-path))
-       (values rest relative))
+       (values rest (test-directory-value directory source-path)))
       ([':test-dir . _] (error "test directory requires a literal path" source-path))
-      (_ (error "yuanxu! requires :test-dir before the module selection; use :test-dir \"./t\" for the standard t/ directory" source-path))))
+      (body (values body #f))))
+  (def (require-test-dir local)
+    (unless (or local test-dir)
+      (error "Loader requires :test-dir; use :test-dir \"./t\" for the standard t/ directory" source-path)))
   (if (or (null? body) (not (eq? (car body) ':load-modules)))
-    (values (list (parse-init-window body source-path)) #f test-dir)
+    (let (window (parse-init-window body source-path))
+      (require-test-dir (list-ref window 7))
+      (values (list window) #f test-dir))
     (let ((windows (parse-init-windows body source-path))
           (names (make-hash-table)) (roots (make-hash-table)) (ids (make-hash-table-eq)))
       (for-each
         (lambda (window)
-         (with ([_ directory name _ _ decisions package] window)
+         (with ([_ directory name _ _ decisions package local-tests] window)
+          (require-test-dir local-tests)
           (def key (string-downcase (symbol->string name)))
           (def root (cons package (path-strip-trailing-directory-separator
                       (path-expand directory
@@ -262,8 +281,8 @@ prelude: :gerbil/core
           )) windows)
       (values windows #t test-dir))))
 
-(def (module-init-mounts forms)
-  (let-values (((windows mounted? _) (parse-module-init forms #f)))
+(def (module-init-mounts forms (source-path #f))
+  (let-values (((windows mounted? _) (parse-module-init forms source-path)))
     (if mounted?
-      (map (lambda (window) (with ([_ _ mount _ _ _ _] window) mount)) windows)
+      (map (lambda (window) (with ([_ _ mount _ _ _ _ _] window) mount)) windows)
       '(#f))))

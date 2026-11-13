@@ -166,7 +166,7 @@
       (with-other-source
         (lambda (root _first _other)
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: auto :custom (example))"))
+            "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: auto)"))
         (lambda (_root _first _other view)
           (def modules (.get view modules custom))
           (check-equal? (.ref/cached modules 'example) #f)

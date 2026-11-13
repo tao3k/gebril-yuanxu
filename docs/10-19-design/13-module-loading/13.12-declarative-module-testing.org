@@ -132,7 +132,7 @@ in =t/yanxu/scenarios/aws/=, not in the AWS author's test directory. The existin
 =<test-dir>/yanxu/<mount>/<module-path>/*-test.ss= only on explicit qualification
 demand. The =yuanxu!= declaration requires a literal =:test-dir= relative to
 the declaring file. Use =:test-dir "./t"= for the standard =t/= directory.
-A single window without a mount uses =<test-dir>/yanxu/<module-path>/=. Discovery
+Without =rename:=, the mount segment is the loader directory's name. Discovery
 observes all immediate Scheme sources, executes only =*-test.ss=, and binds
 directory/helper/test snapshots to the same selection guard. No caller builds
 a file list, combines guards or defines a replacement source object.

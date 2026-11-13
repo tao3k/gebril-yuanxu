@@ -72,7 +72,7 @@
                    (yuanxu! :test-dir "./t" source: "./modules" mode: auto profile: security)))
                 (sparse-selection?
                  '((import :tao3k/yuanxu/module-system/selection/init-syntax)
-                   (yuanxu! :test-dir "./t" source: "./modules" mode: auto (module-1))))
+                   (yuanxu! :test-dir "./t" source: "./modules" mode: auto)))
                 (else
                  `((import :tao3k/yuanxu/module-system/selection/init-syntax)
                    (yuanxu! :test-dir "./t" source: "./modules" mode: explicit ,@(map list ids))))))

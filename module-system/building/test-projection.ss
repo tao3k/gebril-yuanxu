@@ -65,6 +65,7 @@
   (def selected-owners
     (cond (owners owners)
           (profiled? (.ref (.ref selection 'selected-graph) 'module-order))
+          ((.slot? context 'test-owners) (.ref context 'test-owners))
           (else order)))
   (if (and (not suite) (.slot? selection '.module-test-source))
     (let* ((sources (map (.ref selection '.module-test-source) selected-owners))
@@ -93,14 +94,14 @@
       (set! parents (cons (cons directory kind) parents))))
   ;; Qualification belongs to the init owner, never to a module implementation.
   ;; Observe ancestor kinds without enumerating sibling owners or Core suites.
-  (def qualification-root
+  (def (qualification-root metadata)
     (and (eq? suite 'qualification)
          (let (init (and (.slot? context 'init-source) (.ref context 'init-source)))
            (unless (string? init) (error "qualification discovery requires an init source"))
-           (def intent (and (.slot? context 'intent) (.ref context 'intent)))
-           (unless (and intent (.slot? intent 'test-dir))
+           (def declared (assq 'test-dir metadata))
+           (unless (and declared (string? (cdr declared)))
              (error "qualification discovery requires an explicit :test-dir" init))
-           (def directory (.ref intent 'test-dir))
+           (def directory (cdr declared))
            (let walk ((parent (path-directory init)) (parts (append (string-split directory #\/) '("yanxu"))))
              (let (child (path-expand (car parts) parent))
                (observe-parent! child)
@@ -114,6 +115,7 @@
    (lambda (owner)
      (let* ((source ((.ref context 'locate) owner))
             (metadata (yuanxu-module-source-ref-metadata source))
+            (qualification-root (qualification-root metadata))
             (mount (assq 'namespace-mount metadata))
             (declaration (assq 'declaration-id metadata))
             (qualification-name

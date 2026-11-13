@@ -145,6 +145,13 @@ edges. Compare those edges separately from resolved binding IDs.
 lookup premise, including phase and local precedence.
 =PublicationReads.same_wrapper_binding_does_not_preserve_owner_import=
 separates that premise from native import custody.
+Profile discovery and currentness classify tags from the Interface source.
+A comment edit can retain the same tags. A tag edit invalidates the old
+selection. Lean's =profile_reclassification_on_change= establishes
+equivalence for skipping reclassification on equal bytes under a fixed
+parser. The tested implementation was withdrawn after its fresh-read and
+comparison path took more CPU than parsing the tags directly.
+
 =just measure-thousand-eval-stages PREFIX= uses the existing thousand-owner
 fixture and native stage accounting with no source observer. Its detailed
 CPU counters are opt-in. The required CI case keeps its existing mode.

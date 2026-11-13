@@ -433,6 +433,12 @@ package YuanxuSelectedPackageBuilds {
                Gerbil expansion, role execution or author Contract cannot
                inherit a successful verdict from a prior checkpoint. */
     }
+    requirement def ProfileTagCurrentness {
+        doc /* Profile currentness compares the classification from the
+               current Interface with the original classification.
+               Equal tags after a comment edit keep the selection current.
+               A changed tag requires a new selection. */
+    }
     requirement def AdmittedOwnerEdgeHandoff {
         doc /* A closed private candidate supplies its publication and import
                edges from the same admitted record to the owner closure.

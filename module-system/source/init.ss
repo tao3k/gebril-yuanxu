@@ -27,7 +27,7 @@
 (def (module-init-compiler-source-roots declaration source-path)
   (let-values (((windows _mounted? _test-dir) (parse-module-init (list declaration) source-path)))
     (filter-map (lambda (window)
-                  (with ([_ _ _ _ _ _ package] window)
+                  (with ([_ _ _ _ _ _ package _] window)
                     (native-package-checkout package)))
                 windows)))
 
@@ -86,12 +86,13 @@
       (.o identity disabled? disable-specified? source-root
           selection: (.+ (yuanxu-user-module-selection group module flags)
                           (.o enabled?: (not disabled?))))))
-  (def (intent window)
-    (with ([mode root mount profile root-explicit? rows package] window)
+  (def (intent window default-tests)
+    (with ([mode root mount profile root-explicit? rows package local-tests] window)
       (.o mode root mount profile root-explicit? package init-source: source-path
+          test-dir: (or local-tests default-tests)
           decisions: (map decision rows))))
   (let-values (((windows mounted? test-directory) (parse-module-init forms source-path)))
-    (def intents (map intent windows))
+    (def intents (map (cut intent <> test-directory) windows))
     (if mounted?
       (.o mode: (if (any (lambda (window) (eq? (.ref window 'mode) 'auto)) intents)
                   'auto 'explicit)
@@ -102,4 +103,4 @@
                               (def name (.ref window 'mount))
                               (map (lambda (row) (.+ row (.o window: name)))
                                    (.ref window 'decisions))) intents)))
-      (.cc (car intents) 'test-dir test-directory))))
+      (car intents))))
