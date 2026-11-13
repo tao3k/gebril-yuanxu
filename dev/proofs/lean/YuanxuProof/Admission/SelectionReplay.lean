@@ -2,8 +2,6 @@
 import LeanPoo.Functional.CacheLookup
 import YuanxuProof.Admission.IssuerProjection
 namespace YuanxuProof.Admission.SelectionReplay
-def quintSourceDigest : String := "sha256:7bb0c519be1ac029d5e5451f1c6c972b74e5d56170639fd1760545ef4cf88e3e"
-
 -- The runtime owner retains a value, not the verdict of an external-source check.
 theorem cached_graph_keeps_value {Name Value Fault : Type} [DecidableEq Name]
     (entries : Name → Option Value) (key : Name) (value : Value)
@@ -142,8 +140,6 @@ theorem cached_false_is_a_value {Name Fault : Type} [DecidableEq Name]
     (hit : entries key = some false) :
     LeanPoo.Functional.ConstructionCache.ensureLookup entries key build = (.ok false, entries) :=
   LeanPoo.Functional.ConstructionCache.ensureLookup_hit entries key false build hit
-
-def topologySourceDigest : String := "sha256:711666f5afe6d73d34cc59caf536311b2eb9907fa675ef049dd0720e13993773"
 
 -- Runtime dependency ownership belongs to gerbil.pkg; LeanPoo belongs to Lake.
 -- Runtime issued-read, inheritance and declaration-index controls

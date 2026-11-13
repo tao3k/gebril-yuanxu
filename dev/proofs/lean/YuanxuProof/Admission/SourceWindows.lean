@@ -8,9 +8,6 @@ import YuanxuProof.Admission.Source
 The filesystem is an actual read function, not a free revision oracle.
 Stability inside a pure window and complete observation remain runtime premises. -/
 namespace YuanxuProof.Admission.SourceWindows
-def quintSourceDigest : String :=
-  "sha256:c84947e04825b870b41caf9e060f2797d2e0a38cbc731db05463c319d048c53b"
-
 open LeanPoo.Functional.ConstructionCache
 abbrev World := String → Option String
 abbrev Bytes := String → Option (Option String)

@@ -4,8 +4,6 @@ import YuanxuProof.Admission.IssuerProjection
 namespace YuanxuProof.Admission.RouteMutation
 
 -- The digest is checked by the scoped Quint qualification runner.
-def quintSourceDigest : String := "sha256:6c899421cb56cb2bd70504fc29d3124bdd381f1fee41795409f353325fd1e185"
-
 -- An endpoint projection cannot encode an unobserved write history.
 structure Observation where
   receiver : Nat

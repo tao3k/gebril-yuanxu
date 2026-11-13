@@ -4,8 +4,6 @@ import YuanxuProof.Admission.ReplayOwnership
 namespace YuanxuProof.Admission.MetadataOwnership
 
 -- Source digest inserted after the finite projection is finalized.
-def quintSourceDigest : String := "sha256:d6a55955cedced26d8c69a8b62caa55236db280eef0c8461ec4886981a5fd890"
-
 -- Runtime association is eq?-based. A metadata identity may have multiple owners.
 -- Completeness of this projection is NOT implied by a checked gateway.
 def owners (association : List (Nat × Nat)) (target : Nat) : List Nat :=

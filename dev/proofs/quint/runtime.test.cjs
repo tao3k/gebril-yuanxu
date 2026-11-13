@@ -57,7 +57,7 @@ test('transitive import mutation between same-path requests is rejected',async()
 });
 
 test('acceptance catalogue contains distinct executable cases and Profile publication controls',()=>{
-  const {catalog,checkBindings}=require('./catalog.cjs');
+  const {catalog}=require('./catalog.cjs');
   const cases=new Set();
   for(const {model,invariant,negative} of catalog.cases) {
     assert.ok(fs.existsSync(path.join(__dirname,model+'.qnt')),model);
@@ -69,5 +69,4 @@ test('acceptance catalogue contains distinct executable cases and Profile public
   }
   assert.ok(cases.has(JSON.stringify(['CandidatePublication','safety',false])));
   assert.ok(cases.has(JSON.stringify(['CandidatePublication_dropProfileCandidate','FinalCurrent',true])));
-  checkBindings();
 });

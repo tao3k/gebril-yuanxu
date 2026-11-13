@@ -505,7 +505,7 @@ and work laws establish the algorithmic premises, not native elapsed-time bounds
 The session index's finite transition refinement is in the existing
 =SourceClosureWork.qnt= owner (=SessionMetadataIndexModel=), with catalogued
 append/growth success and same-cardinality replacement, dropped shared support
-and reused-approval mutants. Lean binds the updated source digest and proves
+and reused-approval mutants. Lean proves
 append-only equal-cardinality stability and all-frame coverage. The native
 correspondence uses immutable private entries, actual table length on every
 boundary, original token identity and two fresh native replays; no new runtime

@@ -40,8 +40,6 @@ theorem first_missing_unchanged (names selected : List String) :
   simp only [lookup_exact]
 end SelectionIndex
 
-def quintSourceDigest : String := "sha256:3cc007e7bd3f45c624c19e08ac0b4c9c4a9ed2e8a89f78251521f3fbb2dda31a"
-
 structure Dependency where
   alias : String
   target : String

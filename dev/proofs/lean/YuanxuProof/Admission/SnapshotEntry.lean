@@ -7,9 +7,6 @@ correspondence, with identity-injective references and sequential stable cuts. -
 namespace YuanxuProof.Admission.SnapshotEntry
 open ReadOnlyEntry ReplayBoundary SourceWindows
 
-def quintSourceDigest : String :=
-  "sha256:519c60a522a7df1fe3c15e23bb24f2e636ea25a95280af88a9fed572a5a2017a"
-
 structure ObjectRow where
   identity : Nat
   revision : Nat

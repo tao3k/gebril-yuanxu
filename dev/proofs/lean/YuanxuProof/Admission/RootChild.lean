@@ -79,9 +79,6 @@ theorem owned_responsibility_uses_child_analysis (root child : Request) :
 #guard consume (some ⟨⟨1, 2, 3⟩, true⟩) ⟨1, 2, 9⟩ == (.independent, none)
 end Routing
 
-def quintSourceDigest : String :=
-  "sha256:932b83c78816ec85fb6049ac7dda441b88fa95a07d9ab5215bbb032ac36511a2"
-
 open LeanPoo.Proof
 open SourceWindows
 

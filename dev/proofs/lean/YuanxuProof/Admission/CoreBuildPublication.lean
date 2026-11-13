@@ -2,8 +2,6 @@
 import YuanxuProof.Admission.SourceLoader
 namespace YuanxuProof.Admission.CoreBuildPublication
 
-def quintSourceDigest : String := "sha256:f1a7f025668d28f7686d5cd944ff78239d6573716e963746da26b7cd739fbfe7"
-
 def current (expected artifact record : String) : Bool :=
   expected == artifact && expected == record
 def publish (before after a b : Bool) : Bool := before && after && a && b

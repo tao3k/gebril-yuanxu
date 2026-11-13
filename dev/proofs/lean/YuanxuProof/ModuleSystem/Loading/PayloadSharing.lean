@@ -148,8 +148,6 @@ theorem privateCatalogFoldOrder {Value : Type} (roots : List (List Value)) :
       (tail.foldr (fun entries rest => entries.foldr List.cons rest) []) = entries ++ tail.flatten
     rw [rows, ih]
 
-def thunkConstructionDigest : String := "sha256:892e2ba2a76188b126fca8286be57c90fc17a2dfb81e2fd575464b322e0ee46c"
-
 -- Identifiers denote binding identity, not spelling or a user purity label.
 def inject (original : Nat → Option Nat) (fresh binding : Nat) (name : Nat) : Option Nat :=
   if name = fresh then some binding else original name

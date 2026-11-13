@@ -6,8 +6,6 @@ No manual purity marker or new runtime generation is assumed. -/
 namespace YuanxuProof.Admission.SnapshotLifetime
 open SnapshotEntry ReadOnlyEntry ReplayBoundary
 
-def quintSourceDigest : String :=
-  "sha256:93c6c73a05065fe2a026a9a6af803b3851dae777d570581213eab7d58296f8f0"
 abbrev Revisions := Nat → Nat
 
 -- Runtime seen-by-identity invalidation increments a selected owner once,

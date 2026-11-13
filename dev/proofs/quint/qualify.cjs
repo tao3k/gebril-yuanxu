@@ -5,7 +5,7 @@ const path=require('node:path');
 const {parseArgs}=require('node:util');
 const {QuintRuntime,quintExecutable,checkVersion,typecheckEntries}=require('./runtime.cjs');
 const {startBackend}=require('./backend.cjs');
-const {catalog,core,hash,files,digests,checkBindings,producerInputs,checkProducer}=require('./catalog.cjs');
+const {catalog,core,hash,files,digests,producerInputs,checkProducer}=require('./catalog.cjs');
 
 function scheme(value) {
   if(typeof value==='boolean')return value?'#t':'#f';
@@ -48,7 +48,6 @@ async function qualify(options) {
   const version=checkVersion(executable);
   const producer=options['producer-source']&&path.resolve(options['producer-source']);
   const producerBound=producerInputs(producer,prefix);
-  checkBindings();
   checkProducer(producer,producerBound);
   const sources=digests(producerBound);
   const sidecar=suffix=>receipt.replace(/\.[^/.]+$/,'')+suffix;

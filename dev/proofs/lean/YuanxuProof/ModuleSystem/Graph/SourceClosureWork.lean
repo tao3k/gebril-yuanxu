@@ -492,39 +492,6 @@ theorem flat_guard_checks_every_frame (frames : List (List Node)) (current : Nod
   | nil => simp
   | cons roots rest ih => simp [ih]
 
-def toolOriginQuintDigest : String :=
-  "sha256:3b8e1e15e0f5a4af7b07636353cefa9283468b23ab68a318d6aa078c0e68de31"
-
-def checkpointQuintDigest : String :=
-  "sha256:d14b132d42c27484614e33eee373bce77c998e6eef023f3584549af8be5d1247"
-
-def quintSourceDigest : String :=
-  "sha256:eb42dcbeca6e0f871c2458a91540571c20f0e6bc9b0db1e957ca0cbb4cdb5586"
-
-def sourcePrefixQuintDigest : String :=
-  "sha256:05e06b4b0765600a5b121fe585284ec6505061efc0c54db3036fb167c695b48c"
-
-def dependencyContinuationQuintDigest : String :=
-  "sha256:6577ed33a88f9979b15586492de9abb75a2a77ac2cffc6f66357e54cc6caf850"
-
-def readerEffectSupportQuintDigest : String :=
-  "sha256:a0e9cad7aee1ac46c01a700d292a91096c0b3d1497b7c5d11e3b351db7407ac7"
-
-def candidateLocationQuintDigest : String :=
-  "sha256:531c33fa1ed0fe79873f5897446fa6569e713026d77e5fb4b794b9a55a40af86"
-
-def compilerEnrollmentQuintDigest : String :=
-  "sha256:b0fe90bfc66761c668193d987a26a18258b9bc74bd852047cf311e85b101c898"
-
-def authoringStageQuintDigest : String :=
-  "sha256:17f703653d33e59f7271dbb5be310d4a5c97a57e914e1d5f444e72fd79af3699"
-
-def carrierReturnQuintDigest : String :=
-  "sha256:b447ebd6770d8ca3fb9c311989522cdb31bff681cd167791a3c0b877a76ceb52"
-
-def carrierAdmissionQuintDigest : String :=
-  "sha256:5880421305bd18369237ac7ab2fa71f745707d26f0e9bfa6b9a2dd5638eea4f0"
-
 structure Work (Node : Type) where
   discovery : Discovery Node
   pops : Nat

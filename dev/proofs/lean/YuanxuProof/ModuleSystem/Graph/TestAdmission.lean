@@ -8,9 +8,6 @@ an algorithm model, not a proof that the Scheme reader discovers every import.
 Sources mean observed reader dependencies, not configuration-policy edges. -/
 namespace YuanxuProof.ModuleSystem.Graph.TestAdmission
 
-def quintSourceDigest : String :=
-  "sha256:a6fbd0cbb215fb72a5bcb3faa939e537e2af15920c2eeb48654ff16bdcadf3e8"
-
 structure Discovery (Node : Type) where
   seen : List Node
   pending : List Node

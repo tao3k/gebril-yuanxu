@@ -8,9 +8,6 @@ producer/metadata/observer closure is a correspondence obligation, not an axiom.
 namespace YuanxuProof.Admission.ReplayBoundary
 open SourceWindows
 
-def quintSourceDigest : String :=
-  "sha256:908ac74de776c9bc39af5d3f2153b85a1bb5aa8c1a3d407fd6c53409087f4a7c"
-
 structure Request where
   path : String
   expected : String

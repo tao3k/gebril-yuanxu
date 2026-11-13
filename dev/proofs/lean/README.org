@@ -156,9 +156,9 @@ concrete predicates, dependent proof fields and external policy parameters remai
 distinct. This shape audit is a regression guard, not a proof of runtime refinement.
 Declaration counts are not counts of independently proved requirements.
 
-Run =just proofs-quint= for finite transition controls. The Graph Lean model binds
-the Quint source digest. Its operation result is a completed ordered pass, not a
-fixed-point claim. Runtime graph/source-projection and schema inheritance tests
+Run =just proofs-quint= for finite transition controls. The Lean Graph model
+describes the same operation as the Quint controls. Its result is a completed
+ordered pass. Runtime graph/source-projection and schema inheritance tests
 run serially through the heap-fenced =just test-file= entrypoint. Runtime receipts,
 conditional Lean laws and finite-model controls are distinct evidence.
 
@@ -208,7 +208,7 @@ complete successful observations, branch union and first-origin collector
 coverage. Computed counterexamples show that deferring a JSON check past a
 stale token, or substituting a different first origin, changes the diagnostic.
 This does not prove arbitrary MOP callbacks or cold metadata hooks pure. The
-aggregate requires these theorems; the QNT runner checks the source digest.
+aggregate requires these theorems. Quint qualification runs the finite controls.
 See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.20-remaining-read-boundaries.org][32.20]] for the runtime producer audit and unproved extraction premises.
 
 * Identity DFS and runtime traversal frames

@@ -3,9 +3,6 @@ import YuanxuProof.Admission.ClosedTail
 
 namespace YuanxuProof.Admission.CheckerOrigin
 
-def quintSourceDigest : String :=
-  "sha256:2b44c7e38283406db1b9eedef0dc2997f534609e529d2cd610b30a5e85cf00b0"
-
 -- The producer identity is projected as 0. This is not procedure-effect inference.
 structure Read where
   checker : Nat

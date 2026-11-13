@@ -3,9 +3,6 @@ import YuanxuProof.Admission.ReadRetention
 
 namespace YuanxuProof.Admission.RootCollection
 
-def quintSourceDigest : String :=
-  "sha256:ef3d878991dbcdfa9984e52c1123d00435aee8c6cc0db033676d4a7d7d798c6a"
-
 -- Token Nat is original record identity. Observers see the uncompressed input.
 structure Frame (World : Type) where
   roots : List Nat
