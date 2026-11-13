@@ -360,15 +360,15 @@ package YuanxuSelectedPackageBuilds {
     requirement def ClosedPublicationReadUnion {
         doc /* 13.35 attribution separates complete declaration admission,
                independent currentness and post-admission scope demand in the
-               same 180-second Case. Reuse SourceClosureWork frame accounting
-               and Quint pure-epoch/effect boundaries. Research only: a fixed reader may join
-               its preparation/admission original read roots for ONE native POO
-               replay, preserving ordered root membership and complete support.
+               same 180-second performance target. Reuse SourceClosureWork frame
+               accounting and Quint pure-epoch/effect boundaries. A fixed reader
+               joins its preparation and admission read roots for one native POO
+               replay at the closed return, preserving ordered root membership
+               and complete support. Refusal replays the original checks in
+               order so the first failure remains visible.
                Keep location/policy checks and fresh pre/post-effect guards;
                source observers retain original delivery/order. A topology hit
-               is never a currentness verdict or cross-boundary approval.
-               The per-publication fusion experiment was removed from Scheme;
-               these laws do not establish an installed optimization. */
+               is never a currentness verdict or cross-boundary approval. */
     }
     requirement def NativeSessionMetadataTopology {
         doc /* Main metric: one cold business .get in a thousand-name namespace,
