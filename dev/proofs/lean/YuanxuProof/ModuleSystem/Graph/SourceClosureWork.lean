@@ -510,9 +510,6 @@ def dependencyContinuationQuintDigest : String :=
 def readerEffectSupportQuintDigest : String :=
   "sha256:a0e9cad7aee1ac46c01a700d292a91096c0b3d1497b7c5d11e3b351db7407ac7"
 
-def candidatePublicationQuintDigest : String :=
-  "sha256:8e1ae570aad1decd445d9447fd4e047cfa1b40c8f7bb5ce61accedef92a681ff"
-
 def candidateLocationQuintDigest : String :=
   "sha256:531c33fa1ed0fe79873f5897446fa6569e713026d77e5fb4b794b9a55a40af86"
 

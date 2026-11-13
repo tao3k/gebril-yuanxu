@@ -1622,6 +1622,11 @@
       "negative": true
     },
     {
+      "model": "CandidatePublication_dropProfileCandidate",
+      "invariant": "FinalCurrent",
+      "negative": true
+    },
+    {
       "model": "CandidatePublication_earlyVisible",
       "invariant": "CommitOnly",
       "negative": true
@@ -2932,11 +2937,6 @@
       "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
       "model": "ReaderEffectSupport.qnt",
       "declaration": "readerEffectSupportQuintDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
-      "model": "CandidatePublication.qnt",
-      "declaration": "candidatePublicationQuintDigest"
     },
     {
       "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
