@@ -92,25 +92,12 @@
       (def intent (module-init-intent (list declaration) #f))
       (check-equal? (map (cut .ref <> 'mount) (.get intent windows)) '(Modules Scenarios))
       (check-equal? (map (cut .ref <> 'identity) (.get intent decisions)) '(engine release)))
-    (yuanxu-test-case "standard package windows are confined declarations, not installation requests"
-      (def intent
+    (yuanxu-test-case "directory windows take source paths and use native Gerbil imports"
+      (check-exception
         (module-init-intent
-          '((yuanxu! :test-dir "./t" :load-modules "modules" package: "github.com/example/module-provider"
-                     mode: explicit rename: Lab (governance))) #f))
-      (check-equal? (.get (car (.get intent windows)) package) "github.com/example/module-provider")
-      (for-each
-        (lambda (source)
-          (check-exception
-            (module-init-intent
-              `((yuanxu! :test-dir "./t" source: ,source package: "github.com/example/module-provider" mode: explicit)) #f)
-            error?))
-        '("../modules" "/modules" "modules/../private" "modules\\private"))
-      (for-each
-        (lambda (package)
-          (check-exception
-            (module-init-intent `((yuanxu! :test-dir "./t" source: "modules" package: ,package mode: explicit)) #f)
-            error?))
-        '("../owner/repository" "github.com/owner/repository@tag" "/owner/repository")))
+          '((yuanxu! :test-dir "./t" :load-modules "modules"
+                     package: "github.com/example/module-provider" mode: explicit (engine))) #f)
+        error?))
     (yuanxu-test-fixture "mounted scopes share identity and cross-window requirements; bombs remain cold"
       (root Workspace)
       (fixture! root)

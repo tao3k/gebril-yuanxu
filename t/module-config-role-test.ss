@@ -47,7 +47,7 @@
           (assert 'explicit-runtime-header (= (.get (eval-syntax 'Config) answer) 7)))))
     (yuanxu-test-case "explicit POO extension imports retain their runtime binding"
       (with-config
-        "(import (only-in :tao3k/yuanxu/object-syntax/path-slots .o)) (def Config (.o answer: 9))"
+        "(import (only-in :tao3k/yuanxu/syntax/path-slots .o)) (def Config (.o answer: 9))"
         (lambda (_source _prepared)
           (assert 'explicit-object-syntax (= (.get (eval-syntax 'Config) answer) 9)))))
     (yuanxu-test-case "runtime inclusion retains the original config source location"

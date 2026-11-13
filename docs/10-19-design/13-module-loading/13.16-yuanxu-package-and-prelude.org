@@ -249,8 +249,8 @@ matched faults, source-cut hashes and end-of-run drift refusal are unchanged.
 Each receipt records its shard index/count. A passing shard is not a complete
 catalog qualification. Lean remains a separate aggregate gate.
 
-Type fact projection now belongs to =object-types/facts.ss= and is imported as
-=:yuanxu/object-types/facts=. JSON Schema consumers and the build inventory
+Type fact projection now belongs to =types/facts.ss= and is imported as
+=:yuanxu/types/facts=. JSON Schema consumers and the build inventory
 reference this owner directly; there is no forwarding type-facts module.
 Gerbil installation and the Nix store probe are inline steps in the shared
 GitHub composite action. The downloaded immutable gerbil-bazel release supplies

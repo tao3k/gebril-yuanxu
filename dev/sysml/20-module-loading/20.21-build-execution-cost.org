@@ -932,7 +932,7 @@ Do not update the release pin to claim those missing producer APIs are published
 
 ** Concrete consumer repairs
 
-1. =object-family/read-projection.ss= uses =prototype-map-length= for declaration
+1. =object/read-projection.ss= uses =prototype-map-length= for declaration
    membership. =null?= and =pair?= do not describe runtime persistent catalogs.
    Empty catalogs retain closed eligibility; nonempty catalogs retain the open
    boundary before descriptor demand. =configuration/slot-origin.ss= uses the

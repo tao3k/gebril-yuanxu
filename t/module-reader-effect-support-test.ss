@@ -16,7 +16,7 @@
         (only-in :tao3k/yuanxu/module-system/types ModuleSourceRoleContract)
         (only-in :clan/poo/read-projection
                  call-with-owned-read-projection current-owned-read-open-guard)
-        (only-in :tao3k/yuanxu/object-types/contracts
+        (only-in :tao3k/yuanxu/types/contracts
                  yuanxu-classification-evidence yuanxu-validation-evidence)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export module-reader-effect-support-test)

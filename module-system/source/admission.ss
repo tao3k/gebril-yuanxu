@@ -12,7 +12,7 @@
         (only-in :tao3k/yuanxu/module-system/source/role-forms yuanxu-module-allowed-entrypoint-roles
                  yuanxu-module-required-role-files module-role-file)
         (only-in :std/list/list any)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
         :tao3k/yuanxu/module-system/source/observations
         :tao3k/yuanxu/module-system/source/objects
         :tao3k/yuanxu/module-system/source/publication

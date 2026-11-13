@@ -646,6 +646,14 @@ package YuanxuSelectedPackageBuilds {
                slot index; the permit hash is discarded. */
     }
 
+    requirement def InterfaceImportBinding {
+        doc /* Native Gerbil establishes authored imports before the
+               declaration continuation. Resolve binding identity on the
+               continuation's rewrapped syntax. Rewrap original syntax once
+               on direct include. Only the verified stock shape in a private
+               interpreter wrapper can deliver the POO value directly. */
+    }
+
     requirement def ProfileTagSelection {
         doc /* A profiled Interface declares a nonempty literal set of distinct
                capability categories. Categories group owners independently of
@@ -654,6 +662,12 @@ package YuanxuSelectedPackageBuilds {
                test discovery share the selected Graph and declared dependencies.
                Testing consumes the selected file list against downstream products.
                Tag metadata cannot evaluate business scopes or widen source authority.
+               Each currentness window observes fresh Interface bytes. With the
+               standard Gerbil readtable and no source observer, exact equality
+               with the admitted text discharges the literal tag check. Changed
+               text is decoded again. An alternate readtable or observer keeps
+               the original decoding path. Profile support includes candidates
+               outside the selected closure.
                Same-category roots are combined across declared windows; an
                auxiliary window without matches remains dependency-eligible.
                Empty tags and categories with no matches across their windows

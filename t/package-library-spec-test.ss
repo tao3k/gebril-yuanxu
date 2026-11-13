@@ -2,6 +2,8 @@
 (import :std/test
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/source this-source-file)
+        (only-in :clan/poo/object .get)
+        (only-in "../init.ss" tao3k/yuanxu.init.exports)
         (only-in "../core-spec.ss" core-spec)
         (only-in "./qualification/module-init/fixture.ss" import-build-script!)
         (only-in :gerbil/expander expander-context-id)
@@ -11,7 +13,7 @@
   (call-with-output-file (path-expand name root) (lambda (port) (display text port))))
 (def package-library-spec-test
   (test-suite "Selected package source projection"
-    (test-case "official Core Make spec includes the public Funflow import closure"
+    (test-case "Core installation leaves Funflow and JsonSchema to the consumer"
       (def root (path-expand ".." (path-directory (this-source-file))))
       (def main (import-build-script! (path-expand "build.ss" root) #t))
       (def spec
@@ -19,14 +21,19 @@
           (call-with-output-string
             (lambda (out) (parameterize ((current-output-port out)) (main "spec")))) read))
       (def targets (map (lambda (target) (if (string? target) target (cadr target))) spec))
-      (def roots
-        (package-library-spec root 'tao3k/yuanxu
-          '("modules/funflow/control-plane/api.ss" "modules/funflow/scenario.ss"
-            "modules/funflow/workload.ss" "modules/funflow/bundle-v1.ss")))
-      (check-equal? (and (member "modules/funflow/control-plane/api" roots) #t) #t)
-      (check-equal? (and (member "modules/funflow/control-plane/runtime-command-descriptor" roots) #t) #t)
-      (check-equal? (filter (lambda (target) (not (member target targets))) roots) '())
+      (check-equal? (filter (lambda (target)
+                             (or (string-prefix? "modules/funflow/" target)
+                                 (string-prefix? "modules/json-schema/" target))) targets) '())
       (check-equal? (member "init" core-spec) #f))
+    (test-case "explicit Core init export retains the public Funflow targets"
+      (def targets
+        (map (lambda (target) (if (string? target) target (cadr target)))
+             (.get tao3k/yuanxu.init.exports std-make-spec)))
+      (for-each
+        (lambda (target) (check-equal? (and (member target targets) #t) #t))
+        '("modules/funflow/func" "modules/funflow/control-plane/api"
+          "modules/funflow/control-plane/runtime-command-descriptor"
+          "modules/funflow/workload" "modules/funflow/bundle-v1")))
     (test-case "shared imports are projected once in dependency order; unused sources stay lazy"
       (call-with-temporary-directory "package-library-"
         (lambda (root)

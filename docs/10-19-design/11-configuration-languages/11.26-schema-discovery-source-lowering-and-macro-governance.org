@@ -77,7 +77,7 @@ any of the generated nesting, source rows or cache internals.
 | [[file:../../../modules/json-schema/json-schema-receipt.ss][Schema artifact]] | normalization, object-contract, source-ref, diagnostics | Selected scope publication and discovery adapter |
 | [[file:../../../modules/json-schema/json-schema-ir.ss][Normalized IR]] | node kind/value/metadata; property name/schema/required?/doc; object properties/additional-properties | Bounded runtime field views; do not duplicate the IR |
 | [[file:../../../modules/json-schema/json-schema-validate.ss][Full-root validation]] | Structured metadata path and reason, including additional-property diagnostics | Prefix final Profile path, attach retained sources, render useful messages |
-| [[file:../../../object-syntax/path-slots.ss][Path-slot lowering]] | Syntax-aware splitting, shared-prefix trie, stx-source on reconstructed identifiers, duplicate/overlap errors | Direct assignment and retained publication-side write/source metadata |
+| [[file:../../../syntax/path-slots.ss][Path-slot lowering]] | Syntax-aware splitting, shared-prefix trie, stx-source on reconstructed identifiers, duplicate/overlap errors | Direct assignment and retained publication-side write/source metadata |
 | Gerbil expander | stx-source, syntax objects, datum->syntax, binding-aware comparison | Preserve both original and generated spans in the bounded lowering |
 
 The artifact schema accessor is a receipt-format identifier, not the raw Schema

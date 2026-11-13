@@ -27,7 +27,8 @@
                  wrapper-delivery? wrapper-delivery-value)
         :tao3k/yuanxu/module-system/source/objects
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
-        (only-in :tao3k/yuanxu/module-system/building/source-package module-build-source-path))
+        (only-in :tao3k/yuanxu/module-system/building/source-package
+                 module-build-source-path call-with-build-source-fallbacks))
 (import :tao3k/yuanxu/module-system/source/reader-support
         :tao3k/yuanxu/module-system/source/reader-evaluation
         :tao3k/yuanxu/module-system/source/import-provenance
@@ -500,7 +501,7 @@
        (def role-kind (.ref prepared 'build-role-kind))
        (def (reject-package-script!)
          (error "Module build.ss requires .def Build with defbuild-script:; defbuild-script belongs to the package entry" interface-path))
-       (def (resolve-build!)
+       (def (resolve-build/in-context!)
          (when (eq? role-kind 'package-script) (reject-package-script!))
          (parameterize ((current-module-source-phase 'build-role-before)) (reader-current! session))
          (let* ((path (.ref prepared 'build-source))
@@ -508,7 +509,9 @@
                 (related (map (lambda (file)
                                 (yuanxu-prepare-module-build-source file void))
                               (.ref prepared 'role-sources))))
+           (def init-source (assq 'init-source (yuanxu-module-source-ref-metadata source-value)))
            (let (value (module-prepared-source-binding input 'Build related role-imports?: #t
+             init-source: (and init-source (path-normalize (cdr init-source)))
              import-provenance: (list (reader-session-tool-contexts session) (reader-session-tool-paths session) (reader-session-tool-dependencies session)
                                    (reader-session-tool-observations session) (reader-session-compiler-contexts session))
              shared-contexts: (reader-session-kernel-contexts session) shared-inputs: (reader-session-kernel-inputs session)
@@ -524,6 +527,8 @@
                                  (map path-normalize (.ref prepared 'role-sources))))))
                input-values)))
              (parameterize ((current-module-source-phase 'build-role-after)) (reader-current! session)) value)))
+       (def (resolve-build!)
+         (with-module-sources resolve-build/in-context!))
        (def build-role (and (eq? role-kind 'make-parameters) (.o value: (resolve-build!))))
        (def (native-spec)
          (case role-kind
@@ -635,7 +640,7 @@
                                 (not (equal? kernel kernel-root))
                                 (module-build-source-path context kernel))))))
                  (if source (source-context source reload?) context))))))))
-       (def (resolve-values path names (role? #t))
+       (def (resolve-values/in-context path names role?)
          (reader-current! session 'role-entry)
          (def created? (not (file-exists? directory)))
          (dynamic-wind
@@ -665,6 +670,15 @@
                (release-reader-expansions! completed)
                value))
            (lambda () (when created? (remove-reader-tree directory)))))
+       (def (with-module-sources action)
+         ;; Gerbil resolves symbolic imports before the reader's import hook.
+         ;; Declared windows supply missing source for both publication and
+         ;; deferred role reads while preserving the prerequisite order.
+         (if source-tree
+           (call-with-build-source-fallbacks (.ref source-tree 'package-roots) action)
+           (action)))
+       (def (resolve-values path names (role? #t))
+         (with-module-sources (lambda () (resolve-values/in-context path names role?))))
        (def (resolve-role role names)
          (resolve-values (path-expand (string-append (symbol->string role) ".ss") root) names))
        (def (resolve-feature name)
@@ -680,7 +694,8 @@
            (lambda () (set! reading-feature? #t))
            (lambda () (.ref (resolve-values path '(Feature) #f) 'Feature))
            (lambda () (set! reading-feature? #f))))
-       (dynamic-wind
+       (def (read-interface)
+        (dynamic-wind
         (lambda () (create-directory directory))
         (lambda ()
           (for-each
@@ -790,4 +805,5 @@
           (set! delivered #f)
           (set! interface-context #f)
           (set! interface-wrapper #f)
-          (remove-reader-tree directory)))))))
+          (remove-reader-tree directory))))
+       (with-module-sources read-interface)))))

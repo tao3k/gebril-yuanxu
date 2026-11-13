@@ -4,7 +4,7 @@
         (only-in :clan/poo/mop call-with-slot-read-observer replay-slot-reads!
                  slot-read-dependencies)
         (only-in :std/error Error? Error-message)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-classification-evidence)
         (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)

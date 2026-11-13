@@ -82,8 +82,8 @@ shows the declared window, Interface, native =.get= and leaf =self=/=super= sema
 
 | Area | Shared mechanism |
 |------+------------------|
-| =object-family/=, =types.ss= | POO object families and Types |
-| =object-syntax/path-slots= | Bounded dotted-path declarations lowered to POO refinements |
+| =family/=, =types.ss= | POO object families and Types |
+| =syntax/path-slots= | Bounded dotted-path declarations lowered to POO refinements |
 | =graph/=, =composition/lineage.ss= | Unified graph topology, ordered POO operations and pure lineage analysis |
 | =contribution/= | Contribution values, capability admission, receipt issuance and revocation |
 | =module-system/= | Runtime Module values, schemas, inheritance, SourceRef, static Loader and Catalog |

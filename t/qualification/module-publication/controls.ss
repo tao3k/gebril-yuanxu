@@ -23,7 +23,7 @@
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
         (rename-in (only-in :tao3k/yuanxu/module-system/source/declaration .def) (.def publication-definition))
         (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         :tao3k/yuanxu/module-system/source/objects

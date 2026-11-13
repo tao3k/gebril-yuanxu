@@ -6,7 +6,7 @@
         (only-in :clan/poo/object-contract diagnose)
         (prefix-in (only-in :clan/poo/method-combination
                            prepare-standard around primary) combination.)
-        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence
+        (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence
                  yuanxu-validation-evidence call-with-contract-analysis-root)
         (only-in :tao3k/yuanxu/configuration/slot-origin admit-field-sources!)
         (only-in :tao3k/yuanxu/module-system/source/admission

@@ -45,8 +45,8 @@
       (for-each
         (lambda (name identity)
           (check-equal? (eq? (hash-get names identity) (core-import-module name)) #t))
-        '(:tao3k/yuanxu/object-family/role-syntax :tao3k/yuanxu/configuration/json)
-        '(tao3k/yuanxu/object-family/role-syntax tao3k/yuanxu/configuration/json)))
+        '(:tao3k/yuanxu/object/role-syntax :tao3k/yuanxu/configuration/json)
+        '(tao3k/yuanxu/object/role-syntax tao3k/yuanxu/configuration/json)))
     (yuanxu-test-case "postorder, wrappers, identity sharing and cuts match the original walk"
       (def nodes (list->vector (map (lambda (_) (context-node)) (iota 6))))
       (def (node n) (vector-ref nodes n))

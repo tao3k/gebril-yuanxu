@@ -54,12 +54,12 @@
           ((eval-syntax 'register-module-build-source!) root 'tao3k/yuanxu)
           (eval-syntax `(import
                          (only-in ,(path-expand "init.ss" root) tao3k/yuanxu.init.exports )))
-          (check-equal? (core-resolve-library-module-path ':tao3k/yuanxu/object-family/syntax)
-                        (path-normalize (path-expand "object-family/syntax.ss" root)))
+          (check-equal? (core-resolve-library-module-path ':tao3k/yuanxu/object/syntax)
+                        (path-normalize (path-expand "object/syntax.ss" root)))
           ;; The Core package prefix must not capture public dependency imports.
           (check-equal? (string-prefix? (path-normalize root)
                            (core-resolve-library-module-path ':clan/poo/object)) #f)
-          (def retained '("utilities/algorithms" "object-types/contracts" "core-spec"))
+          (def retained '("utilities/algorithms" "types/contracts" "core-spec"))
           (def package (yuanxu-project-source-spec (path-expand "init.ss" root)
                           retained root (path-expand "build.ss" root)))
           (def targets (.get package spec))

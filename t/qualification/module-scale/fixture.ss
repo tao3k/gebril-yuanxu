@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Real role sources and init; assertions run in the owning std/test Case.
-(import "../module-init/fixture.ss" "./workloads.ss" (except-in :clan/poo/object .def .o) :tao3k/yuanxu/object-syntax/path-slots :std/test
+(import "../module-init/fixture.ss" "./workloads.ss" (except-in :clan/poo/object .def .o) :tao3k/yuanxu/syntax/path-slots :std/test
         (only-in :std/source this-source-file)
         (only-in :tao3k/yuanxu/ops/progress execution-progress!)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)

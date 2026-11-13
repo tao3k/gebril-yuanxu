@@ -161,3 +161,23 @@ CPU samples were 1.991 and 2.430 s, and the paired reference samples were
 100,000-row skewed candidate still took two collections. The retained CPU
 and wall samples do not establish a consistent improvement for the skewed
 workload. This variant remains an experiment.
+
+* Qualification after the Gerbil-POO alignment
+
+At Core =6818da4=, the functional Catalog suite and all four existing
+capacity workloads passed. The guarded capacity command took 14.83 s
+and peaked at 1.34 GiB process footprint. Each workload consumed exactly
+its declared number of rows and performed one dependency read.
+
+| Releases | Shape | Cold wall | Cold CPU | Cold GC CPU | Two edits CPU |
+|----------+-------+-----------+----------+-------------+---------------|
+| 100,000 | Wide | 0.361 s | 0.320 s | 0.104 s | 9 µs |
+| 100,000 | Skewed | 0.416 s | 0.222 s | 0.043 s | 13 µs |
+| 1,000,000 | Wide | 6.660 s | 4.777 s | 1.786 s | 11 µs |
+| 1,000,000 | Skewed | 2.681 s | 2.406 s | 0.525 s | 32 µs |
+
+At one million releases, 10,000 warm exact resolutions used 3.79 ms
+CPU in the wide shape and 3.40 ms in the skewed shape. Enumerating
+500,000 versions of the skewed hub used 16.71 ms CPU. The stale release
+and conflicting edit controls passed. These are Catalog measurements.
+The independent real-Interface Module admission gate remains separate.

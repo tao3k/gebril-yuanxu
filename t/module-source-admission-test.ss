@@ -18,7 +18,7 @@
         (only-in :tao3k/yuanxu/module-system/authoring/roles make-default-module-authoring-profile)
         (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :tao3k/yuanxu/module-system/types ModuleSourceRoleContract)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?)
         :tao3k/yuanxu/module-system/source/collection
         :tao3k/yuanxu/module-system/source/objects
         :tao3k/yuanxu/module-system/source/admission

@@ -129,6 +129,8 @@
           (check-equal? (.call context current? generation) #t)
           (write-source "core/flow/interface.ss" ";;; changed text, same tags\n(.def Flow tags: '(workflow))")
           (check-equal? (.call context current? generation) #t)
+          (write-source "core/flow/interface.ss" "(.def Flow tags: '())")
+          (check-equal? (.call context current? generation) #f)
           (write-source "core/flow/interface.ss" "(.def Flow tags: '(deployment))")
           (check-equal? (.call context current? generation) #f)
           ;; A miss for a DIFFERENT category cannot hide behind deployment's hit.

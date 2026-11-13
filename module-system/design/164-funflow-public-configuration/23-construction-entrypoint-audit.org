@@ -85,7 +85,7 @@ it is not an alternative qualified POO constructor. Raw host/struct copying or
 low-level field access does not acquire trusted provenance merely by returning
 an object-shaped value.
 
-Current Core path slots (core/object-syntax/path-slots.ss) lower shared prefixes
+Current Core path slots (core/syntax/path-slots.ss) lower shared prefixes
 to runtime nested =>.+; there is no independent runtime allocation mechanism.
 The current dotted leaf rule accepts =>.+ only. Dotted direct assignment remains
 a separate proposed extension; this audit does not promote it to implemented.

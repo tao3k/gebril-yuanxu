@@ -12,7 +12,7 @@
         (only-in :tao3k/yuanxu/module-system/types ModuleSourceRoleContract)
         (only-in :tao3k/yuanxu/module-system/authoring/roles TypesSourceRole.)
         (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-memory-snapshot)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-classification-evidence yuanxu-validation-evidence
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-classification-evidence yuanxu-validation-evidence
                  yuanxu-classification-evidence? yuanxu-validation-evidence?
                  YuanxuClassificationEvidence YuanxuValidationEvidence
                  YuanxuContract. yuanxu-contract-admit)

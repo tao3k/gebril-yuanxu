@@ -70,7 +70,7 @@
             (check-equal? (cons name (length (filter (cut equal? <> name) names))) (cons name 1)))
           '("modules/json-schema/types" "modules/json-schema/config"
             "modules/json-schema/func" "modules/json-schema/objects"
-            "modules/json-schema/interface" "object-types/contracts" "utilities/algorithms"
+            "modules/json-schema/interface" "types/contracts" "utilities/algorithms"
             "core-spec"))
         ;; Source tooling prepares the spec but is not a retained runtime target.
         (check-equal? (member "module-system/building/interface" names) #f)
@@ -97,7 +97,7 @@
                 (lambda () (write-source path text)))))
           '(("build.ss" . "stale selected build input")
             ("core-spec.ss" . "stale prepared build source")
-            ("object-types/contracts.ss" . "compiler tool source changed; use a fresh reader")))
+            ("types/contracts.ss" . "compiler tool source changed; use a fresh reader")))
         (check-equal? (spec-of run) spec)
         (defvalues (fresh fresh-package) (script-main (path-expand "build.ss" root) #t))
         (check-equal? (spec-of fresh) spec)

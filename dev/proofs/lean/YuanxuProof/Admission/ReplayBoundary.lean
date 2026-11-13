@@ -187,4 +187,22 @@ private def reworded : Request :=
 theorem changing_first_origin_changes_diagnostic :
     firstIssue [.source json] changed ≠ firstIssue [.source reworded] changed := by decide
 
+section Profile
+variable {Text Tags : Type} [DecidableEq Text] [DecidableEq Tags]
+
+/-- A deterministic literal decoder includes both valid tag rows and refusals.
+    Currentness compares the decoded row whenever the observed text differs. -/
+def profileRowCurrent (decode : Text → Tags) (original observed : Text) : Bool :=
+  if observed = original then true else decide (decode observed = decode original)
+
+theorem profile_row_current_matches_decode
+    (decode : Text → Tags) (original observed : Text) :
+    profileRowCurrent decode original observed = decide (decode observed = decode original) := by
+  by_cases same : observed = original
+  · subst observed
+    simp [profileRowCurrent]
+  · simp [profileRowCurrent, same]
+
+end Profile
+
 end YuanxuProof.Admission.ReplayBoundary

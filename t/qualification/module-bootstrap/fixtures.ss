@@ -72,8 +72,8 @@
                                   "module-system/bootstrap/body-inclusion"
                                   "module-system/schema/slot-contracts"
                                   "module-system/source/declaration" "module-system/source/role-forms"
-                                  "object-family/syntax"
-                                  "object-types/contracts" "object-types/facts" "object-types/ports"
+                                  "object/syntax"
+                                  "types/contracts" "types/facts" "types/ports"
                                   "observability/funcs" "observability/objects" "observability/types"
                                   "utilities/algorithms" "utilities/functional")) port)))
       (.o root: fixture-root state: fixture-state cold: #t))))

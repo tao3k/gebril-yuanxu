@@ -5,7 +5,7 @@
         (only-in :tao3k/yuanxu/module-system/source/admission module-source-admit-current!)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
-        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence)
         (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export contract-analysis-test test-cleanup!)

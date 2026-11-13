@@ -2,7 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence)
         (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.)
         (only-in :tao3k/yuanxu/configuration/diagnostics config-diagnostic-locator)
         (only-in :tao3k/yuanxu/module-system/source/admission

@@ -5,8 +5,11 @@
 (import (runtime: :clan/poo/object)
         (only-in :gerbil/runtime/mop class-of)
         (only-in :gerbil/runtime/error Error::t)
+        (only-in :gerbil/runtime/gambit current-readtable)
+        (only-in :gerbil/runtime/syntax __*readtable*)
         (only-in :std/list/list delete-duplicates/hash any foldl length<=n?)
-        (only-in :tao3k/yuanxu/module-system/source/preparation module-source-package-prefix)
+        (only-in :tao3k/yuanxu/module-system/source/preparation
+                 module-source-package-prefix module-source-package-info)
         (only-in :tao3k/yuanxu/module-system/source/collection yuanxu-module-source-collection-optional-entrypoint)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-publication-role-imports)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
@@ -300,6 +303,25 @@
         (and (.slot? window 'profile) (.ref window 'profile)))
       (def (interface-tags file)
         (module-interface-tags file (module-source-read file)))
+      (def (observe-profile-tags! file)
+        (if (or (current-module-source-observer) (not (eq? (current-readtable) __*readtable*)))
+          (observe! interface-tags file #f)
+          (let* ((text (string-copy (module-source-read file)))
+                 (tags (module-interface-tags file text)))
+            ;; Keep the original evidence immutable. Every independent
+            ;; window reads fresh bytes. Changed bytes still take the literal
+            ;; decoder path, even for an owner outside the selected closure.
+            (set! observations
+              (cons (cons #f
+                      (lambda ()
+                        (if (or (current-module-source-observer)
+                                (not (eq? (current-readtable) __*readtable*)))
+                          (equal? tags (module-source-observe interface-tags file))
+                          (let (observed (module-source-observe module-source-read file))
+                            (or (string=? text observed)
+                                (equal? tags (module-interface-tags file observed)))))))
+                observations))
+            tags)))
       (def (select-profile window directory)
         (def tag (profile-tag window))
         (when tag
@@ -312,7 +334,7 @@
                          (node (snapshot child))
                          (file (path-expand "interface.ss" child))
                          (classified (and (directory-snapshot-interface? node)
-                                          (observe! interface-tags file #f))))
+                                          (observe-profile-tags! file))))
                     (if classified
                       (when (and (not (decision-row (window-key window id)))
                                  (memq tag classified))
@@ -484,8 +506,10 @@
       (def (declared-kernel root)
         (def own (path-directory init-path))
         (if (inside? root own) (path-normalize own)
-          (let* ((candidates (delete-duplicates/hash
-                              (list (path-expand "init.ss" root) (path-expand "../init.ss" root))))
+          (let* ((package (observe! module-source-package-info root))
+                 (candidates (delete-duplicates/hash
+                               (append (list (path-expand "init.ss" root) (path-expand "../init.ss" root))
+                                       (if package (list (path-expand "init.ss" (car package))) '()))))
                  (origins
                   (filter-map
                     (lambda (file)
@@ -500,7 +524,7 @@
                                      (map (lambda (window) (module-init-source-root window file))
                                           (.ref intent 'windows))
                                      (list (intent-root intent file))))
-                              (and (any (lambda (path) (string=? (canonical path) (canonical root))) roots)
+                              (and (any (lambda (path) (inside? root path)) roots)
                                    (path-normalize (path-directory file)))))))) candidates)))
             (when (and (pair? origins) (pair? (cdr origins)))
               (error "ambiguous declared source window origin" root origins))
@@ -509,13 +533,15 @@
         (list->hash-table
           (map (lambda (root) (cons (canonical root) (declared-kernel root)))
                (if windows (map window-root windows) (list root-path)))))
+      ;; A foreign kernel is admitted by the init that owns the declared
+      ;; directory. A bare external directory grants only its own source tree.
       (def package-kernels
-        (if qualified-owners?
-          (filter-map (lambda (window)
-                        (and (.ref window 'package)
-                             (hash-ref kernel-roots (canonical (window-root window)))))
-                      windows)
-          '()))
+        (filter-map (lambda (root)
+                      (let (kernel (hash-ref kernel-roots (canonical root)))
+                        (and (not (inside? root (path-directory init-path)))
+                             (not (equal? (canonical root) (canonical kernel)))
+                             kernel)))
+                    declared-window-roots))
       ;; A window prefix is not Module ownership. The indexed ancestor walk
       ;; above refuses actual closed boundaries; #f denotes an ordinary library.
       (def source-tree

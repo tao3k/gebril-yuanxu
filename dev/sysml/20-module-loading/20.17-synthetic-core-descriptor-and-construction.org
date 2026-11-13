@@ -163,7 +163,7 @@ method fields. Expand that use only after measuring the remaining hot access
 sites. It does not remove read records or their strong receiver references by
 itself. Do not attribute the preceding 528-record reduction to faster hashing.
 
-The existing =object-family/indexed.ss= is a separate ordered value-vector
+The existing =object/indexed.ss= is a separate ordered value-vector
 family: duplicate names use the first positional index. Runtime shapes
 canonicalize names and represent object Slots. Replacing the former index
 with a canonical shape index without changing its consumers would select the

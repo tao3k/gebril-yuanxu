@@ -1,6 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+prelude: :gerbil/core
 (export core-spec)
 
 ;; Ordinary library targets, including the public Funflow facades and their
@@ -42,7 +43,7 @@
     "graph/types-contracts"
     "graph/types-core"
     "graph/types"
-    "object-types/facts"
+    "types/facts"
     "utilities/algorithms"
     "utilities/product-syntax"
     "utilities/final-projection-syntax"
@@ -52,15 +53,15 @@
     "profile-composition/module-prototype-syntax"
     "utilities/functional"
     "composition/roles"
-    "object-family/role-syntax"
+    "object/role-syntax"
     "module-system/feature/interface"
     "module-system/feature/domain-case/syntax"
-    "object-types/contracts"
-    "object-types/ports"
-    "object-family/funcs"
-    "object-family/indexed"
-    "object-family/syntax"
-    "object-family/interface"
+    "types/contracts"
+    "types/ports"
+    "object/funcs"
+    "object/indexed"
+    "object/syntax"
+    "object/interface"
     "graph/contribution"
     "graph/payload-operations"
     "graph/operation"
@@ -98,7 +99,7 @@
     "profile-composition/profile-bundle"
     "profile-composition/scope-declaration"
     "profile-composition/selection-syntax"
-    "object-syntax/path-slots"
+    "syntax/path-slots"
     "module-system/observability/diagnostics"
     "composition/lineage"
     "observability/types"

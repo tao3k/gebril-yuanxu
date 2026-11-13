@@ -25,9 +25,13 @@
   ;; byte dependency. Revalidate the captured native bindings on EVERY
   ;; boundary; this is not a remembered successful admission.
   (reader-check-tool-contexts! session)
-  (module-source-admit-current! observations
-                                "compiler tool source changed; use a fresh reader")
-  (for-each (lambda (guard) (module-source-observe (source-preparation-invoke guard))) observed-guards))
+  (module-source-measure-operation 'reader-tool-source-current
+    (lambda ()
+      (module-source-admit-current! observations
+                                    "compiler tool source changed; use a fresh reader")))
+  (module-source-measure-operation 'reader-source-guards
+    (lambda ()
+      (for-each (lambda (guard) (module-source-observe (source-preparation-invoke guard))) observed-guards))))
 (def (reader-check-current/closed! session inputs _guard-count _source-count)
   ;; record-source-observations! only adds paths or verifies an equal
   ;; existing revision. With its private owner identity and cardinality,
@@ -86,7 +90,7 @@
                ((if local? (candidate-support-tool-rows scope) (reader-session-tool-rows session))))
              (module-source-observe (reader-session-check-current/closed session)
                (if local? (candidate-support-tool-rows scope) (reader-session-tool-rows session))
-               (length selected-guards)
+               (if local? (length selected-guards) (reader-session-guard-count session))
                (hash-length tools))))))))
   ;; Attribute the caller without changing the cache key or retaining a
   ;; result across its boundary. Brackets also close on a refused check.

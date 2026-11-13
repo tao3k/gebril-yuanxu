@@ -2,7 +2,7 @@
 (import :clan/poo/object
         (only-in :clan/poo/mop define-type Object)
         (only-in :clan/poo/object-contract ObjectContract.)
-        (only-in :tao3k/yuanxu/object-types/ports Port)
+        (only-in :tao3k/yuanxu/types/ports Port)
         (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.))
 (export ScopeContract ApplicationContract)
 (define-type (ScopeContract @ Object)

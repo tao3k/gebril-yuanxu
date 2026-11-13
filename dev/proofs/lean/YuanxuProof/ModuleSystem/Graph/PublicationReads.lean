@@ -550,6 +550,19 @@ example : joinedDispatch (Result := Nat) false true true (.ok 1) ≠
 wrapper may deliver directly. An open or compiled declaration uses its binding. -/
 def directDelivery (privateWrapper stock : Bool) : Bool := privateWrapper && stock
 
+/-- The import continuation supplies syntax that already has the marks required
+for native resolution. The direct include supplies the original reader syntax. -/
+def declarationBindingInput {Syntax : Type} (rewrap : Syntax → Syntax)
+    (rawInclude : Bool) (input : Syntax) : Syntax :=
+  if rawInclude then rewrap input else input
+
+theorem declaration_binding_input_agrees {Syntax Binding : Type}
+    (rewrap : Syntax → Syntax) (resolve : Syntax → Binding)
+    (source : Syntax) (rawInclude : Bool) :
+    resolve (declarationBindingInput rewrap rawInclude
+      (if rawInclude then source else rewrap source)) = resolve (rewrap source) := by
+  cases rawInclude <;> rfl
+
 structure WrapperDelivery (Owner Payload : Type) where
   owner : Owner
   payload : Payload

@@ -221,8 +221,9 @@
 ;; A compiler publication supplies native bindings, not filenames or a reader.
 ;; Keep dependency linking, Feature refinement and value Contracts in the same
 ;; linker as source consumption. Only the source acquisition capability differs.
-(def (module-program-namespace identity publications decision-rows namespace-rows)
-  (def ids (.all-slots publications))
+(def (module-program-namespace identity publications decision-rows namespace-rows
+                               (module-order #f))
+  (def ids (or module-order (.all-slots publications)))
   (def generation (symbol->string identity))
   (def context
     (.o generation module-ids: ids selected: ids denied-modules: '()
@@ -258,7 +259,8 @@
           (unless (equal? names (.all-slots (.ref descriptor 'features)))
             (error "compiled Module Feature inventory changed" id))
           (.cc value 'identity id 'features (.ref descriptor 'features)))))
-  (.ref (yuanxu-load-modules context) 'modules))
+  (def selection (yuanxu-load-modules context))
+  (if module-order selection (.ref selection 'modules)))
 
 (def (yuanxu-load-modules source read-publication: (publication-reader #f)
                            module-view: (module-view #f))

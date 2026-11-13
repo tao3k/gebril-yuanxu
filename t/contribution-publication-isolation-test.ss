@@ -7,7 +7,7 @@
         (only-in :std/io/tempfile make-temporary-file-name)
         (prefix-in :clan/poo/declarative-metadata metadata.)
         :clan/poo/clos
-        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence)
         (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
         (only-in :tao3k/yuanxu/module-system/source/selection select-module-graph)
         (only-in :tao3k/yuanxu/module-system/source/build module-build-graph)

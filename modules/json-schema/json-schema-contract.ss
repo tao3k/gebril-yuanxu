@@ -4,7 +4,7 @@
 
 ;;; Reusable runtime admission adapter; diagnostics retain JSON Schema paths.
 (import :clan/poo/object
-        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract.)
+        (only-in :tao3k/yuanxu/types/contracts YuanxuContract.)
         "./json-schema-receipt.ss"
         (only-in "./contracts.ss" SchemaContract.)
         (only-in "./json-schema-ir.ss" yuanxu-json-schema-normalization-schema))

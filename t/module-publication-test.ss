@@ -27,7 +27,7 @@
         (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
         (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :tao3k/yuanxu/module-system/building/artifacts current-build-output-directory)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint yuanxu-test-observe)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         :tao3k/yuanxu/module-system/source/objects
@@ -306,6 +306,20 @@
               (check-equal? (hash-key? (expander-context-table context) '.o) #f)
               (check-equal? (hash-key? (expander-context-table context) '.def) #t))
             interfaces))))
+
+    (yuanxu-test-case "authored imports retain native binding identity in the stock frame"
+      (with-publication-source
+        (lambda (_root module-root source _view)
+          (write-file (path-expand "interface.ss" module-root)
+            "(import (only-in :clan/poo/object object?))
+             (.def Fixture identity: 'custom/example
+               core: (.o scope-contract: FixtureContract exports: (.o value: 42))
+               features: (.o))")
+          (defvalues (publication counts)
+            (call-with-module-source-operation-measurement
+              (lambda () (.call (module-publication-reader) read source)) accounting?: #f))
+          (check-equal? (hash-ref counts '(calls reader-direct-frame) 0) 1)
+          (check-equal? (.get publication core exports value) 42))))
 
     (register-reader-root-collection-cases!)
     (yuanxu-test-fixture "public source preparation is unique but admission remains fresh"

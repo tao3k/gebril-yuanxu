@@ -127,7 +127,7 @@
 (def (read-overrides path (names '(release explicit)))
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax '(import :gerbil/core))
-    (eval-syntax '(import :tao3k/yuanxu/object-syntax/path-slots))
+    (eval-syntax '(import :tao3k/yuanxu/syntax/path-slots))
     (for-each eval-syntax (syntax->list (read-syntax-from-file path)))
     (apply values (map eval-syntax names))))
 (def (cause failure)

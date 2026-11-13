@@ -297,7 +297,7 @@ mode does not force task values or install method bundles to produce this advice
 
 * Existing support and the proposed extension
 
-[[file:../../../object-syntax/path-slots.ss][The current path adapter]] lower-path-spec accepts dotted leaves only with
+[[file:../../../syntax/path-slots.ss][The current path adapter]] lower-path-spec accepts dotted leaves only with
 runtime =>.+ and reports "path slots require runtime =>.+" or "path slots require
 one =>.+ object expression" for other shapes. It already groups shared prefixes
 and rejects duplicate/overlapping paths. Runtime non-dotted assignment and =>

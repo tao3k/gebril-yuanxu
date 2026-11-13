@@ -309,8 +309,6 @@
 
 (def (verify-sparse-business-attribution exports count _source-root)
   (check-equal? (current-module-source-observer) #f)
-  (measure-runtime count 'sparse-directory
-    (lambda () (check-equal? (.all-slots (.get exports modules)) '(module-1))))
   (def (measured phase action)
     (measure-runtime count phase
       (lambda ()
@@ -329,7 +327,7 @@
                    (hash-ref work (list 'cpu-system stage) 0.))))
             (for-each
               report
-              '(profile-interface-scan directory-current-observations link-current
+              '(directory-context profile-interface-scan directory-current-observations link-current
                 reader-wrapper-expansion reader-admission-start metadata-replay scope-factory))
             (for-each report
               (filter (lambda (stage)
@@ -340,6 +338,12 @@
   (def (calls measured key) (hash-ref (cdr measured) (list 'calls key) 0))
   (def (admissions measured)
     (+ (calls measured 'candidate-read) (calls measured 'publication-read)))
+  (def directory
+    (measured 'sparse-directory (lambda () (.all-slots (.get exports modules)))))
+  (check-equal? (car directory) '(module-1))
+  (check-equal? (calls directory 'profile-interface-scan) 1)
+  (check-equal? (admissions directory) 0)
+  (check-equal? (calls directory 'scope-factory) 0)
   (def graph (measured 'sparse-admission (lambda () (.get exports tests selected-graph))))
   (check-equal? (.get (car graph) module-order) '(module-0 module-1))
   (check-equal? (admissions graph) 2)

@@ -6,7 +6,7 @@
         (only-in :clan/poo/slot-observation slot-read-key slot-read-receiver slot-read-value)
         (only-in :clan/poo/mop Class. Slot. Type.)
         (only-in :clan/poo/method-combination Contribution.)
-        (only-in :tao3k/yuanxu/object-types/contracts YuanxuClassificationEvidence YuanxuValidationEvidence)
+        (only-in :tao3k/yuanxu/types/contracts YuanxuClassificationEvidence YuanxuValidationEvidence)
         (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :gerbil/expander expander-context? expander-context-id expander-context-table)
         (only-in :gerbil/runtime/mop type-field-list)

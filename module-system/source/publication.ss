@@ -7,7 +7,7 @@
         (only-in :clan/poo/read-projection owned-read-function-scope?)
         (only-in :clan/poo/mop Type Type. Object define-type element?)
         (only-in :clan/poo/type Record Symbol List Or)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-value-admit yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-value-admit yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-measure-operation))
 (export ModulePublicationContract ModuleScopeContextContract ContributionRouteContract
         ModuleFeatureRefinementContract admit-module-value!

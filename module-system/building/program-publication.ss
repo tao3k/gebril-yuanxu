@@ -126,7 +126,7 @@
             (expand-yuanxu-program-declaration ,declaration ,(.ref entry 'path)
               (lambda ()
                 (module-program-namespace ',(.ref input 'compiler-identity)
-                  (.o ,@publications) ',decisions ',rows))))))
+                  (.o ,@publications) ',decisions ',rows ',ids))))))
       (current!)
       (.cc entry 'kind 'init-publication
         'input (.cc input 'compiler-forms emitted 'admit-current current!)))))

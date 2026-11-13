@@ -1,6 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test (except-in :clan/poo/object .def .o)
-        :tao3k/yuanxu/object-syntax/path-slots
+        :tao3k/yuanxu/syntax/path-slots
         (only-in :std/error Error? Error-message)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-checkpoint)

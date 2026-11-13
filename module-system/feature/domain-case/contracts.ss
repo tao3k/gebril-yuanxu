@@ -13,7 +13,7 @@
         (only-in :std/list/list delete-duplicates/hash)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/list/list every)
-        :tao3k/yuanxu/object-family/role-syntax
+        :tao3k/yuanxu/object/role-syntax
         :tao3k/yuanxu/composition/roles
         (only-in :tao3k/yuanxu/utilities/functional
                  yuanxu-all?

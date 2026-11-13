@@ -51,7 +51,7 @@ observations are enabled:
 (.call Observed .run)
 #+end_src
 
-This configuration uses the existing =:yuanxu/object-syntax/path-slots= authoring
+This configuration uses the existing =:yuanxu/syntax/path-slots= authoring
 bindings. The assignment replaces only the =emit?= leaf; its ancestors retain
 their inherited slots. It lowers to ordinary POO, without a wrapper:
 

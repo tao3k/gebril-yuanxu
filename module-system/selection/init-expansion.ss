@@ -64,6 +64,7 @@
           (make-spec-binding (datum->syntax (syntax ctx) 'std-make-spec))
           (exports-base base-exports)
           (compiled-program (or program #'#f))
+          (compiled-selection? (if program #'#t #'#f))
           (source-origin (or origin #'(this-source-file ctx)))
           (native-unit
             (datum->syntax (syntax ctx)
@@ -79,7 +80,7 @@
                (yuanxu-init-build
                  source-origin
                  '(yuanxu! option value init-clause ...)
-                 compiled-program 'native-unit))
+                 compiled-program 'native-unit compiled-selection?))
              (def exports-value (.+ exports-base (.o mount-slot ...)))
              (defsyntax exports-binding
                (identifier-rules ()

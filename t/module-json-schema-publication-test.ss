@@ -5,7 +5,7 @@
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get .ref .call .cc .o .+)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-value-admit yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-value-admit yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/modules/json-schema/json-schema-validate
                  yuanxu-json-schema-object-contract-validation?
                  yuanxu-json-schema-object-contract-validation-valid?

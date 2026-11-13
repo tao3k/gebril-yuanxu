@@ -14,7 +14,7 @@ Audited learning corpus .data/gerbil-poo at
 240695a7461ec2d7fbbad4b83cab86508ec9c748. This is a reference corpus, not a new
 runtime dependency or proof that every installed package has that exact source.
 The canonical runtime import owner remains :clan/poo/object. Core path syntax
-was inspected at core/object-syntax/path-slots.ss in the active checkout.
+was inspected at core/syntax/path-slots.ss in the active checkout.
 
 | Runtime source | Observed behavior |
 |---------------+-------------------|

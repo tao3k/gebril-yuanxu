@@ -6,7 +6,7 @@
         (only-in :clan/poo/object .def .o .get .slot? .put! .call .cc)
         (only-in :gerbil/expander core-expand datum->syntax)
         (rename-in (only-in :tao3k/yuanxu/module-system/source/declaration .def) (.def publication-definition))
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :clan/poo/object object?)
         (only-in :clan/poo/mop Type. Function TypeError?)
         (only-in :clan/poo/number Integer)

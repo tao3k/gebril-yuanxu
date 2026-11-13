@@ -45,7 +45,7 @@ Contract as the designated parent value:
 #+end_src
 
 This parent-value interpretation is a proposed declaration adapter. In inspected
-Core e85fd45 (workspace root 7ab549d0), core/object-syntax/path-slots.ss delegates
+Core e85fd45 (workspace root 7ab549d0), core/syntax/path-slots.ss delegates
 ordinary inheritance to POO and does not implement Contract-to-proto
 resolution. Do not claim the above creates typed service instances today.
 The runtime parent portion is instead:

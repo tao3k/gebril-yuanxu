@@ -251,6 +251,11 @@
        (def frame-constructor (quote-syntax deferred-payload-object))
        (def specifications (syntax->list #'((role exports ...) ...)))
        (def names (append-map (lambda (spec) (cdr (syntax->list spec))) specifications))
+       (def (source-binding=? identifier binding)
+         ;; The continuation after authored imports receives already rewrapped
+         ;; syntax. Only the direct include still carries raw reader marks.
+         (free-identifier=? (if rewrap? (syntax-local-rewrap identifier) identifier)
+                           binding))
        (def (map-fields rows transform)
          (syntax-case rows ()
            (() #'())
@@ -291,7 +296,7 @@
            (and (identifier? identifier)
                 (not (memq (stx-e identifier) shadows))
                 (not (memq (stx-e identifier) aliases))
-                (free-identifier=? (syntax-local-rewrap identifier) native)))
+                (source-binding=? identifier native)))
          (def (stock-object expression fields parents self shadows)
            (let (rows (plain-fields fields))
              (and parents rows (not (assq self rows))
@@ -382,7 +387,7 @@
                (syntax-case value ()
                  ((head . slots)
                   (and (identifier? #'head)
-                       (free-identifier=? (syntax-local-rewrap #'head) (quote-syntax .o)))
+                       (source-binding=? #'head (quote-syntax .o)))
                   (known (plain-fields #'slots)))
                  (_ (open #f))))
              (def (field rows key)
@@ -403,7 +408,7 @@
              (syntax-case form ()
                ((head binding . slots)
                 (and (identifier? #'binding) (identifier? #'head)
-                     (free-identifier=? (syntax-local-rewrap #'head) (quote-syntax publication-.def)))
+                     (source-binding=? #'head (quote-syntax publication-.def)))
                 (let* ((root-rows (known (plain-fields #'slots)))
                        (root-names (map car root-rows))
                        (root-self (genident 'publication-self))
@@ -496,9 +501,13 @@
              (map (lambda (form)
                     (let (stock (stock-publication form private?))
                       (if stock
-                        (module-source-measure-operation 'reader-shared-frame
-                          (lambda () (set! direct private?) stock))
-                        (rewrite form)))) forms))))
+                        (begin
+                          (module-source-measure-operation
+                            (if private? 'reader-direct-frame 'reader-lexical-frame) void)
+                          (module-source-measure-operation 'reader-shared-frame
+                            (lambda () (set! direct private?) stock)))
+                        (module-source-measure-operation 'reader-lexical-fallback
+                          (lambda () (rewrite form)))))) forms))))
        (def resolver-expression
          (syntax-case #'resolver ()
            ((kind (role owner (name ...)) ...)

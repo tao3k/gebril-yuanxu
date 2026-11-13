@@ -20,7 +20,7 @@
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get .call .o .cc)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules))
 (export module-bootstrap-test)
 (def root (path-expand ".." (path-directory (this-source-file))))
@@ -284,7 +284,7 @@
             '(.o .get .ref)))
         '("module-system/building/interface.ss" "module-system/building/build-projection.ss"
           "module-system/source/build.ss" "admission/source.ss"
-          "object-types/contracts.ss")))
+          "types/contracts.ss")))
     (yuanxu-test-case "runtime imports preserve deliberate constructor and predicate shadows"
       (for-each
         (lambda (row)

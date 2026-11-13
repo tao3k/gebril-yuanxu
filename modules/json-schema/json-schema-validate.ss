@@ -7,7 +7,7 @@
 ;;; Invariant: this owner checks emitted Yuanxu contracts only. It is not a
 ;;; full JSON Schema evaluator and does not fetch schemas or run workflows.
 
-(import (only-in :tao3k/yuanxu/object-family/syntax defpoo-object-family))
+(import (only-in :tao3k/yuanxu/object/syntax defpoo-object-family))
 (import (only-in :clan/poo/object object?)
         (only-in :clan/poo/mop element?)
         (only-in :tao3k/yuanxu/module-system/schema/slot-contracts

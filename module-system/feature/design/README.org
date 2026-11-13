@@ -45,7 +45,7 @@ source-lock IDs and feature resolution precedence are unchanged.
 The extracted [[file:../../../composition/roles.ss][runtime role algorithms]] retain the existing constant-slot fast lane
 and runtime .mix fallback semantics. Computed/self/super slots are not silently
 flattened into constants. Product flow/task/runtime roles remain product objects.
-[[file:../../../utilities/functional.ss][Pure functions]] and [[file:../../../object-family/role-syntax.ss][existing role-object syntax]] have a single shared owner.
+[[file:../../../utilities/functional.ss][Pure functions]] and [[file:../../../object/role-syntax.ss][existing role-object syntax]] have a single shared owner.
 The public function names are retained as definitions at that owner, not aliases
 from deleted product modules.
 

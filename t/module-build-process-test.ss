@@ -119,10 +119,10 @@
       (check-equal? (file-exists? (path-expand "static/legacy__prelude.scm" lib)) #f)
       ;; Ordinary Make cleans the declared static source. Keep a separate,
       ;; unselected sentinel so cleanup isolation is checked independently.
-      (def unselected (path-expand "tao3k/yuanxu/object-family/unselected-output.scm" lib))
+      (def unselected (path-expand "tao3k/yuanxu/object/unselected-output.scm" lib))
       (call-with-output-file unselected (cut display "; unselected output\n" <>))
       (check-clean-output (build-command Build "clean") root lib names)
-      (check-equal? (file-exists? (path-expand "static/tao3k__yuanxu__object-family__syntax.scm" lib)) #f)
+      (check-equal? (file-exists? (path-expand "static/tao3k__yuanxu__object__syntax.scm" lib)) #f)
       (check-equal? (call-with-input-file unselected read-line) "; unselected output")
       ;; This must compile again, not merely print a new-process specification.
       ;; The same Script retains the exact source directory and GERBIL_PATH.
@@ -130,6 +130,6 @@
       (check-equal? (output-identities root lib names) first-identities)
       (check-clean-output (build-command Build "clean") root lib names)
       (check-equal? (file-exists? (path-expand ".gerbil/module-build/build.ss" root)) #f)
-      (check-equal? (file-exists? (path-expand "static/tao3k__yuanxu__object-family__syntax.scm" lib)) #f)
+      (check-equal? (file-exists? (path-expand "static/tao3k__yuanxu__object__syntax.scm" lib)) #f)
       (check-equal? (call-with-input-file unselected read-line) "; unselected output")
       (displayln "BUILD-PROCESS-REBUILD-OK targets=" (length spec)))))

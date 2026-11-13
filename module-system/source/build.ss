@@ -12,7 +12,8 @@
                  current-expander-path current-expander-marks current-expander-phi
                  current-import-expander-phi current-export-expander-phi raise-syntax-error)
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module package-library-spec/source-context)
-        (only-in :tao3k/yuanxu/module-system/building/source-package package-prelude-identity)
+        (only-in :tao3k/yuanxu/module-system/building/source-package
+                 package-prelude-identity call-with-build-source-fallbacks)
         (only-in :tao3k/yuanxu/module-system/building/program-products make-target-spec program-targets make-target? StdMakeRowContract)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
         (only-in :std/string/path path-absolute? path-default-extension subpath?)
@@ -340,9 +341,11 @@
                 (error "public library compiler identity differs from declared package" identity path))
               source)
             context)))
-      (package-library-spec/source-context package-root package
-        (map (cut path-default-extension <> ".ss") entries)
-        admit-context declared-source-context))
+      (call-with-build-source-fallbacks (list package-root)
+        (lambda ()
+          (package-library-spec/source-context package-root package
+            (map (cut path-default-extension <> ".ss") entries)
+            admit-context declared-source-context))))
     (def (add-package! owner contributor projection)
       (admit-module-value! ExternalPackageContributionContract projection selected-value)
       (let* ((publication (owner-preparation owner))
@@ -430,7 +433,12 @@
                 (let (spec (.ref publication '__std-make-spec))
                   (when (and (list? explicit) (ormap list? explicit))
                     (error "Module Make targets must use only Build.defbuild-script" owner))
-                  (add-projections! owner contributor (list spec))))
+                  ;; Plain library roots describe the module's own build.
+                  ;; An imported owner contributes its actual import closure,
+                  ;; including any explicit compiler options on those inputs.
+                  (add-projections! owner contributor
+                    (list (if (memq owner (.ref selected-value 'roots))
+                            spec (filter pair? spec))))))
               (unless (null? explicit)
                 (add-projections! owner contributor explicit))))
            ((feature)

@@ -13,7 +13,8 @@
                  flow-first flow-second conditional-flow try-flow
                  return-flow cached-pure-flow)
         (only-in "store.ss" put-dir-flow get-dir-flow store-flow)
-        "func.ss" "config-prototypes.ss" "graph-projection.ss"
+        (only-in "job.ss" job-graph run-job)
+        "config-prototypes.ss" "graph-projection.ss"
         (only-in "scenario.ss" Scenario))
 (export Task. Job. FunflowModule.)
 (.def (Task. @ ProcessScript.) needs: '() after-start: #f)

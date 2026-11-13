@@ -16,7 +16,7 @@ named domain functions with domain arguments only: neither passes its lexical
 frame or next-method closure to them. This is a source-audited property of those
 wrappers, not a user flag, name comparison or second method registry.
 
-[[file:../../../../../object-family/read-projection.ss][The Core call region]] owns only values enrolled by the actual maintained constructors.
+[[file:../../../../../object/read-projection.ss][The Core call region]] owns only values enrolled by the actual maintained constructors.
 Class labels, ancestry and receipt kinds do not enroll an existing object.
 The constructors still call the existing Type predicates. Direct slots must
 remain constant runtime specs, and the receiver must not change during its
