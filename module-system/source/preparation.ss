@@ -770,10 +770,13 @@
   (create-directory* view)
   ;; The view must not retain a previous selection's source fallback. Reuse
   ;; only our generated frames; unrelated/user files and symlinks are refused.
-  (def wanted
+  (def targets
     (map (lambda (entry)
-           (path-expand
-             (string-append (build-target-name (.ref entry 'compiler-identity) "") ".ss") view)) entries))
+           (cons (path-expand
+                   (string-append (build-target-name (.ref entry 'compiler-identity) "") ".ss") view)
+                 entry)) entries))
+  (def wanted (make-hash-table))
+  (for-each (lambda (row) (hash-put! wanted (car row) #t)) targets)
   (def (prune directory)
     (for-each
       (lambda (name)
@@ -786,24 +789,24 @@
                           (lambda (in) (let (line (read-line in))
                             (and (string? line) (string-prefix? ";; yuanxu-input " line))))))
              (error "unowned source in selected compiler view" path))
-           (unless (member (path-normalize path) wanted) (delete-file path)))
+           (unless (hash-key? wanted (path-normalize path)) (delete-file path)))
           (else (error "non-regular source-view entry" path))))
       (directory-files directory)))
   (prune view)
   ;; Enroll aliases in the existing extent-owned input association before any
   ;; guard/callback runs. Nested compiler extents restore their own association.
   (for-each
-    (lambda (entry)
+    (lambda (row)
       ;; view is canonical and build-target-name admits only relative identity
       ;; components. Its child directories do not exist until materialization.
-      (def target (path-expand
-                    (string-append (build-target-name (.ref entry 'compiler-identity) "") ".ss") view))
+      (def target (car row))
+      (def entry (cdr row))
       (def input (.ref entry 'input))
       (def previous (compiler-source-ref (compiler-source-inputs) target))
       (when (and previous (not (eq? previous input)))
         (error "compiler input alias collides with selected source" target))
       (hash-put! (compiler-source-inputs) target
-        (hash-ref (compiler-source-inputs) (path-normalize (.ref entry 'path))))) entries)
+        (hash-ref (compiler-source-inputs) (path-normalize (.ref entry 'path))))) targets)
   (prepare-compiler-view-entries! entries roles source-reads libdir view)
   (def (compile)
     (parameterize ((current-build-source-directory view))

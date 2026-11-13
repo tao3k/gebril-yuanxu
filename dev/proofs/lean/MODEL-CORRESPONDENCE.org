@@ -924,6 +924,11 @@ within one window and independent checking after an effect. A closed text
 guard can use the identity of its private captured string after an exact byte
 match. Other snapshots and mutable reader views still compare by value.
 
+The selected compiler view indexes its already projected paths during pruning.
+=indexed_prune_matches_linear= preserves ordered retention with exact
+membership. Scheme still inspects every existing entry for ownership and kind.
+The path index is local to the locked action and retains no admission result.
+
 * Public platform failure baseline
 
 Run =42373146993= reports all seven failures on =cd794638291d=.

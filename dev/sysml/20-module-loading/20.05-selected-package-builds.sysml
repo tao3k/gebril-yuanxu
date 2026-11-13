@@ -294,7 +294,10 @@ package YuanxuSelectedPackageBuilds {
                exception after changed-input invalidation cannot recreate a
                completion marker. Equal-mtime byte changes must rebuild through
                native Make in a fresh process. Selection changes prune old
-               generated source frames, never adopt unknown files. This is not
+               generated source frames, never adopt unknown files. The walk
+               checks ownership before consulting its extent-local path index.
+               The index preserves membership and traversal order, as specified
+               by SourceView indexed_prune_matches_linear. This is not
                runtime unloading or compiler/power-loss atomicity. Native
                tests retain another environment's products and input identity. */
     }
