@@ -200,6 +200,15 @@ it requires ownership of the list payload across the read window, including
 in-place changes that do not bump the receiver revision. Custom Contexts and
 effectful policy fallback retain their independent checks.
 
+The large init text guard uses the same path observation as the ordinary
+source reader within one pure read window. Each guard still compares its
+own expected text. =MetadataProjection.SourceReadWindow= checks the two
+comparison results and rejection after an effect changes the source. The
+Scheme control demands a guard, a reader and a conflicting guard in that
+order and requires one physical read. It also changes the file in an author
+callback and requires a fresh refusal. Observer delivery keeps its existing
+path. This change does not combine independent Gerbil expansion checkpoints.
+
 * Publication checklist
 
 - [X] POO implementation branch =feat/indexed-graph-algorithms= created from the

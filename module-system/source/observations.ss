@@ -447,15 +447,6 @@
           read)))
     (if expected-length text (materialize-source-text text))))
 
-(def (read-large-source-matches? path expected snapshot)
-  (observe-read path)
-  (def text
-    (source-text-content
-      (module-source-measure-operation 'source-read
-        (lambda () (read-source-snapshot path snapshot)))))
-  (record-physical-source-read! (string-length text))
-  (equal? expected text))
-
 (def (module-source-text-guard path expected)
   (def expected-length (string-length expected))
   (if (or (< expected-length 32768) (not (scheme-source-path? path)))
@@ -465,11 +456,10 @@
         (observe-read-request path)
         (unless (eq? (module-source-type path) 'regular)
           (error "module role must be a regular file" path))
-        (def cache (source-read-cache))
-        (def cached (if cache (hash-ref cache path missing-source-query) missing-source-query))
-        (if (eq? cached missing-source-query)
-          (read-large-source-matches? path expected snapshot)
-          (equal? expected (source-text-content cached))))
+        ;; Share the physical text with ordinary readers and other guards in
+        ;; this window. Compare each guard's own expected text on every call.
+        (parameterize ((current-source-text-snapshot snapshot))
+          (equal? expected (source-text-content (read-regular-source path expected-length)))))
       (lambda ()
         (if (current-module-source-observer)
           ;; Keep the original query key and read notifications. Ordinary
@@ -477,7 +467,7 @@
           (parameterize ((current-source-text-snapshot snapshot))
             (equal? expected
               (source-text-content (module-source-observe read-module-source path expected-length))))
-          (module-source-observe large-text-current?))))))
+          (large-text-current?))))))
 
 (def (compiler-interface-info path)
   ;; The native importer owns .ssi paths. Bazel may project its Tree Artifact

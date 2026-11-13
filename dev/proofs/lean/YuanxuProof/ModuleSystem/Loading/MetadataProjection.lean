@@ -75,6 +75,24 @@ example : indexedEligibility ([], ["owner"]) (["owner"], ["owner"]) true "owner"
   simp [indexedEligibility, lookup_exact, eligibility]
 end SelectionIndex
 
+namespace SourceReadWindow
+
+def observe (retained : Option String) (read : Unit → String) : String :=
+  retained.getD (read ())
+
+theorem shared_physical_text_preserves_each_comparison
+    (read : Unit → String) (first second : String) :
+    (first == observe none read, second == observe (some (read ())) read) =
+      (first == read (), second == read ()) := rfl
+
+theorem fresh_window_reads_post_effect_text (before after expected : String)
+    (accepted : before = expected) (changed : after ≠ before) :
+    (expected == observe none (fun _ => after)) = false := by
+  subst expected
+  simp [observe, Ne.symm changed]
+
+end SourceReadWindow
+
 structure Dependency where
   alias : String
   target : String

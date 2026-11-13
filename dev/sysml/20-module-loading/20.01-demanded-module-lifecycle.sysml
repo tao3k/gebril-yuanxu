@@ -9,7 +9,10 @@ package YuanxuModuleLoading {
                directory snapshot. A hit still checks the live path type.
                Full currentness still observes the directory listing.
                A large selection source compares exact decoded text through
-               EOF with a bounded buffer inside one observation window. */
+               EOF with a bounded buffer inside one observation window.
+               A guard and ordinary reader can share the observed text in
+               that window. Each guard compares its own expected text.
+               Effects require a fresh physical observation. */
     }
     part def SelectedDeclarations {
         attribute selectedCount : Integer;

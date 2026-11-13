@@ -276,7 +276,25 @@
                     (string-append prefix "猫" suffix)
                     (string-append large "λ"))))
           (parameterize ((current-module-source-observer #f))
-            (check-large-revisions))
+            (check-large-revisions)
+            (write-role root "types" large)
+            (def other-current? (module-source-text-guard file different))
+            (defvalues (_result counts)
+              (call-with-module-source-operation-measurement
+                (lambda ()
+                  (call-with-module-source-read-cache
+                    (lambda ()
+                      (check-equal? (current?) #t)
+                      (check-equal? (module-source-read file) large)
+                      (check-equal? (other-current?) #f))))
+                accounting?: #f))
+            (check-equal? (hash-ref counts '(source reads) 0) 1)
+            (call-with-module-source-read-cache
+              (lambda ()
+                (check-equal? (current?) #t)
+                (call-with-module-source-callback
+                  (lambda () (write-role root "types" different)))
+                (check-equal? (current?) #f))))
           (def reads 0)
           (parameterize ((current-module-source-observer
                           (lambda (key amount)
