@@ -22,12 +22,16 @@
   (.cc Type. identity: 'test/scope .element?: object?))
 (def (publication id requirements link-function)
   (.o identity: id features: (.o)
-      core: (.o requires: requirements scope-contract: ObjectScope link: link-function)))
+      imports: (map (lambda (name) (.get (.ref requirements name) module-id)) (.all-slots requirements))
+      core: (.o scope-contract: ObjectScope exports: (link-function #f))))
 (def (context declarations selected-values denied read-count current-predicate
               (ids '(core/schema custom/guestbook unused)))
   (.o generation: "fixture-v1" module-ids: ids
       selected: selected-values denied-modules: denied
       locate: (lambda (id) (make-yuanxu-module-generated-source id))
+      import-owners: (lambda (source)
+                       (let (declaration (.ref declarations (yuanxu-module-source-ref-value source)))
+                         (if (.slot? declaration 'imports) (.get declaration imports) '())))
       read-publication: (lambda (source)
                           (let (id (yuanxu-module-source-ref-value source))
                             (read-count id) (.ref declarations id)))
@@ -53,135 +57,21 @@
       (check-equal? (transfer) #f)
       (check-equal? installed '())
       (check-equal? refused '((context-conflict dependency))))
-    (yuanxu-test-case "requires refines only the selected consumer edge"
-      (def schema
-        (.o (:: @)
-          name: "baseline"
-          read-name: (let (receiver @) (lambda () (.get receiver name)))))
-      (def provider-contract
-        (.cc Type. identity: 'test/schema
-          .element?: (lambda (value) (string? (.get value name)))))
-      (def consumer-contract
-        (.cc Type. identity: 'test/provider-schema
-          .element?: (lambda (value) (equal? (.get value name) "provider"))))
-      (def construction-input (.o available?: #t))
-      (def provider
-        (.o identity: 'core/schema features: (.o)
-            core: (.o scope-contract: provider-contract
-                      link: (lambda (_dependencies)
-                              (unless (.get construction-input available?)
-                                (error "schema source unavailable"))
-                              schema))))
-      (def (select requirement)
-        (def consumer
-          (publication 'custom/guestbook (.o Schema: requirement)
-            (lambda (dependencies) (.o schema: (.get dependencies Schema)))))
+    (yuanxu-test-case "explicit POO input refinement leaves the provider intact"
+      (def schema (.o name: "baseline"))
+      (def refined (.cc schema name: "consumer"))
+      (def provider (publication 'core/schema (.o) (lambda (_) schema)))
+      (def consumer (publication 'custom/guestbook
+                      (.o Schema: (.o module-id: 'core/schema))
+                      (lambda (_) (.o schema: refined))))
+      (def view
         (yuanxu-load-modules
           (context (.o core/schema: provider custom/guestbook: consumer)
-                   '(custom/guestbook) '() void (lambda (_generation) #t))))
-      (def cached (.get schema read-name))
-      (def input (.o name: "provider"))
-      (def requirement
-        (.o module-id: 'core/schema contract: consumer-contract publish?: #t
-            refine: (lambda (upstream) (.cc upstream name: (.get input name)))))
-      (def view (select requirement))
-      (def record (.call view .selected-record 'custom/guestbook))
-      (def effective (.get record scope schema))
-      (check-equal? ((.get effective read-name)) "provider")
-      (check-equal? (eq? effective (.get record dependency-records Schema requirement-evidence candidate)) #t)
-      (def edge (.get record dependency-records Schema))
-      (check-equal? (eq? effective (.get edge scope)) #t)
-      (check-equal? (eq? effective (.get edge provider-evidence candidate)) #t)
-      (check-equal? (eq? (.get edge provider)
-                         (.call view .selected-record 'core/schema)) #t)
-      (check-equal? (eq? schema (.get edge provider scope)) #t)
-      (check-equal? (eq? cached (.get schema read-name)) #t)
-      (check-equal? (cached) "baseline")
-      (check-equal? (eq? effective (.get record interface requires Schema)) #t)
-      (def consumer
-        (publication 'custom/guestbook (.o Schema: requirement)
-          (lambda (dependencies) (.o schema: (.get dependencies Schema)))))
-      (def third
-        (publication 'custom/third
-          (.o Guestbook: (.o module-id: 'custom/guestbook view: 'interface))
-          (lambda (dependencies) (.o schema: (.get dependencies Guestbook requires Schema)))))
-      (def third-view
-        (yuanxu-load-modules
-          (context (.o core/schema: provider custom/guestbook: consumer custom/third: third)
-                   '(custom/third) '() void (lambda (_generation) #t)
-                   '(core/schema custom/guestbook custom/third))))
-      (check-equal?
-        (eq? (.get third-view modules custom third schema)
-             (.get (.call third-view .selected-record 'custom/guestbook) scope schema)) #t)
-      (check-exception
-        (.get (select (.cc requirement refine:
-                        (lambda (upstream)
-                          (.put! upstream 'name "corrupt")
-                          upstream)))
-              modules custom guestbook)
-        (lambda (cause)
-          (and (Error? cause)
-               (equal? (Error-message cause) "object mutation during computation"))))
-      (check-equal? (eq? cached (.get schema read-name)) #t)
-      (check-equal? (cached) "baseline")
-      (check-equal? (eq? schema (.get (select (.o module-id: 'core/schema))
-                                    modules custom guestbook schema)) #t)
-      (def alternate
-        (.get (select (.cc requirement 'contract provider-contract
-                            'refine (lambda (upstream) (.cc upstream name: "alternate"))))
-              modules custom guestbook schema))
-      (check-equal? ((.get alternate read-name)) "alternate")
-      (check-equal? ((.get effective read-name)) "provider")
-      (check-equal? (eq? cached (.get schema read-name)) #t)
-      (check-exception
-        (.get (select (.o module-id: 'core/schema view: 'interface
-                         refine: (lambda (_upstream) (error "refine must stay cold"))))
-              modules custom guestbook)
-        error?)
-      (check-exception
-        (.get (select (.o module-id: 'core/schema
-                         refine: (lambda (upstream) (.cc upstream name: #f))))
-              modules custom guestbook)
-        error?)
-      (check-exception
-        (.get (select (.cc requirement refine: (lambda (upstream) (.cc upstream name: "other"))))
-              modules custom guestbook)
-        error?)
-      ((.get edge admit-current))
-      (.put! input 'name "next")
-      (check-exception ((.get edge admit-current)) error?)
-      (def next-view (select (.cc requirement 'contract provider-contract)))
-      (def next-edge (.get (.call next-view .selected-record 'custom/guestbook)
-                           dependency-records Schema))
-      ((.get next-edge admit-current))
-      (check-equal? ((.get next-edge scope read-name)) "next")
-      (check-equal? (eq? cached (.get next-edge provider scope read-name)) #t)
-      (def check-provider (.get next-edge provider admit-construction-current))
-      (check-provider)
-      (.put! construction-input 'available? #f)
-      (check-exception (check-provider) error?)
-      (.put! construction-input 'available? #t)
-      (call-with-temporary-directory "requirement-source"
-        (lambda (root)
-          (def file (path-expand "settings.ss" root))
-          (def (write-revision text)
-            (call-with-output-file (list path: file truncate: #t)
-              (lambda (port) (display text port))))
-          (write-revision "first")
-          (def source-view
-            (select (.cc requirement 'contract provider-contract
-                         'refine (lambda (upstream)
-                                   (module-source-admit-current! (list (cons file "first"))
-                                     "stale requirement fixture source")
-                                   (.cc upstream name: "first")))))
-          (def source-edge (.get (.call source-view .selected-record 'custom/guestbook)
-                                 dependency-records Schema))
-          ((.get source-edge admit-current))
-          (write-revision "second")
-          (check-exception ((.get source-edge admit-current))
-            (lambda (cause)
-              (and (Error? cause)
-                   (equal? (Error-message cause) "stale requirement fixture source")))))))
+                   '(custom/guestbook) '() void (lambda (_) #t))))
+      (check-equal? (eq? (.get view modules custom guestbook schema) refined) #t)
+      (check-equal? (.get refined name) "consumer")
+      (check-equal? (eq? (.get (.call view .selected-record 'core/schema) scope) schema) #t)
+      (check-equal? (.get schema name) "baseline"))
     (yuanxu-test-case "a current construction can depend on state outside POO"
       (def revision 1)
       (def factory
@@ -324,7 +214,7 @@
                   custom/guestbook:
                   (publication 'custom/guestbook
                    (.o Schema: (.o module-id: 'core/schema contract: ObjectScope))
-                   (lambda (deps) (set! links (+ links 1)) (.o schema: (.get deps Schema schema))))
+                   (lambda (_) (set! links (+ links 1)) (.o schema: 'ready)))
                   unused: (error "unselected publication forced")))
              (view (yuanxu-load-modules
                     (context declarations '(custom/guestbook) '()
@@ -338,20 +228,6 @@
         (check-equal? (length (.get view selected-records)) 1)
         (set! current #f)
         (check-exception ((.get view admit-current)) error?)))
-    (yuanxu-test-case "consumer requirement Contracts are checked before linking"
-      (let* ((strict (.cc Type. identity: 'test/strict .element?: (lambda (_scope) #f)))
-             (linked #f)
-             (declarations
-              (.o core/schema: (publication 'core/schema (.o) (lambda (_deps) (.o)))
-                  custom/guestbook:
-                  (publication 'custom/guestbook
-                   (.o Schema: (.o module-id: 'core/schema contract: strict))
-                   (lambda (_deps) (set! linked #t) (.o)))))
-             (view (yuanxu-load-modules
-                    (context declarations '(custom/guestbook) '() void
-                             (lambda (_generation) #t)))))
-        (check-exception (.get view selected-records) error?)
-        (check-equal? linked #f)))
     (yuanxu-test-case "scope factory source change refuses before normalization can restore it"
       (def current #t)
       (def factory-ran #f)
@@ -367,49 +243,14 @@
         (.o custom/guestbook:
             (.o identity: 'custom/guestbook features: (.o)
                 core: (.o scope-contract: contract
-                          link: (lambda (_deps)
-                                  (set! factory-ran #t) (set! current #f) (.o ready: #t))))))
+                          exports: (begin
+                                     (set! factory-ran #t) (set! current #f) (.o ready: #t))))))
       (def view
         (yuanxu-load-modules
           (context declarations '(custom/guestbook) '() void (lambda (_generation) current))))
       (check-exception (.get view selected-records) error?)
       (check-equal? factory-ran #t)
       (check-equal? normalized 0))
-    (yuanxu-test-case "requirement source change refuses before a later requirement can restore it"
-      (def current #t)
-      (def restored 0)
-      (def linked #f)
-      (def provider-linked #f)
-      (def first-checked #f)
-      (def first
-        (.cc Type. identity: 'test/changing-requirement
-          .element?: (lambda (scope)
-                       (when provider-linked
-                         (set! first-checked #t) (set! current #f))
-                       (object? scope))))
-      (def second
-        (.cc Type. identity: 'test/restoring-requirement
-          .element?: (lambda (scope)
-                       (when provider-linked
-                         (set! restored (+ restored 1))
-                         (set! current #t))
-                       (object? scope))))
-      (def declarations
-        (.o core/schema: (publication 'core/schema (.o)
-                            (lambda (_deps) (set! provider-linked #t) (.o)))
-            custom/guestbook:
-            (publication 'custom/guestbook
-              (.o First: (.o module-id: 'core/schema contract: first)
-                  Second: (.o module-id: 'core/schema contract: second))
-              (lambda (_deps) (set! linked #t) (.o)))))
-      (def view
-        (yuanxu-load-modules
-          (context declarations '(custom/guestbook) '() void (lambda (_generation) current))))
-      (check-exception (.get view selected-records) error?)
-      (check-equal? provider-linked #t)
-      (check-equal? first-checked #t)
-      (check-equal? restored 0)
-      (check-equal? linked #f))
     (yuanxu-test-case "factory refusal retains its original exception after changing source"
       (def current #t)
       (def original (gensym 'factory-refusal))
@@ -490,8 +331,8 @@
             (.o custom/guestbook:
                 (.o identity: 'custom/guestbook features: (.o)
                     core: (.o scope-contract: contract
-                              link: (lambda (_deps)
-                                      (set! linked #t) (set! current #t) (.o))))))
+                              exports: (begin
+                                       (set! linked #t) (set! current #t) (.o))))))
           (def view
             (yuanxu-load-modules
               (context declarations '(custom/guestbook) '() void (lambda (_generation) current))))

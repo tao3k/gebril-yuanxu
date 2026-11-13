@@ -71,7 +71,7 @@
       (write-source
         (path-expand (string-append "modules/applications/gitea-postgresql/" role ".ss") root)
         (let (text (module-source-read (path-expand (string-append role ".ss") source-root)))
-          (if (string=? role "interface")
+          (if (string=? role "objects")
             (string-subst (string-subst text "postgresql/config.ss" "../../services/postgresql/config.ss")
                           "gitea/config.ss" "../../services/gitea/config.ss")
             text))))

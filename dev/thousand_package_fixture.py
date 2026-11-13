@@ -45,11 +45,11 @@ def generate(root: Path, profile: bool = False) -> None:
               if number > 1 else "(def evaluations 0)"))
         write(owner / "config.ss", "(def Config (error \"unselected Config initializer ran\"))\n"
               if number > 1 else "(def Config (.o port: 5432))\n")
-        requires = "(.o)" if number == 0 else "(.o Shared: (.o module-id: 'module-0 contract: ScopeContract))"
+        imports = "" if number == 0 else '(import (only-in "../module-0/objects.ss"))\n'
         # Interface categories remain explicit even for consumers selecting IDs.
         tags = " tags: '(security)" if number == 1 else " tags: '(other)"
-        write(owner / "interface.ss", f"""(.def Module identity: 'module-{number}{tags}
-  core: (.o requires: {requires} scope-contract: ScopeContract
+        write(owner / "interface.ss", f"""{imports}(.def Module identity: 'module-{number}{tags}
+  core: (.o scope-contract: ScopeContract
     exports: (.o (:: @ Scope.) config: Config))
   features: (.o unused: (error "unselected Feature forced")))
 """)

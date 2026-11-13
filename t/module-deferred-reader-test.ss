@@ -52,7 +52,7 @@
             (parameterize ((current-module-role-resolver
                             (lambda _ (error "ambient resolver must remain unused"))))
               (check-equal? (object? (.get publication core scope-contract)) #t)
-              ((.get publication core link) (.o))))
+              (.get publication core exports)))
           (check-equal? (.get scope greeting) "hello")
           (check-equal? (.get scope retained) 'upstream))))
     (test-case "private role imports are observed before their values are demanded"
@@ -80,10 +80,9 @@
             '((import :clan/poo/object)
               (def Private (.o retained: 'private)) (export Private)))
           (def publication (.call (module-publication-reader) read source))
-          (def link (.get publication core link))
-          (def scope (link (.o)))
+          (def scope (.get publication core exports))
           (check-equal? (.get scope retained) 'private)
-          (check-equal? (eq? scope (link (.o))) #t))
+          (check-equal? (eq? scope (.get publication core exports)) #t))
         roles:
         (.o objects: '((import "private.ss")
                        (def FixtureScope Private)
@@ -120,7 +119,7 @@
       (with-publication-source
         (lambda (_root _module-root source _view)
           (def publication (.call (module-publication-reader) read source))
-          (def scope ((.get publication core link) (.o)))
+          (def scope (.get publication core exports))
           (check-equal? (.get scope selected) 'local))
         roles:
         (.o config: '((def Greeting (error "shadowed role was evaluated")) (export Greeting))
@@ -128,26 +127,6 @@
             '((.def Fixture identity: 'custom/example
                 core: (.o scope-contract: FixtureContract
                           exports: (.o Greeting: 'local selected: Greeting))
-                features: (.o))))))
-    (test-case "the link checks unused dependencies in order before entering the export body"
-      (with-publication-source
-        (lambda (_root _module-root source _view)
-          (def publication (.call (module-publication-reader) read source))
-          (def link (.get publication core link))
-          (def reads '())
-          (check-exception (link (.o Shared: (begin (set! reads (cons 'Shared reads)) (.o))
-                                      Second: (begin (set! reads (cons 'Second reads))
-                                                     (error "dependency read"))))
-            (lambda (cause)
-              (and (Error? cause) (string=? (Error-message cause) "dependency read"))))
-          (check-equal? (reverse reads) '(Shared Second)))
-        roles:
-        (.o interface:
-            '((.def Fixture identity: 'custom/example
-                core: (.o requires: (.o Shared: (.o module-id: 'custom/shared contract: FixtureContract)
-                                        Second: (.o module-id: 'custom/second contract: FixtureContract))
-                          scope-contract: FixtureContract
-                          exports: (error "export ran before dependency"))
                 features: (.o))))))
     (yuanxu-test-fixture "a selected provider Objects initializer is actually demanded"
       (fixture (.cc RuntimeValueFixture size: 2))

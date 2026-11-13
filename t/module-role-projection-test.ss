@@ -67,7 +67,7 @@
             ;; source-only half consumes the existing guarded source reader;
             ;; the next Case qualifies those frames through actual std/make.
             (def published ((.get (module-publication-reader) read) source))
-            (def effective ((.get published core link) (.o)))
+            (def effective (.get published core exports))
             (check-equal? (.get published identity) 'fixture)
             (check-equal? (.get effective answer) 42)
             (check-equal? (path-normalize (.get effective origin))

@@ -173,9 +173,9 @@ and semantic result; an optimization without a receipt is not project style.
 Ops is an ordinary Core library, not an optional Module selected through root
 init. Import its published Ops object from =:yuanxu/ops/interface=; functions
 and runtime Script methods share one executor. Core owns compilation through
-its ordinary library roots. Module =core.requires= lists selectable Module
-publications, not built-in library imports. No bootstrap selection or second
-interface registry is required to execute an explicitly declared Script.
+its ordinary library roots. Yuanxu orders selected Module publications using
+the owners of native Gerbil imports. Built-in library imports retain their
+Gerbil identity and an explicitly declared Script can use Ops directly.
 
 A Module must publish the inert vocabulary that its public consumers need.
 Funflow's runtime vocabulary is part of its default object facade; consumers

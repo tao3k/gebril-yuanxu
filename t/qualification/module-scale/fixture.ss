@@ -109,13 +109,14 @@
                                  '(.o port: 5432))))
                 '((def Config 'configured) (export Config))))
             (write-fixture-source (path-expand "interface.ss" directory)
-              `((.def Module identity: ',id
+              `(,@(if (eq? id 'module-0) '()
+                    '((import (rename-in (only-in "../module-0/types.ss" ScopeContract)
+                                         (ScopeContract ProviderScopeContract)))))
+                (.def Module identity: ',id
                   ,@(if profile-selection?
                         (list 'tags: (list 'quote (if (eq? id 'module-1) '(security audited) '(other))))
                         '())
-                  core: (.o requires: ,(if (eq? id 'module-0) '(.o)
-                                           '(.o Shared: (.o module-id: 'module-0 contract: ScopeContract)))
-                            scope-contract: ScopeContract
+                  core: (.o scope-contract: ScopeContract
                             exports: ,(payload
                                         (if runtime-values?
                                           '(.o (:: @ Scope.) config: Config)

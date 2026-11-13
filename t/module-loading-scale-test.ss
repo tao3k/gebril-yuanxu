@@ -100,9 +100,7 @@
            (hash-update! calls id (cut + <> 1) 0)
            (def declaration
              (.o identity: id features: (.o)
-                 core: (.o requires: (if (eq? id shared) (.o)
-                                        (.o Shared: (.o module-id: shared)))
-                           exports: (error "resolver linked business scope"))))
+                 core: (.o exports: (error "resolver linked business scope"))))
            ;; A completed batch of actual publications is work progress, not a
            ;; timer or output heartbeat. Exact-once counts are asserted below.
            (set! completed (1+ completed))
@@ -112,7 +110,8 @@
          (def graph
            (select-module-graph
              (.o selected: ids denied-modules: '() generation: "scale")
-             ids read-publication void))
+             ids read-publication void
+             (lambda (id) (if (eq? id shared) '() (list shared)))))
          (check-equal? (length (.get graph module-order)) size)
          (check-equal? (car (.get graph module-order)) shared)
          (check-equal? (hash-length calls) size)

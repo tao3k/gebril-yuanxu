@@ -25,7 +25,8 @@
   (.cc Type. identity: 'test/selected-scope .element?: (lambda (_value) #t)))
 (def (publication id requirement-values feature-values (factory (lambda (_dependencies) (.o ready: #t))))
   (.o identity: id features: feature-values
-      core: (.o requires: requirement-values scope-contract: Scope link: factory)))
+      imports: (map (lambda (name) (.get (.ref requirement-values name) module-id)) (.all-slots requirement-values))
+      core: (.o scope-contract: Scope exports: (factory #f))))
 (def (requirement id) (.o module-id: id contract: Scope))
 (def (descriptor name (required-ids '()) (conflict-ids '()))
   (feature-descriptor
@@ -42,6 +43,7 @@
     (.o generation: "selected-v1" init-source: "fixture/init.ss" intent: intent-value
         module-ids: '(app/web core/schema unused/bomb) selected: selected-values
         denied-modules: denied-values current?: (lambda (_generation) #t)
+        import-owners: (lambda (source) (.get (.ref declarations (yuanxu-module-source-ref-value source)) imports))
         locate: make-yuanxu-module-generated-source
         read-publication: (lambda (source)
                             (let (id (yuanxu-module-source-ref-value source))
@@ -62,7 +64,8 @@
         core/schema: (publication 'core/schema (.o) (.o))))
   (def c (context declarations '((yuanxu! mode: explicit :core (schema) :app (web)))))
   (%call-with-recorded-slot-reads
-    (lambda () (select c '(app/web) (cut .ref declarations <>) void))
+    (lambda () (select c '(app/web) (cut .ref declarations <>) void
+                 (lambda (id) (.get (.ref declarations id) imports))))
     unique-roots?: #t))
 (def (core-spec-count reads)
   (def seen (make-hash-table-eq))
@@ -101,11 +104,11 @@
           (set! now 10)
           (check-exception
             (core-sample
-              (lambda (context roots read-publication _current!)
+              (lambda (context roots read-publication _current! imported-owners)
                 (select-module-graph context roots read-publication
                   (lambda ()
                     (check-equal? (execution-progress-idle-milliseconds state) 0)
-                    (raise refused)))))
+                    (raise refused)) imported-owners)))
             (lambda (error) (eq? error refused))))
         clock: (lambda () now)))
     (yuanxu-test-case "unknown observation retains ordinary Core Feature specifications"
@@ -175,9 +178,7 @@
         (.o identity: 'app/web features: (.o)
             core: (begin
                     (set! current? #f)
-                    (.o requires: (.o)
-                        scope-contract: Scope
-                        link: (lambda (_dependencies) (.o))))))
+                    (.o scope-contract: Scope exports: (.o)))))
       (def c
         (.cc (context (.o app/web: p)
                '((yuanxu! mode: explicit :app (web))))

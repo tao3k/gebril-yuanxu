@@ -144,7 +144,15 @@
       (def declarations
         (let loop ((forms (or interface-forms (call-with-input-string interface-text read-all))))
           (if (and (pair? forms) (pair? (car forms)) (eq? (caar forms) 'import))
-            (loop (cdr forms)) forms)))
+            (begin
+              (when (ormap (lambda (spec)
+                             (and (string? spec)
+                                  (member (path-strip-directory spec)
+                                    '("types.ss" "objects.ss" "config.ss" "func.ss"))))
+                           (cdar forms))
+                (error "explicit role imports use native expansion"))
+              (loop (cdr forms)))
+            forms)))
       (match declarations
         ([['.def (? symbol?) . body]]
          (def rows (closed-rows body))
@@ -536,8 +544,7 @@
            ;; Preserve the original reader marks and direct private delivery.
            (rewrite-deferred-declaration input #'roles #'resolver forms #t))
           (else
-           ;; Only authored imports need a continuation: Gerbil establishes
-           ;; their bindings and phases before expanding the declaration.
+           ;; Establish authored native imports before expanding the declaration.
            (with-syntax (((import-form ...) (map syntax-local-rewrap (reverse imports)))
                          ((declaration ...) (map syntax-local-rewrap forms)))
              #'(begin import-form ...

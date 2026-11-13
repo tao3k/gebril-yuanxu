@@ -22,24 +22,21 @@
                          (lambda _ (error "compiled publication must not import metadata"))))
           (module-program-namespace 'tao3k/yuanxu/init
             (.o (tao3k/yuanxu/modules/json-schema/interface
-                  (.o declaration: 'json-schema publication: JsonSchema features: (.o))))
-            (.o) '((tao3k/yuanxu/modules/json-schema/interface))
+                  (.o declaration: 'json-schema publication: JsonSchema imports: '() features: (.o))))
+            '((tao3k/yuanxu/modules/json-schema/interface))
             '(((json-schema) . tao3k/yuanxu/modules/json-schema/interface)))))
       (parameterize ((current-expander-module-import
                        (lambda _ (error "compiled scope must not import metadata"))))
         (check-equal? (procedure? (.get (.get namespace json-schema) normalize)) #t)))
     (test-case "compiled namespace refuses relabeled declarations and undeclared dependencies"
-      (def (consume value declared)
+      (def (consume value declared (imports '()))
         (.get (module-program-namespace 'tao3k/yuanxu/init
                 (.o (tao3k/yuanxu/modules/json-schema/interface
-                      (.o declaration: declared publication: value features: (.o))))
-                (.o) '((tao3k/yuanxu/modules/json-schema/interface))
+                      (.o declaration: declared publication: value imports: imports features: (.o))))
+                '((tao3k/yuanxu/modules/json-schema/interface))
                 '(((json-schema) . tao3k/yuanxu/modules/json-schema/interface))) json-schema))
       (check-exception (consume JsonSchema 'forged) error?)
-      (check-exception
-        (consume (.cc JsonSchema 'core
-                   (.cc (.get JsonSchema core) 'requires
-                     (.o missing: (.o module-id: 'outside)))) 'json-schema) error?))
+      (check-exception (consume JsonSchema 'json-schema '(outside)) error?))
     (test-case "compiled Feature projection checks provenance before qualifying its identities"
       (def refine (lambda (scope) scope))
       (def declared

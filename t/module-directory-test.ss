@@ -46,10 +46,7 @@
      (lambda () (remove-tree root)))))
 (def (fixture-publication id)
   (.o identity: id features: (.o smoke: (error "negative Feature descriptor forced"))
-      core: (.o requires: (if (eq? id 'custom/guestbook)
-                            (.o Schema: (.o module-id: 'core/schema contract: DirectoryScope)) (.o))
-                scope-contract: DirectoryScope
-                link: (lambda (_dependencies) (.o owner: id)))))
+      core: (.o scope-contract: DirectoryScope exports: (.o owner: id))))
 (def (fixture-reader reads)
   (lambda (source)
     (let (id (cdr (assq 'module-id (yuanxu-module-source-ref-metadata source))))

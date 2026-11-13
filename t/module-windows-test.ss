@@ -41,14 +41,14 @@
         '((import :clan/poo/object (only-in :clan/poo/mop Type.))
           (def Scope (.cc Type. identity: 'scope .element?: object?))
           (export Scope)))
-      (write-forms (path-expand "objects.ss" directory) '((def Defaults #t) (export Defaults)))
+      (write-forms (path-expand "objects.ss" directory)
+        '((def Defaults #t) (def Value (list 42)) (def ScopeValue (.o value: Value)) (export Defaults ScopeValue)))
       (write-forms (path-expand "config.ss" directory) '((def Config (.o))))
       (write-forms (path-expand "interface.ss" directory)
-        `((.def Published identity: ',id
-            core: (.o requires: ,(if (eq? id 'release)
-                                  `(.o Engine: (.o module-id: ',(fixture-owner root "modules/engine/interface.ss") contract: Scope)) '(.o))
-                      scope-contract: Scope
-                      exports: ,(if (eq? id 'release) '(.o value: (.get Engine value)) '(.o value: 42)))
+        `(,@(if (eq? id 'release) '((import (rename-in (only-in "../../modules/engine/objects.ss" ScopeValue) (ScopeValue Engine)))) '())
+          (.def Published identity: ',id
+            core: (.o scope-contract: Scope
+                      exports: ,(if (eq? id 'release) '(.o value: (car (.get Engine value))) 'ScopeValue))
             features: (.o))))
       (write-forms (path-expand "tests/atomic-test.ss" directory)
         '((import :std/test) (export atomic)
@@ -134,14 +134,14 @@
       (root Workspace)
       (fixture! root)
       (write-forms (path-expand "modules/engine/interface.ss" root)
-        '((.def Published identity: 'engine
-            core: (.o requires: (.o Release: (.o module-id: 'release contract: Scope))
-                      scope-contract: Scope
-                      exports: (.o value: (.get Release value)))
+        '((import (rename-in (only-in "../../scenarios/release/objects.ss" ScopeValue) (ScopeValue Release)))
+          (.def Published identity: 'engine
+            core: (.o scope-contract: Scope
+                      exports: (.o value: (car (.get Release value))))
             features: (.o))))
       (write-forms (path-expand "scenarios/release/interface.ss" root)
         '((.def Published identity: 'release
-            core: (.o scope-contract: Scope exports: (.o value: 42))
+            core: (.o scope-contract: Scope exports: ScopeValue)
             features: (.o))))
       (def (mounted-view file mount)
         (def source (path-expand file root))
@@ -164,13 +164,6 @@
     (yuanxu-test-fixture "public branches share a real Interface scope and keep siblings cold"
       (root Workspace)
       (fixture! root)
-      (def (bind-reference value)
-        (cond ((not (pair? value)) value)
-              ((and (eq? (car value) 'module-id:) (pair? (cdr value))
-                    (equal? (cadr value) '(quote engine)))
-               (cons 'module-id: (cons `(quote ,(fixture-owner root "modules/engine/interface.ss"))
-                                      (bind-reference (cddr value)))))
-              (else (cons (bind-reference (car value)) (bind-reference (cdr value))))))
       (def example
         (path-expand "qualification/namespace/release"
                      (path-directory (this-source-file))))
@@ -179,7 +172,7 @@
           (def target (path-expand (string-append "scenarios/release/" name) root))
           (delete-file target)
           (if (equal? name "interface.ss")
-            (write-forms target (map bind-reference (call-with-input-file (path-expand name example) read-all)))
+            (write-forms target (map identity (call-with-input-file (path-expand name example) read-all)))
             (copy-file (path-expand name example) target)))
         '("interface.ss" "objects.ss"))
       (def spare (path-expand "scenarios/spare" root))
@@ -216,7 +209,7 @@
         (check-equal? (eq? scope (.get exports Scenarios release)) #t)
         (check-equal? (eq? profile (.get profile receiver)) #t)
         (check-equal? (.get profile argv) '("gxi" "build" "--debug"))
-        (check-equal? (eq? (.get profile engine) (.get exports Modules engine)) #t)
+        (check-equal? (eq? (.get profile engine value) (.get exports Modules engine value)) #t)
         (check-equal? (.ref/cached scenarios 'spare) #f)))
     (yuanxu-test-fixture "hygienic mount bindings share build/tests; execution leaves scopes cold"
       (root Workspace)
@@ -372,7 +365,7 @@
       (def view (yuanxu-load-modules (path-expand "init.ss" root)))
       (def left (.get view modules Modules engine))
       (def right (.get view modules Scenarios engine))
-      (check-equal? (.get left value) 42)
+      (check-equal? (.get left value) '(42))
       (check-equal? (.get right value) 77)
       (check-equal? (eq? left right) #f)
       (check-equal? (eq? left (.get view modules Modules engine)) #t)
@@ -400,15 +393,15 @@
         '((yuanxu! :load-modules "./scenarios" mode: explicit rename: Scenarios
                     (engine @ "./modules/engine") (release))))
       (write-forms (path-expand "scenarios/release/interface.ss" root)
-        '((.def Published identity: 'release
-            core: (.o requires: (.o Engine: (.o module-id: 'engine contract: Scope))
-                      scope-contract: Scope exports: (.o value: (.get Engine value)))
+        '((import (rename-in (only-in "../../modules/engine/objects.ss" ScopeValue) (ScopeValue Engine)))
+          (.def Published identity: 'release
+            core: (.o scope-contract: Scope exports: (.o value: (car (.get Engine value))))
             features: (.o))))
       (def view (yuanxu-load-modules (path-expand "init.ss" root)))
       (check-equal? (.get view selected-graph module-order)
                     (list (fixture-owner root "modules/engine/interface.ss")
                           (fixture-owner root "scenarios/release/interface.ss")))
-      (check-equal? (.get view modules Scenarios engine value) 42)
+      (check-equal? (.get view modules Scenarios engine value) '(42))
       (check-equal? (.get view modules Scenarios release value) 42))
     (yuanxu-test-fixture "two auto checkouts cannot claim the same complete standard root"
       (root Workspace)
@@ -423,9 +416,9 @@
       (root Workspace)
       (fixture! root)
       (write-forms (path-expand "scenarios/release/interface.ss" root)
-        '((.def Published identity: 'release
-            core: (.o requires: (.o Engine: (.o module-id: 'engine contract: Scope))
-                      scope-contract: Scope exports: (.o value: (.get Engine value)))
+        '((import (rename-in (only-in "../../modules/engine/objects.ss" ScopeValue) (ScopeValue Engine)))
+          (.def Published identity: 'release
+            core: (.o scope-contract: Scope exports: (.o value: (car (.get Engine value))))
             features: (.o))))
       (check-exception (.get (yuanxu-load-modules (path-expand "init.ss" root)) selected-graph)
         error?))))

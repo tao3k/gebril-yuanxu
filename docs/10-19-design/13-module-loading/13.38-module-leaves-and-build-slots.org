@@ -24,10 +24,11 @@ The exports object is for composition and consumers that start outside a
 Module's admitted dependency context. A local sibling dependency does not
 need a path through that object. In Haumea, =self= refers to the current
 leaf and =super= is the leaf's admitted view of its containing directory.
-In Yuanxu, =core.requires= supplies the corresponding bounded dependency
-bindings to Module exports. POO's =super:= is a separate operation for
-inherited slot computation. Do not inject the whole directory into a
-Module or make it import its own selection declaration to find a sibling.
+In Yuanxu, native Gerbil imports supply sibling bindings and the reader
+uses their admitted source owners to order the selected graph. Application
+composition passes configuration as explicit POO values. The owner of the
+final configuration declares its external package request in =core.projections=.
+POO's =super:= supplies inherited slot computation.
 
 This proposal applies to Yuanxu. Marlin is a downstream package whose
 current C ABI Interface already declares a local =DeckRuntime= dependency.

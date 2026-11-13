@@ -1100,7 +1100,7 @@
                 (eval-syntax `(import ,(path-expand (string-append id ".ssi") lib)))
                 (def loaded (eval-syntax 'Example))
                 (check-equal? (file-exists? marker) #f)
-                (def scope (.call (.get loaded core) link (.o)))
+                (def scope (.get loaded core exports))
                 (check-equal? (file-exists? marker) #f)
                 (def configuration (.get scope config))
                 (check-equal? (.get configuration value) 42)

@@ -663,7 +663,7 @@
                              (admit-module-publication! source 'custom/example publication (.o))) #t)
                (check-equal? (file-exists? config-marker) #f)
                (check-equal? (file-exists? objects-marker) #f)
-               (let (scope ((.get publication core link) (.o)))
+               (let (scope (.get publication core exports))
                  (check-equal? (.get scope greeting) "hello")
                  (check-equal? (.get scope retained) 'upstream)
                  (check-equal? (.get scope greeting) "hello")

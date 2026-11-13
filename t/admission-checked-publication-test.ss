@@ -52,7 +52,7 @@
       (.o generation: "checked-source" selected: '(app/web)
           denied-modules: '() init-source: #f)
       '(app/web)
-      (lambda (_id) (.o core: (.o requires: (.o)) features: (.o))) current!))
+      (lambda (_id) (.o features: (.o))) current!))
   (def build
     (module-build-graph selected
       (lambda (id)

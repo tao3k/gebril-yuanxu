@@ -48,10 +48,10 @@
             (write-file (path-expand "config.ss" directory) "(import (only-in :std/source this-source-file)) (def Greeting \"ready\") (def Origin (this-source-file)) (export Greeting Origin)")
             (write-file (path-expand "extra/core.ss" directory) "(def CoreExtra #t) (export CoreExtra)")
             (write-file (path-expand "interface.ss" directory)
-             (string-append "(.def Published identity: '" id
-               (if (string=? id "app/web")
-                   " core: (.o requires: (.o Schema: (.o module-id: 'core/schema contract: Scope)) scope-contract: Scope exports: (.o greeting: Greeting)) features: (.o))"
-                   " core: (.o scope-contract: Scope exports: (.o greeting: Greeting)) features: (.o))")))))
+             (string-append
+               (if (string=? id "app/web") "(import (only-in \"../../core/schema/types.ss\")) " "")
+               "(.def Published identity: '" id
+               " core: (.o scope-contract: Scope exports: (.o greeting: Greeting)) features: (.o))"))))
         '("app/web" "core/schema"))
        (write-file (path-expand "modules/app/web/extra/early.ss" root)
                    "(def Early 'early) (export Early)")
@@ -79,10 +79,8 @@
                        (or feature-values (.o early: (optional 'early '("extra/early"))
                                         late: (optional 'late '("extra/late") '(app/web/early))
                                         off: (error "negative Feature forced"))) (.o))
-           core: (.o requires: (if (eq? id 'app/web)
-                                (.o Schema: (.o module-id: 'core/schema contract: Scope)) (.o))
-                     projections: core-projections scope-contract: Scope
-                     link: (lambda (_deps) (error "build must not link domain scopes"))))))))
+           core: (.o projections: core-projections scope-contract: Scope
+                     exports: (error "build must not link domain scopes")))))))
 (def (entry-names graph)
   (map (lambda (entry) (.get entry compiler-identity)) (.get graph entries)))
 (def module-build-graph-test
@@ -199,14 +197,12 @@
              (lambda (_source)
                (.o identity: 'app/web features: (.o)
                  core:
-                 (.o requires: (.o) scope-contract: Scope
+                 (.o scope-contract: Scope
                    admissions:
                    (.o Config: (.o export-path: '(config) contract-path: '(types Config))
                        Value: (.o export-path: '(value) contract-path: '(types Value)))
-                   link:
-                   (lambda (_dependencies)
-                     (.o config: candidate-value value: export-value
-                         types: (.o Config: settings-type Value: Scope))))))))
+                   exports: (.o config: candidate-value value: export-value
+                                types: (.o Config: settings-type Value: Scope)))))))
          (check-exception (.get (select (.o message: 123)) modules modules app web) error?)
          (check-equal? bindings 0)
          (check-exception (.get (select (.o message: "ok" typo: #t)) modules modules app web) error?)
@@ -248,7 +244,7 @@
                  (.o identity: (if declaration (cdr declaration) owner) features: (.o)
                    core: (.o scope-contract: Scope
                            projections: (if (eq? owner web-id) projection-values '())
-                           link: (lambda (_dependencies) (.o greeting: 'source retained: #t))))))))
+                           exports: (.o greeting: 'source retained: #t)))))))
          (def view (select (list (projection 'web-package))))
          (def graph (.get view build-graph))
          (check-equal? (.get (car (.get graph external-packages)) scope-owner) web-id)
@@ -336,7 +332,7 @@
            (write-file path
             (string-append
              "(import (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor)) "
-             "(.def Published identity: 'app/web core: (.o requires: (.o Schema: (.o module-id: 'core/schema contract: Scope)) scope-contract: Scope exports: (error \"must not link while building\")) features: "
+             "(import (only-in \"../../core/schema/types.ss\")) (.def Published identity: 'app/web core: (.o scope-contract: Scope exports: (error \"must not link while building\")) features: "
              "(.o early: (feature-descriptor (.o feature-id: 'app/web/early owner-module-id: 'app/web projections: (list '(\"extra/early\")))) "
              "late: (feature-descriptor (.o feature-id: 'app/web/late owner-module-id: 'app/web requires: '(app/web/early) projections: (list '(\"extra/late\")))) "
              "off: (error \"negative feature must not evaluate\")))")))

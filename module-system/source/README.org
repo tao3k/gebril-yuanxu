@@ -15,13 +15,11 @@ define the Interface's compiler import closure. See
 [[file:../../docs/10-19-design/13-module-loading/13.35-haumea-and-poo-namespace-projection.org][the Haumea comparison]]
 for the namespace and receiver boundary.
 
-A =requires= entry names the provider with =module-id=. Its optional
-=refine= function derives an edge-local value from the selected provider
-scope, including any package specialization. The linker runs this function
-between independent source checks. A changed scope is admitted by the
-provider's publication contract before any additional consumer =contract=.
-The linked record retains the checked dependency value. This value is not
-another compiler target and does not replace the provider's selected scope.
+The reader records the admitted source owner of each Gerbil import.
+Selection uses those owners for ordering, while the compiler follows the
+native imports. A configuration factory takes its POO inputs explicitly.
+The module that declares the final configuration contributes its package
+request through =core.projections=, with the owner bound by the build graph.
 
 =interface.ss= is the module publication entry. The role wrapper requires
 =types.ss=, =objects.ss= and =config.ss= and supplies =func.ss= when present.

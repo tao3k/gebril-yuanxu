@@ -499,3 +499,17 @@ work across the selected roots, but the measured cost does not
 justify adding a membership index to address the capacity failure.
 The full focused test passed in 34.392 s at 1,566,605,312 bytes
 sampled process-tree footprint, within the original 180 s / 4 GiB guard.
+
+** Value admission attribution
+
+A separate stage-only overlay split the existing named value admission
+into descriptor checks, native Type validation of the candidate, context
+obligations, and receipt construction. All four ran 1,000 times during
+the unobserved declaration phase. Candidate validation used 7.607 s CPU
+and overlapped five collections. Descriptor checks used 22.3 ms CPU,
+context obligations 6.1 ms, and receipt construction 21.2 ms. The Case
+passed in 91.648 s under the same guard. These inclusive timings identify
+the native candidate validation as the next stage to split. They do not
+measure which allocations caused the collections. The stage-only overlay
+predates the import-derived dependency changes and is not a measurement
+of that combined PR head.

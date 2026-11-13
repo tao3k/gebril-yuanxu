@@ -208,8 +208,8 @@
             (hash-ref (reader-session-dependencies session) (path-normalize (yuanxu-module-source-ref-value source))))))
       import-owners:
       (lambda (source)
-        (hash-ref (reader-session-imported-owners session)
-                  (path-normalize (yuanxu-module-source-ref-value source))))
+        (hash-ref (reader-session-dependencies session)
+                  (cons 'import-owners (path-normalize (yuanxu-module-source-ref-value source)))))
       inputs: (lambda (source)
                 (parameterize ((current-module-source-phase 'publication-inputs)) (reader-current! session))
                 (hash-ref (reader-session-dependencies session) (path-normalize (yuanxu-module-source-ref-value source))))))

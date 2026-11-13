@@ -30,7 +30,7 @@
   (when (string-contains (.get source value) "/poison/")
     (error "unselected publication reader called"))
   (.o identity: 'json-schema features: (.o)
-      core: (.o scope-contract: FixtureContract link: (lambda (_deps) (.o)))))
+      core: (.o scope-contract: FixtureContract exports: (.o))))
 (def (test-session source)
   (module-test-projection (yuanxu-load-modules source read-publication: fixture-reader)))
 (def module-testing-test

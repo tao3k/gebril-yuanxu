@@ -30,29 +30,25 @@
       (parameterize ((current-module-source-observer observe))
         (def parent (.get fixture module))
         (def initial count)
-        (.def Database identity: 'database core: (.o requires: (.o)) features: (.o))
+        (def Database (.o identity: 'database features: (.o)))
         (def context (.o selected: '(application database) denied-modules: '() generation: 0))
-        (def graph
-          (select-module-graph context '(application)
-            (lambda (id) (if (eq? id 'application) parent Database)) void))
+        (def (resolver id) (if (eq? id 'application) parent Database))
+        (def (imports id) (if (eq? id 'application) '(database) '()))
+        (def graph (select-module-graph context '(application) resolver void imports))
         (check-equal? (length (.get graph module-order)) 2)
         (check-equal? count initial)
         (check-equal? (.get parent identity) (.get fixture metadata identity))
-        (check-equal? (.get parent core requires Database module-id)
-                      (car (.get fixture metadata requires)))
         (check-equal? (.ref/cached parent 'scope) #f)
         (check-equal? (.ref/cached (.get parent core) 'roles) #f)
         (def denied (.cc context denied-modules: '(database)))
-        (def (resolver id) (if (eq? id 'application) parent Database))
         (def disabled (with-catch values
-                        (cut select-module-graph denied '(application) resolver void)))
+                        (cut select-module-graph denied '(application) resolver void imports)))
         (check-equal? (Error? disabled) #t)
         (check-equal? (Error-message disabled) "required module disabled")
-        (.def (cyclic-database @ Database)
-          core: =>.+ (.o requires: (.o Application: (.o module-id: 'application))))
         (check-equal? (Error? (with-catch values
-                       (lambda () (select-module-graph context '(application)
-                         (lambda (id) (if (eq? id 'application) parent cyclic-database)) void)))) #t)
+                       (lambda ()
+                         (select-module-graph context '(application) resolver void
+                           (lambda (id) (if (eq? id 'application) '(database) '(application))))))) #t)
         (check-equal? count initial)
         (yuanxu-test-checkpoint 'metadata-only)
         ;; Actual publication admission demands Types, never a domain scope.
@@ -138,10 +134,10 @@
         (replace-source interface body)
         (check-equal? (Error? (with-catch values (cut project-metadata interface))) #t))
       (refused '((.def Module identity: 'a identity: 'b
-                   core: (.o requires: (.o)) features: (.o))))
+                   core: (.o exports: (.o)) features: (.o))))
       (refused '((.def Module identity: 'a core: (.o requires:
                    (.o Database: (.o module-id: (error "must not execute")))) features: (.o))))
-      (refused '((.def Module identity: 'a core: (.o requires: (.o)) features: (.o))
+      (refused '((.def Module identity: 'a core: (.o exports: (.o)) features: (.o))
                  (error "extra top form must not execute")))
       (refused '((.def Module identity: 'a
-                   core: (.o (:: self [UnknownParent]) requires: (.o)) features: (.o)))))))
+                   core: (.o (:: self [UnknownParent]) exports: (.o)) features: (.o)))))))

@@ -200,8 +200,7 @@
         (package-values '()) (package-demands '()) (library-demands '()) (package-refused? #f)
         (package-ids (make-hash-table-eq))
         (cores (make-hash-table-eq)) (owned-graph #f) (graph-policy #f) (entry-construction-intact? (object-construction-current?)))
-    ;; Index the already-selected Core nodes once; dependency edges select
-    ;; configuration builders, never a second directory/provider scan.
+    ;; Index the selected Core nodes for the build-publication lookup.
     (for-each (lambda (node)
                 (when (eq? (.ref node 'kind) 'module-core)
                   (hash-put! cores (.ref node 'owner) (.ref (.ref node 'publication) 'core))))
@@ -261,11 +260,17 @@
             (set! entry-values (cons entry entry-values)))))))
     (def (add-asset! input-value owner-id)
       (def file (.ref input-value 'path))
-      (when (hash-key? asset-paths file)
-        (error "duplicate selected configuration asset" file owner-id))
-      (hash-put! asset-paths file #t)
-      (add-check! input-value)
-      (set! asset-values (cons (.cc input-value owner: owner-id) asset-values)))
+      (def owner (if (.slot? input-value 'owner) (.ref input-value 'owner) owner-id))
+      (cond ((hash-get asset-paths file)
+             => (lambda (previous)
+                  (unless (and (eq? owner (.ref previous 'owner))
+                               (equal? (.ref input-value 'source-inputs) (.ref previous 'source-inputs)))
+                    (error "conflicting selected configuration asset" file owner))))
+            (else
+             (def asset (.cc input-value 'owner owner))
+             (hash-put! asset-paths file asset)
+             (add-check! input-value)
+             (set! asset-values (cons asset asset-values)))))
     ;; current! validates the selected context once before these local guards.
     ;; Capturing it again per entry makes each check recursively rewalk all Modules.
     ;; Local guards still re-read bytes/package identity on every boundary.

@@ -139,19 +139,23 @@
         (lambda () (.put! policy 'validate original))))
     (yuanxu-test-fixture "required dependency policy remains a Graph obligation"
       (root Workspace)
-      (prepare-source root "(.o Missing: (.o module-id: 'absent contract: ScopeContract))")
+      (prepare-source root "(import \"../absent/objects.ss\")")
+      (write-source (path-expand "modules/absent/interface.ss" root)
+        "(.def Absent identity: 'absent core: (.o scope-contract: ScopeContract exports: Scope) features: (.o))")
+      (write-source (path-expand "modules/absent/objects.ss" root)
+        "(def Unavailable #t) (export Unavailable)")
       ;; Remove the sibling sensitivity probe: the Graph must now fail solely
       ;; because example's own required Module is unavailable.
       (write-source (path-expand "init.ss" root)
         "(yuanxu! source: \"./modules\" mode: explicit (example))")
       (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
-      (def tests (module-test-projection selection '(example)))
-      ((.get tests admit-current))
       (check-equal? (.ref/cached selection 'selected-graph) #f)
-      (check-exception (.get selection selected-graph)
+      (check-exception (module-test-projection selection '(example))
         (lambda (exception)
           (and (Error? exception)
-               (string=? (Error-message exception) "required module not explicitly declared")))))
+               (string=? (Error-message exception) "source import belongs to an unselected Module"))))
+      (check-equal? (.ref/cached selection 'selected-graph) #f)
+      (check-exception (.get selection selected-graph) error?))
     (yuanxu-test-fixture "explicit Graph access returns the original selection object"
       (root Workspace)
       (prepare-source root)

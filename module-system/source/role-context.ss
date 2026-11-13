@@ -13,7 +13,7 @@
         (lambda (child)
           (let-values (((input owner assets initialization-current!) (support child)))
             (cond
-             ((and input owner initialization-current!)
+             ((and input owner)
               (let (resolved (resolve-owner (.ref input 'path)))
                 (unless (equal? owner resolved)
                   (refuse (list 'rebound owner resolved))
@@ -28,7 +28,7 @@
           (lambda ()
             (for-each
               (lambda (row)
-                ((list-ref row 4))
+                (when (list-ref row 4) ((list-ref row 4)))
                 ((.ref (cadr row) 'admit-current))
                 (for-each (lambda (input)
                             (resolve-owner (.ref input 'path))

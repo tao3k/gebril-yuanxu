@@ -178,13 +178,15 @@
              (reader-enroll-candidate! session (.ref input 'admit-current) input)
              (set! input-values (cons input input-values)))))
        (def (record-data! file text)
+         (def asset-owner (and source-tree ((.ref source-tree 'locate-owner) file)))
+         (def asset-root (if asset-owner (.ref asset-owner 'root) root))
          (def relative
-           (let (prefix (string-append (path-strip-trailing-directory-separator root) "/"))
+           (let (prefix (string-append (path-strip-trailing-directory-separator asset-root) "/"))
              (unless (string-prefix? prefix file)
                (error "configuration asset leaves its Module" file root))
              (substring file (string-length prefix) (string-length file))))
          ;; No escaping directory symlinks, even when the final file is regular.
-         (let walk ((directory root) (parts (string-split relative #\/)))
+         (let walk ((directory asset-root) (parts (string-split relative #\/)))
            (let (next (path-expand (car parts) directory))
              (unless (eq? (module-source-type next) (if (pair? (cdr parts)) 'directory 'regular))
                (error "configuration asset must be owner-confined and regular" file))
@@ -198,6 +200,7 @@
              (make-source-preparation #f asset-current! #f file asset-current! #f (lambda () #t)))
            (record-input!
              (.o kind: 'data path: file relative-path: relative
+                 owner: (if asset-owner (.ref asset-owner 'identity) (.ref prepared 'identity))
                  source-inputs: observations admit-current: asset-current!))))
        (def (within? directory path)
          (string-prefix? (string-append (path-strip-trailing-directory-separator directory) "/") path))
@@ -209,7 +212,7 @@
               (not (member path (.ref prepared 'role-sources)))
               (not (equal? path (.ref prepared 'build-source)))
               (begin
-                (when source-tree ((.ref source-tree 'locate-owner) path))
+                (when source-tree (record-owner! ((.ref source-tree 'locate-owner) path)))
                 (let-values (((_prelude identity _namespace _body) (core-read-module/sexp path)))
                   (let (context (hash-get (reader-session-tool-contexts session) identity))
                     (and context
@@ -326,17 +329,20 @@
                              (hash-put! (reader-session-kernel-inputs session) child input)
                              (hash-put! (reader-session-kernel-owners session) child owner)
                              (hash-put! (reader-session-kernel-data session) child assets)
-                             (hash-put! (reader-session-kernel-initializers session) child initialization-current!)
+                             (when initialization-current!
+                               (hash-put! (reader-session-kernel-initializers session) child initialization-current!))
                              (reader-add-input-guard! session input)
                              ;; Initialization support remains live after the
                              ;; transfer. A successful handoff is not approval
                              ;; for a later source or receiver mutation.
-                             (reader-session-add-guard! session
-                               (make-source-preparation #f #f #f #f initialization-current! #f #f))
+                             (when initialization-current!
+                               (reader-session-add-guard! session
+                                 (make-source-preparation #f #f #f #f initialization-current! #f #f)))
                              (for-each (lambda (asset)
                                          (reader-add-input-guard! session asset)
                                          (record-input! asset)) assets))
-                           (reader-enroll-candidate! session initialization-current!))
+                           (when initialization-current!
+                             (reader-enroll-candidate! session initialization-current!)))
                          (lambda (child)
                            (and (captured-import-context? (reader-session-compiler-contexts session) child)
                                 (begin (tool-context child #f) #t)))))))
@@ -597,7 +603,13 @@
              ;; observed compiler-context and currentness boundary.
              (cond
               ((hash-key? (reader-session-tool-contexts session) identity) (tool-context context reload?))
-              (owner (source-context selected-path reload?))
+              (owner
+               (record-owner! owner)
+               (if (or owned-path
+                       (member selected-path
+                         (map (lambda (name) (path-expand name (.ref owner 'root)))
+                              '("config.ss" "objects.ss" "func.ss" "types.ss"))))
+                 (source-context selected-path reload?) context))
               (else
                (let (source
                      (and owned-path
@@ -709,7 +721,7 @@
                                    (native-spec))))
                     value))
                 (def owners (reverse owner-order))
-                (hash-put! (reader-session-imported-owners session) interface-path owners)
+                (hash-put! (reader-session-dependencies session) (cons 'import-owners interface-path) owners)
                 (def result (if consume (consume source-value publication owners) publication))
                 ;; A deferred Build resolver shares this outer interpreter
                 ;; frame. Do not retain the completed candidate's support

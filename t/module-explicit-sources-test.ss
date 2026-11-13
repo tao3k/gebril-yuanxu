@@ -30,10 +30,10 @@
          "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
        (write-source (path-expand "config.ss" directory) "(def Config (.o))")
        (write-source (path-expand "interface.ss" directory)
-         (string-append "(.def Published identity: '" id " core: (.o requires: "
-           (if (string=? id "app/main")
-             "(.o Dependency: (.o module-id: 'core/dependency contract: Scope))" "(.o)")
-           " scope-contract: Scope exports: (.o value: 42)) features: (.o))"))))
+         (string-append
+           (if (string=? id "app/main") "(import (only-in \"../../../contribution/objects.ss\")) " "")
+           "(.def Published identity: '" id
+           " core: (.o scope-contract: Scope exports: (.o value: 42)) features: (.o))"))))
    '(("modules/app/main" . "app/main") ("contribution" . "core/dependency")))
   ;; Explicit binding must never fall back to this same-named invalid local tree.
   (write-source (path-expand "modules/core/dependency/interface.ss" root) "(((must-not-read")
@@ -47,11 +47,11 @@
           (let (init (path-expand "init.ss" root))
             (write-source init "(yuanxu! mode: explicit :app (main))")
             (assert 'undeclared-required-rejected
-              (rejects? "required module not explicitly declared"
+              (rejects? "required module not explicitly declared|source import leaves|unselected Module"
                 (lambda () (.get (yuanxu-load-modules init) selected-graph))))
-            (write-source init "(yuanxu! mode: explicit :core (dependency @ \"./missing\" disable: #t) :app (main))")
+            (write-source init "(yuanxu! mode: explicit :core (dependency @ \"./contribution\" disable: #t) :app (main))")
             (assert 'disabled-required-rejected-before-source-read
-              (rejects? "required module disabled"
+              (rejects? "disabled Module|required module disabled"
                 (lambda () (.get (yuanxu-load-modules init) selected-graph))))))))
     (yuanxu-test-case "one explicit source tree admits physical sources without copies or fallback"
       (call-with-temporary-directory "explicit-source-tree"

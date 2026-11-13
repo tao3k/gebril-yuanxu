@@ -1,7 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import (only-in :tao3k/yuanxu/module-system/source/declaration .def)
-        (only-in "postgresql/config.ss" PostgreSQLScope)
-        (only-in "gitea/config.ss" GiteaScope))
+(import (only-in :tao3k/yuanxu/module-system/source/declaration .def))
 (.def GiteaPostgreSQL
   identity: 'applications/gitea-postgresql
   core:
@@ -12,5 +10,5 @@
                               export-path: '(requirements postgresql))
           gitea-port: (.o target-owner: 'applications/gitea-postgresql target-admission: 'Application
                          export-path: '(requirements gitea)))
-      exports: (application-scope PostgreSQLScope GiteaScope Config))
+      exports: (configured-application-scope Config))
   features: (.o))
