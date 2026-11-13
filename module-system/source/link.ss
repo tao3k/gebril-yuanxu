@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Generation-local linking over admitted source capabilities. The filesystem source adapter remains separate from runtime loading.
-(import (only-in :std/list/list delete-duplicates/hash foldl foldr)
+(import (only-in :std/list/list delete-duplicates/hash find foldl foldr)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
         (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
         (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
@@ -13,12 +13,13 @@
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
         :tao3k/yuanxu/module-system/source/selection
         (only-in :tao3k/yuanxu/module-system/feature/scope
-                 refine-module-scope compose-module-features module-feature-scope-contract)
+                 compose-module-features module-feature-scope-contract)
         :tao3k/yuanxu/module-system/source/preparation
         :tao3k/yuanxu/module-system/source/directory
         (only-in :tao3k/yuanxu/module-system/source/reader-support call-with-publication-reads
                  merge-publication-read-roots)
         (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?))
+(import (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path))
 (export yuanxu-load-modules module-namespace-project module-program-namespace module-program-feature call-with-linked-prepared-guards
         linked-configuration-guard-active?)
 
@@ -69,6 +70,8 @@
   (module-binding-action "tao3k/yuanxu/admission/publication" 'selected-export-publication))
 (def build-graph-producer
   (module-binding-action "tao3k/yuanxu/module-system/source/build" 'module-build-graph/linked))
+(def module-test-source
+  (module-binding-action "tao3k/yuanxu/module-system/building/test-projection" 'module-owner-test-projection))
 (def build-package-source-inspector
   (module-binding-action "tao3k/yuanxu/module-system/source/build" 'module-build-package-source-inspector))
 (def publication-reader-producer
@@ -215,15 +218,9 @@
 ;; A compiler publication supplies native bindings, not filenames or a reader.
 ;; Keep dependency linking, Feature refinement and value Contracts in the same
 ;; linker as source consumption. Only the source acquisition capability differs.
-(def (module-program-namespace identity publications resolutions decision-rows namespace-rows)
+(def (module-program-namespace identity publications decision-rows namespace-rows)
   (def ids (.all-slots publications))
   (def generation (symbol->string identity))
-  (def (resolve-id owner reference)
-    (cond
-     ((memq reference ids) reference)
-     ((and (.slot? resolutions owner) (.slot? (.ref resolutions owner) reference))
-      (.ref (.ref resolutions owner) reference))
-     (else (error "dependency is outside compiled Module closure" owner reference))))
   (def context
     (.o generation module-ids: ids selected: ids denied-modules: '()
         intent:
@@ -236,7 +233,8 @@
         (lambda (id)
           (unless (memq id ids) (error "Module is outside compiled closure" id))
           (make-yuanxu-module-generated-source (symbol->string id)))
-        resolve-module-id: resolve-id
+        compiled-leaves: publications
+        import-owners: (lambda (id) (.ref (.ref publications id) 'imports))
         namespace: (lambda (resolve) (scope-tree namespace-rows resolve))
         read-publication:
         (lambda (source)
@@ -324,6 +322,8 @@
   (observe-link-stage 'context-admission
     (lambda () (admit-module-value! ModuleScopeContextContract context-value context-value)))
   (let ((cache (make-hash-table))
+        (leaves (make-hash-table-eq))
+        (test-sources (make-hash-table-eq))
         (prepared (or source-prepared (make-hash-table)))
         (publications (or source-publications (make-hash-table)))
         (graphs (make-hash-table))
@@ -498,10 +498,12 @@
           (unless (= size (.get metadata-index count)) (.put! metadata-index 'count size))
           (values (.get metadata-index complete?) (.get metadata-index rows) (.get metadata-index roots)))))
     (def (check-publications!)
-      (hash-for-each
-        (lambda (_id record)
-          (let (guard (linked-publication-metadata-current record))
-            (when guard (guard)))) publications))
+      (module-source-measure-operation 'publication-guard-sweep
+        (lambda ()
+          (hash-for-each
+            (lambda (_id record)
+              (let (guard (linked-publication-metadata-current record))
+                (when guard (guard)))) publications))))
     (def (check-indexed-publications!)
       (defvalues (complete? rows roots)
         (module-source-measure-operation 'metadata-index metadata-topology))
@@ -579,24 +581,6 @@
               ;; Only the nested filesystem observations may share bytes.
               check-current!))))
       (when (selection-tail) (set-box! (selection-tail) #f)))
-    (def (dependency-scope owner alias provider-id baseline)
-      (if (not realization) baseline
-        (let (matches
-               (filter (lambda (request)
-                         (and (.slot? request 'configuration-owner)
-                              (eq? owner (.ref request 'configuration-owner))
-                              (eq? provider-id (.ref request 'build-owner))
-                              (eq? alias (.ref request 'dependency-alias))))
-                       (.ref original-graph 'external-packages)))
-          (cond ((null? matches) baseline)
-                ((pair? (cdr matches)) (error "ambiguous realized dependency" owner alias))
-                (else
-                 (let* ((request (car matches))
-                        (packages (.ref realization 'packages))
-                        (key (.ref request 'identity)))
-                   (unless (.slot? packages key)
-                     (error "missing realized dependency" owner alias key))
-                   (bind-package-scope baseline (.ref (.ref packages key) 'scope))))))))
     ;; A direct package projection may specialize its owner's scope. Select
     ;; only this owner's results; never borrow a consumer's dependency scope.
     ;; A package contributes POO overrides to the source-owned scope. It must
@@ -714,29 +698,23 @@
                     (unless (yuanxu-module-source-ref? source)
                       (error "module scope requires an admitted SourceRef" id source))
                     source)))
-               (pair (module-source-measure-operation 'publication-read
+               (result (module-source-measure-operation 'publication-read
                       (lambda () (call-with-values
                        (lambda ()
                          (if prefix (read-located locate)
                            (let (source (locate))
-                             (values source ((.ref context-value 'read-publication) source)))))
-                       cons))))
-               (source-value (car pair))
-               (publication-value (cdr pair))
-               ((values reads evidence-value)
+                             (values source ((.ref context-value 'read-publication) source)
+                               (if (.slot? context-value 'import-owners)
+                                 ((.ref context-value 'import-owners) id) '()))))
+                       list))))
+               (source-value (car result))
+               (publication-value (cadr result))
+               (dependency-ids (caddr result))
+               (evidence-value
                  (module-source-measure-operation 'publication-admission
                    (lambda ()
-                     (call-with-publication-reads
-                       (lambda ()
-                         (admit-module-publication! source-value id publication-value context-value))
-                       (lambda (results _current! roots)
-                         (cons roots results))
-                       ;; A caller's getter still owns EVERY dependency edge
-                       ;; occurrence. This capture is not a replay-root set.
-                       unique-roots?: #f))))
+                     (admit-module-publication! source-value id publication-value context-value))))
                (checked-publication (.ref evidence-value 'candidate))
-               (dependency-ids
-                 (module-publication-recorded-dependencies checked-publication reads))
                (record (make-linked-publication source-value checked-publication
                                                 evidence-value dependency-ids #f #f #f #f)))
           ;; Only the runtime paired selection can postpone this check across
@@ -747,19 +725,6 @@
             (current! 'publication-admitted))
           (hash-put! publications id record)
           record)))
-    (def (dependencies-for entry id)
-      (or (linked-publication-dependencies entry)
-        ;; A callback invalidated/replaced cached metadata. Its ordinary tail
-        ;; already ran; guard the new getters and their return independently.
-        (begin
-          (current! 'dependency-projection-before)
-          (let* ((requirements (.ref (.ref (linked-publication-value entry) 'core) 'requires))
-                 (ids (map (lambda (name) (.ref (.ref requirements name) 'module-id))
-                           (.all-slots requirements))))
-            (unless (andmap symbol? ids)
-              (error "module dependency projection requires symbol identities" id))
-            (current! 'dependency-projection-after)
-            ids))))
     (def (resolve-linked-selection roots)
       (with-catch
        (lambda (exception) (set! failed? #t) (raise exception))
@@ -789,12 +754,8 @@
                      context-value roots
                      (lambda (id) (linked-publication-value (publication-for id)))
                      graph-current!
-                     (and paired-context-current? (paired-context-current?)
-                          (module-publication-contract-current?)
-                       (lambda (id)
-                         (let (entry (publication-for id))
-                           (values (linked-publication-value entry)
-                                   (dependencies-for entry id))))))))
+                     (lambda (id)
+                       (linked-publication-dependencies (publication-for id))))))
                ;; Only private bookkeeping follows selection's final check.
                (def selection
                  (make-linked-selection graph graph-current!
@@ -819,81 +780,13 @@
                   (publication-value (linked-publication-value published))
                   (publication-evidence-value (linked-publication-evidence published)))
              (let* ((baseline (.ref publication-value 'core))
-                    (requirements (.ref baseline 'requires))
-                    (records
-                     (object<-alist
-                      (map (lambda (alias)
-                             (let (checks '())
-                               (def (edge-stage name action)
-                                 (observe-supported-link-stage (list name id alias) action current!
-                                   (lambda (check!) (set! checks (cons check! checks)))))
-                               (let* ((requirement (.ref requirements alias))
-                                    (required-id (if (.slot? context-value 'resolve-module-id)
-                                                   ((.ref context-value 'resolve-module-id) id (.ref requirement 'module-id))
-                                                   (.ref requirement 'module-id)))
-                                    (base-record (link required-id (cons id path) graph))
-                                    (interface?
-                                     (requirement-option requirement 'view))
-                                    (upstream (.ref base-record (if interface? 'interface 'scope)))
-                                    (package-scope
-                                     (if interface? upstream
-                                       (dependency-scope id alias required-id upstream)))
-                                    (refine (requirement-option requirement 'refine))
-                                    (refined
-                                     (if refine
-                                       (edge-stage 'requirement-refinement
-                                         (lambda ()
-                                           ;; Same runtime write fence used when a method
-                                           ;; declaration specializes an existing receiver.
-                                           (refine-module-scope package-scope upstream refine)))
-                                       package-scope))
-                                    (provider-evidence
-                                     (cond
-                                      (interface?
-                                       (edge-stage 'requirement-interface-admission
-                                         (lambda ()
-                                           (admit-module-value! ModuleInterfaceViewContract upstream context-value))))
-                                      ((eq? refined upstream)
-                                       (.ref base-record 'scope-evidence))
-                                      (else
-                                       (edge-stage 'requirement-provider-admission
-                                         (lambda ()
-                                           (admit-module-value!
-                                             (.ref base-record 'scope-contract)
-                                             refined context-value))))))
-                                    (effective-scope (.ref provider-evidence 'candidate))
-                                    (contract (requirement-option requirement 'contract))
-                                    (evidence
-                                     (if contract
-                                       (edge-stage 'requirement-admission
-                                         (lambda ()
-                                           (admit-module-value!
-                                             contract effective-scope context-value)))
-                                       provider-evidence)))
-                               (cons alias
-                                 (let ((provider base-record)
-                                       (scope (.ref evidence 'candidate))
-                                       (requirement-evidence evidence)
-                                       (edge-checks (reverse checks)))
-                                   (.o provider scope provider-evidence requirement-evidence
-                                       admit-current: (lambda ()
-                                                        (current! 'requirement-current-before)
-                                                        (for-each (lambda (check!) (check!)) edge-checks)
-                                                        (current! 'requirement-current-after))))))))
-                           (.all-slots requirements))))
-                    (bindings (object<-alist
-                               (map (lambda (alias)
-                                      (cons alias (.ref (.ref records alias) 'scope)))
-                                    (.all-slots records))))
-                    (interface
-                     (.o identity: id
-                         requires: (object<-alist
-                          (filter-map
-                           (lambda (alias)
-                             (let (requirement (.ref requirements alias))
-                               (and (requirement-option requirement 'publish?)
-                                    (cons alias (.ref bindings alias)))))
-                           (.all-slots requirements)))))
+                    (_imports
+                     (let (node (find (lambda (node)
+                                        (and (eq? (.ref node 'kind) 'module-core)
+                                             (eq? (.ref node 'owner) id)))
+                                      (.ref graph 'nodes)))
+                       (for-each (lambda (owner) (link owner (cons id path) graph))
+                                 (.ref node 'imports))))
                     (construction-checks '())
                     (retain-construction!
                      (lambda (check!) (set! construction-checks (cons check! construction-checks))))
@@ -910,7 +803,7 @@
                     (features (if (.slot? feature-index id) (.ref feature-index id) '()))
                     (unbound-scope
                      (observe-supported-link-stage (list 'scope-factory id)
-                       (lambda () (realized-scope id ((.ref baseline 'link) bindings)))
+                       (lambda () (realized-scope id (.ref baseline 'exports)))
                        current!
                        retain-construction!))
                     (feature-result
@@ -946,11 +839,11 @@
                               (current! 'scope-construction-current-after)))
                            (identity id) (generation generation-value) (source source-value)
                            (publication publication-value) (publication-evidence publication-evidence-value)
-                           (dependency-records records) (scope (.ref scope-evidence-value 'candidate))
+                           (scope (.ref scope-evidence-value 'candidate))
                            (scope-contract effective-scope-contract)
                            (scope-evidence scope-evidence-value))
                        (.o identity generation source publication publication-evidence
-                           dependency-records scope scope-contract scope-evidence interface
+                           scope scope-contract scope-evidence
                            admit-construction-current))))
                (current! 'scope-linked)
                (hash-put! cache id record)
@@ -1026,6 +919,70 @@
         (list graph prepare with-source-metadata prepared-input-state
           (make-linked-prepared-guards graph
             (cut with-prepared-guards graph selection <> <> <> <> <>)))))
+    (def (module-leaf id)
+      (or (hash-get leaves id)
+          (let (leaf (make-module-leaf id))
+            (hash-put! leaves id leaf)
+            leaf)))
+    (def (module-owner-test-source id)
+      (or (hash-get test-sources id)
+          (let (source (module-test-source (list selection-value id)))
+            (hash-put! test-sources id source)
+            source)))
+    (def (make-module-leaf id)
+      (def compiled? (.slot? context-value 'compiled-leaves))
+      (def descriptor (and compiled? (.ref (.ref context-value 'compiled-leaves) id)))
+      (def source (and (not compiled?) ((.ref context-value 'locate) id)))
+      (def metadata (and source (yuanxu-module-source-ref-metadata source)))
+      (def root (and metadata (or (assq 'module-root metadata)
+                                  (assq 'module-tree-root metadata))))
+      (def publication (delay (linked-publication-value (publication-for id))))
+      (def build?
+        (if compiled?
+          (and (.slot? descriptor 'build-spec?) (.ref descriptor 'build-spec?))
+          (and root (eq? (module-source-type (path-expand "build.ss" (cdr root))) 'regular)
+               (.slot? (force publication) '__std-make-spec))))
+      (def test?
+        (if compiled?
+          (and (.slot? descriptor 'test-spec?) (.ref descriptor 'test-spec?))
+          (and root (module-source-type (path-expand "tests" (cdr root))))))
+      (def reserved '(__std-make-spec __std-test))
+      (def (delegate)
+        (fallback-to
+          (lambda ()
+            (def scope (.ref (or (hash-get cache id) (resolve id)) 'scope))
+            (for-each (lambda (slot)
+                        (when (.slot? scope slot)
+                          (error "reserved module leaf slot in business scope" id slot)))
+                      reserved)
+            scope)
+          reserved: reserved))
+      (if (not (or build? test?))
+        (.ref (or (hash-get cache id) (resolve id)) 'scope)
+        (.mix
+          slots:
+          (append
+            (if build?
+              (list (cons '__std-make-spec
+                      ($thunk-slot-spec
+                        (lambda ()
+                          (when compiled? (error "Module Make spec requires live source" id))
+                          (call-with-build-input-path #f
+                            (lambda ()
+                              (current! 'leaf-build-before)
+                              (begin0
+                                (parameterize ((current-module-build-phase? #t))
+                                  (.ref (force publication) '__std-make-spec))
+                                (current! 'leaf-build-after)))))))) '())
+            (if test?
+              (list (cons '__std-test
+                      ($thunk-slot-spec
+                        (lambda ()
+                          (when compiled? (error "Module tests require live source" id))
+                          (def tests (module-owner-test-source id))
+                          ((.ref tests 'admit-current))
+                          (.ref tests 'spec))))) '()))
+          (delegate))))
     (def selection-value
       (.o self: result generation: generation-value
         context: context-value
@@ -1039,6 +996,7 @@
             ((.ref realization 'admit-current))
             (current!)))
         prepare-publication: prepare
+        .module-test-source: module-owner-test-source
         .selected-record:
         (lambda (owner)
           ;; Private Graph/member lookups precede link's fresh eligibility
@@ -1064,7 +1022,7 @@
                (lambda (id)
                  (if module-view
                    (module-view id (lambda () (.ref (resolve id) 'scope)))
-                   (.ref (resolve id) 'scope))))
+                   (module-leaf id))))
           (or (and (.slot? context-value 'namespace)
                    ((.ref context-value 'namespace) resolve-scope))
               (scope-tree (map (lambda (id) (cons (module-id-parts id) id))

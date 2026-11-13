@@ -152,7 +152,10 @@
     (executable-tests
       (.o source-root: (path-directory (path-expand source))
         selected-graph: (.get (selected!) selected-graph)
-        spec: (test-spec)
+        spec:
+        (append (test-spec)
+                (.get (test-source #f 'integration) spec)
+                (.get (test-source #f 'qualification) spec))
         admit-current: test-current!
         .select: test-source)))
   (def (compiler-source-roots)

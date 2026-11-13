@@ -391,6 +391,30 @@
             role-sources: (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles)
             build-source: (let (file (path-expand "build.ss" root))
                             (and (hash-key? texts file) file))
+            build-role-kind:
+            (let (text (hash-get texts (path-expand "build.ss" root)))
+              (and text
+                   (let (forms (call-with-input-string text read-all))
+                     (cond
+                      ((ormap (lambda (form) (and (pair? form) (eq? (car form) 'defbuild-script))) forms)
+                       'package-script)
+                      ((ormap (lambda (form)
+                                (match form
+                                  (['.def 'Build . slots]
+                                   (let loop ((slots slots))
+                                     (match slots
+                                       (['defbuild-script: . _] #t)
+                                       (['defbuild-script . _] #t)
+                                       ([['defbuild-script . _] . _] #t)
+                                       ([(? keyword?) _ . rest] (loop rest))
+                                       ([_ . rest] (loop rest))
+                                       (else #f))))
+                                  ;; POO owns inheritance and validates the effective
+                                  ;; slot after resolving this adjacent role.
+                                  (['.def ['Build '@ _ . _] . _] #t)
+                                  (else #f))) forms)
+                       'make-parameters)
+                      (else #f)))))
             namespace: (caddr compiler-info) prelude: (car compiler-info)
             admit-current: current!
             deferred-roles: deferred-roles

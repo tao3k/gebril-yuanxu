@@ -13,10 +13,8 @@
                  current-import-expander-phi current-export-expander-phi raise-syntax-error)
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module package-library-spec/source-context)
         (only-in :tao3k/yuanxu/module-system/building/source-package package-prelude-identity)
-        (only-in :tao3k/yuanxu/module-system/building/program-products make-target-spec program-targets)
+        (only-in :tao3k/yuanxu/module-system/building/program-products make-target-spec program-targets make-target? StdMakeRowContract)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
-        (only-in :std/crypto/digest sha256)
-        (only-in :std/encoding/hex hex-encode)
         (only-in :std/string/path path-absolute? path-default-extension subpath?)
         (only-in :std/list/list find foldl)
         (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
@@ -31,7 +29,6 @@
                  build-target-name yuanxu-prepare-module-retained-source module-compiler-source-owner?
                  module-source-package-info)
         (only-in :tao3k/yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
-        (only-in :tao3k/yuanxu/module-system/source/publication requirement-option)
         (only-in :tao3k/yuanxu/module-system/feature/capability-model feature-projection-request?)
         (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
         (only-in :tao3k/yuanxu/module-system/building/package write-selected-package))
@@ -44,32 +41,14 @@
   .element?: (lambda (value)
                (and (object? value) (.slot? value '.restore-build)
                     (procedure? (.ref value '.restore-build)))))
-(def (build-root? value)
-  (or (and (string? value) (> (string-length value) 0))
-      (and (list? value) (>= (length value) 2) (eq? (car value) 'gxc:)
-           (string? (cadr value)) (> (string-length (cadr value)) 0)
-           (andmap string? (cddr value)))))
-;; Executables are native Make products, not test-only demands. Their source
-;; ownership and currentness are checked by the enclosing projection.
-(def (make-target? value)
-  (or (build-root? value)
-      (and (list? value) (>= (length value) 2) (eq? (car value) 'exe:)
-           (string? (cadr value)) (> (string-length (cadr value)) 0)
-           (let (options (cddr value))
-             (if (and (pair? options) (eq? (car options) 'bin:))
-               (and (pair? (cdr options)) (string? (cadr options))
-                    (module-source-name? (cadr options)) (andmap string? (cddr options)))
-               (andmap string? options))))))
-(define-type (MakeTargetContract @ Type.)
-  identity: 'module/make-target .element?: make-target?)
 ;; Pure native-spec shape and composition. Source/publication authentication
 ;; remains in the enclosing init-owned boundary, never in a claimed origin tag.
 (def BuildSpecContract
   (.cc ObjectContract. identity: 'module/build-spec
     responsibilities:
-    (.o module-spec: (List MakeTargetContract)
-        retained-spec: (List MakeTargetContract)
-        spec: (List MakeTargetContract))
+    (.o module-spec: (List StdMakeRowContract)
+        retained-spec: (List StdMakeRowContract)
+        spec: (List StdMakeRowContract))
     obligations:
     (lambda (candidate location)
       ;; Count actual obligation execution, not just its caller's wrapper.
@@ -359,25 +338,15 @@
       (package-library-spec/source-context package-root package
         (map (cut path-default-extension <> ".ss") entries)
         admit-context declared-source-context))
-    (def (add-package! owner contributor projection (provider #f))
+    (def (add-package! owner contributor projection)
       (admit-module-value! ExternalPackageContributionContract projection selected-value)
       (let* ((publication (owner-preparation owner))
              (metadata (yuanxu-module-source-ref-metadata (.ref publication 'source)))
              (root (or (assq 'module-root metadata) (assq 'module-tree-root metadata)))
-             (id (.ref projection 'identity))
-             ;; Bound filesystem names even for deep module identities. The
-             ;; tuple remains in readable provenance; duplicate/digest collisions
-             ;; reject below, never alias two consumer requests or caches.
-             (key (if provider
-                    (string->symbol
-                     (string-append "configuration-"
-                       (hex-encode (sha256 (string->utf8
-                         (call-with-output-string (cut write (list provider owner id) <>)))))))
-                    id)))
-        (unless root (error "external package has no admitted configuration root" owner provider))
-        (when (hash-key? package-ids key)
-          (error "conflicting external package contributions" id owner provider contributor))
-        (when provider (owner-preparation provider))
+             (id (.ref projection 'identity)))
+        (unless root (error "external package has no admitted configuration root" owner))
+        (when (hash-key? package-ids id)
+          (error "conflicting external package contributions" id owner contributor))
         (let (request ((.ref projection '.prepare) (cdr root) (.ref selected-value 'admit-current) publication))
           (unless (and (object? request)
                        (andmap (cut .slot? request <>) '(identity source-inputs input-files admit-current .realize))
@@ -386,28 +355,13 @@
                        (list? (.ref request 'input-files))
                        (procedure? (.ref request 'admit-current))
                        (procedure? (.ref request '.realize)))
-            (error "malformed prepared external package" id owner provider))
-          (hash-put! package-ids key #t)
-          (def bound
-            (if provider
-              (.cc request 'identity key 'package-identity id
-                   'build-owner provider 'configuration-owner owner 'dependency-alias contributor)
-              (.cc request 'scope-owner owner)))
+            (error "malformed prepared external package" id owner))
+          (hash-put! package-ids id #t)
+          (def bound (.cc request 'scope-owner owner))
           (when (.slot? bound '%configuration-check)
             (.ref bound '%configuration-check)
             (.ref bound 'admit-current))
           (set! package-values (cons bound package-values)))))
-    (def (add-configuration-builds! owner requirements)
-      (for-each
-       (lambda (alias)
-         (let* ((requirement (.ref requirements alias))
-                (provider ((.ref selected-value 'resolve-module-id) owner (.ref requirement 'module-id)))
-                (baseline (hash-ref cores provider)))
-           (when (and (not (requirement-option requirement 'view)) (.slot? baseline 'configuration-build))
-             (set! package-demands
-               (cons (lambda () (add-package! owner alias (.ref baseline 'configuration-build) provider))
-                     package-demands)))))
-       (.all-slots requirements)))
     (def (add-projections! owner contributor-value projections)
       (unless (list? projections) (error "module projections must be a list" contributor-value))
       (for-each
@@ -464,9 +418,16 @@
        (let ((owner (.ref node 'owner)) (contributor (.ref node 'identity)))
          (case (.ref node 'kind)
            ((module-core)
-            (let (core (.ref (.ref node 'publication) 'core))
-              (when (.slot? core 'projections)
-                (add-projections! owner contributor (.ref core 'projections)))))
+            (let* ((publication (.ref node 'publication))
+                   (core (.ref publication 'core))
+                   (explicit (if (.slot? core 'projections) (.ref core 'projections) '())))
+              (when (.slot? publication '__std-make-spec)
+                (let (spec (.ref publication '__std-make-spec))
+                  (when (and (list? explicit) (ormap list? explicit))
+                    (error "Module Make targets must use only Build.defbuild-script" owner))
+                  (add-projections! owner contributor (list spec))))
+              (unless (null? explicit)
+                (add-projections! owner contributor explicit))))
            ((feature)
             (when (.ref node 'interface)
               (set! library-demands
@@ -500,8 +461,7 @@
                               (add-asset! input owner)
                               (add! 'source input owner contributor)))
                           inputs))
-              (add! 'publication publication owner contributor)
-              (add-configuration-builds! owner (.ref core 'requires)))))) nodes)
+              (add! 'publication publication owner contributor))))) nodes)
     (for-each (lambda (request) (apply add-library! request)) (reverse library-demands))
     (set! library-demands '())
     (def entry-policy

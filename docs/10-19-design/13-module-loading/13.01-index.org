@@ -3,6 +3,7 @@
 #+language: en
 
 - [[file:13.36-std-make-spec-projection-and-performance.org][Native Make spec projection and performance gates]]
+- [[file:13.38-module-leaves-and-build-slots.org][Module leaves and build slots]]
   separates target discovery from compiler preparation and defines lifecycle
   parity, bounded work and end-to-end acceptance.
 

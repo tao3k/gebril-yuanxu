@@ -390,3 +390,112 @@ request from compiler preflight. The observed run above uses per-owner
 guards, so its final replay peak cannot be attributed to a merged root
 index. The diagnostic keeps the existing order and authenticates the
 original read records on both routes.
+
+** PR 22 qualification baseline
+
+The remote PR 22 head =240b9eb= has 66 successful checks and one failure
+on macOS in =dense-declarations=. Its Case reported all 10,000 owners
+completed and 60,000 candidate-local guards. The timeout backtrace passed
+through =publication-read-current= and the per-publication table walk
+after declaration admission. The Case budget on this commit is 650 s.
+The inclusive observed Graph window reported 644.720 s wall and
+574.820 s CPU. Its 41 collections took 181.112 s wall and 161.108 s CPU.
+These totals include discovery, admission and the interrupted sweep.
+The backtrace identifies where the Case stopped, while the totals cannot
+attribute 644.720 s to the sweep alone.
+
+The local =poo-flow/core= test branch =evidence/release-followup= at
+=1bc7308= adds two diagnostic commits above the remote head. Recompiling
+its committed linker and observation modules over the prepared Gerbil
+artifact set passed =t/module-session-metadata-index-test.ss stages= in
+13.217 s with a sampled 529,072,128-byte process-tree footprint. This
+focused run uses the local test source and an artifact overlay. Its
+receipt covers the existing ordered fallback and observer refusal
+controls and does not qualify the complete dense workload.
+
+The same overlay ran the existing observed 10,000-declaration test under
+an external 180 s / 4 GiB guard. The guard timed out at 180.180 s with
+2,836,889,600 bytes of sampled process-tree footprint. The last complete
+periodic sample recorded 4,000 declarations. This run stopped before
+the final publication sweep and provides no timing for that sweep.
+The underlying package products pin POO =e886093= as declared on PR 22.
+
+** Observed publication boundaries
+
+=PublicationReads.inert_observers_preserve_lane_order= proves that an
+inert observer keeps the same per-publication check order.
+=PublicationReads.second_observer_can_invalidate_same_read= shows the
+opposite case for an observer that mutates a receiver at the second
+publication's start. The two publications use the same issued record.
+The second check must refuse even when the first one succeeded. The
+matching Scheme Case checks both start events and the shorter validated
+prefix on refusal. It passed in the existing metadata-index suite.
+
+The source observer is a public effect boundary. Keep its original
+entry, visit and return events, including the observed prefix on failure.
+The observed sweep can reuse ordered structure. It still needs fresh
+authentication after each observer effect.
+
+The 1,000-owner =stages= run on the local PR 22 test branch used the
+committed linker plus the sweep timer, with the prepared =e886093=
+dependency products. It passed in 36.829 s with a sampled 1,453,654,016
+byte process-tree footprint. The observed Graph phase took 29.709 s wall
+and 21.961 s CPU. Four whole-table fallback sweeps took 2.566 s wall
+and 2.560 s CPU in total. All 16,000 observed native replays, including
+replays inside those sweeps, took 7.907 s wall and 6.339 s CPU.
+Declaration admission accounted for 6.235 s CPU and wrapper expansion
+for 1.241 s. These spans are inclusive. The four sweeps are one part of
+the cost, and the 1,000-owner run does not establish the 10,000-owner
+GC or final replay costs.
+
+** Candidate retaining only the original root spines
+
+On the PR 22 test branch, the unobserved candidate return was retaining
+the joined preparation/admission spine in its published guard. A local
+candidate kept the original segments and joined them only when an
+individual guard ran. Lean
+=PublicationReads.join_on_demand_preserves_guard_input= verifies that
+the joined roots and capture-time observer eligibility are preserved.
+
+The metadata-index and candidate-metadata suites passed in the trial
+overlay. The compiled trial preceded the final capture-time eligibility
+correction, so those runs do not qualify that correction. The unobserved
+10,000-owner selection with =stages= stopped in its first Graph demand
+at the external 180 s limit, with 2,361,278,464 bytes sampled peak
+process-tree footprint. It reached neither independent currentness nor
+the end of the first Graph phase. The observed 10,000-declaration run
+above is a different workload and cannot serve as a memory baseline.
+The source candidate was withdrawn and its patch and receipts kept
+locally.
+
+** Module closure cursor
+
+The ordered DFS on the PR 22 local test branch now holds its active
+sibling cursor in a loop argument. It saves a frame only when a node has
+both children and siblings. It reverses the private result cells in place.
+=SourceClosureWork.Frames.descend_preserves_pending_order= proves the
+pending-order equation and =descend_leaf_allocates_no_frame= covers leaves.
+The existing closure work, Graph and metadata-index suites passed.
+
+An AOT ABBA BAAB comparison with the same Gerbil options on both arms
+used 10,000 independent identities and a fixed empty dependency result.
+Each arm returned the complete original order. Allocation per traversal
+fell from 2,971,648 to 1,531,600 bytes with zero collections. Both CPU
+medians were about 1.00 ms. This isolates the closure traversal. It does
+not measure declaration admission or establish the 180 s / 4 GiB gate.
+
+** Selected membership and sort attribution
+
+A temporary probe on the PR 22 test branch timed the existing
+=memq= of the selected owner list, including its context slot read.
+The unobserved 1,000-owner first Graph phase took 17.680 s wall and
+17.200 s CPU. It made 1,000 membership queries taking 3.098 ms CPU
+in total. Core projection used 62.272 ms CPU and the topological
+resolver used 29.768 ms. In the same run the inclusive owner closure
+used 16.317 s CPU, including candidate admission. Value admission
+accounted for 4.645 s CPU and metadata replay for 4.659 s CPU.
+These spans may overlap. The list lookup has quadratic worst-case
+work across the selected roots, but the measured cost does not
+justify adding a membership index to address the capacity failure.
+The full focused test passed in 34.392 s at 1,566,605,312 bytes
+sampled process-tree footprint, within the original 180 s / 4 GiB guard.

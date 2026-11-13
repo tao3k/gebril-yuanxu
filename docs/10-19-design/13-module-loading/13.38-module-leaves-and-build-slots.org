@@ -1,0 +1,250 @@
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+#+title: 13.38 Module Leaves and Build Slots
+#+property: DOCUMENT_ID 13.38
+#+property: STATUS proposed
+#+language: en
+
+* Public contract
+
+A =yuanxu!= declaration publishes one exports object. The declaration can
+live in =yuanxu-init.ss= or another Gerbil source module. Its Gerbil identity
+determines the generated exports binding. The filename =init.ss= remains a
+directory-discovery convention. Passing an exact declaration file bypasses
+that convention.
+
+A root supplies the leaf names. =rename: Lab= mounts that root as =Lab= in
+this exports object. A separate consumer can mount the same root under a
+different name. The mount never changes the leaf name, native compiler
+identity, dependency edges, build options, or ownership. Native identities
+remain qualified by Gerbil package and source. Two roots can expose the same
+leaf name when they have distinct mounts.
+
+The exports object is for composition and consumers that start outside a
+Module's admitted dependency context. A local sibling dependency does not
+need a path through that object. In Haumea, =self= refers to the current
+leaf and =super= is the leaf's admitted view of its containing directory.
+In Yuanxu, =core.requires= supplies the corresponding bounded dependency
+bindings to Module exports. POO's =super:= is a separate operation for
+inherited slot computation. Do not inject the whole directory into a
+Module or make it import its own selection declaration to find a sibling.
+
+This proposal applies to Yuanxu. Marlin is a downstream package whose
+current C ABI Interface already declares a local =DeckRuntime= dependency.
+That existing example illustrates the distinction between a Module's
+dependency binding and a consumer's mounted path. This proposal does not
+describe a Marlin implementation, migration, or qualification.
+
+#+begin_src scheme
+;; At a composition boundary with an explicit Lab mount.
+(.get Exports Lab nono-sandbox __std-make-spec)
+(.get Exports std-make-spec)
+
+;; Inside a Module with a declared DeckRuntime dependency.
+(.get DeckRuntime open)
+#+end_src
+
+The first read returns Nono's own owner-relative Make rows, including its
+compiler options. The aggregate returns the ordered native Make rows for
+the selected graph and its dependency closure. A direct leaf read may
+demand an eligible auto leaf without enrolling it into the aggregate.
+A disabled leaf cannot be used to reach a build contribution. Mounts use
+the existing collision and reserved-name rules. A flat public root is a
+separate API choice and is outside this refactor.
+
+* One leaf with two kinds of demand
+
+The namespace resolver currently returns =resolve(id).scope= when the
+consumer reads a leaf. The build collector separately reads the selected
+publication and never needs that scope. A forwarding object layered over
+an already realized scope would preserve the cost of the current path.
+
+Replace the resolver's leaf result with one generation-bound POO module
+object. Its identity is the native owner within that selection. Traversal
+and branch reflection use the existing name index. Construct the leaf only
+when requested. Resolve its build slot through the admitted publication;
+resolve ordinary slots through the existing linked scope and Feature
+composition. Linking dependencies and passing scopes to business contracts
+still use the realized scopes. Namespace projections retain the same leaf
+object rather than clone it. Keep normal business reads such as =deck-runtime
+open= and verify repeat reads return the same scope-owned values.
+
+Existing callers also use =.slot?= and =.all-slots= on business leaves.
+POO's =fallback-to= forwards missing value reads but does not supply
+reflection. A fallback alone therefore cannot implement the leaf. Preserve
+reflection with the same key semantics as the realized scope. Reserved slot
+queries can use admitted module metadata. A query for the complete business
+slot set can demand the scope because computed exports and Features can
+determine its keys. Check the POO reflection contract before switching the
+default leaf. If existing POO cannot express that delegation, implement
+reflection at the POO query boundary or migrate affected callers explicitly
+before the cutover. Do not add a Scheme accessor that mimics =.get=.
+
+An absent build role has no =__std-make-spec= slot; an empty valid spec is an
+empty list. Reserve the name on a module leaf and reject author-defined
+business slots using it, including Feature refinements. Ordinary lookup
+never silently shadows a business export. Maintain explicit tests for
+absent slots, identity, reflection, inherited behavior and stale leaf reads.
+
+* Build role and admission
+
+A module-owned Make contribution is data in the =defbuild-script= slot
+of the adjacent =build.ss= publication. The slot holds a POO parameter
+object. Its required =spec= slot is a proper list of native Make rows.
+
+#+begin_src scheme
+(.def Build
+  defbuild-script:
+  (.o spec:
+      `((gxc: "_nono"
+              "-cc-options" ,nono-include-option
+              "-ld-options" ,nono-link-option))))
+#+end_src
+
+The options in this example are strings owned by Nono's build role.
+An author can inherit the parameter object and refine its =spec= through
+ordinary POO slot inheritance. Validate the effective object after
+inheritance and retain the checked list in the admitted build generation.
+The contract rejects a procedure where a parameter object or spec list
+is required. It does not wrap a producer function or call one on access.
+The reader may resolve POO values and computed slots during build
+projection. It does not expand or execute Gerbil's =defbuild-script=
+macro in the module role or run Make during collection.
+
+** Parameter inventory and ownership
+
+The installed Gerbil 1cfb032 macro takes one positional =build-spec=
+expression followed by keyword/value arguments. Those arguments are
+forwarded to native Make. The native settings initializer has these 15
+keywords. The table distinguishes that upstream surface from the
+module contribution admitted by this design.
+
+| Owner | Native parameters | Expected values |
+|-------+-------------------+-----------------|
+| Module contribution | Positional =build-spec= | List of native Make target rows. The POO representation names this parameter =spec=. |
+| Package dispatcher | =srcdir:=, =libdir:=, =bindir:=, =prefix:=, =build-deps:= | Paths or a prefix as strings, with =#f= for native defaults where applicable. The macro supplies =srcdir:= from the package script path. |
+| Package dispatcher | =force:=, =optimize:=, =debug:=, =full-program-optimization:=, =build-release:=, =build-optimized:= | Boolean flags. |
+| Package dispatcher | =parallelize:= | Boolean or integer worker setting. |
+| Package dispatcher | =verbose:= | Numeric verbosity or =#f= for the native default. |
+| Package dispatcher | =target:= | Gerbil compilation target symbol. |
+| Package dispatcher | =static:= | Accepted by this Gerbil revision and ignored by its settings initializer. |
+
+The first =DefbuildScriptContract= admits one slot,
+=spec=. Compiler and linker options belong to individual target rows.
+Package settings stay with the executable package entry. A module cannot
+change the package prefix or output directory for its siblings. This also
+avoids inventing merge semantics for settings such as =parallelize:= or
+=target:= across selected owners.
+
+The row check uses =StdMakeRowContract=. The aggregate uses
+=BuildSpecContract= for composition and duplicate
+source/binary checks. The admitted Module row forms are a source string,
+=(gxc: source option-string ...)=, and
+=(exe: source [bin: name] option-string ...)=. Source confinement and
+compiler identity checks happen during projection. Native Make accepts
+additional kinds and forms, including =gsc:=, =ssi:=, =copy:= and grouped
+submodules. Supporting more of them requires corresponding ownership,
+output, and clean checks. Neither of the existing contracts is a complete
+contract for the macro's keyword parameter surface.
+
+** Collection
+
+Classify the adjacent file from the datums already read for authoring and
+admission. Keep the classification in that publication's preparation.
+Validate the effective POO value, including inherited slots, through the
+existing Gerbil binding. Reject unknown parameters, malformed rows,
+procedures in place of data, and competing entries. A top-level
+=defbuild-script= belongs to the executable package entry. The external
+package role retains its existing =kind: 'module/external-package= and
+=.prepare= contract.
+
+Project the validated =Build.defbuild-script.spec= to the Module's
+=__std-make-spec=. The direct leaf read and aggregate collector share this
+projection. The collector uses native owners in graph order without
+traversing public mounts or creating business scopes. Check the value
+once for the admitted generation and input context. Hot reads reuse the
+checked list while preserving currentness checks and refusing a stale
+generation. Source mutation, changed compiler identity, or a changed
+input path cannot authorize a reused spec. Preserve the existing
+=call-with-build-input-path= boundary and caller path restoration.
+
+The package entry passes the aggregate =std-make-spec= as the positional
+argument to Gerbil's real =defbuild-script=. Migrate the experimental
+=function:= route and the older =def Build= list route to the data
+contract. Remove =projections: (list Build)= for migrated Make owners.
+Keep actual Feature and external package contributions at their owners.
+
+The aggregate uses stable graph order and the existing target normalization.
+Coalesce shared dependency imports by native compiler identity. Reject
+ambiguous explicit declarations for the same target, mismatched source
+owners or options, and duplicate binary outputs. Preserve target flags.
+In particular Nono's header and probe remain under the module, with
+platform linker options on its own Make row. Gerbil owns native compilation
+and artifact lookup. Package prelude output is package infrastructure.
+A default Lab build still selects Temporal Causality as its only business
+owner; a named Nono request is independent.
+
+* Source and compiled namespaces
+
+=source/directory.ss= owns the admitted mapping of mount and leaf name to
+native identity. =source/link.ss= owns module leaves, linked scopes and
+selection currentness. =building/program-publication.ss= emits the same
+mapping as compiler data; it reconstructs the namespace with the same
+leaf constructor. =selection/init-expansion.ss= emits public bindings and
+routes. It neither derives compiler identity from a mount nor creates a
+second namespace catalog.
+
+The initial cutover emits leaf names and native owner identities as part
+of the existing compiled publication. A source-free compiled consumer
+can read business slots. A build read requires the live admitted source
+context and must diagnose its absence explicitly. This keeps the compiled
+namespace usable when the checkout is absent and avoids serializing build
+evaluators, compiler Contexts or absolute checkout paths. Source-bound
+Nono include options belong to the current checkout. A later need for
+relocatable build metadata can be evaluated independently of this cutover.
+
+* Cutover and deletions
+
+1. Fix and qualify the current build projection controls. Record the current
+   failing =output-first= mutation and missing =yuanxu-deployment-consumer/main=
+   target in the Lab gate. Preserve those assertions and all prior receipts.
+2. Finish the one Make role contract, add rejection controls for two entry
+   forms, and migrate the experimental function slot and remaining explicit
+   list declarations to the data slot. Remove both old Make authoring routes
+   once their callers move.
+3. Introduce the native POO leaf and move direct build reads onto it. Keep
+   the existing generation guard, dependency graph and compiler-input
+   association. Remove the eager scope leaf route after equivalent business
+   behavior and reflection pass in source and compiled consumers.
+4. Qualify local dependency access in Yuanxu with two declarations that
+   mount the same root under different names. Use the declared dependency
+   binding inside each Module. Keep public mounts at the composition
+   boundary. Downstream adoption follows separately after Yuanxu is
+   qualified and the consumer updates its pinned revision.
+5. Inventory actual users of branch filtering and =module-view:= before
+   deletion. Remove identity-only projections and wrappers whose sole
+   purpose was compensating for the namespace shape. Retain a closed
+   projection that actually restricts visible names. Keep the package
+   entry, module-local role and shared collection; do not recreate a
+   central source inventory or add a =PATH= slot.
+
+* Acceptance and evidence
+
+| Contract | Native evidence |
+|----------+-----------------|
+| Mount and owner independence | Rename one root in a second declaration. Compare native IDs, dependency edges and ordered Make rows. Exercise an arbitrary declaration filename, an empty mount, collisions, and the same leaf name under different roots. Verify a local dependency works under either mount name. |
+| Independent demand | Read a build leaf then the aggregate in one generation and in reverse order. The checked data projection runs once; owner-qualified scope-factory counts stay zero. Business access creates only its required scopes and retains the existing hot read guarantees. |
+| Contract refusal | Reject competing entry forms, missing or invalid spec, unknown parameters, function values, invalid targets/options, path escape, reserved names, disabled owners and changed source or compiler Context. Keep callback tests separate from ordinary counters. |
+| Native publication | Compare source and compiled mount/leaf names, reflection and business reads. Verify standalone runtime imports and build diagnostics after removing the source checkout from the consumer search path. |
+| Lab | Compile Nono's module-local C inputs and validate its actual compiler flags. Build Temporal Causality into an empty output and check one Lab business owner plus the package prelude. Run the unchanged Lab downstream lifecycle. |
+| Core | Run module build-role, publication, source-admission and build-input-context mutation gates, including their before/after controls. Compare native spec, cold build, hot build and clean outputs. |
+
+Use the existing serial heap-fenced Just recipes and preserve the current
+test budgets, including the Lab 120-second aggregate and 120/60-second
+action/idle limits. Do not treat a compiler error or timeout as fault
+rejection. Report local tests, measured performance and CI separately.
+Use Lean's existing =NamespaceProjection= and =TargetProjection= proofs
+for mount transport and ordered owner collection. Use the existing Quint
+publication/input models for generation invalidation and no stale dispatch.
+These models need correspondence tests and do not qualify native runtime
+performance on their own.

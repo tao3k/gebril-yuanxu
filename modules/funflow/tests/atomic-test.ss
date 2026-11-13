@@ -7,7 +7,7 @@
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :tao3k/yuanxu/modules/funflow/objects Job. Task.)
         (only-in :tao3k/yuanxu/modules/funflow/func runtime-command-fields->manifest)
-        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture))
+        (only-in :tao3k/yuanxu/testing yuanxu-test-fixture))
 (export funflow-atomic-test)
 (.def Workspace
   .acquire: (lambda () (let (directory (make-temporary-file-name "funflow-atomic-"))

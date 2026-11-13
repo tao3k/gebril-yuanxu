@@ -25,7 +25,7 @@
     (or (native-package-checkout package) (path-directory source-path))))
 
 (def (module-init-compiler-source-roots declaration source-path)
-  (let-values (((windows _) (parse-module-init (list declaration) source-path)))
+  (let-values (((windows _mounted? _test-dir) (parse-module-init (list declaration) source-path)))
     (filter-map (lambda (window)
                   (with ([_ _ _ _ _ _ package] window)
                     (native-package-checkout package)))
@@ -90,16 +90,16 @@
     (with ([mode root mount profile root-explicit? rows package] window)
       (.o mode root mount profile root-explicit? package init-source: source-path
           decisions: (map decision rows))))
-  (let-values (((windows mounted?) (parse-module-init forms source-path)))
+  (let-values (((windows mounted? test-directory) (parse-module-init forms source-path)))
     (def intents (map intent windows))
     (if mounted?
       (.o mode: (if (any (lambda (window) (eq? (.ref window 'mode) 'auto)) intents)
                   'auto 'explicit)
           root: (.ref (car intents) 'root) root-explicit?: #t init-source: source-path
-          windows: intents
+          windows: intents test-dir: test-directory
           decisions: (foldr append '()
                        (map (lambda (window)
                               (def name (.ref window 'mount))
                               (map (lambda (row) (.+ row (.o window: name)))
                                    (.ref window 'decisions))) intents)))
-      (car intents))))
+      (.cc (car intents) 'test-dir test-directory))))

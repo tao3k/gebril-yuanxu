@@ -4,8 +4,6 @@
 (.def PostgreSQL
   identity: 'services/postgresql
   core:
-  (.o requires: (.o)
-      scope-contract: PostgreSQLScopeContract
-      exports: (.o (:: @ PostgreSQL.) config: Config document: Document
-                 types: (.o port: Port Config: PostgreSQLConfigContract)))
+  (.o scope-contract: PostgreSQLScopeContract
+      exports: PostgreSQLScope)
   features: (.o))

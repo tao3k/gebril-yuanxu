@@ -229,9 +229,21 @@ prelude: :gerbil/core
   (unless (andmap (lambda (form) (and (list? form) (pair? form)
                                     (memq (car form) '(import export yuanxu!)))) forms)
     (error "init.ss contains non-declarative forms" source-path))
-  (def body (cdar declarations))
+  (defvalues (body test-dir)
+    (match (cdar declarations)
+      ([':test-dir (? string? directory) . rest]
+       (def relative (if (string-prefix? "./" directory)
+                       (substring directory 2 (string-length directory)) directory))
+       (unless (and (not (string-empty? relative))
+                    (andmap (lambda (part) (and (not (string-empty? part))
+                                               (init-name? (string->symbol part))))
+                            (string-split relative #\/)))
+         (error "test directory must be relative to the yuanxu! declaration" directory source-path))
+       (values rest relative))
+      ([':test-dir . _] (error "test directory requires a literal path" source-path))
+      (body (values body "t"))))
   (if (or (null? body) (not (eq? (car body) ':load-modules)))
-    (values (list (parse-init-window body source-path)) #f)
+    (values (list (parse-init-window body source-path)) #f test-dir)
     (let ((windows (parse-init-windows body source-path))
           (names (make-hash-table)) (roots (make-hash-table)) (ids (make-hash-table-eq)))
       (for-each
@@ -248,10 +260,10 @@ prelude: :gerbil/core
           ;; parse-init-window already rejects repeated names within a root.
           ;; Distinct roots are routed by native owner identity at discovery.
           )) windows)
-      (values windows #t))))
+      (values windows #t test-dir))))
 
 (def (module-init-mounts forms)
-  (let-values (((windows mounted?) (parse-module-init forms #f)))
+  (let-values (((windows mounted? _) (parse-module-init forms #f)))
     (if mounted?
       (map (lambda (window) (with ([_ _ mount _ _ _ _] window) mount)) windows)
       '(#f))))

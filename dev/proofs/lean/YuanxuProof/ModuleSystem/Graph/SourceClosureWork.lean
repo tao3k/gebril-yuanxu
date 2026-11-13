@@ -1137,6 +1137,23 @@ theorem nonempty_frame_refines_advance [DecidableEq Node] (deps : Node → List 
   by_cases visited : node ∈ seen <;>
     simp [next, project, advance, visited]
 
+-- Hold the current sibling cursor in a loop argument. Save a continuation
+-- only when there are both children to visit and siblings to resume.
+def descend (children siblings : List Node) (saved : List (List Node)) :
+    List Node × List (List Node) :=
+  if children.isEmpty then (siblings, saved)
+  else if siblings.isEmpty then (children, saved)
+  else (children, siblings :: saved)
+
+theorem descend_preserves_pending_order (children siblings : List Node)
+    (saved : List (List Node)) :
+    let (cursor, stack) := descend children siblings saved
+    (cursor :: stack).flatten = (children :: siblings :: saved).flatten := by
+  cases children <;> cases siblings <;> simp [descend]
+
+theorem descend_leaf_allocates_no_frame (siblings : List Node) (saved : List (List Node)) :
+    descend [] siblings saved = (siblings, saved) := rfl
+
 -- One initial root frame; exactly one new frame for each first expansion.
 -- Hence housekeeping does not hide another scan of every selected module.
 def Balanced (s : State Node) : Prop :=

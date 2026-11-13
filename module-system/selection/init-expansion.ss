@@ -26,7 +26,7 @@
   (def (expand-declaration stx (program #f) (origin #f))
   (syntax-case stx ()
     ((ctx option value init-clause ...)
-     (memq (syntax->datum (syntax option)) '(mode: source: :load-modules))
+     (memq (syntax->datum (syntax option)) '(mode: source: :load-modules :test-dir))
      ;; Normalize literal data only. One private getter is shared by all mounts;
      ;; expansion does not demand a Module scope or a test executor.
      (let* ((mounts

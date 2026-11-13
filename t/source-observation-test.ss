@@ -114,6 +114,25 @@
       (check-exception (outer-current)
         (lambda (failure) (and (Error? failure)
           (string=? (Error-message failure) "first batch source changed"))))
+      (write-source batch-path "{}")
+      (def extra-path (path-expand "replay-append.json" (.get fixture root)))
+      (write-source extra-path "{}")
+      (call-with-collected-module-sources
+        (lambda (replay!)
+          (module-source-admit-current! batch)
+          (def appended? #f)
+          (parameterize ((current-module-source-observer
+                           (lambda (key _amount)
+                             (when (and (eq? key 'source-comparisons) (not appended?))
+                               (set! appended? #t)
+                               (module-source-admit-current! (list (cons extra-path "{}"))
+                                 "enrolled during replay")
+                               (write-source extra-path "changed")))))
+            (replay!))
+          (check-equal? appended? #t)
+          (check-exception (replay!)
+            (lambda (failure) (and (Error? failure)
+              (equal? (Error-message failure) "enrolled during replay"))))))
       ;; Missing files remain ordinary absence. Malformed queries must retain
       ;; their runtime error, including inside the pure source-read window.
       (check-equal? (module-source-type (path-expand "missing.ss" (.get fixture root))) #f)

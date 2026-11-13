@@ -334,7 +334,7 @@
                       (or windows (list intent-value))))))
         ;; A category is selected across its declared windows. A dependency
         ;; window may have no matching roots; its differently tagged owners
-        ;; remain eligible through ordinary requires edges. Reject a miss only
+        ;; remain eligible through Gerbil imports. Reject a miss only
         ;; when that category has no roots in ANY participating window.
         (for-each
           (lambda (window)

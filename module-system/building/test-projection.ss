@@ -8,7 +8,7 @@
         (only-in :tao3k/yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-name? module-source-admit-current!
                  call-with-module-source-read-cache))
-(export module-test-projection module-test-file-source)
+(export module-test-projection module-test-file-source module-owner-test-projection)
 
 ;; Explicit runtime qualification files use the same observation authority as
 ;; module suites. Callers supply files, never a separately maintained guard.
@@ -29,6 +29,12 @@
     (cond ((not kind) '())
           ((not (eq? kind 'directory)) (error "module tests must be a real directory" directory))
           (else (list-sort string<? (directory-files directory))))))
+
+(def (module-owner-test-projection selection owner)
+  (def context (.ref selection 'context))
+  (when (memq owner (.ref context 'denied-modules))
+    (error "test owner is disabled" owner))
+  (scan-module-test-sources selection context (list owner) #f))
 
 (def (module-test-projection selection (owners #f) (suite #f))
   (unless (memq suite '(#f integration qualification)) (error "unknown module test suite" suite))
@@ -60,6 +66,17 @@
     (cond (owners owners)
           (profiled? (.ref (.ref selection 'selected-graph) 'module-order))
           (else order)))
+  (if (and (not suite) (.slot? selection '.module-test-source))
+    (let* ((sources (map (.ref selection '.module-test-source) selected-owners))
+           (admit-current (lambda ()
+                       ((.ref selection 'admit-current))
+                       (for-each (lambda (source) ((.ref source 'admit-current))) sources))))
+      (.o selected-graph: (.ref selection 'selected-graph)
+          spec: (foldr append '() (map (cut .ref <> 'spec) sources))
+          admit-current))
+    (scan-module-test-sources selection context selected-owners suite)))
+
+(def (scan-module-test-sources selection context selected-owners suite)
   ;; Reuse the selection's publication/source cache, including the reader's
   ;; Gerbil-observed private and compiler dependencies. Do not resolve a second
   ;; Graph or link a business scope. A test owner still needs valid sources;
@@ -80,9 +97,12 @@
     (and (eq? suite 'qualification)
          (let (init (and (.slot? context 'init-source) (.ref context 'init-source)))
            (unless (string? init) (error "qualification discovery requires an init source"))
-           (let (root (path-expand "t" (path-directory init)))
-             (observe-parent! root)
-             root))))
+           (def intent (and (.slot? context 'intent) (.ref context 'intent)))
+           (def directory (if (and intent (.slot? intent 'test-dir)) (.ref intent 'test-dir) "t"))
+           (let walk ((parent (path-directory init)) (parts (string-split directory #\/)))
+             (let (child (path-expand (car parts) parent))
+               (observe-parent! child)
+               (if (null? (cdr parts)) child (walk child (cdr parts))))))))
   (def (observe-directory! directory)
     (def kind (module-source-type directory))
     (def names (test-directory-files directory))

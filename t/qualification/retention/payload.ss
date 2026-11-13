@@ -384,6 +384,7 @@
 (def (report-retained-reads label weak)
   (def rows (make-hash-table))
   (def owners (make-hash-table-eq))
+  (def evidence (make-hash-table-eq))
   (def anonymous-shapes (make-hash-table-eq))
   (def (anonymous-shape receiver)
     (or (hash-get anonymous-shapes receiver)
@@ -442,6 +443,13 @@
       (def key (slot-read-key read))
       (def key-label (if (pair? key) (list (car key) (length key)) key))
       (hash-put! owners receiver #t)
+      (when (memq kind '(yuanxu.contract.validation-evidence yuanxu.type.classification-evidence))
+        (let (counts (or (hash-get evidence kind)
+                         (let (counts (cons (make-hash-table-eq) (box 0)))
+                           (hash-put! evidence kind counts)
+                           counts)))
+          (hash-put! (car counts) receiver #t)
+          (set-box! (cdr counts) (1+ (unbox (cdr counts))))))
       (hash-update! rows (list family key-label) 1+ 0)) weak)
   (for-each
     (lambda (row) (yuanxu-write-observation-line! "%s"
@@ -449,6 +457,12 @@
     (list-sort (lambda (a b) (string<? (object->string (car a)) (object->string (car b))))
       (hash->list rows)))
   (yuanxu-write-observation-line! "%s" (list 'RETAINED-OWNERS label (hash-length owners)))
+  (yuanxu-write-observation-line! "%s"
+    (list 'RETAINED-EVIDENCE label
+      (map (lambda (entry)
+             (let (counts (cdr entry))
+               (list (car entry) (hash-length (car counts)) (unbox (cdr counts)))))
+           (hash->list evidence))))
   (yuanxu-write-observation-line! "%s" (list 'RETAINED-SHARED-SCHEMA label schema-reads))
   (yuanxu-write-observation-line! "%s" (cons 'RETAINED-PAYLOAD
     (cons label (payload-bytes (hash-keys weak) owners))))

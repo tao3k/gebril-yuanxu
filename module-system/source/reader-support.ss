@@ -65,16 +65,18 @@
           (dynamic-wind
             (lambda () (observer '(metadata-replay-start runtime) 1))
             (lambda ()
-              (if (object-construction-current?)
-                (with-catch
-                  (lambda (cause)
-                    ;; Recover the diagnostic prefix in the same synchronous
-                    ;; state. No source observer runs between these checks.
-                    (with-catch (lambda (_failure) (void)) count-prefix!)
-                    (raise cause))
-                  (lambda ()
-                    (set! visits (call-with-current-slot-reads reads values))))
-                (count-prefix!)))
+              (module-source-measure-operation 'observed-metadata-replay
+                (lambda ()
+                  (if (object-construction-current?)
+                    (with-catch
+                      (lambda (cause)
+                        ;; Recover the diagnostic prefix in the same synchronous
+                        ;; state. No source observer runs between these checks.
+                        (with-catch (lambda (_failure) (void)) count-prefix!)
+                        (raise cause))
+                      (lambda ()
+                        (set! visits (call-with-current-slot-reads reads values))))
+                    (count-prefix!)))))
             (lambda ()
               (observer 'metadata-replay-visits visits)
               (observer '(metadata-replay-end runtime) 1))))))))

@@ -64,6 +64,14 @@
                      " build-vm-account=" (f64vector-ref stats 7)
                      " vm-account-qualified?=false")
           (force-output))))
+    (cond-expand
+      (yuanxu-module-test-stage-accounting
+        (when (eq? category 'reader-binding-roots)
+          ;; The reader already samples these scalar counts at powers of two.
+          ;; Do not retain a Context, demand a binding, or repeat the walk.
+          (displayln "DECLARATION-CONTEXT-ROOTS " (cdr key))
+          (force-output)))
+      (else (void)))
     (when (eq? category 'candidate-open-boundary)
       ;; Scalar-only failure attribution: constructing a typed receipt here
       ;; would reenter the admission whose refusal we are diagnosing.
@@ -92,7 +100,12 @@
         (measure-runtime count 'runtime-graph-start
           (lambda ()
             (parameterize ((current-module-source-observer observe))
-              (.get FixtureExports tests selected-graph)))
+              (cond-expand
+                (yuanxu-module-test-stage-accounting
+                  (measure-runtime-source count 'observed-declaration
+                    (lambda () (.get FixtureExports tests selected-graph)) 'stages
+                    observer: 'present))
+                (else (.get FixtureExports tests selected-graph)))))
           observer: 'present))))
   (yuanxu-test-checkpoint 'runtime-graph-ready)
   (check-equal? source-prefix (path-normalize (path-directory (.get graph init-source))))
@@ -239,8 +252,8 @@
 
 ;; Scalar-only attribution of the same real fixture. Preserve the original
 ;; exception (including raised #f) after reporting partial operation totals.
-;; This installs no source observer and changes no Case or heap budget.
-(def (measure-runtime-source count phase action (accounting? #f))
+;; This adds no source observer of its own and changes no Case or heap budget.
+(def (measure-runtime-source count phase action (accounting? #f) observer: (observer 'absent))
   (measure-runtime count phase
     (lambda ()
       (def failed? #f)
@@ -254,7 +267,8 @@
       (yuanxu-write-observation-line!
         "runtime-phase-work modules=%s phase=%s failed?=%s metrics=%s"
         count phase failed? (hash->list times))
-      (if failed? (raise cause) value))))
+      (if failed? (raise cause) value))
+    observer: observer))
 (def (verify-runtime-attribution FixtureExports count _source-root accounting?: (accounting? #f))
   (check-equal? (current-module-source-observer) #f)
   (def modules

@@ -154,7 +154,8 @@
                            selected-owner-closure selected-core-projection selected-topological-resolution
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
                            reader-admission-start reader-value-admission reader-admission-evidence
-                           reader-current metadata-replay reader-candidate-fused-return-replay
+                           reader-current metadata-replay observed-metadata-replay publication-guard-sweep
+                           reader-candidate-fused-return-replay
                            metadata-index metadata-root-merge metadata-cache-miss-receivers
                            source-init-current source-authoring-profile-checkpoint
                            reader-tool-inputs reader-private-closure reader-private-prepare

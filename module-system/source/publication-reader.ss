@@ -11,14 +11,16 @@
                  core-library-package-path-prefix module-context-code module-context?
                  current-expander-compile current-expander-eval expander-context-table syntax-e
                  core-read-module/sexp core-resolve-module-path __module-registry)
+        (only-in :clan/poo/mop validate)
+        (only-in :tao3k/yuanxu/module-system/building/program-products DefbuildScriptContract)
         (only-in :clan/poo/read-route require-read-route!)
-        (only-in :clan/poo/object .o .ref .slot?)
+        (only-in :clan/poo/object .o .+ .ref .slot? object?)
         (only-in :tao3k/yuanxu/module-system/source/collection
                  yuanxu-module-source-collection-optional-entrypoint)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-feature-interface?)
         :tao3k/yuanxu/module-system/source/admission
         :tao3k/yuanxu/module-system/source/preparation
-        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-resolver
+        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-resolver current-module-build-phase?
                  current-module-feature-reader)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration
                  current-module-role-resolver module-role-values
@@ -91,6 +93,8 @@
        (def delivered-interface? #f)
        (def feature-inputs #f)
        (def reading-feature? #f)
+       (def imported-owners (make-hash-table-eq))
+       (def owner-order '())
        ;; Runtime import provenance is separate from compiler-tool authority.
        ;; Only the real admitted import below can enroll a Context; names or
        ;; artifact suffixes supplied by a caller cannot create this evidence.
@@ -154,6 +158,13 @@
                (for-each (lambda (form) (write form port) (newline port)) forms)))
            (register-reader-wrapper! artifacts target path)
            (hash-put! wrappers path target) target))
+       (def (record-owner! owner)
+         (when (and owner (not reading-feature?))
+           (let (identity (.ref owner 'identity))
+             (unless (or (eq? identity (.ref prepared 'identity))
+                         (hash-key? imported-owners identity))
+               (hash-put! imported-owners identity #t)
+               (set! owner-order (cons identity owner-order))))))
        (def (record-input! input)
          (let (path (.ref input 'path))
            (when (and feature-inputs (not reading-feature?))
@@ -386,7 +397,7 @@
                        ;; input's byte check cannot detect disabled or
                        ;; unselected owners in that tree.
                        (when (and retained source-tree)
-                         ((.ref source-tree 'locate-owner) (.ref input 'path)))
+                         (record-owner! ((.ref source-tree 'locate-owner) (.ref input 'path))))
                        (record-input! input)
                        ;; A retained context is usable only after its
                        ;; ACTUAL transitive input support passes afresh.
@@ -407,12 +418,15 @@
              ;; owner inside this directory. Never bypass that boundary by
              ;; treating every descendant as this Module's private library.
              (let (owner (and source-tree ((.ref source-tree 'locate-owner) path)))
+               (record-owner! owner)
                (if (and owner (not (equal? (path-strip-trailing-directory-separator root)
                                           (path-strip-trailing-directory-separator (.ref owner 'root)))))
                  (shared-context original-path (.ref owner 'root) reload?)
                  (shared-context original-path root reload? #f))))
             ((and source-tree ((.ref source-tree 'locate-owner) path))
-             => (lambda (owner) (shared-context original-path (.ref owner 'root) reload?)))
+             => (lambda (owner)
+                 (record-owner! owner)
+                 (shared-context original-path (.ref owner 'root) reload?)))
             ;; The directory source-tree above has already refused actual
             ;; unselected/disabled Interface owners. An ownerless library
             ;; may therefore use the SAME package-kernel route across window
@@ -471,7 +485,11 @@
                        (reader-open-boundary! session (list 'public-source path id known-path)))
                      (parameterize ((current-expander-module-import gerbil-import))
                        (gerbil-import original-path #f))))))))))
+       (def role-kind (.ref prepared 'build-role-kind))
+       (def (reject-package-script!)
+         (error "Module build.ss requires .def Build with defbuild-script:; defbuild-script belongs to the package entry" interface-path))
        (def (resolve-build!)
+         (when (eq? role-kind 'package-script) (reject-package-script!))
          (parameterize ((current-module-source-phase 'build-role-before)) (reader-current! session))
          (let* ((path (.ref prepared 'build-source))
                 (input (yuanxu-prepare-module-build-source path void))
@@ -494,6 +512,20 @@
                                  (map path-normalize (.ref prepared 'role-sources))))))
                input-values)))
              (parameterize ((current-module-source-phase 'build-role-after)) (reader-current! session)) value)))
+       (def build-role (and (eq? role-kind 'make-parameters) (.o value: (resolve-build!))))
+       (def (native-spec)
+         (case role-kind
+           ((package-script) (reject-package-script!))
+           ((make-parameters)
+            (let (build (module-build-role-spec build-role))
+              (unless (and (object? build) (.slot? build 'defbuild-script))
+                (error "Module Build requires a defbuild-script slot" interface-path))
+              (.ref (validate DefbuildScriptContract (.ref build 'defbuild-script)) 'spec)))
+           (else (error "Module has no Make contribution" interface-path))))
+       (def (module-build-role-spec role)
+         (unless (current-module-build-phase?)
+           (error "Build is available only in the Module build-publication phase"))
+         (.ref role 'value))
        (def deferred-roles (.ref prepared 'deferred-roles))
        (def (publication-import path (reload? #f))
          (let* ((context (import-request path reload?))
@@ -642,7 +674,8 @@
                  (current-expander-compile compile)
                  (current-expander-eval evaluate)
                  (current-expander-context (make-top-context))
-                 (current-module-build-resolver resolve-build!)
+                 (current-module-build-resolver
+                   (if build-role (lambda () (module-build-role-spec build-role)) resolve-build!))
                  (current-module-feature-reader resolve-feature)
                  (current-module-role-resolver resolve-role)
                  (current-expander-module-import
@@ -659,7 +692,16 @@
                               (eval-syntax (.ref prepared 'binding))))
                 (set! delivered #f)
                 (parameterize ((current-module-source-phase 'declaration-after)) (reader-current! session))
-                (def result (if consume (consume source-value value) value))
+                (def publication
+                  (if role-kind
+                    (.+ value (.o __std-make-spec:
+                                 (begin
+                                   (unless (current-module-build-phase?)
+                                     (error "Module Make spec is available only in the build phase"))
+                                   (native-spec))))
+                    value))
+                (def owners (reverse owner-order))
+                (def result (if consume (consume source-value publication owners) publication))
                 ;; A deferred Build resolver shares this outer interpreter
                 ;; frame. Do not retain the completed candidate's support
                 ;; tables and producer continuation through that resolver.

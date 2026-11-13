@@ -1,6 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :std/error Error-message Error-irritants)
+        (only-in :std/error Error? Error-message Error-irritants)
         (only-in "./module-candidate-stage-test" with-other-source)
         (only-in "./qualification/module-publication/fixtures.ss" write-file)
         (only-in :tao3k/yuanxu/module-system/source/admission
@@ -106,16 +106,20 @@
               (cons '(metadata-replay-end runtime) 1)))
       (def (observe-guard start)
         (def events '())
-        (def failure
-          (with-catch values
+        (defvalues (failure accounting)
+          (call-with-module-source-operation-measurement
             (lambda ()
-              (parameterize ((current-module-source-observer
-                               (lambda (key amount)
-                                 (set! events (cons (cons key amount) events))
-                                 (when (equal? key '(metadata-replay-start runtime))
-                                   (start)))))
-                ((publication-read-current reads)))
-              #f)))
+              (with-catch values
+                (lambda ()
+                  (parameterize ((current-module-source-observer
+                                   (lambda (key amount)
+                                     (set! events (cons (cons key amount) events))
+                                     (when (equal? key '(metadata-replay-start runtime))
+                                       (start)))))
+                    ((publication-read-current reads)))
+                  #f)))
+            accounting?: 'stages))
+        (check-equal? (hash-ref accounting '(calls observed-metadata-replay)) 1)
         (values failure (reverse events)))
       (defvalues (success events) (observe-guard void))
       (check-equal? success #f)
@@ -136,6 +140,28 @@
       (check-equal? (Error-message refusal) (Error-message original))
       (check-equal? (Error-irritants refusal) (Error-irritants original))
       (check-equal? rejected-events (observer-events prefix-visits)))
+    (yuanxu-test-case "each observed publication rechecks shared reads after its start event"
+      (def receiver (.o field: 1))
+      (defvalues (_ reads) (%call-with-recorded-slot-reads (lambda () (.ref receiver 'field))))
+      (def first (publication-read-current reads))
+      (def second (publication-read-current reads))
+      (def starts 0)
+      (def visits '())
+      (parameterize ((current-module-source-observer
+                       (lambda (key amount)
+                         (cond
+                          ((equal? key '(metadata-replay-start runtime))
+                           (set! starts (1+ starts))
+                           (when (= starts 2) (.put! receiver 'field 2)))
+                          ((eq? key 'metadata-replay-visits)
+                           (set! visits (cons amount visits)))))))
+        (first)
+        (check-exception (second)
+          (lambda (cause)
+            (and (Error? cause) (equal? (Error-message cause) "stale slot dependency")))))
+      (check-equal? starts 2)
+      (check-equal? (length visits) 2)
+      (check-equal? (> (cadr visits) (car visits)) #t))
     (yuanxu-test-case "actual source growth invalidates topology; restored values remain stale"
       (with-other-source
         (lambda (root _first _other)

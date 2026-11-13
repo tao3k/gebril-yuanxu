@@ -479,6 +479,15 @@ package YuanxuSelectedPackageBuilds {
                removal; ending that consumer ends the bridge. An SSI spelling
                alone grants no source or execution authority. */
     }
+    requirement def ObservedPublicationReplay {
+        doc /* Each publication observer can change the live state before
+               validation of the next publication. Authenticate the next
+               lane against that state, even for a repeated read identity.
+               PublicationReads.inert_observers_preserve_lane_order and
+               second_observer_can_invalidate_same_read distinguish an
+               inert trace from an open observer. The latter keeps ordered
+               per-publication validation and the original refusal. */
+    }
     requirement def ToolExecutionAndBuildOwnership {
         doc /* Gerbil's actual context origin defines execution provenance.
                Captured context identity, module identity and artifact path must

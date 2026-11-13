@@ -5,6 +5,7 @@
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile clear-temporary-file!)
         (only-in :std/func compose)
+        (only-in :std/string/misc string-subst)
         (only-in :std/encoding/json write-json)
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in "../testing/directory.ss" DirectoryFixture write-source)
@@ -69,8 +70,11 @@
     (lambda (role)
       (write-source
         (path-expand (string-append "modules/applications/gitea-postgresql/" role ".ss") root)
-        (module-source-read
-          (path-expand (string-append role ".ss") source-root))))
+        (let (text (module-source-read (path-expand (string-append role ".ss") source-root)))
+          (if (string=? role "interface")
+            (string-subst (string-subst text "postgresql/config.ss" "../../services/postgresql/config.ss")
+                          "gitea/config.ss" "../../services/gitea/config.ss")
+            text))))
     '("types" "objects" "config" "interface"))
   (write-source (path-expand "init.ss" root)
     "(yuanxu! mode: explicit (closed-package disable: #t) :services (postgresql) (gitea) (unused disable: #t) :applications (gitea-postgresql))")

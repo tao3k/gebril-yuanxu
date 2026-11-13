@@ -97,8 +97,8 @@
 
 (def (published-files)
   (def tests (.get tao3k/yuanxu.init.exports tests))
-  ((.get tests admit-current))
   (def files (.get tests spec))
+  ((.get tests admit-current))
   (unless (and (pair? files) (andmap string? files))
     (error "published Module tests must be explicit and nonempty"))
   files)

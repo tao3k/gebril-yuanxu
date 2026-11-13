@@ -1011,6 +1011,23 @@ package YuanxuCaching {
                No successful admission or token-current verdict is reused. */
     }
 
+    requirement def PreparedModuleIdentityReuse {
+        attribute usesPreparedIdentity : Boolean;
+        attribute sameSourceAndNativeInputs : Boolean;
+        attribute independentlyCheckedAfterEffects : Boolean;
+        attribute firstRefusalPreserved : Boolean;
+        require constraint {
+            not usesPreparedIdentity or
+                (sameSourceAndNativeInputs and independentlyCheckedAfterEffects
+                 and firstRefusalPreserved)
+        }
+        doc /* PreparedModuleIdentity Lean proves admission equivalence when
+               the original Gerbil read and current read have equal inputs.
+               The inputs include source bytes, reader state, and native
+               package and resolution context. An author or expander effect
+               requires independent evidence before reuse. */
+    }
+
     requirement def ReplayPhaseAccounting {
         doc /* Runtime call-with-issued-reads owns lookup, identity DFS and the
                immutable projection. SelectionReplay Lean proves exact selected

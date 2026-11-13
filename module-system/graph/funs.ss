@@ -9,21 +9,25 @@
 
 (def (module-closure roots module-key inline-imports)
   (let (seen (make-hash-table))
-    (let loop ((frames (list roots)) (modules-rev '()))
+    (let loop ((siblings roots) (saved '()) (modules-rev '()))
       (cond
-       ((null? frames) (reverse modules-rev))
-       ((null? (car frames)) (loop (cdr frames) modules-rev))
+       ((null? siblings)
+        ;; Only this traversal owns the result cells. Caller lists stay intact.
+        (if (null? saved) (reverse! modules-rev)
+          (loop (car saved) (cdr saved) modules-rev)))
        (else
-        (let* ((siblings (car frames))
-               (module (car siblings))
+        (let* ((module (car siblings))
                (key (module-key module))
-               (remaining (cons (cdr siblings) (cdr frames))))
+               (remaining (cdr siblings)))
           (if (hash-key? seen key)
-            (loop remaining modules-rev)
+            (loop remaining saved modules-rev)
             (begin
               (hash-put! seen key #t)
-              (loop (cons (inline-imports module) remaining)
-                    (cons module modules-rev))))))))))
+              (let ((children (inline-imports module))
+                    (next (cons module modules-rev)))
+                (cond ((null? children) (loop remaining saved next))
+                      ((null? remaining) (loop children saved next))
+                      (else (loop children (cons remaining saved) next))))))))))))
 
 (def (module-missing-imports closed-modules module-key imports-of
                              named-import? import-key)

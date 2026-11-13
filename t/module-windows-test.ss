@@ -83,6 +83,10 @@
            :load-modules "./a/" mode: explicit rename: B)
           (:load-modules "a" mode: explicit rename: tests)
           (:load-modules "../outside" mode: auto)
+          (:test-dir "../outside" :load-modules "a" mode: explicit)
+          (:test-dir "/outside" :load-modules "a" mode: explicit)
+          (:test-dir "./t" :test-dir "./other" mode: explicit)
+          (:load-modules "a" mode: explicit :test-dir "./t")
           (:load-modules "a" mode: explicit (module) rename: Late)))
       (def intent (module-init-intent (list declaration) #f))
       (check-equal? (map (cut .ref <> 'mount) (.get intent windows)) '(Modules Scenarios))
@@ -139,15 +143,24 @@
         '((.def Published identity: 'release
             core: (.o requires: (.o) scope-contract: Scope exports: (.o value: 42))
             features: (.o))))
-      (def init (path-expand "init.ss" root))
-      (write-forms init
-        '((yuanxu! :load-modules "./modules" mode: explicit rename: Modules
-                   (engine) (release @ "./scenarios/release"))))
-      (def view (yuanxu-load-modules init))
-      (check-equal? (.get view modules Modules engine value) 42)
-      (check-equal? (.get view selected-graph module-order)
+      (def (mounted-view file mount)
+        (def source (path-expand file root))
+        (write-forms source
+          `((yuanxu! :load-modules "./modules" mode: explicit rename: ,mount
+                    (engine) (release @ "./scenarios/release"))))
+        (yuanxu-load-modules source))
+      (def original (mounted-view "init.ss" 'Modules))
+      (def renamed (mounted-view "yuanxu-init.ss" 'Lab))
+      (def owners
         (list (fixture-owner root "scenarios/release/interface.ss")
-              (fixture-owner root "modules/engine/interface.ss"))))
+              (fixture-owner root "modules/engine/interface.ss")))
+      (check-equal? (.get original modules Modules engine value) 42)
+      (check-equal? (.get renamed modules Lab engine value) 42)
+      (check-equal? (.all-slots (.get renamed modules)) '(Lab))
+      (check-equal? (.get original selected-graph module-order) owners)
+      (check-equal? (.get renamed selected-graph module-order) owners)
+      (check-equal? (.get renamed build-graph std-make-targets)
+                    (.get original build-graph std-make-targets)))
     (yuanxu-test-fixture "public branches share a real Interface scope and keep siblings cold"
       (root Workspace)
       (fixture! root)

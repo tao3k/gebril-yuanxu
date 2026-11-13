@@ -628,6 +628,33 @@ theorem same_window_preserves_first_refusal
   | cons reads rest ih =>
     simp only [List.flatten_cons, authenticate_append, authenticateLanes, ih]
 
+/-- Each publication observer may change the state before the next lane.
+Sharing a traversal does not justify sharing a successful verdict. -/
+def authenticateObservedLanes (auth : State → Read → Except Failure Unit)
+    (observe : Nat → State → State) (position : Nat) (state : State) :
+    List (List Read) → Except Failure Unit
+  | [] => .ok ()
+  | reads :: lanes => do
+    let live := observe position state
+    authenticateAndVisit (auth live) (fun _ => ()) reads
+    authenticateObservedLanes auth observe (position + 1) live lanes
+
+theorem inert_observers_preserve_lane_order (auth : State → Read → Except Failure Unit)
+    (position : Nat) (state : State) (lanes : List (List Read)) :
+    authenticateObservedLanes auth (fun _ state => state) position state lanes =
+      authenticateLanes (auth state) lanes := by
+  induction lanes generalizing position with
+  | nil => rfl
+  | cons reads lanes ih => simp [authenticateObservedLanes, authenticateLanes, ih]
+
+theorem second_observer_can_invalidate_same_read :
+    let auth (state : Bool) (_ : Nat) : Except String Unit :=
+      if state then .ok () else .error "stale slot dependency"
+    authenticateLanes (auth true) [[7], [7]] = .ok () ∧
+      authenticateObservedLanes auth (fun position _ => position == 0)
+        0 true [[7], [7]] = .error "stale slot dependency" := by
+  exact ⟨rfl, rfl⟩
+
 -- Nesting protected checks unwinds the last lane first. A shared topology
 -- cannot justify reversing the original return authentication when more than
 -- one lane can independently refuse.
@@ -825,6 +852,19 @@ theorem segmented_roots_preserve_first_refusal
     authenticateAndVisit auth (fun _ => ()) (rows.flatMap rootSegments).flatten =
       authenticateAndVisit auth (fun _ => ()) (rows.map fun row => row.1 ++ row.2).flatten := by
   rw [flatten_root_segments]
+
+/-- A publication captured with an observer keeps its split guard even if
+the observer removes itself before the next check. -/
+def retainedJoinedRoots (fused observed : Bool) (preparation admission : List Read) :
+    Option (List Read) :=
+  if fused || !observed then some (preparation ++ admission) else none
+
+theorem join_on_demand_preserves_guard_input (fused observed : Bool)
+    (preparation admission : List Read) :
+    (if fused || !observed then some (preparation, admission) else none).map
+      (fun segments => segments.1 ++ segments.2) =
+    retainedJoinedRoots fused observed preparation admission := by
+  cases fused <;> cases observed <;> rfl
 
 -- Only recorded identity membership is selected here. The projection's
 -- live issuer and receiver checks remain in their original order.

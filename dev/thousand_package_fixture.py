@@ -46,18 +46,18 @@ def generate(root: Path, profile: bool = False) -> None:
         write(owner / "config.ss", "(def Config (error \"unselected Config initializer ran\"))\n"
               if number > 1 else "(def Config (.o port: 5432))\n")
         requires = "(.o)" if number == 0 else "(.o Shared: (.o module-id: 'module-0 contract: ScopeContract))"
-        build = " projections: (list Build)" if number == 1 else ""
         # Interface categories remain explicit even for consumers selecting IDs.
         tags = " tags: '(security)" if number == 1 else " tags: '(other)"
         write(owner / "interface.ss", f"""(.def Module identity: 'module-{number}{tags}
   core: (.o requires: {requires} scope-contract: ScopeContract
-    exports: (.o (:: @ Scope.) config: Config){build})
+    exports: (.o (:: @ Scope.) config: Config))
   features: (.o unused: (error "unselected Feature forced")))
 """)
     # A genuine owner-local native target. Its C compilation fails if the
     # selected owner's compiler options are lost in cross-package projection.
-    write(producer / "modules/module-1/build.ss", """(def Build
-  '((gxc: "support" "-cc-options" "-DYUANXU_THOUSAND_OWNER=1")))
+    write(producer / "modules/module-1/build.ss", """(.def Build
+  defbuild-script:
+  (.o spec: '((gxc: "support" "-cc-options" "-DYUANXU_THOUSAND_OWNER=1"))))
 """)
     write(producer / "modules/module-1/support.ss", """(begin-foreign
   (c-declare "#ifndef YUANXU_THOUSAND_OWNER\n#error selected owner compiler option missing\n#endif"))

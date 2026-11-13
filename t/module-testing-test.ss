@@ -78,7 +78,13 @@
         (.get (.call (.get tao3k/yuanxu.init.exports tests) .select
                 '(services/postgresql services/gitea applications/gitea-postgresql)) spec))
       (check-equal? (map path-strip-directory scenarios) '("config-test.ss"))
-      (check-equal? (.get tao3k/yuanxu.init.exports tests spec) (append json flow scenarios))
+      (def tests (.get tao3k/yuanxu.init.exports tests))
+      (check-equal? (.get tests spec)
+                    (append json flow scenarios
+                            (.get tests integration spec)
+                            (.get tests qualification spec)))
+      (check-equal? (.slot? tests 'std-tests) #f)
+      (check-equal? (.slot? tests '.run) #f)
       (check-equal? (eq? json (.get (.call (.get tao3k/yuanxu.init.exports tests) .select '(json-schema)) spec)) #t)
       (def selected (.call (.get tao3k/yuanxu.init.exports tests) .select '(json-schema)))
       (check-equal? (.slot? selected '.run) #f)

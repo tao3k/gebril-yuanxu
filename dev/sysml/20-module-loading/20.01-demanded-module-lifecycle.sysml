@@ -199,6 +199,9 @@ package YuanxuModuleLoading {
         doc /* Derived observations of the production algorithm, not policy
                flags or a second cache. Lean SourceClosureWork.Frames owns the
                recursive-frame/worklist representation proof and frame bound.
+               Its descent law preserves pending order while the active
+               sibling cursor stays in a loop argument. Only a nonempty
+               sibling continuation needs a frame when descending.
                IncrementalRoles owns affected-owner correspondence.
                IndexedWork instruments the existing HashSet worklist. A
                completed walk charges each root/edge occurrence one probe

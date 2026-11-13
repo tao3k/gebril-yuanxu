@@ -408,6 +408,9 @@ package YuanxuPayloadOwnership {
                owner and phase order. Observed checks keep their separate
                boundaries. Lean PublicationReads.flatten_root_segments
                preserves the ordered signed input and the first refusal.
+               PublicationReads.join_on_demand_preserves_guard_input
+               preserves capture-time eligibility even when the observer
+               is absent at a later invocation.
                Dependency projection resolves its first three membership
                probes in the original capture. A wider projection builds
                the same temporary eq? index over those roots. Lean

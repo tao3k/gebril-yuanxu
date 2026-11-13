@@ -85,10 +85,10 @@
           (put root (string-append directory "command.ss")
             (string-append "(import \"./library.ss\") (export main) (def (main . args) (displayln \"STD-BUILD-ORACLE " name " \" answer))"))
           (put root (string-append directory "build.ss")
-            (string-append "(def Build '((exe: \"command\" bin: \"" name "-tool\")))"))
+            (string-append "(.def Build defbuild-script: (.o spec: '((exe: \"command\" bin: \"" name "-tool\"))))"))
           (put root (string-append directory "interface.ss")
             (string-append "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Publication identity: '" name
-              " core: (.o requires: (.o) scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))"))) modules)
+              " core: (.o requires: (.o) scope-contract: Scope exports: Defaults) features: (.o))"))) modules)
       (def expected
         (append '("rootlib")
           (foldr append '()

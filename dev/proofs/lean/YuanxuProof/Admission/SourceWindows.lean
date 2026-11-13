@@ -413,4 +413,17 @@ theorem reusable_scratch_preserves_text_check [BEq CharValue]
 example : scanWithScratch [1, 2] [.chunk [9], .failed 7] [1, 2] 0 true = .error 7 := rfl
 example : scanWithScratch [1, 2] [.chunk [1]] [1, 2] 0 true = .ok (false, 1) := rfl
 
+/-- A replay captures the end of the existing ordered evidence before calling
+any observer. Reentrant enrollment can extend the sequence, but the new
+entries belong to the next replay. -/
+theorem appended_observations_outside_replay {Observation : Type}
+    (captured appended : List Observation) :
+    (captured ++ appended).take captured.length = captured := by
+  simp
+
+theorem ordered_collection_matches_reversal {Observation : Type}
+    (newestFirst : List Observation) (entry : Observation) :
+    (entry :: newestFirst).reverse = newestFirst.reverse ++ [entry] := by
+  simp
+
 end YuanxuProof.Admission.SourceWindows
