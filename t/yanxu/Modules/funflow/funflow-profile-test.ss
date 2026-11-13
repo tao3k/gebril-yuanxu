@@ -15,7 +15,7 @@
                  yuanxu-cicd-check-map-name yuanxu-cicd-check-map-checks
                  yuanxu-cicd-check-compensation-refs)
         (only-in :tao3k/yuanxu/modules/funflow/dependency-graph yuanxu-cicd-check-map->dependency-graph)
-        (only-in "../../../scenarios/funflow/scope.ss"
+        (only-in "../../../../scenarios/funflow/scope.ss"
                  FunflowProfiles. Funflow make-funflow-scope)
         (only-in :tao3k/yuanxu/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline

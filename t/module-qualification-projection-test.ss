@@ -30,7 +30,7 @@
     (error "unselected publication must stay cold"))
   (.o identity: owner features: (.o)
       core: (.o scope-contract: ScopeContract
-                link: (lambda (_deps) (error "test discovery must not link scope")))))
+                exports: (error "test discovery must not construct scope"))))
 
 (def module-qualification-projection-test
   (test-suite "Init-owned qualification source projection"
@@ -48,10 +48,10 @@
       (def init (path-expand "yuanxu-init.ss" root))
       (write-source init
         "(yuanxu! :test-dir \"./checks/t\" :load-modules \"./modules\" mode: explicit rename: Libraries (json-schema) (funflow) (poison disable: #t))\n")
-      (def json (path-expand "checks/t/Libraries/json-schema/value-test.ss" root))
-      (def flow (path-expand "checks/t/Libraries/funflow/job-test.ss" root))
-      (def helper (path-expand "checks/t/Libraries/json-schema/fixtures.ss" root))
-      (def outside (path-expand "checks/t/Other/json-schema/wrong-test.ss" root))
+      (def json (path-expand "checks/t/yanxu/Libraries/json-schema/value-test.ss" root))
+      (def flow (path-expand "checks/t/yanxu/Libraries/funflow/job-test.ss" root))
+      (def helper (path-expand "checks/t/yanxu/Libraries/json-schema/fixtures.ss" root))
+      (def outside (path-expand "checks/t/yanxu/Other/json-schema/wrong-test.ss" root))
       (for-each (lambda (file) (write-source file "(error \"discovery stays inert\")\n"))
         (list json flow helper outside))
       (def view (yuanxu-load-modules init read-publication: read-publication))
@@ -78,7 +78,7 @@
       (write-source init
         "(yuanxu! :test-dir \"./t\" :load-modules \"./modules\" mode: auto rename: Tools)\n")
       (check-exception ((.get fresh admit-current)) error?)
-      (def auto-file (path-expand "t/Tools/json-schema/auto-test.ss" root))
+      (def auto-file (path-expand "t/yanxu/Tools/json-schema/auto-test.ss" root))
       (write-source auto-file "(error \"discovery stays inert\")\n")
       (def auto-view (yuanxu-load-modules init read-publication: read-publication))
       (check-equal?
@@ -98,13 +98,13 @@
       (def init (path-expand "init.ss" root))
       (write-source init
         "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (json-schema) (poison disable: #t))\n")
-      (def owner (path-expand "t/json-schema" root))
+      (def owner (path-expand "t/yanxu/json-schema" root))
       (def file (path-expand "first-test.ss" owner))
       (def helper (path-expand "fixtures.ss" owner))
       (write-source file "(error \"discovery must not execute qualification\")\n")
       (write-source helper "(error \"helper must not be imported\")\n")
       ;; A non-directory unselected owner would fail if discovery traversed it.
-      (write-source (path-expand "t/poison" root) "poison")
+      (write-source (path-expand "t/yanxu/poison" root) "poison")
       (def view (yuanxu-load-modules init read-publication: read-publication))
       (def atomic (module-test-projection view))
       (def selected (module-test-projection view '(json-schema) 'qualification))
@@ -112,7 +112,7 @@
       (check-equal? (.ref/cached selected 'selected-graph) #f)
       (check-equal? (.ref/cached view 'selected-graph) #f)
       (check-exception (module-test-projection view '(poison) 'qualification) error?)
-      (write-source (path-expand "t/poison" root) "changed unselected")
+      (write-source (path-expand "t/yanxu/poison" root) "changed unselected")
       ((.get selected admit-current))
       (write-source helper "(error \"changed helper\")\n")
       ((.get atomic admit-current))
@@ -142,7 +142,7 @@
       (def view (yuanxu-load-modules init read-publication: read-publication))
       (def selected (module-test-projection view #f 'qualification))
       (check-equal? (.get selected spec) '())
-      (write-source (path-expand "t/json-schema/new-test.ss" root)
+      (write-source (path-expand "t/yanxu/json-schema/new-test.ss" root)
         "(error \"new qualification\")\n")
       (check-exception ((.get selected admit-current)) error?))
 
@@ -157,14 +157,14 @@
       (def init (path-expand "init.ss" root))
       (write-source init
         "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" :team (json-schema @ \"./modules/json-schema\"))\n")
-      (def namespace (path-expand "t/team" root))
+      (def namespace (path-expand "t/yanxu/team" root))
       (def file (path-expand "json-schema/nested-test.ss" namespace))
       (write-source file "(error \"selected namespace body remains cold\")\n")
       (def view (yuanxu-load-modules init read-publication: read-publication))
       (def selected (module-test-projection view '(team/json-schema) 'qualification))
       (check-equal? (.get selected spec) (list file))
-      (rename-file namespace (path-expand "t/moved" root))
-      (create-symbolic-link (path-expand "t/moved" root) namespace)
+      (rename-file namespace (path-expand "t/yanxu/moved" root))
+      (create-symbolic-link (path-expand "t/yanxu/moved" root) namespace)
       (check-exception ((.get selected admit-current)) error?)
       (check-exception (module-test-projection view '(team/json-schema) 'qualification) error?))
 

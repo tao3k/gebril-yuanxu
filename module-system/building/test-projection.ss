@@ -101,7 +101,7 @@
            (unless (and intent (.slot? intent 'test-dir))
              (error "qualification discovery requires an explicit :test-dir" init))
            (def directory (.ref intent 'test-dir))
-           (let walk ((parent (path-directory init)) (parts (string-split directory #\/)))
+           (let walk ((parent (path-directory init)) (parts (append (string-split directory #\/) '("yanxu"))))
              (let (child (path-expand (car parts) parent))
                (observe-parent! child)
                (if (null? (cdr parts)) child (walk child (cdr parts))))))))

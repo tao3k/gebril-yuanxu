@@ -276,7 +276,7 @@
                         read-publication: (fixture-reader (lambda (id) (set! reads (cons id reads)))))))
            (check-equal? reads '())
            (check-equal? (.get view modules custom guestbook owner) 'custom/guestbook)
-           (check-equal? reads '(core/schema custom/guestbook))
+           (check-equal? reads '(custom/guestbook))
            (check-equal? (.get view modules custom guestbook owner) 'custom/guestbook)
            (write-source (path-expand "modules/unused/bomb/config.ss" root) "unselected and unobserved")
            ((.get view admit-current))

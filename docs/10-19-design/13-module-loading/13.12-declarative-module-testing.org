@@ -127,12 +127,12 @@ alone does not establish that transition or a performance measurement.
 
 =t/aws-context-publication-test.ss= selects
 =init.Scenarios.aws.tests.qualification= once. Core mechanism qualification lives
-in =t/Scenarios/aws/=, not in the AWS author's test directory. The existing
+in =t/yanxu/scenarios/aws/=, not in the AWS author's test directory. The existing
 =module-test-projection= discovers
-=<test-dir>/<mount>/<module-path>/*-test.ss= only on explicit qualification
+=<test-dir>/yanxu/<mount>/<module-path>/*-test.ss= only on explicit qualification
 demand. The =yuanxu!= declaration requires a literal =:test-dir= relative to
 the declaring file. Use =:test-dir "./t"= for the standard =t/= directory.
-A single window without a mount uses =<test-dir>/<module-path>/=. Discovery
+A single window without a mount uses =<test-dir>/yanxu/<module-path>/=. Discovery
 observes all immediate Scheme sources, executes only =*-test.ss=, and binds
 directory/helper/test snapshots to the same selection guard. No caller builds
 a file list, combines guards or defines a replacement source object.
