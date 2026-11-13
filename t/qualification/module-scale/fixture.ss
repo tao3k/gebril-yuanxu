@@ -69,13 +69,13 @@
         (write-fixture-source (path-expand "init.ss" fixture-root)
           (cond (profile-selection?
                  '((import :tao3k/yuanxu/module-system/selection/init-syntax)
-                   (yuanxu! source: "./modules" mode: auto profile: security)))
+                   (yuanxu! :test-dir "./t" source: "./modules" mode: auto profile: security)))
                 (sparse-selection?
                  '((import :tao3k/yuanxu/module-system/selection/init-syntax)
-                   (yuanxu! source: "./modules" mode: auto (module-1))))
+                   (yuanxu! :test-dir "./t" source: "./modules" mode: auto (module-1))))
                 (else
                  `((import :tao3k/yuanxu/module-system/selection/init-syntax)
-                   (yuanxu! source: "./modules" mode: explicit ,@(map list ids))))))
+                   (yuanxu! :test-dir "./t" source: "./modules" mode: explicit ,@(map list ids))))))
         (for-each
           (lambda (id)
             (def directory (path-expand (symbol->string id) (path-expand "modules" fixture-root)))

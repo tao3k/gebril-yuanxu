@@ -43,7 +43,7 @@
                 "(error \"unrelated selected publication evaluated\")"))
     '("types.ss" "objects.ss" "config.ss" "interface.ss"))
   (write-source (path-expand "init.ss" root)
-    "(yuanxu! source: \"./modules\" mode: explicit (example) (poison))")
+    "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit (example) (poison))")
   directory)
 (def module-testing-source-admission-test
   (test-suite "Test source admission is distinct from complete Graph admission"
@@ -147,7 +147,7 @@
       ;; Remove the sibling sensitivity probe: the Graph must now fail solely
       ;; because example's own required Module is unavailable.
       (write-source (path-expand "init.ss" root)
-        "(yuanxu! source: \"./modules\" mode: explicit (example))")
+        "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit (example))")
       (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
       (check-equal? (.ref/cached selection 'selected-graph) #f)
       (check-exception (module-test-projection selection '(example))
@@ -160,7 +160,7 @@
       (root Workspace)
       (prepare-source root)
       (write-source (path-expand "init.ss" root)
-        "(yuanxu! source: \"./modules\" mode: explicit (example))")
+        "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit (example))")
       (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
       (def tests (module-test-projection selection '(example)))
       (check-equal? (eq? (.get tests selected-graph) (.get selection selected-graph)) #t))))

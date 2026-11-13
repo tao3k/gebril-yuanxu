@@ -62,7 +62,7 @@
     (yuanxu-test-case "publication normalization cannot carry a source mutation into the Graph"
       (with-publication-source
         (lambda (root module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def original (.get ModulePublicationContract .validate))
           (def calls 0)
@@ -93,8 +93,8 @@
               (def marker (path-expand "must-not-execute" root))
               (write-file (path-expand "init.ss" root)
                 (if (eq? boundary 'declaration)
-                  "(yuanxu! mode: explicit :custom (example) (other))"
-                  "(yuanxu! mode: explicit :custom (example +ci))"))
+                  "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example) (other))"
+                  "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example +ci))"))
               (if (eq? boundary 'declaration)
                 (let (other (path-expand "modules/custom/other" root))
                   (for-each
@@ -187,7 +187,7 @@
     (yuanxu-test-case "paired location admits authoring once before declaration evaluation"
       (with-publication-source
         (lambda (root _module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
           (def original (.get yuanxu-default-module-style-policy validate))
           (def calls 0)
           (dynamic-wind
@@ -210,14 +210,14 @@
       (check-equal? (current?) #f)
       (with-publication-source
         (lambda (root _module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def row (car (.get view context intent decisions)))
           (.put! (.get row selection) 'selection-flags '(+unexpected))
           (check-exception (.get view selected-graph) error?)))
       (with-publication-source
         (lambda (root _module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def source (.call (.get view context) locate 'custom/example))
           (def original (.get source value))
@@ -229,7 +229,7 @@
       (with-publication-source
         (lambda (root module-root _source _view)
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! mode: explicit :custom (example) (other))")
+            "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example) (other))")
           (def other (path-expand "modules/custom/other" root))
           (for-each
             (lambda (role)
@@ -573,7 +573,7 @@
     (yuanxu-test-case "default reader selects and builds source roles without compiled selected modules"
       (with-publication-source
        (lambda (root module-root _source _view)
-         (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+         (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
          (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                 (graph (.get view build-graph)))
            (check-equal? (.get view selected-graph module-order) '(custom/example))
@@ -583,7 +583,7 @@
     (yuanxu-test-case "metadata selection never invokes domain exports or unselected source"
       (with-publication-source
        (lambda (root module-root _source _view)
-         (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example) (bomb disable: #t))")
+         (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example) (bomb disable: #t))")
          (write-file (path-expand "modules/custom/bomb/interface.ss" root) "(((not readable")
          (write-file (path-expand "interface.ss" module-root)
            "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: (error \"domain scope must remain deferred\")) features: (.o cold: (error \"unselected feature forced\")))")
@@ -594,7 +594,7 @@
     (yuanxu-test-case "publication reader refuses bootstrap self imports and mismatched source identity"
       (with-publication-source
        (lambda (root module-root _source _view)
-         (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+         (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
          (let* ((path (path-expand "interface.ss" module-root))
                 (original (module-source-read path)))
            (write-file path (string-append "(import \"./interface.ss\") " original))
@@ -627,7 +627,7 @@
                            (.o retained: 'upstream))) port)
                (newline port) (write '(export FixtureScope) port))))
          (write-file (path-expand "init.ss" root)
-           "(yuanxu! mode: explicit source: \"./modules\" :custom (example))")
+           "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" :custom (example))")
          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
          (def source (.call (.get view context) locate 'custom/example))
          (let* ((prepared ((.get view prepare-publication) 'custom/example))
@@ -731,7 +731,7 @@
          (let ((prepared ((.get view prepare-publication) 'custom/example))
                (output (path-expand "stale-selection/interface.ss" root)))
            (write-file (path-expand "init.ss" root)
-                       "(yuanxu! mode: auto source: \"./modules\" :custom (example disable: #t))")
+                       "(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\" :custom (example disable: #t))")
            (check-exception (yuanxu-write-module-publication prepared output) error?)
            (check-equal? (module-source-type output) #f)))))
     (yuanxu-test-case "package source edits and disabled Modules refuse compiler preparation"
@@ -742,7 +742,7 @@
            (write-file package (string-append (module-source-read package) "\n; changed generation\n"))
            (check-exception ((.get prepared admit-current)) error?))
          (write-file (path-expand "init.ss" root)
-                     "(yuanxu! mode: auto source: \"./modules\" :custom (example disable: #t))")
+                     "(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\" :custom (example disable: #t))")
          (let (disabled (yuanxu-load-modules (path-expand "modules" root)))
            (check-exception ((.get disabled prepare-publication) 'custom/example) error?)))))
     (yuanxu-test-case "macro errors retain the original included interface location"

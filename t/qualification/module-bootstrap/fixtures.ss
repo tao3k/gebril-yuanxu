@@ -60,7 +60,7 @@
       ;; Narrow only fixture selection and retained roots, never build.ss.
       (call-with-output-file (list path: (path-expand "init.ss" fixture-root) truncate: #t)
         (lambda (port)
-          (write `(yuanxu! mode: explicit source: "./modules" (,selected)) port)))
+          (write `(yuanxu! :test-dir "./t" mode: explicit source: "./modules" (,selected)) port)))
       (call-with-output-file (list path: (path-expand "core-spec.ss" fixture-root) truncate: #t)
         (lambda (port)
           (write '(export core-spec) port) (newline port)

@@ -163,7 +163,7 @@
         (lambda (root)
           (write-source (path-expand "gerbil.pkg" root) "(package: namespace-conflict)\n")
           (write-source (path-expand "init.ss" root)
-            "(yuanxu! :load-modules \"./modules\" mode: explicit rename: Lab (fleet) :fleet (child))")
+            "(yuanxu! :test-dir \"./t\" :load-modules \"./modules\" mode: explicit rename: Lab (fleet) :fleet (child))")
           (write-source (path-expand "modules/fleet/interface.ss" root) "((unforced publication")
           (write-source (path-expand "modules/fleet/child/interface.ss" root) "((unforced publication")
           (def calls 0)

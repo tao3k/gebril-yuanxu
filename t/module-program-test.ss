@@ -66,7 +66,7 @@
       (def entry-pids (path-expand "entry-pids" root))
       (put root "rootlib.ss" "(def base 41) (export base)")
       (put root "init.ss"
-        (string-append "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit "
+        (string-append "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit "
           (string-join (map (lambda (name) (string-append "(" name ")")) modules) " ")
           " (poison disable: #t))"))
       (put root "modules/poison/interface.ss" "((unselected-source-must-not-be-expanded")
@@ -260,7 +260,7 @@
           (put root "gerbil.pkg" "(package: module-build-program)\n")
           (create-directory (path-expand "empty" root))
           (put root "init.ss"
-            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :load-modules \"./modules\" rename: modules mode: explicit (example) :load-modules \"./empty\" rename: Empty mode: explicit)\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" :load-modules \"./modules\" rename: modules mode: explicit (example) :load-modules \"./empty\" rename: Empty mode: explicit)\n")
           (put root "modules/example/types.ss"
             "(import :clan/poo/object (only-in :clan/poo/mop Type.)) (def Scope (.cc Type. identity: 'program/scope .element?: object?)) (export Scope)")
           (put root "modules/example/objects.ss"
@@ -305,7 +305,7 @@
         (lambda (root)
           (put root "gerbil.pkg" "(package: build-library-fixture)\n")
           (put root "init.ss"
-            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (example))\n")
           (def source "(export answer) (def answer 42)\n")
           (put root "probe.ss" source)
           (put root "unrelated.ss" "(export spare) (def spare #t)\n")
@@ -329,7 +329,7 @@
         (lambda (root)
           (put root "gerbil.pkg" "(package: cached-build-consumer)\n")
           (put root "init.ss"
-            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (example))\n")
           (def manifest "(package: cached-build-foreign)\n")
           (put root "foreign/gerbil.pkg" manifest)
           (put root "foreign/sub/helper.ss" "(export answer) (def answer 42)\n")
@@ -372,7 +372,7 @@
           ;; never a package boundary below the repository's test directory.
           (put root "gerbil.pkg" "(package: program-fixture)\n")
           (put root "init.ss"
-            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (example))\n")
           (def source
             (string-append
               "(import (only-in :clan/poo/object .o .get))\n"

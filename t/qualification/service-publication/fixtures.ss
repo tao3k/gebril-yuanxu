@@ -77,7 +77,7 @@
             text))))
     '("types" "objects" "config" "interface"))
   (write-source (path-expand "init.ss" root)
-    "(yuanxu! mode: explicit (closed-package disable: #t) :services (postgresql) (gitea) (unused disable: #t) :applications (gitea-postgresql))")
+    "(yuanxu! :test-dir \"./t\" mode: explicit (closed-package disable: #t) :services (postgresql) (gitea) (unused disable: #t) :applications (gitea-postgresql))")
   (write-source (path-expand "modules/services/unused/interface.ss" root) "(((cold")
   (select-services workspace root))
 
@@ -98,7 +98,7 @@
   (write-source (path-expand "init.ss" root)
     (call-with-output-string
       (lambda (out)
-        (display "(yuanxu! mode: explicit :services (postgresql @ " out)
+        (display "(yuanxu! :test-dir \"./t\" mode: explicit :services (postgresql @ " out)
         (write (path-expand "postgresql" source-root) out)
         (display ") (gitea @ " out)
         (write (path-expand "gitea" source-root) out)

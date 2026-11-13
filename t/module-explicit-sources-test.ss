@@ -18,7 +18,7 @@
   (with-catch
     (lambda (e) (and (pregexp-match pattern (call-with-output-string (cut display-exception e <>))) #t))
     (lambda () (thunk) #f)))
-(def (fixture root)
+(def (fixture root (provider "../../../contribution/objects.ss"))
   (write-source (path-expand "gerbil.pkg" root)
     (string-append "(package: " (symbol->string (gensym 'explicit-source-)) ")"))
   (for-each
@@ -31,7 +31,9 @@
        (write-source (path-expand "config.ss" directory) "(def Config (.o))")
        (write-source (path-expand "interface.ss" directory)
          (string-append
-           (if (string=? id "app/main") "(import (only-in \"../../../contribution/objects.ss\")) " "")
+           (if (string=? id "app/main")
+             (string-append "(import (rename-in (only-in " (object->string provider)
+                            " Defaults) (Defaults ProviderDefaults))) ") "")
            "(.def Published identity: '" id
            " core: (.o scope-contract: Scope exports: (.o value: 42)) features: (.o))"))))
    '(("modules/app/main" . "app/main") ("contribution" . "core/dependency")))
@@ -40,16 +42,28 @@
   (write-source (path-expand "unselected/interface.ss" root) "(((must-not-read"))
 (def module-explicit-sources-test
   (test-suite "Explicit authorization and runtime SourceRef bindings"
-    (yuanxu-test-case "required dependencies must be declared and cannot be disabled"
+    (yuanxu-test-case "required dependencies must be declared"
       (call-with-temporary-directory "explicit-denied"
+        (lambda (root)
+          (fixture root "../../hidden/objects.ss")
+          (let (init (path-expand "init.ss" root))
+            ;; An undeclared leaf is still an owner inside the selected window.
+            ;; Keep the explicit external binding for the disabled-owner case.
+            (let (hidden (path-expand "modules/hidden" root))
+              (write-source (path-expand "interface.ss" hidden)
+                "(.def Module identity: 'hidden core: (.o) features: (.o))")
+              (write-source (path-expand "objects.ss" hidden)
+                "(def Defaults #t) (export Defaults)"))
+            (write-source init "(yuanxu! :test-dir \"./t\" mode: explicit :app (main))")
+            (assert 'undeclared-required-rejected
+              (rejects? "required module not explicitly declared|source import leaves|unselected Module"
+                (lambda () (.get (yuanxu-load-modules init) selected-graph))))))))
+    (yuanxu-test-case "required dependencies cannot be disabled"
+      (call-with-temporary-directory "explicit-disabled"
         (lambda (root)
           (fixture root)
           (let (init (path-expand "init.ss" root))
-            (write-source init "(yuanxu! mode: explicit :app (main))")
-            (assert 'undeclared-required-rejected
-              (rejects? "required module not explicitly declared|source import leaves|unselected Module"
-                (lambda () (.get (yuanxu-load-modules init) selected-graph))))
-            (write-source init "(yuanxu! mode: explicit :core (dependency @ \"./contribution\" disable: #t) :app (main))")
+            (write-source init "(yuanxu! :test-dir \"./t\" mode: explicit :core (dependency @ \"./contribution\" disable: #t) :app (main))")
             (assert 'disabled-required-rejected-before-source-read
               (rejects? "disabled Module|required module disabled"
                 (lambda () (.get (yuanxu-load-modules init) selected-graph))))))))
@@ -58,7 +72,7 @@
         (lambda (root)
           (fixture root)
           (let (init (path-expand "init.ss" root))
-            (write-source init "(yuanxu! mode: explicit :core (dependency @ \"./contribution\") :app (main) :unused (bomb @ \"./unselected\" disable: #t))")
+            (write-source init "(yuanxu! :test-dir \"./t\" mode: explicit :core (dependency @ \"./contribution\") :app (main) :unused (bomb @ \"./unselected\" disable: #t))")
             (def view (yuanxu-load-modules init))
             (assert 'declared-dependency-order
               (equal? (.get view dependency-order) '(core/dependency app/main)))
@@ -82,7 +96,7 @@
           (delete-directory (path-expand "modules/core/dependency" root))
           (delete-directory (path-expand "modules/core" root))
           (let (init (path-expand "init.ss" root))
-            (write-source init "(yuanxu! mode: auto :core (dependency @ \"./contribution\"))")
+            (write-source init "(yuanxu! :test-dir \"./t\" mode: auto :core (dependency @ \"./contribution\"))")
             (let (view (yuanxu-load-modules init))
               (assert 'auto-bound-virtual-namespace (= (.get view modules core dependency value) 42))
               (assert 'auto-local-demand-retained (= (.get view modules app main value) 42)))))))
@@ -91,7 +105,7 @@
         (lambda (root)
           (fixture root)
           (let (init (path-expand "init.ss" root))
-            (write-source init "(yuanxu! mode: explicit :core (dependency @ \"./missing\") :app (main))")
+            (write-source init "(yuanxu! :test-dir \"./t\" mode: explicit :core (dependency @ \"./missing\") :app (main))")
             (assert 'missing-origin-rejected
               (rejects? "module source is not a directory"
                 (lambda () (.get (yuanxu-load-modules init) selected-graph))))))))))

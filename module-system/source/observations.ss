@@ -159,7 +159,8 @@
                            metadata-index metadata-root-merge metadata-cache-miss-receivers
                            source-init-current source-authoring-profile-checkpoint
                            reader-tool-inputs reader-private-closure reader-private-prepare
-                           reader-native-import reader-role-import reader-source-resolution
+                           reader-native-import reader-role-import reader-source-resolution reader-source-import
+                           reader-tool-context
                            reader-compile-start reader-eval-start
                            reader-expander-compile reader-expander-eval
                            reader-expander-phase-compile reader-expander-phase-eval

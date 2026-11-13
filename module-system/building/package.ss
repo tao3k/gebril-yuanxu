@@ -110,7 +110,7 @@
                     (append (list name 'disable: #t) flags)
                     (append (list name '@ (string-append "./" relative)) flags)))))))))
     ordered)
-  (stage! "init.ss" (datum-text (append '(yuanxu! mode: explicit) init-rows)))
+  (stage! "init.ss" (datum-text (append '(yuanxu! :test-dir "./t" mode: explicit) init-rows)))
   ((.get graph admit-current))
   (create-directory* (path-directory destination))
   (def staging (make-temporary-file-name (string-append destination ".staging-")))

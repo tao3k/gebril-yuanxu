@@ -19,7 +19,7 @@
     (forms root "gerbil.pkg" `((package: ,package-name)))
     (forms root "init.ss"
       '((import :tao3k/yuanxu/module-system/selection/init-syntax)
-        (yuanxu! mode: explicit source: "./modules" (example))))
+        (yuanxu! :test-dir "./t" mode: explicit source: "./modules" (example))))
     (forms root "modules/example/types.ss"
       '((import :clan/poo/object (only-in :clan/poo/mop Type.))
         (def Scope (.cc Type. identity: 'test/scope .element?: object?))

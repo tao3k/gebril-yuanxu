@@ -166,7 +166,7 @@
       (with-other-source
         (lambda (root _first _other)
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! source: \"./modules\" mode: auto :custom (example))"))
+            "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: auto :custom (example))"))
         (lambda (_root _first _other view)
           (def modules (.get view modules custom))
           (check-equal? (.ref/cached modules 'example) #f)
@@ -198,7 +198,7 @@
       (with-other-source
         (lambda (root _first _other)
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! source: \"./modules\" mode: explicit :custom (example) (other))"))
+            "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :custom (example) (other))"))
         (lambda (_root _first _other view)
           (def graph (.get view selected-graph))
           (check-equal? (length (.get graph module-order)) 2)

@@ -47,7 +47,7 @@
           (register-module-build-source! root package)
           (call-with-output-file (path-expand "init.ss" root)
             (lambda (port)
-              (display "(import :tao3k/yuanxu/module-system/selection/init-syntax)\n(yuanxu! source: \"./modules\" mode: explicit (example))\n" port)))
+              (display "(import :tao3k/yuanxu/module-system/selection/init-syntax)\n(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit (example))\n" port)))
           (write-datum (path-expand "consumer.ss" root) '(def value 42))
           (def module-root (path-expand "modules/example" root))
           (create-directory* module-root)

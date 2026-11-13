@@ -77,7 +77,7 @@
       (with-other-source
         (lambda (root first _other)
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! source: \"./modules\" mode: explicit :custom (example))")
+            "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :custom (example))")
           (write-file (path-expand "objects.ss" first)
             (call-with-output-string
               (lambda (port)
@@ -225,7 +225,7 @@
       (with-other-source
         (lambda (root _first _other)
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! source: \"./modules\" mode: explicit :custom (example) (other))"))
+            "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :custom (example) (other))"))
         (lambda (_root _first _other view)
           (def context (.get view context))
           (def generation (.get context generation))

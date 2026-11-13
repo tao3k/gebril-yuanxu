@@ -4,6 +4,7 @@
 ;; One selection epoch owns both windows. Mount names affect access paths;
 ;; requirements continue to use the original publication identities.
 (yuanxu!
+  :test-dir "./t"
   :load-modules "./modules" mode: explicit rename: Modules
   (json-schema)
   (funflow)

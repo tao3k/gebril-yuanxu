@@ -29,7 +29,7 @@
       (write-source (path-expand "gerbil.pkg" root)
         (string-append "(package: " (symbol->string (gensym 'scale-)) ")"))
       (write-source (path-expand "init.ss" root)
-        "(yuanxu! source: \"./modules\" mode: auto)")
+        "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: auto)")
       (def chosen (path-expand "modules/chosen/" root))
       (write-source (path-expand "types.ss" chosen)
         "(import (only-in :clan/poo/mop Type.) (only-in :clan/poo/object object?)) (def ScopeContract (.cc Type. identity: 'scale .element?: object?)) (export ScopeContract)")

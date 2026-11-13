@@ -226,6 +226,9 @@
                          (equal? path (module-build-source-path context kernel-root))
                          context))))))
        (def (tool-context context reload?)
+         (module-source-measure-operation 'reader-tool-context
+           (lambda () (admit-tool-context context reload?))))
+       (def (admit-tool-context context reload?)
          (when reload? (error "compiler tool reload requires a fresh publication reader"))
          (let (expected (hash-get (reader-session-tool-contexts session) (expander-context-id context)))
            (unless (captured-import-context? (reader-session-compiler-contexts session) context)
@@ -553,7 +556,9 @@
          ;; file requests before importing: expansion can execute initializers.
          (def requested (syntax-e path))
          (def resolved
-           (and (string? requested) (path-normalize (core-resolve-module-path path))))
+           (and (string? requested)
+                (module-source-measure-operation 'reader-source-resolution
+                  (lambda () (path-normalize (core-resolve-module-path path))))))
          (cond
           ((and resolved (hash-key? artifacts resolved))
            (module-source-measure-operation 'reader-wrapper-expansion
@@ -562,7 +567,8 @@
                (when (equal? resolved interface-wrapper) (set! interface-context context))
                context)))
           ((and resolved (string=? (path-extension resolved) ".ss"))
-           (source-context resolved reload?))
+           (module-source-measure-operation 'reader-source-import
+             (lambda () (source-context resolved reload?))))
           (else
            ;; Compiled libraries must retain their canonical Gerbil
            ;; import closure. Redirect only the caller's source

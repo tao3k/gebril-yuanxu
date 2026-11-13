@@ -141,7 +141,7 @@
       (def file (path-expand "tests/atomic-test.ss" module-root))
       (write-forms file '((import :std/test)))
       (def init (path-expand "init.ss" workspace))
-      (write-forms init '((yuanxu! mode: explicit source: "./modules" (json-schema))))
+      (write-forms init '((yuanxu! :test-dir "./t" mode: explicit source: "./modules" (json-schema))))
       (def view (yuanxu-load-modules init read-publication: fixture-reader))
       ;; A bounded package-effect probe over the actual selection/Graph. Reading
       ;; before the write would hide this change under an incorrectly wide cache.
@@ -163,7 +163,7 @@
       (write-forms (path-expand "tests/atomic-test.ss" poison) '((error "unselected test loaded")))
       ;; The real JsonSchema module is selected by its admitted source mapping.
       (def declaration
-        `(yuanxu! mode: explicit source: "./modules"
+        `(yuanxu! :test-dir "./t" mode: explicit source: "./modules"
                     (json-schema @ ,(path-expand "modules/json-schema" root)) (poison disable: #t)))
       (def init (path-expand "init.ss" workspace))
       (write-forms init (list declaration))
@@ -173,7 +173,7 @@
       (check-exception (module-test-projection view '(poison)) error?)
       ((.get session admit-current))
       ;; A disabled owner is not silently accepted when explicitly selected.
-      (def changed `(yuanxu! mode: explicit source: "./modules" (poison)))
+      (def changed `(yuanxu! :test-dir "./t" mode: explicit source: "./modules" (poison)))
       (write-forms init (list changed))
       (check-exception ((.get session admit-current)) error?)
       (check-exception (test-session init) error?))
@@ -194,7 +194,7 @@
       (create-directory (path-directory integration))
       (write-forms integration '((error "unselected integration must not evaluate")))
       (def init (path-expand "init.ss" workspace))
-      (def declaration '(yuanxu! mode: explicit source: "./modules" (json-schema)))
+      (def declaration '(yuanxu! :test-dir "./t" mode: explicit source: "./modules" (json-schema)))
       (write-forms init (list declaration))
       (def view (yuanxu-load-modules init read-publication: fixture-reader))
       (def session (module-test-projection view))

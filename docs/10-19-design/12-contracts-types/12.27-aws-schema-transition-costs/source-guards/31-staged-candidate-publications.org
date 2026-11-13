@@ -65,6 +65,13 @@ A run including the retained-role origin change reached the 180-second
 guard during first Graph demand at 10,000 owners, with a 3.32 GiB peak.
 This leaves full-scale qualification open.
 
+In a subsequent 64-owner run, wrapper expansion consumed 1.98 seconds
+of CPU. Its relative-source resolution, source-import handling and captured
+tool Context handling consumed 0.12 seconds CPU combined. Interface reading
+and rewriting consumed another 0.007 seconds CPU. These diagnostic stages
+leave native expansion as the next attribution boundary. They do not support
+changing source authentication or sharing author expansion results.
+
 * SDK support is an identity relationship
 
 Compiler discovery already captures SDK module contexts. The reader now puts

@@ -84,7 +84,7 @@
      '("application" "operations" "security") ports)
     (write-source (path-expand "modules/fixture/unused/interface.ss" root) "(((not readable")
     (write-source (path-expand "init.ss" root)
-      "(yuanxu! mode: explicit :fixture (application) (operations) (security) (unused disable: #t))"))
+      "(yuanxu! :test-dir \"./t\" mode: explicit :fixture (application) (operations) (security) (unused disable: #t))"))
    (lambda () (consume root)) (lambda () (remove-tree root))))
 (def (error-message=? expected)
   (lambda (failure) (and (Error? failure) (equal? (Error-message failure) expected))))
@@ -215,7 +215,7 @@
     (done!))))
   (test-case "empty contributions preserve the published Contract and still fence later routes"
    (with-module-tree (lambda (root)
-    (write-source (path-expand "init.ss" root) "(yuanxu! mode: explicit :fixture (application))")
+    (write-source (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :fixture (application))")
     (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
     (def record (.call selection .selected-record 'fixture/application))
     (def original (.get record scope types Admission))

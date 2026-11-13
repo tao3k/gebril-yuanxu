@@ -27,7 +27,7 @@
       (def calls 0)
       (defvalues (exports namespace)
         (yuanxu-init-build "/nonexistent-yuanxu-build-program/init.ss"
-          '(yuanxu! source: "./missing" mode: explicit (missing))
+          '(yuanxu! :test-dir "./t" source: "./missing" mode: explicit (missing))
           (lambda () (set! calls (+ calls 1)) expected)
           'not-a-registered-static-yuanxu-unit))
       (check-equal? calls 0)
@@ -49,7 +49,7 @@
       (call-with-output-file init
         (lambda (out)
           (pretty-print '(import :tao3k/yuanxu/module-system/selection/init-syntax) out)
-          (pretty-print '(yuanxu! source: "./modules" mode: explicit (missing)) out)))
+          (pretty-print '(yuanxu! :test-dir "./t" source: "./modules" mode: explicit (missing)) out)))
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
         (eval-syntax '(import (only-in :clan/poo/object .get)))
@@ -89,7 +89,7 @@
       (call-with-output-file init
         (lambda (out)
           (pretty-print '(import :tao3k/yuanxu/module-system/selection/init-syntax) out)
-          (pretty-print '(yuanxu! source: "./modules" mode: auto) out)))
+          (pretty-print '(yuanxu! :test-dir "./t" source: "./modules" mode: auto) out)))
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
         (eval-syntax '(import (only-in :clan/poo/object .get)))
@@ -127,7 +127,7 @@
         (call-with-output-file path
           (lambda (out)
             (pretty-print '(import :tao3k/yuanxu/module-system/selection/init-syntax) out)
-            (pretty-print '(yuanxu! :load-modules "./absent" mode: explicit
+            (pretty-print '(yuanxu! :test-dir "./t" :load-modules "./absent" mode: explicit
                                    rename: Modules (missing)) out)))
         path)
       (def left-path (prepare! left ':tao3k/yuanxu/prelude))

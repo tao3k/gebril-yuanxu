@@ -241,7 +241,7 @@ prelude: :gerbil/core
          (error "test directory must be relative to the yuanxu! declaration" directory source-path))
        (values rest relative))
       ([':test-dir . _] (error "test directory requires a literal path" source-path))
-      (body (values body "t"))))
+      (_ (error "yuanxu! requires :test-dir before the module selection; use :test-dir \"./t\" for the standard t/ directory" source-path))))
   (if (or (null? body) (not (eq? (car body) ':load-modules)))
     (values (list (parse-init-window body source-path)) #f test-dir)
     (let ((windows (parse-init-windows body source-path))

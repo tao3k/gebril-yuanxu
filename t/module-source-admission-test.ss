@@ -46,7 +46,7 @@
        ;; Publish one object, without importing/re-exporting every private role.
        (write-role root "interface" "(import \"config.ss\") (.def Published identity: 'custom/example) (export Published)")
        (call-with-output-file (path-expand "init.ss" root)
-         (cut display "(yuanxu! source: \"./modules\" mode: explicit :custom (example))\n" <>)))
+         (cut display "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :custom (example))\n" <>)))
      (lambda () (test root))
      (lambda () (remove-source root)))))
 (def (publication)

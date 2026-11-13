@@ -38,8 +38,11 @@
              (.get yuanxu-thousand-consumer.init.exports Corpus module-1 config))
   (error "nested standard .get changed config identity"))
 (.put! (.get leaf config) 'port 5440)
-(unless (and (equal? (selected-plan) '(5440)) (= (.call leaf computations) 2))
-  (error "standard functional value did not recompute"))
+(def revised (selected-plan))
+(def computations (.call leaf computations))
+(unless (and (equal? revised '(5440)) (= computations 2))
+  (error "standard functional value did not recompute" revised computations
+         (.get leaf config port)))
 (unless (not (.ref/cached leaf 'unselected)) (error "unselected business value forced"))
 ((.get graph admit-current))
 (displayln "THOUSAND-USE scopes=2 declarations=0 cold-enumeration=0 first-get=ok factories-once=ok hot-identity=ok incremental=ok currentness=ok")

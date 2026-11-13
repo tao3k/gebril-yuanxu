@@ -51,7 +51,7 @@
             (lambda ()
               (check-equal?
                 (module-init-compiler-source-roots
-                  '(yuanxu! source: "modules" package: "github.com/example/provider"
+                  '(yuanxu! :test-dir "./t" source: "modules" package: "github.com/example/provider"
                             mode: explicit)
                   (path-expand "init.ss" root))
                 (list (path-expand "pkg/github.com/example/provider" root)))

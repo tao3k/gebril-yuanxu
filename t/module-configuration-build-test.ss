@@ -62,7 +62,7 @@
       (with-fixture
         (lambda (root _builder)
           (let (init (path-expand "init.ss" root))
-            (write-source init "(yuanxu! mode: explicit :tools (builder) :app (one) (two))")
+            (write-source init "(yuanxu! :test-dir \"./t\" mode: explicit :tools (builder) :app (one) (two))")
             (let* ((view (yuanxu-load-modules init))
                    (_selected (.get view selected-graph)))
               (assert 'selection-keeps-build-deferred (not (file-exists? (path-expand "build-count" root))))
@@ -92,14 +92,14 @@
       (with-fixture
         (lambda (root builder)
           (write-source (path-expand "build.ss" builder) "(error \"unused construction capability\")")
-          (write-source (path-expand "init.ss" root) "(yuanxu! mode: explicit :tools (builder))")
+          (write-source (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :tools (builder))")
           (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
             (assert 'unused-builder-has-no-package (null? (.get view build-graph external-packages)))
             (assert 'unused-builder-kept-lazy (not (file-exists? (path-expand "build-count" root))))))))
     (yuanxu-test-case "disabled required builder rejects before any build effect"
       (with-fixture
         (lambda (root _builder)
-          (write-source (path-expand "init.ss" root) "(yuanxu! mode: explicit :app (one) :tools (builder disable: #t))")
+          (write-source (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :app (one) :tools (builder disable: #t))")
           (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
             (assert 'disabled-required-builder-rejected
               (rejects? "disabled Module|required module disabled" (lambda () (.get view build-graph))))

@@ -76,7 +76,7 @@
       ;; A changed mount invalidates the old epoch. Auto discovery uses the
       ;; new mount without a second test registry or legacy flat fallback.
       (write-source init
-        "(yuanxu! :load-modules \"./modules\" mode: auto rename: Tools)\n")
+        "(yuanxu! :test-dir \"./t\" :load-modules \"./modules\" mode: auto rename: Tools)\n")
       (check-exception ((.get fresh admit-current)) error?)
       (def auto-file (path-expand "t/Tools/json-schema/auto-test.ss" root))
       (write-source auto-file "(error \"discovery stays inert\")\n")
@@ -97,7 +97,7 @@
         "(error \"discovery must not evaluate atomic test\")\n")
       (def init (path-expand "init.ss" root))
       (write-source init
-        "(yuanxu! mode: explicit source: \"./modules\" (json-schema) (poison disable: #t))\n")
+        "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (json-schema) (poison disable: #t))\n")
       (def owner (path-expand "t/json-schema" root))
       (def file (path-expand "first-test.ss" owner))
       (def helper (path-expand "fixtures.ss" owner))
@@ -138,7 +138,7 @@
       (write-source (path-expand "interface.ss" module-root)
         "(.def Published identity: 'json-schema)\n")
       (def init (path-expand "init.ss" root))
-      (write-source init "(yuanxu! mode: explicit source: \"./modules\" (json-schema))\n")
+      (write-source init "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (json-schema))\n")
       (def view (yuanxu-load-modules init read-publication: read-publication))
       (def selected (module-test-projection view #f 'qualification))
       (check-equal? (.get selected spec) '())
@@ -156,7 +156,7 @@
         "(.def Published identity: 'team/json-schema)\n")
       (def init (path-expand "init.ss" root))
       (write-source init
-        "(yuanxu! mode: explicit source: \"./modules\" :team (json-schema @ \"./modules/json-schema\"))\n")
+        "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" :team (json-schema @ \"./modules/json-schema\"))\n")
       (def namespace (path-expand "t/team" root))
       (def file (path-expand "json-schema/nested-test.ss" namespace))
       (write-source file "(error \"selected namespace body remains cold\")\n")
@@ -177,7 +177,7 @@
       (write-source (path-expand "interface.ss" module-root)
         "(.def Published identity: 'json-schema)\n")
       (def init (path-expand "init.ss" root))
-      (write-source init "(yuanxu! mode: explicit source: \"./modules\" (json-schema))\n")
+      (write-source init "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (json-schema))\n")
       (create-directory (path-expand "outside" root))
       (create-symbolic-link (path-expand "outside" root) (path-expand "t" root))
       (def view (yuanxu-load-modules init read-publication: read-publication))

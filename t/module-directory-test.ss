@@ -21,7 +21,7 @@
 ;; Compiler declaration and filesystem preparation share the same pure lowering.
 (def Intent
   (module-init-intent
-    '((yuanxu! mode: explicit source: "./modules" :custom (guestbook -smoke))) #f))
+    '((yuanxu! :test-dir "./t" mode: explicit source: "./modules" :custom (guestbook -smoke))) #f))
 (def DirectoryScope
   (.cc Type. identity: 'test/directory-scope .element?: (lambda (_value) #t)))
 (def (write-source path text)
@@ -63,7 +63,7 @@
       (with-sources
        (lambda (root)
          (let (init-path (path-expand "init.ss" root))
-           (write-source init-path "(yuanxu! mode: explicit :core (schema) :custom (guestbook +smoke -cold) :unused (bomb disable: #t))")
+           (write-source init-path "(yuanxu! :test-dir \"./t\" mode: explicit :core (schema) :custom (guestbook +smoke -cold) :unused (bomb disable: #t))")
            (let* ((v (yuanxu-load-modules init-path
                        read-publication:
                        (lambda (source)
@@ -80,22 +80,22 @@
              (check-equal? (.get graph feature-order) '(custom/guestbook/smoke))
              (check-equal? (.get graph denied-features) '(custom/guestbook/cold))
              (check-equal? (.get graph feature-contributions projections) '(smoke))
-             (write-source init-path "(yuanxu! mode: explicit :custom (guestbook disable: #t))")
+             (write-source init-path "(yuanxu! :test-dir \"./t\" mode: explicit :custom (guestbook disable: #t))")
              (check-exception ((.get graph admit-current)) error?))))))
     (yuanxu-test-case "a loading window requires its yuanxu! declaration"
       (with-sources
        (lambda (root)
          (check-exception (yuanxu-load-modules (path-expand "modules" root)) error?)
-         (write-source (path-expand "init.ss" root) "(yuanxu! mode: auto source: \"./modules\")")
+         (write-source (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\")")
          (let (view (yuanxu-load-modules (path-expand "modules" root)))
            ((.get view admit-current))
-           (write-source (path-expand "init.ss" root) "(yuanxu! mode: explicit source: \"./modules\")")
+           (write-source (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\")")
            (check-exception ((.get view admit-current)) error?)))))
     (yuanxu-test-case "a declaration inside the collection retains its own source origin"
       (with-sources
        (lambda (root)
          (def entry (path-expand "modules/init.ss" root))
-         (write-source entry "(yuanxu! mode: explicit :core (schema))")
+         (write-source entry "(yuanxu! :test-dir \"./t\" mode: explicit :core (schema))")
          (def seen #f)
          (def view
            (yuanxu-load-modules entry
@@ -110,8 +110,8 @@
       (with-sources
        (lambda (root)
          (def entry (path-expand "consumer/window.ss" root))
-         (write-source (path-expand "init.ss" root) "(yuanxu! mode: auto source: \"./modules\")")
-         (write-source entry "(yuanxu! mode: explicit source: \"../modules\" :core (schema) :custom (guestbook))")
+         (write-source (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\")")
+         (write-source entry "(yuanxu! :test-dir \"./t\" mode: explicit source: \"../modules\" :core (schema) :custom (guestbook))")
          (def seen '())
          (def reader
            (lambda (source)
@@ -124,13 +124,13 @@
                                  (string=? (path-strip-trailing-directory-separator origin)
                                            (path-strip-trailing-directory-separator (path-normalize root)))) seen) #t)
          ((.get view admit-current))
-         (write-source (path-expand "init.ss" root) "(yuanxu! mode: explicit source: \"./elsewhere\")")
+         (write-source (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./elsewhere\")")
          (check-exception ((.get view admit-current)) error?))))
     (yuanxu-test-case "ambiguous authority is refused unless the exact init is supplied"
       (with-sources
        (lambda (root)
-         (write-source (path-expand "init.ss" root) "(yuanxu! mode: auto)")
-         (write-source (path-expand "modules/init.ss" root) "(yuanxu! mode: auto)")
+         (write-source (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: auto)")
+         (write-source (path-expand "modules/init.ss" root) "(yuanxu! :test-dir \"./t\" mode: auto)")
          (check-exception (yuanxu-load-modules (path-expand "modules" root)) error?)
          (let (view (yuanxu-load-modules (path-expand "modules/init.ss" root)))
            ((.get view admit-current))))))
@@ -138,7 +138,7 @@
       (with-sources
        (lambda (root)
          (def init (path-expand "init.ss" root))
-         (write-source init "(yuanxu! mode: auto source: \"./modules\")")
+         (write-source init "(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\")")
          (create-symbolic-link (path-expand "modules/custom/guestbook" root)
                                (path-expand "modules/escape" root))
          (create-symbolic-link (path-expand "modules/custom/guestbook" root)
@@ -148,7 +148,7 @@
              (and (Error? failure)
                   (equal? (Error-message failure) "symlink in module source tree")
                   (equal? (cadr (Error-irritants failure)) "a:excluded"))))
-         (write-source init "(yuanxu! mode: explicit source: \"./modules\" (core) (alias @ \"./modules/core\"))")
+         (write-source init "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (core) (alias @ \"./modules/core\"))")
          (check-exception (yuanxu-load-modules init)
            (lambda (failure)
              (and (Error? failure)
@@ -160,7 +160,7 @@
           (def directory (path-expand "./modules" (path-directory init)))
           (def core (path-expand "core" directory))
           (def custom (path-expand "custom" directory))
-          (write-source init "(yuanxu! mode: explicit source: \"./modules\" (core disable: #t) (custom))")
+          (write-source init "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (core disable: #t) (custom))")
           (call-with-module-source-read-cache
             (lambda ()
               (check-equal? (module-source-type core) 'directory)
@@ -178,7 +178,7 @@
          (for-each (lambda (index)
                      (create-directory (path-expand (string-append "extra-" (number->string index)) modules)))
                    (iota 9))
-         (write-source init "(yuanxu! mode: auto source: \"./modules\")")
+         (write-source init "(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\")")
          (def view (yuanxu-load-modules init read-publication: (fixture-reader void)))
          (def locate (.get view context locate))
          (check-equal? (yuanxu-module-source-ref? (locate 'core/schema)) #t)
@@ -195,7 +195,7 @@
       (with-sources
        (lambda (root)
          (write-source (path-expand "init.ss" root)
-                       "(yuanxu! mode: explicit source: \"./modules\" :core (schema) :custom (guestbook -smoke) :unused (bomb disable: #t))")
+                       "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" :core (schema) :custom (guestbook -smoke) :unused (bomb disable: #t))")
          (let* ((reads '())
                 (view (yuanxu-load-modules (path-expand "init.ss" root)
                         read-publication: (fixture-reader (lambda (id) (set! reads (cons id reads)))))))
@@ -218,7 +218,7 @@
       (with-sources
        (lambda (root)
          (write-source (path-expand "init.ss" root)
-           "(yuanxu! mode: explicit source: \"./modules\" :core (schema) :custom (guestbook -smoke))")
+           "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" :core (schema) :custom (guestbook -smoke))")
          (let* ((reads '())
                 (view
                   (yuanxu-load-modules (path-expand "init.ss" root)
@@ -242,7 +242,7 @@
       (with-sources
        (lambda (root)
          (write-source (path-expand "init.ss" root)
-           "(yuanxu! mode: auto source: \"./modules\")")
+           "(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\")")
          (let* ((reads '())
                 (view
                   (yuanxu-load-modules (path-expand "init.ss" root)
@@ -270,7 +270,7 @@
       (with-sources
        (lambda (root)
          (write-source (path-expand "init.ss" root)
-                       "(yuanxu! mode: auto source: \"./modules\")")
+                       "(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\")")
          (let* ((reads '())
                 (view (yuanxu-load-modules (path-expand "modules" root)
                         read-publication: (fixture-reader (lambda (id) (set! reads (cons id reads)))))))
@@ -291,7 +291,7 @@
          (def init (path-expand "init.ss" root))
          (def prefix (string-append ";" (make-string 8190 #\x) "界"
                                      (make-string 28000 #\y)))
-         (def selection "\r\n(yuanxu! mode: auto source: \"./modules\")\r\n")
+         (def selection "\r\n(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\")\r\n")
          (write-source init (string-append prefix selection))
          (def view (yuanxu-load-modules init read-publication: (fixture-reader void)))
          ((.get view admit-current))
@@ -309,7 +309,7 @@
              (write-source path
                (call-with-output-string
                  (lambda (port)
-                   (display "(yuanxu! mode: explicit" port)
+                   (display "(yuanxu! :test-dir \"./t\" mode: explicit" port)
                    (for-each (lambda (index)
                                (display " (module-" port)
                                (display index port)
@@ -346,7 +346,7 @@
       (with-sources
        (lambda (root)
          (write-source (path-expand "modules/init.ss" root)
-                       "(yuanxu! mode: explicit :custom (guestbook) :core (schema disable: #t))")
+                       "(yuanxu! :test-dir \"./t\" mode: explicit :custom (guestbook) :core (schema disable: #t))")
          (let* ((reads '())
                 (view (yuanxu-load-modules (path-expand "modules" root)
                         read-publication: (fixture-reader (lambda (id) (set! reads (cons id reads)))))))
@@ -354,7 +354,7 @@
            (check-equal? reads '(custom/guestbook))
            (check-exception ((.get view admit-current)) error?)))))
     (yuanxu-test-case "an explicit false disable is retained rather than omitted"
-      (let* ((intent (module-init-intent '((yuanxu! mode: explicit :custom (guestbook disable: #f))) "init.ss"))
+      (let* ((intent (module-init-intent '((yuanxu! :test-dir "./t" mode: explicit :custom (guestbook disable: #f))) "init.ss"))
              (row (car (.get intent decisions))))
         (check-equal? (.get row disabled?) #f)
         (check-equal? (.get row disable-specified?) #t)
@@ -362,23 +362,26 @@
     (yuanxu-test-case "malformed and computed init are refused, never evaluated"
       (for-each
        (lambda (form) (check-exception (module-init-intent form "init.ss") error?))
-       '(((yuanxu! mode: explicit :custom (guestbook +smoke -smoke)))
-         ((yuanxu! mode: explicit :custom (guestbook) (guestbook disable: #t)))
-         ((yuanxu! source: "./modules" (guestbook)))
-         ((yuanxu! mode: explicit :custom (guestbook disable: t)))
-         ((yuanxu! mode: explicit :custom (guestbook) (guestbook)))
+       '(((yuanxu! mode: explicit :custom (guestbook)))
+         ((yuanxu! :test-dir computed mode: explicit :custom (guestbook)))
+         ((yuanxu! :test-dir "../t" mode: explicit :custom (guestbook)))
+         ((yuanxu! :test-dir "./t" mode: explicit :custom (guestbook +smoke -smoke)))
+         ((yuanxu! :test-dir "./t" mode: explicit :custom (guestbook) (guestbook disable: #t)))
+         ((yuanxu! :test-dir "./t" source: "./modules" (guestbook)))
+         ((yuanxu! :test-dir "./t" mode: explicit :custom (guestbook disable: t)))
+         ((yuanxu! :test-dir "./t" mode: explicit :custom (guestbook) (guestbook)))
          ((def arbitrary (error "must not execute")) (yuanxu!))
-         ((yuanxu! mode: unexpected)))))
+         ((yuanxu! :test-dir "./t" mode: unexpected)))))
     (yuanxu-test-case "without a publication capability directory preparation cannot load code"
       (with-sources
        (lambda (root)
-         (write-source (path-expand "init.ss" root) "(yuanxu! mode: auto source: \"./modules\")")
+         (write-source (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\")")
          (let (view (yuanxu-load-modules (path-expand "modules" root)))
            (check-exception (.get view modules custom guestbook) error?)))))
     (yuanxu-test-case "required role absence is an admission error on selected demand"
       (with-sources
        (lambda (root)
-         (write-source (path-expand "init.ss" root) "(yuanxu! mode: auto source: \"./modules\")")
+         (write-source (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\")")
          (delete-file (path-expand "modules/custom/guestbook/types.ss" root))
          (let (view (yuanxu-load-modules (path-expand "modules" root)
                      read-publication: (fixture-reader void)))

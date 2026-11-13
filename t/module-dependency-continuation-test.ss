@@ -25,8 +25,8 @@
               (def marker (path-expand "must-not-execute" root))
               (write-file (path-expand "init.ss" root)
                 (if (eq? boundary 'declaration)
-                  "(yuanxu! mode: explicit :custom (example) (other))"
-                  "(yuanxu! mode: explicit :custom (example +ci))"))
+                  "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example) (other))"
+                  "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example +ci))"))
               (write-file (path-expand "interface.ss" module-root)
                 (call-with-output-string
                   (lambda (port)
@@ -83,7 +83,7 @@
           (check-equal? (module-publication-contract-current?) #t)
           (def marker (path-expand "cold-dependency-must-not-run" root))
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! mode: explicit :custom (example))")
+            "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
           (write-file (path-expand "config.ss" module-root)
             "(import (only-in :clan/poo/object .o .putslot! $thunk-slot-spec) \"./types.ss\") (def PendingRequirement (.o module-id: 'custom/other contract: FixtureContract)) (export PendingRequirement)")
           ;; scope-contract is read AFTER the predicate checks requires. This
