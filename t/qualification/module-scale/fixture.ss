@@ -19,7 +19,7 @@
   ;; The outer process budget also covers importing and reporting.
   (def selected (yuanxu-selected-testing-case-profile))
   (let (profile (.cc selected max-duration-milliseconds:
-                  (if performance-gate? 180000 720000)))
+                  (if performance-gate? 180000 650000)))
     (if (= count 10000)
       (.cc profile heap-limit-bytes: 4294967296 live-growth-limit-bytes: 4294967296)
       profile)))

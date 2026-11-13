@@ -38,7 +38,7 @@ test-file path observe="false":
     esac
     deadline=600s
     case "{{ path }}" in
-      *module-declaration-10000-test.ss|*module-runtime-selection-10000-test.ss) deadline=750s ;;
+      *module-declaration-10000-test.ss|*module-runtime-selection-10000-test.ss) deadline=680s ;;
     esac
     env -u SDKROOT timeout --signal=TERM --kill-after=5s "$deadline" gerbil "$runtime_options" test ${options[@]+"${options[@]}"} "{{ path }}"
 

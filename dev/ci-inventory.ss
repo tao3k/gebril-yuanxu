@@ -93,7 +93,7 @@
           (cons "heap" (if (null? large) "2G" "4G"))
           (cons "batch" (and (member group '("ops" "workflow")) #t))
           (cons "deadline" (if (member group '("dense-declarations" "dense-selection"))
-                             "750s" "600s")))))
+                             "680s" "600s")))))
 
 (def (published-files)
   (def tests (.get tao3k/yuanxu.init.exports tests))
