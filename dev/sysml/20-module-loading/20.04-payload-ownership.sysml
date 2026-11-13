@@ -436,7 +436,11 @@ package YuanxuPayloadOwnership {
                edges before considering a retention projection. A registry
                retirement requires private ownership, absence of future
                demand, and an exact Context comparison that preserves a
-               replacement. The current reader retains both native paths.
+               replacement. Closed Interface delivery retires the expander
+               aliases. The runtime import table can still own the same
+               Context as a strong key after successful initialization.
+               Observe that table under Gerbil's import mutex and distinguish
+               Context retention from the void result of private delivery.
                The 64-owner census and 256-owner heap probe bound these
                candidates independently of the full capacity gate.
                Inspect each live native Context once by identity and

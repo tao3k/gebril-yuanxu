@@ -22,7 +22,7 @@
       (.def Fixture
         identity: 'custom/example
         core:
-        (.o requires: (.o) scope-contract: FixtureContract
+        (.o scope-contract: FixtureContract
             exports:
             (begin
               (call-with-output-file ,(path-expand "scope-entered" root)
