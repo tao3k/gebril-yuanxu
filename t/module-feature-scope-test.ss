@@ -189,16 +189,14 @@ prelude: :gerbil/core
                     objects: '((def ReviewBase (.o)) (export ReviewBase))
                     config: '((def Config (.o)))
                     interface:
-                    `((.def Review identity: ',(string->symbol (string-append "custom/" (symbol->string name)))
-                        core:
-                        (.o requires:
-                            (.o Source:
-                              (.o module-id: 'custom/example
-                                  refine: (lambda (scope)
-                                            ,(if (cadr entry) 'scope
-                                               '(.o (:: self scope) memory: #f)))))
-                            scope-contract: ReviewContract
-                            exports: (.o observed: (.get Source memory)))
+                    `((import (only-in "../example/types.ss" MemoryContract))
+                      (.def Review identity: ',(string->symbol (string-append "custom/" (symbol->string name)))
+                        core: (.o scope-contract:
+                                  (begin
+                                    (unless (eq? (.get MemoryContract identity) 'feature/memory)
+                                      (error "wrong provider Contract"))
+                                    ReviewContract)
+                                  exports: (.o observed: ,(cadr entry)))
                         features: ',(if (eq? name 'review) '(audit exclusive) '())))))
               (for-each
                 (lambda (role)
@@ -236,6 +234,7 @@ prelude: :gerbil/core
             "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example +memory) (override))")
           (def good (yuanxu-load-modules (path-expand "review.ss" root)))
           (def bad (yuanxu-load-modules (path-expand "override.ss" root)))
+          (check-equal? (.get good selected-graph module-order) '(custom/example custom/review))
           (defvalues (provider provider-counts)
             (call-with-module-source-operation-measurement
               (lambda () (.get good modules custom example))))
@@ -254,8 +253,9 @@ prelude: :gerbil/core
           (check-equal?
             (hash-get review-counts '(calls (feature-admission custom/review custom/review/audit))) 1)
           (def message (exception-message (lambda () (.get bad modules custom override))))
-          (check-equal? (and (string-contains message "feature/memory") #t) #t)
+          (check-equal? (and (string-contains message "feature/review") #t) #t)
           (check-exception ((.get bad admit-current)) error?)
+          (check-equal? (.get provider memory) #t)
           (for-each
             (lambda (entry)
               (def rejected (yuanxu-load-modules (path-expand (car entry) root)))

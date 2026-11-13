@@ -75,9 +75,9 @@
             'application parent #f)))) #t)
         (.def (invalid-contract @ parent) core.scope-contract: #f)
         (check-equal? (Error? (with-catch values (cut publication invalid-contract))) #t)
-        ;; The derived invalid declaration has its own dependency Type getter;
-        ;; validating it adds one Type expansion, never a domain scope.
-        (check-equal? count (+ initial 2))
+        ;; The explicit false override refuses before any additional role
+        ;; expansion. The original Type was the only role demanded.
+        (check-equal? count (+ initial 1))
         (check-equal? (.ref/cached invalid-contract 'scope) #f)
         (for-each (lambda (role)
                     (check-equal? (.ref/cached (.get invalid-contract core roles) role) #f))
