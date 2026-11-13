@@ -19,7 +19,7 @@
                  yuanxu-all?
                  yuanxu-member?
                  yuanxu-list-of?)
-        (only-in :std/list/list fold fold-right map find filter-map remove append-map))
+        (only-in :std/list/list append-map))
 
 ;; : (-> PooDomainCaseCache)
 (def (yuanxu-domain-case-cache)

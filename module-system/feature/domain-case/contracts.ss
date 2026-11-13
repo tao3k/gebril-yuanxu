@@ -20,7 +20,7 @@
                  yuanxu-stable-duplicates
                  yuanxu-member?
                  yuanxu-list-of?)
-        (only-in :std/list/list fold fold-right map filter-map append-map))
+        (only-in :std/list/list append-map))
 
 (def +yuanxu-case-slot-contract-kind+ 'yuanxu.case-slot-contract.v1)
 (def +yuanxu-case-type-contract-kind+ 'yuanxu.case-type-contract.v1)
@@ -569,7 +569,7 @@
            (hash-put! projection-index id (vector 1 projection)))))
      projections)
     (let (catalog+diagnostics
-        (fold-right
+        (foldr
          (lambda (id state)
            (let* ((catalog (car state))
                   (diagnostics (cdr state))
