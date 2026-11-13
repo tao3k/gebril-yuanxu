@@ -705,7 +705,7 @@
                            (let (source (locate))
                              (values source ((.ref context-value 'read-publication) source)
                                (if (.slot? context-value 'import-owners)
-                                 ((.ref context-value 'import-owners) id) '()))))
+                                 ((.ref context-value 'import-owners) id) '())))))
                        list))))
                (source-value (car result))
                (publication-value (cadr result))
