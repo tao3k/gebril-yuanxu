@@ -209,6 +209,22 @@ order and requires one physical read. It also changes the file in an author
 callback and requires a fresh refusal. Observer delivery keeps its existing
 path. This change does not combine independent Gerbil expansion checkpoints.
 
+The source-observation build at =a765b22= passed the four build-input
+faults and the before/after order and admission checks. Its 10,000-owner
+sparse first business demand took 84.22 seconds wall, 23.93 seconds CPU
+and 5.74 seconds GC wall, with two owner admissions and two scope factories.
+The independent stage Case recorded 8.32 seconds wall for directory
+projection and 26.87 for selected admission. Six directory-currentness
+passes consumed 26.20 seconds of the latter span. Scope and value took
+48.87 seconds wall and 15.95 seconds CPU. Thirteen directory-currentness
+passes consumed 48.50 seconds wall and 15.85 seconds CPU; the two scope
+factories consumed 0.11 seconds wall and 0.04 seconds CPU. The timed spans
+are inclusive, and this repeat ran with a compiled source-observation
+overlay and concurrent POO compilation. Use it for attribution rather
+than a before/after latency claim. The source observation fix eliminates
+duplicate file opens inside one window; each independent effect can still
+change an unselected Interface's eligibility and requires its own check.
+
 * Publication checklist
 
 - [X] POO implementation branch =feat/indexed-graph-algorithms= created from the
