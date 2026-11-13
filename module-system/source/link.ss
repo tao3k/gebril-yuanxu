@@ -453,12 +453,14 @@
     ;; never authenticate live sources. The shared table may grow via another
     ;; realization, so inspect its ACTUAL cardinality on every boundary.
     (def (metadata-cache-miss-receivers roots)
-      (let (receivers (make-table test: eq?))
-        (replay-slot-reads! roots
-          (lambda (receiver key)
-            (when (and (pair? key) (eq? (car key) 'cache-miss))
-              (table-set! receivers receiver #t))))
-        receivers))
+      (module-source-measure-operation 'metadata-cache-miss-receivers
+        (lambda ()
+          (let (receivers (make-table test: eq?))
+            (replay-slot-reads! roots
+              (lambda (receiver key)
+                (when (and (pair? key) (eq? (car key) 'cache-miss))
+                  (table-set! receivers receiver #t))))
+            receivers))))
     (def metadata-index
       (and (object-construction-current?)
         (.o (:: index [])
@@ -475,11 +477,13 @@
                              (pair? (linked-publication-metadata-roots record)))))
                   (.get index rows))
           roots:
-          (merge-publication-read-roots
-            (foldr (lambda (record groups)
-                     (let (segments (linked-publication-metadata-roots record))
-                       (if segments (cons (car segments) (cons (cdr segments) groups)) groups)))
-                   '() (.get index rows)))
+          (module-source-measure-operation 'metadata-root-merge
+            (lambda ()
+              (merge-publication-read-roots
+                (foldr (lambda (record groups)
+                         (let (segments (linked-publication-metadata-roots record))
+                           (if segments (cons (car segments) (cons (cdr segments) groups)) groups)))
+                       '() (.get index rows)))))
           ;; Route only: a protected invocation still authenticates all
           ;; ORIGINAL reads, holds the receivers and rechecks on return.
           ;; Unprotected callers authenticate independently before proceeding.

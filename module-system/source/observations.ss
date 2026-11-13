@@ -155,6 +155,7 @@
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
                            reader-admission-start reader-value-admission reader-admission-evidence
                            reader-current metadata-replay reader-candidate-fused-return-replay
+                           metadata-index metadata-root-merge metadata-cache-miss-receivers
                            source-init-current source-authoring-profile-checkpoint
                            reader-tool-inputs reader-private-closure reader-private-prepare
                            reader-native-import reader-role-import reader-source-resolution

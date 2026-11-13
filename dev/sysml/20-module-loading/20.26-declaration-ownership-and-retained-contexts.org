@@ -365,3 +365,28 @@ values while the probe released their metadata guard columns and then
 their evidence references. The two steps released 4,082,016 and 3,624,528
 live bytes, respectively. Those deltas depend on release order. The
 metadata and evidence remain part of the live publication contract.
+
+** Final graph replay attribution
+
+The local 10K declaration diagnostic with Gambit =live-ratio=80= reached
+all 10,000 owner admissions. The physical-footprint guard stopped it
+during final replay at 320.787 seconds and 4,687,386,456 bytes. Its last
+per-owner sample showed 3,970,724,944 bytes of heap and 2,799,119,792
+live bytes. Earlier default-ratio selection and declaration runs stopped
+before publication. Retain these receipts separately from CI's Case heap
+and time verdicts.
+
+The existing 16/32-owner census passed with the same compiled inputs.
+At 32 owners the cold read graph held 5,148 issued records and the
+bounded payload walk covered 2,736,696 body bytes. The 32 tracked role
+Contexts retained zero code bodies, initializer thunks or non-void
+initializer results. The earlier cohort was still reachable, so the
+reported VM live size includes both cohorts and shared runtime roots.
+
+The opt-in =stages= run reports =metadata-index=, =metadata-root-merge=
+and =metadata-cache-miss-receivers= as distinct spans from
+=metadata-replay=. These spans can nest. The receiver scan runs on
+request from compiler preflight. The observed run above uses per-owner
+guards, so its final replay peak cannot be attributed to a merged root
+index. The diagnostic keeps the existing order and authenticates the
+original read records on both routes.
