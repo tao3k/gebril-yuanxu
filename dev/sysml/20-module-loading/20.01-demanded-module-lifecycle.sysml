@@ -274,6 +274,12 @@ package YuanxuModuleLoading {
                automatic Loader enrollment or a cached admission verdict.
                Lean IncrementalRoles owns registration/affected correspondence;
                SourceWindows owns byte-sharing/independent-check equivalence.
+               Other observations cannot certify an omitted effect window.
+               An edit may be visible only there and restored before return.
+               The withdrawn scratch experiment required exclusive access,
+               a physical file open, comparison of only the overwritten
+               prefix, and decoding through EOF. The v0.1.0 snapshot path
+               has separate runtime correspondence obligations.
                Quint owns stale source, omitted requirements, parent receiver
                and effect traces, not elapsed-time or GC arithmetic.
                Native runtime timings and retained-memory observations qualify

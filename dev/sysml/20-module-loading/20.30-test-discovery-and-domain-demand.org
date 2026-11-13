@@ -672,3 +672,14 @@ resource failures remain algorithmic acceptance work, not permission to remove
 the workload or increase limits. Raw failed attempts remain ignored local
 artifacts. Existing formal models retain their responsibilities; no new semantic
 model is needed for a test-owned liveness counter.
+
+On PR #19 head =25387eb=, Ubuntu dense declaration and selection passed with
+their 180-second ceilings disabled. The separate Ubuntu =scale-packages= job
+passed =thousand-package-downstream-test.ss=, but =package-install-test.ss=
+hit its 60-second Ops idle limit after the native =... tagging packages=
+line, before the install returned. A two-source control on Gerbil =2591dcd=
+produced both bindings through direct =gxtags= and =gerbil pkg retag=. Direct
+=gxtags= emitted both completed-file records. The package command emitted
+only its stage announcement, even with line buffering and four workers.
+This confirms the stdout boundary on the pinned release. It gives no timing
+claim for the thousand-owner tagger or the original dense ceilings.

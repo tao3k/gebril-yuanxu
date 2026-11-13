@@ -275,6 +275,33 @@ theorem context_resume_preserves_first_issue (step : ContextStep) (world : World
       firstIssue requirements (contextWorld step world) :=
   pure_window_preserves_first_issue requirements _ _ (context_resume_sound step world cache sound)
 
+-- An effect may modify the init source for one observation window and
+-- restore it before the next. Observing the same path in every other
+-- window cannot certify the omitted checkpoint.
+def rootWindowsCurrent (worlds : Nat → World) (windows : List Nat)
+    (path expected : String) : Bool :=
+  windows.all fun window => decide (worlds window path = some expected)
+
+theorem omitted_effect_window_can_hide_root_edit (observed required : List Nat)
+    (omitted : Nat) (path expected : String)
+    (notObserved : omitted ∉ observed) (needed : omitted ∈ required) :
+    ∃ stable changed : Nat → World,
+      (∀ window ∈ observed, stable window = changed window) ∧
+      rootWindowsCurrent stable required path expected = true ∧
+      rootWindowsCurrent changed required path expected = false := by
+  refine ⟨fun _ _ => some expected,
+    fun window queried => if window = omitted ∧ queried = path then none else some expected,
+    ?_, ?_, ?_⟩
+  · intro window member
+    have different : window ≠ omitted := fun eq => notObserved (eq ▸ member)
+    funext queried
+    simp [different]
+  · simp [rootWindowsCurrent]
+  · apply Bool.eq_false_iff.mpr
+    intro current
+    have claim := List.all_eq_true.mp current omitted needed
+    simp at claim
+
 /-- A positive byte observation is produced only by a regular-file read. A
 second lookup of that same kind in the stable window adds no requirement.
 The native bridge keeps the original double lookup for open observers. -/
@@ -335,5 +362,55 @@ theorem final_value {Value : Receiver → Nat → Type}
     {ready : Certified keys Claim} (slot : ContextSlot ready) (child : Receiver) :
     (slot.read child).1.val = build ready.factories child :=
   ContextSlot.read_value slot child
+
+-- Gerbil read-substring overwrites the returned prefix. The old suffix is
+-- never a source observation. EOF and later decoder errors remain visible.
+inductive TextRead (CharValue : Type) where
+  | chunk (chunkChars : List CharValue)
+  | failed (cause : Nat)
+
+def overwritePrefix (chunkChars previous : List CharValue) : List CharValue :=
+  chunkChars ++ previous.drop chunkChars.length
+
+theorem overwritten_prefix_exact (chunkChars previous : List CharValue) :
+    (overwritePrefix chunkChars previous).take chunkChars.length = chunkChars := by
+  simp [overwritePrefix]
+
+def compareChunk [BEq CharValue] (expected chunkChars : List CharValue) (offset : Nat)
+    (matching : Bool) : Bool :=
+  matching && (chunkChars == (expected.drop offset).take chunkChars.length)
+
+def scanText [BEq CharValue] (expected : List CharValue) :
+    List (TextRead CharValue) → Nat → Bool → Except Nat (Bool × Nat)
+  | [], offset, matching => .ok (matching && (offset == expected.length), offset)
+  | .failed cause :: _, _, _ => .error cause
+  | .chunk chunkChars :: remaining, offset, matching =>
+      scanText expected remaining (offset + chunkChars.length)
+        (compareChunk expected chunkChars offset matching)
+
+def scanWithScratch [BEq CharValue] (expected : List CharValue) :
+    List (TextRead CharValue) → List CharValue → Nat → Bool → Except Nat (Bool × Nat)
+  | [], _, offset, matching => .ok (matching && (offset == expected.length), offset)
+  | .failed cause :: _, _, _, _ => .error cause
+  | .chunk chunkChars :: remaining, scratch, offset, matching =>
+      let updated := overwritePrefix chunkChars scratch
+      scanWithScratch expected remaining updated (offset + chunkChars.length)
+        (compareChunk expected (updated.take chunkChars.length) offset matching)
+
+theorem reusable_scratch_preserves_text_check [BEq CharValue]
+    (expected : List CharValue) (reads : List (TextRead CharValue))
+    (scratch : List CharValue) (offset : Nat) (matching : Bool) :
+    scanWithScratch expected reads scratch offset matching = scanText expected reads offset matching := by
+  induction reads generalizing scratch offset matching with
+  | nil => rfl
+  | cons read remaining ih =>
+    cases read with
+    | failed => rfl
+    | chunk chunkChars => simp only [scanWithScratch, scanText, overwritten_prefix_exact, ih]
+
+-- A mismatch must not suppress a later I/O failure, and bytes left in a
+-- reused buffer cannot make a truncated file match a longer declaration.
+example : scanWithScratch [1, 2] [.chunk [9], .failed 7] [1, 2] 0 true = .error 7 := rfl
+example : scanWithScratch [1, 2] [.chunk [1]] [1, 2] 0 true = .ok (false, 1) := rfl
 
 end YuanxuProof.Admission.SourceWindows

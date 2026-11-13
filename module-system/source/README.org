@@ -227,3 +227,163 @@ restoration admits again. Run =just test-file t/module-role-context-test.ss true
 with the existing heap and external qualification deadline. These are fixture
 correctness controls, not historical Agentic attribution, cold-build timing
 repair, or a replacement for the complete publication suite.
+* Alignment with POO Graph
+
+The following is a historical investigation at the revisions named below.
+Its Scheme and POO candidates are not part of the v0.1.0 release. The
+recorded local checks do not qualify the release or close its performance
+and build-input mutation gates.
+
+At Core =066fb91=, selected Modules are admitted by the ordered demand
+walk in [[file:selection.ss][selection.ss]]. Core then rereads their requirements and
+constructs internal Feature selections for the Module Core nodes.
+[[file:../feature/resolver.ss][The Feature resolver]] already delegates ordering and cycle diagnostics to
+POO. The Scheme =.refresh= entry in [[file:link.ss][link.ss]] creates a new directory
+Graph and conditionally transfers Gerbil role Contexts. Artifact completion
+uses POO component publication with a separate owner.
+
+| Operation | Current owner | Alignment boundary |
+|-
+| Discover selected Interface owners | Yuanxu's ordered demand walk | The next dependency row can require Gerbil expansion. Preserve first-discovery order and the independent source checks. |
+| Order an admitted dependency graph and report cycles | POO =schedule-owned= and =strong-components= | Pass the exact admitted rows through. Retain the native schedule when a later revision can identify its predecessor. |
+| Validate Module metadata in a linked selection | Yuanxu's publication table and indexed replay | The existing index groups issued reads. Its cardinality cannot authorize a revision or prove the absence of changed receivers. |
+| Refresh a source selection | Yuanxu creates a fresh directory generation and offers transferable Gerbil role Contexts | A precise edit must bind to the previous native publication and register actual read receivers before the reverse index can limit revalidation. |
+| Publish completed build artifacts | POO component publication | Artifact ownership is separate from source selection. Its head cannot certify a Module metadata refresh. |
+
+The dependency order and certificate currentness have different inputs. A
+shared policy or type receiver can invalidate an owner even when all Module
+dependency edges stay unchanged. The native reverse index must cover both
+the ordered dependency rows and the actual reads relevant to the published
+certificates. The
+[[file:../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/PublicationReads.lean][TrackedEdit proof]] requires complete read registration and a writer frame
+covering every changed freshness fact. A filesystem refresh without that
+authority still checks the live sources. The index cannot infer which files
+changed merely from a generation number or the visible Module names.
+
+Move the ordered, qualified Module dependency rows from admission to the
+existing POO schedule input. Keep the same keys, dependency lists and Feature
+declaration order. Module and Feature policy still determine admission,
+diagnostics and payload visibility. A row may replace the later projection
+only when its native read authority remains current after intervening
+effects. Where it cannot be established, execute the original projection.
+[[file:../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/DependencyOrderRepair.lean][The Lean row handoff]] proves equality of the exact ordered schedule inputs
+under that premise and exercises a changed-edge fallback.
+
+The first Scheme handoff applies to the native linker when the selection has
+no Feature decisions. It rechecks issued Module reads after closure admission
+and sends the qualified rows through the same POO scheduling and SCC functions
+as Feature resolution. Its sparse 10K case checks that POO received one such
+schedule for the two admitted owners. An observer, a changed runtime route,
+or a Feature decision selects the effect-aware projection. The existing
+currentness check still runs before the Graph is exposed.
+
+The large =init.ss= scratch candidate reused one private text buffer. Its lock covered only
+the native open, decode, comparison, and close. File identity, file type,
+read counters, and the open observer path keep their existing boundaries.
+Every physical comparison starts at offset zero, compares only the newly
+decoded prefix of each chunk, and continues through EOF even after a mismatch.
+[[file:../../dev/proofs/lean/YuanxuProof/Admission/SourceWindows.lean][Lean checks scratch independence]], including truncation and decoder failure
+after an earlier mismatch.
+
+The local dense selection run with the scratch candidate reached 6,198
+publication admissions before the 180-second Case stopped. The first Graph
+phase recorded 171.79 seconds wall, 129.37 seconds CPU, and 30 collections.
+The =init.ss= guard accounted for 49,585 read attempts and 6,891,719,980
+decoded characters in 29.57 seconds. Eligibility, declaration entry,
+declaration input admission and declaration return each accounted for 6,198
+attempts. The generic source phase accounted for 24,791, with the remaining
+two at Graph entry and link currentness. The timer failed before the complete
+Graph reached POO scheduling. The two 120-read chunks in the directory
+suite took 51.0 and 51.2 ms CPU with the original comparator and 56.0 and
+51.7 ms with the candidate. Neither run collected during those chunks.
+These separate process samples show no useful speed gain, and the dense
+gate still fails. The scratch implementation was withdrawn. The proof,
+truncate/restore control, and bounded phase attribution remain.
+
+The reader's attribution also counts init reads under each existing replay
+checkpoint and both calls to the fused return location guard. It uses the
+same counters without changing source phase or observer order. A repeated
+path can be shared inside a stable observation window. Skipping an
+independent checkpoint can miss an edit that appears and is restored between
+the other checks. [[file:../../dev/proofs/lean/YuanxuProof/Admission/SourceWindows.lean][SourceWindows]] proves this by constructing two source histories that agree
+at every observed checkpoint and disagree at the omitted one.
+
+The native 1K attribution Case passed. Admission took 46.73 seconds wall
+and 17.66 seconds CPU. The init guard read 103,981,928 characters in 0.78
+seconds. Eligibility, declaration entry, declaration input admission,
+declaration return, role entry, role return, and both fused return location
+checks each made 1,000 attempts. Six more were Graph or link checks. The
+role and fused return locations accounted for 4,000 of the 4,002 attempts
+formerly grouped under =source=. The selected rows reached POO scheduling
+once. The two fused return checks enclose POO read validation and native
+source admission. A shared read window would require proof of the live
+routes through those operations, including any fallback.
+
+On the local macOS run with Gerbil's native package install and the =261a961=
+POO pin, the =066fb91= reference and the isolated Scheme candidate both passed
+the sparse 10K workload with the 180-second Case and 4 GiB heap. The candidate
+scheduled the two admitted owners directly once. Both runs constructed exactly
+the two selected scopes. The cold business read took 32.13 s wall and 1.08 s
+CPU on the reference and 35.91 s wall and 1.11 s CPU on the candidate. These
+are single observations with separate Harness starts. They establish path
+coverage and correctness for sparse demand. A paired dense run is needed to
+measure the effect of removing one Feature wrapper per admitted Module.
+
+The same local toolchain reported a 60-second idle refusal while loading
+Gerbil objects in the publication suite on both the reference and the
+candidate. The build-input mutation compiled and the =output-first= case
+reported the expected =(load-path)= assertion failure. Local Gerbil
+=1cfb032= returned status 0 for that failed run. The qualification requires
+status 42 and the expected assertion. Retest with the =2591dcd= release
+selected by the Core CI action.
+
+The macOS =2591dcd= candidate run used the original 180-second Case and
+4 GiB heap. It refused at 180.731 seconds with status 42. First Graph took
+173.41 seconds wall, 157.80 seconds CPU and 36 collections. The reader
+reached 7,715 return checkpoints before POO scheduling. Metadata replay
+visited 44,399,772 records in 48.35 seconds inclusive, and the init guard
+decoded 8,579,034,300 characters in 31.92 seconds inclusive. These are
+overlapping observations. The before-order mutation control passed on the
+same toolchain. Before-admission failed its 60-second idle watchdog while
+loading Gerbil =std/serde=, so no fault-rejection result was recorded.
+
+The next POO replay candidate targets the warm topology lookup. The lookup
+already authenticates every issued record before the indexed entry sweep.
+The candidate removes only the second issuance check in the callback-free
+default vector sweep. A cold lookup or unsupported route keeps its entry
+protocol, and a callback return still validates issuance and live state.
+[[file:../../dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/PublicationReads.lean][The split-entry proof]] preserves issuance-before-live refusal order and the
+independent return. In one interleaved Gerbil =2591dcd= process, median CPU
+for 12 warm replays was 4.31 to 3.86 ms on 258 records and 78.54 to 71.45 ms
+on 8,258 records. The comparison used the same read roots and topology in
+both arms. These times measure POO replay, with Core capacity assessed by
+the separate 180-second Case.
+
+The candidate with the diagnostic reference entry removed passed all 35
+issued-read Cases, including native fallback, first refusal and mutation
+during callback. On the unchanged 10,000-Module selection Case it refused
+at 180.026 seconds with status 42 after 2,543 publication return checkpoints.
+First namespace took 54.56 seconds wall and 1.84 seconds CPU. First Graph
+took 102.53 seconds wall and 57.04 seconds CPU before refusal, with 19
+collections. The reference and candidate runs entered admission with very
+different wall-clock budgets. Their incomplete prefixes do not establish
+an end-to-end regression or improvement. The POO candidate remains local
+and the Core dependency pin has not changed.
+
+The 1,000-owner selection Case passed without a source observer and with checkpoint-level
+accounting. First Graph took 31.48 seconds wall and 20.79 seconds CPU.
+Declaration entry, declaration inputs, role entry, role return and
+declaration return each accounted for 916,000 metadata traversal visits.
+The entry fusion's 916,000 visits are included in declaration entry.
+The fused candidate return accounted for 1,174,947 visits. The first
+Graph total was 5,961,075. These counters measure the native traversal
+reported to the checkpoint. They do not count each internal authentication
+pass again. The candidate-stage suite also passed with the existing
+mutation and opaque-location controls.
+
+Keep demand discovery separate from scheduling the admitted rows. A full
+POO support capture requires an already known finite roster. Use its reverse
+index and revision path once a Module edit can identify the exact old
+snapshot, changed rows and dependency registrations. Preserve independent
+source and author-effect checks and use full admission when the edit origin
+is unknown. The [[file:../../dev/sysml/20-module-loading/20.06-local-dependency-order.sysml][local dependency order contract]] records this boundary.

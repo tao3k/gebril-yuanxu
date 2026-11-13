@@ -68,6 +68,40 @@ theorem discover_stays_inside [DecidableEq Node]
   | zero => exact inside
   | succ fuel ih => exact ih _ (advance_stays_inside dependencies region closed state inside)
 
+/-- Identical ordered rows on a forward-closed region preserve the whole
+worklist trace. Set-equivalent rows alone do not imply the same order. -/
+theorem discover_agrees_inside [DecidableEq Node]
+    (prior next : Node → List Node) (region : Node → Prop)
+    (closed : ∀ node, region node → ∀ child ∈ prior node, region child)
+    (frame : ∀ node, region node → next node = prior node)
+    (fuel : Nat) (state : Discovery Node) (inside : Inside region state) :
+    discover next fuel state = discover prior fuel state := by
+  induction fuel generalizing state with
+  | zero => rfl
+  | succ fuel ih =>
+    have step : advance next state = advance prior state := by
+      rcases state with ⟨seen, pending⟩
+      cases pending with
+      | nil => rfl
+      | cons node rest =>
+        have row := frame node (inside.2 node (by simp))
+        simp [advance, row]
+    simp only [discover, step]
+    exact ih _ (advance_stays_inside prior region closed state inside)
+
+theorem same_neighbors_can_change_discovery_order :
+    let prior (node : Nat) := if node = 0 then [1, 2] else []
+    let next (node : Nat) := if node = 0 then [2, 1] else []
+    (∀ node child, child ∈ prior node ↔ child ∈ next node) ∧
+      (discover prior 3 ⟨[], [0]⟩).seen ≠ (discover next 3 ⟨[], [0]⟩).seen := by
+  dsimp only
+  constructor
+  · intro node child
+    by_cases root : node = 0
+    · simp [root, or_comm]
+    · simp [root]
+  · decide
+
 inductive Demanded (dependencies : Node → List Node) (roots : List Node) : Node → Prop
   | root (node : Node) : node ∈ roots → Demanded dependencies roots node
   | dependency (parent child : Node) : Demanded dependencies roots parent →

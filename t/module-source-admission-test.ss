@@ -272,6 +272,7 @@
                 (write-role root "types" changed)
                 (check-equal? (current?) #f))
               (list different
+                    (string-append prefix "猫" (substring suffix 0 32767) "b\n")
                     (string-append prefix "猫" suffix)
                     (string-append large "λ"))))
           (parameterize ((current-module-source-observer #f))
@@ -282,7 +283,7 @@
                             (when (and (pair? key) (eq? (car key) 'file-read))
                               (set! reads (+ reads amount))))))
             (check-large-revisions))
-          (check-equal? reads 4)
+          (check-equal? reads 5)
           (write-role root "types" large)
           (parameterize ((current-module-source-observer
                           (lambda (key amount)
@@ -297,7 +298,7 @@
                 (check-equal? (eq? borrowed (module-source-read file)) #t)
                 (check-equal? (current?) #f)))
             (check-equal? (current?) #t))
-          (check-equal? reads 6)
+          (check-equal? reads 7)
           (write-role root "types" large)
           (parameterize ((current-module-source-observer
                           (lambda (key _amount)

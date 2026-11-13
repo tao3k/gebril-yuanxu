@@ -9,6 +9,13 @@ package YuanxuLocalDependencyOrder {
                copies private state; no reader can observe partial relabelling.
                This is schedule data, not a second loader or approval cache. */
     }
+    requirement def AdmittedOwnerRows {
+        doc /* A native schedule consumes the same ordered, qualified Module
+               rows as source admission, followed by the selected Feature
+               rows in declaration order. The handoff requires row authority
+               in the state after any intervening effect. Unknown authority
+               keeps the original projection and observations. */
+    }
     part def SparseRepair {
         ref part prior : CapturedSchedule;
         doc /* Consumer -> provider. Remove all batch deletions first. Admit
@@ -44,6 +51,24 @@ package YuanxuLocalDependencyOrder {
                publication tickets, author callbacks, Gerbil expansion and
                currentness checks at their independent effect boundaries. */
     }
+    requirement def SourceRevisionHandoff {
+        doc /* Module selection supplies ordered admitted rows. POO owns
+               schedule revisions, affected-owner discovery and publication.
+               A local source revision requires the exact predecessor and
+               complete registrations for the issued read receivers, including
+               shared policy and type inputs. A caller must account for every
+               changed freshness fact before transporting a certificate.
+               The successor reverse index inherits untouched consumer rows.
+               Rewritten consumer rows remove old-only and add new-only
+               registrations. DependencyPublication proves this membership
+               equals a cold reconstruction given the exact predecessor
+               and the forward frame.
+               The reused certificate retains its original root spine and
+               signed dependency edges. PublicationReads proves equality of
+               demanded support before transferring freshness.
+               Unknown filesystem edits require live source checks. The
+               separate artifact publication cannot authorize a source edit. */
+    }
     part def WorkAccounting {
         doc /* Count footprint preparation, bounded search buckets and every
                inspected edge including pruned edges, rank writes and incident
@@ -73,7 +98,9 @@ package YuanxuLocalDependencyOrder {
             headGeneration == indexGeneration
         }
         doc /* GraphSnapshot.qnt abstracts existing immutable graph-cache and
-               component-publication request/head identity. Six matched faults
+               component-publication request/head identity. An effect result
+               must bind its original snapshot when staging, including a
+               rival commit before staging. Six matched faults
                expose mixed tables, stale staged tickets, premature retirement,
                failed head replacement, retired requests and interval-only value
                invalidation. Reuse CandidatePublication/IncrementalRoles for

@@ -218,6 +218,26 @@ theorem fused_entry_keeps_independent_return
         authenticateAndVisit after (fun _ => ()) reads) := by
   rw [fused_entry_preserves_split_refusal, split_entry_second_issuance_reads_same_state]
 
+/-- Route key shape is signed structure. A projected shape can replace the
+runtime key grammar check only after the current issuance check. Live state
+and the first-refusal order still belong to the current sweep. -/
+theorem authenticated_key_shape_preserves_sweep
+    (issued grammar projected live : Read → Except Failure Unit) (reads : List Read)
+    (signedShape : ∀ read, issued read = .ok () → projected read = grammar read) :
+    authenticateAndVisit (fun read => do issued read; projected read; live read)
+      (fun _ => ()) reads =
+    authenticateAndVisit (fun read => do issued read; grammar read; live read)
+      (fun _ => ()) reads := by
+  have same : (fun read => do issued read; projected read; live read) =
+      (fun read => do issued read; grammar read; live read) := by
+    funext read
+    cases checked : issued read with
+    | error failure => rfl
+    | ok result =>
+      cases result
+      simp [signedShape read checked]
+  rw [same]
+
 -- A retry determines the original diagnostic precedence. A concurrent
 -- restoration during that retry cannot erase the already observed refusal.
 def diagnosticEntryRetry (first : Failure) (split : Except Failure Unit) :
@@ -1732,6 +1752,88 @@ theorem retain_current_after_tracked_edit
       complete clean read demanded)
     (old read demanded)
 
+/-- An unaffected owner carries exactly its former demand through a commit.
+The native writer must keep its original root spine and the signed edges of
+each unchanged receiver. This condition is separate from live slot freshness:
+an unreported new edge would otherwise let a transported verdict miss a read. -/
+theorem retained_demand_matches_successor
+    (prior next : Read → List Read) (roots : Owner → List Read) (nextRoots : List Read)
+    (receiver : Read → Owner) (registered : Owner → Owner → Prop)
+    (changed : Owner → Prop) (owner : Owner)
+    (complete : Covers prior roots receiver registered)
+    (clean : ¬ Affected registered changed owner)
+    (rootFrame : nextRoots = roots owner)
+    (edgeFrame : ∀ read, ¬ changed (receiver read) → next read = prior read)
+    (read : Read) : Demanded next nextRoots read ↔ Demanded prior (roots owner) read := by
+  subst nextRoots
+  have framed : ∀ read, Demanded prior (roots owner) read → next read = prior read :=
+    fun read demand => edgeFrame read
+      (clean_owner_has_no_changed_read prior roots receiver registered changed owner
+        complete clean read demand)
+  constructor
+  · intro demand
+    induction demand with
+    | root read member => exact .root read member
+    | dependency parent child _ edge ih =>
+      exact .dependency parent child ih (by simpa [framed parent ih] using edge)
+  · intro demand
+    induction demand with
+    | root read member => exact .root read member
+    | dependency parent child oldDemand edge ih =>
+      exact .dependency parent child ih (by simpa [framed parent oldDemand] using edge)
+
+theorem retain_current_in_successor
+    (prior next : Read → List Read) (roots : Owner → List Read) (nextRoots : List Read)
+    (receiver : Read → Owner) (registered : Owner → Owner → Prop)
+    (changed : Owner → Prop) (before after : Read → Prop) (owner : Owner)
+    (complete : Covers prior roots receiver registered)
+    (clean : ¬ Affected registered changed owner)
+    (rootFrame : nextRoots = roots owner)
+    (edgeFrame : ∀ read, ¬ changed (receiver read) → next read = prior read)
+    (writerFrame : ∀ read, ¬ changed (receiver read) → before read → after read)
+    (old : Current prior (roots owner) before) : Current next nextRoots after := by
+  intro read demand
+  have original := (retained_demand_matches_successor prior next roots nextRoots receiver
+    registered changed owner complete clean rootFrame edgeFrame read).mp demand
+  exact retain_current_after_tracked_edit prior roots receiver registered changed before after
+    owner complete writerFrame old clean read original
+
+/-- The exact signed edge frame preserves deterministic traversal as well as
+demand membership. Each fixed indexed traversal therefore has the same
+ordered projection when its membership index represents the seen list. -/
+theorem retained_preorder_matches_successor [DecidableEq Read]
+    (prior next : Read → List Read) (roots : Owner → List Read) (nextRoots : List Read)
+    (receiver : Read → Owner) (registered : Owner → Owner → Prop)
+    (changed : Owner → Prop) (owner : Owner)
+    (complete : Covers prior roots receiver registered)
+    (clean : ¬ Affected registered changed owner)
+    (rootFrame : nextRoots = roots owner)
+    (edgeFrame : ∀ read, ¬ changed (receiver read) → next read = prior read)
+    (fuel : Nat) : discover next fuel ⟨[], nextRoots⟩ = discover prior fuel ⟨[], roots owner⟩ := by
+  subst nextRoots
+  apply discover_agrees_inside prior next (Demanded prior (roots owner))
+  · exact fun parent demand child edge => Demanded.dependency parent child demand edge
+  · intro read demand
+    exact edgeFrame read (clean_owner_has_no_changed_read prior roots receiver registered
+      changed owner complete clean read demand)
+  · constructor
+    · simp
+    · exact Demanded.root
+
+/-- Identical roots and a live old root can still miss newly required support
+when the native writer omits a change to a signed edge. -/
+theorem retained_root_alone_cannot_certify_successor :
+    Current (fun _ : Bool => []) [false] (· = false) ∧
+      ¬ Current (fun _ : Bool => [true]) [false] (· = false) := by
+  constructor
+  · intro read demand
+    cases demand with
+    | root read member => simpa using member
+    | dependency parent child _ edge => simp at edge
+  · intro current
+    have impossible := current true (.dependency false true (.root false (by simp)) (by simp))
+    cases impossible
+
 /-- Root projections come from the SAME immutable bundle as the returned
 certificate and index. Concurrent publication cannot retarget a successful
 read's roots to another generation while retaining an old verdict. -/
@@ -1813,6 +1915,76 @@ theorem untracked_write_cannot_transport_currentness :
     exact current () (.root () (by simp))
 
 end TrackedEdit
+
+/-- An exact input observation can serve several owners when the authority
+binds the expected value and guarantees the same observation at each use.
+`owners` are the consumers of this one input, not the entire directory. -/
+theorem shared_source_input_exact {Owner Input : Type}
+    (owners : List Owner) (expected observed : Input) (atUse : Owner → Input)
+    (sameCut : ∀ owner ∈ owners, atUse owner = observed) :
+    (∀ owner ∈ owners, atUse owner = expected) ↔
+      (owners = [] ∨ observed = expected) := by
+  constructor
+  · intro checked
+    cases owners with
+    | nil => exact Or.inl rfl
+    | cons first rest =>
+      have member : first ∈ first :: rest := List.mem_cons_self ..
+      exact Or.inr ((sameCut first member).symm.trans (checked first member))
+  · intro result owner member
+    rcases result with empty | checked
+    · simp [empty] at member
+    · exact (sameCut owner member).trans checked
+
+/-- Reusing the old input at a second checkpoint can accept a changed
+source, even when both owners require exactly the same input identity. -/
+theorem shared_input_identity_does_not_cross_effect :
+    let owners := [false, true]
+    let expected := false
+    let firstObservation := false
+    let afterEffect := id (α := Bool)
+    firstObservation = expected ∧
+      ¬ (∀ owner ∈ owners, afterEffect owner = expected) := by
+  constructor
+  · rfl
+  · intro checked
+    have stale := checked true (by simp)
+    simp at stale
+
+/-- A source probe with no revision authority only learns the positions it
+reads. Omitting one position leaves a changed input indistinguishable from
+the expected input, even when the size and every observed position agree. -/
+theorem omitted_source_position_can_hide_edit {size : Nat}
+    (expected : Fin size → Bool) (positions : List (Fin size))
+    (omitted : Fin size) (missing : omitted ∉ positions) :
+    ∃ live : Fin size → Bool,
+      (∀ position ∈ positions, live position = expected position) ∧ live ≠ expected := by
+  let live := fun position => if position = omitted then !expected position else expected position
+  refine ⟨live, ?_, ?_⟩
+  · intro position member
+    have distinct : position ≠ omitted := fun equal => missing (equal ▸ member)
+    simp [live, distinct]
+  · intro equal
+    have atEdit := congrFun equal omitted
+    cases bit : expected omitted <;> simp [live, bit] at atEdit
+
+/-- Exact full comparison from a finite probe requires coverage of every
+position when the contents can change independently at an effect boundary. -/
+theorem exact_source_probe_iff_complete {size : Nat}
+    (expected : Fin size → Bool) (positions : List (Fin size)) :
+    (∀ live : Fin size → Bool,
+      (∀ position ∈ positions, live position = expected position) → live = expected) ↔
+    ∀ position, position ∈ positions := by
+  constructor
+  · intro exactProbe position
+    by_cases member : position ∈ positions
+    · exact member
+    · obtain ⟨live, agrees, different⟩ :=
+        omitted_source_position_can_hide_edit expected positions position member
+      exact False.elim (different (exactProbe live agrees))
+  · intro complete live agrees
+    funext position
+    exact agrees position (complete position)
 
 -- Runtime correspondence premises remain: eq?-identity normalization,
 -- unmodified original dependency lists, public replay's final recheck,

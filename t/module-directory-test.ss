@@ -298,6 +298,12 @@
          (write-source init (string-append prefix selection))
          (def view (yuanxu-load-modules init read-publication: (fixture-reader void)))
          ((.get view admit-current))
+         (def check-text (module-source-text-guard init (module-source-read init)))
+         (check-equal? (call-with-module-source-read-cache check-text) #t)
+         (write-source init (substring prefix 0 8193))
+         (check-equal? (call-with-module-source-read-cache check-text) #f)
+         (write-source init (string-append prefix selection))
+         (check-equal? (call-with-module-source-read-cache check-text) #t)
          (cond-expand
           (yuanxu-module-test-observation
            (let ()

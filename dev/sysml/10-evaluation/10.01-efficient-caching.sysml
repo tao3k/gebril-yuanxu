@@ -563,6 +563,23 @@ package YuanxuCaching {
                Later location and publication checks have independent authority. */
     }
 
+    requirement def SharedSourceInputObservation {
+        attribute reusedObservation : Boolean;
+        attribute exactExpectedInput : Boolean;
+        attribute sameObservationAtEveryUse : Boolean;
+        require constraint {
+            not reusedObservation or (exactExpectedInput and sameObservationAtEveryUse)
+        }
+        doc /* PublicationReads.shared_source_input_exact equates per-owner
+               validation with a single shared input check under this premise.
+               Recheck at Gerbil expansion and author effect boundaries when
+               the source can change. Source identity and read-index overlap
+               alone do not establish the premise. Without authenticated
+               revision authority the exact comparison covers the full input.
+               PublicationReads.exact_source_probe_iff_complete characterizes
+               this coverage for arbitrary same-size edits. */
+    }
+
     requirement def SelectedComponentProjection {
         attribute usesSelectedRows : Boolean;
         attribute effectiveRootsIncluded : Boolean;
@@ -766,9 +783,14 @@ package YuanxuCaching {
                receiver occurrence, with fresh route authentication on each use.
                native_fixed_refusals_exact and native_preflight_skip_exact
                include the complete issuance preflight before any route check.
+               A proposed warm native topology lookup could supply this
+               preflight to the immediately following indexed sweep. The
+               candidate remains local. Cold construction and nonidentity
+               conversion retain their entry protocol.
                native_callback_return_exact keeps return issuance independent
                after an arbitrary effect. Callback delivery continues to
-               authenticate each actual read. */
+               authenticate each actual read. The issuer compares structural
+               read keys against its own issuance snapshot. */
     }
 
     requirement def CompletedPublicationReplay {

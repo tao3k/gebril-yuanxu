@@ -49,4 +49,43 @@ private def scale : Bool :=
 #guard (proposeRanks id [1, 2] [2, 3]).isNone
 #guard (proposeRanks (fun _ => 0) [1] [2]).isNone
 
+-- Rows are already qualified by the Module owner. Feature rows keep their
+-- existing declaration order. Payloads and scheduling have separate owners.
+def coreRows (coreKey : Owner → Key) (owners : List Owner) (reads : Owner → List Owner) :
+    List (Key × List Key) :=
+  owners.map fun owner => (coreKey owner, (reads owner).map coreKey)
+
+theorem core_rows_from_admission
+    (coreKey : Owner → Key) (owners : List Owner) (featureRows : List (Key × List Key))
+    (admitted reread : Owner → List Owner)
+    (current : ∀ owner ∈ owners, admitted owner = reread owner) :
+    coreRows coreKey owners admitted ++ featureRows =
+      coreRows coreKey owners reread ++ featureRows := by
+  apply congrArg (fun rows => rows ++ featureRows)
+  unfold coreRows
+  apply List.map_congr_left
+  intro owner member
+  rw [current owner member]
+
+-- A callback between closure admission and scheduling can change an edge.
+-- An exact row handoff is conditional on post-effect authority, not just
+-- a matching owner ID or membership in the same selection.
+def guardedRows (coreKey : Owner → Key) (owners : List Owner)
+    (featureRows : List (Key × List Key)) (admitted reread : Owner → List Owner)
+    (current : Bool) : List (Key × List Key) :=
+  coreRows coreKey owners (if current then admitted else reread) ++ featureRows
+
+theorem guarded_rows_exact
+    (coreKey : Owner → Key) (owners : List Owner) (featureRows : List (Key × List Key))
+    (admitted reread : Owner → List Owner) (current : Bool)
+    (certified : current = true → ∀ owner ∈ owners, admitted owner = reread owner) :
+    guardedRows coreKey owners featureRows admitted reread current =
+      coreRows coreKey owners reread ++ featureRows := by
+  cases current with
+  | false => rfl
+  | true => exact core_rows_from_admission coreKey owners featureRows admitted reread (certified rfl)
+
+#guard guardedRows (id : Nat → Nat) [1] [(7, [1])] (fun _ => [2]) (fun _ => [3]) false ==
+  [(1, [3]), (7, [1])]
+
 end YuanxuProof.ModuleSystem.Graph.DependencyOrderRepair

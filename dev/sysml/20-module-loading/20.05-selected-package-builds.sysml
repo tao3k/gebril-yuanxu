@@ -25,7 +25,11 @@ package YuanxuSelectedPackageBuilds {
                Module and Prototype realization are separate operations.
                Gerbil owns package installation and imports. Incremental
                publication compares expected release identities and returns a
-               complete successor only after all point edits pass. */
+               complete successor only after all point edits pass.
+               If a name stores one release directly, promotion to an ordered
+               version index preserves that release identity and adds the
+               new distinct version. The old snapshot retains its original
+               representation and contents. */
     }
 
     requirement def RootQualifiedOwnerIdentity {
