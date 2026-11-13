@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
+        (only-in :gerbil/runtime/syntax SyntaxError? SyntaxError-message)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/building/test-projection module-test-projection)
         (only-in :tao3k/yuanxu/module-system/source/reader module-publication-reader)
@@ -47,6 +48,24 @@
   directory)
 (def module-testing-source-admission-test
   (test-suite "Test source admission is distinct from complete Graph admission"
+    (yuanxu-test-fixture "qualification discovery needs Loader metadata and test files only"
+      (root Workspace)
+      (prepare-source root "(import :unavailable/qualification-dependency)")
+      (write-source (path-expand "init.ss" root)
+        "(yuanxu! :load-modules \"./modules\" mode: explicit rename: App :test-dir \"./t\" (example))")
+      (def file (path-expand "t/yanxu/App/example/layout-test.ss" root))
+      (write-source file "(error \"qualification test evaluated during discovery\")")
+      (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
+      (def tests (module-test-projection selection '(example) 'qualification))
+      (check-equal? (.get tests spec) (list file))
+      (check-equal? (.ref/cached selection 'selected-graph) #f)
+      ((.get tests admit-current))
+      (write-source file "(error \"changed qualification test\")")
+      (check-exception ((.get tests admit-current)) error?)
+      (check-exception (.get tests selected-graph)
+        (lambda (failure)
+          (and (SyntaxError? failure)
+               (equal? (SyntaxError-message failure) "cannot find library module")))))
     (yuanxu-test-fixture "one selected owner leaves the shared Graph and unrelated publication cold"
       (root Workspace)
       (def directory (prepare-source root))

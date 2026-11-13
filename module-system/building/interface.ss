@@ -172,7 +172,9 @@
     (when input-context-refused?
       (error "build input context was refused; use a fresh init context"))
     (call-with-build-input-path output action refuse-input-context!))
-  (def (prepare-build)
+  ;; A consumer may add its native entry targets to the same source epoch
+  ;; used by the namespace and test projections.
+  (def (prepare-build (retained '()))
     (with-input-context #f
       (lambda ()
         (module-source-measure-operation 'build-projection
@@ -185,7 +187,7 @@
                   (when (and kind (not (eq? kind 'regular)))
                     (error "package build script must be a regular source" script))
                   (build-projector
-                    (list (selected!) '() root (if kind script init-file)))))))))))
+                    (list (selected!) retained root (if kind script init-file)))))))))))
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
   (def (module-namespace)
@@ -199,6 +201,7 @@
       (else (.get (selected!) modules))))
   (values
     (.o build: (prepare-build)
+        .project-build: prepare-build
         std-make-spec:
         (with-input-context #f
           (lambda ()

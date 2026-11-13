@@ -26,6 +26,7 @@
                                  (string-prefix? "modules/json-schema/" target))) targets) '())
       (check-equal? (member "init" core-spec) #f))
     (test-case "explicit Core init export retains the public Funflow targets"
+      (def root (path-expand ".." (path-directory (this-source-file))))
       (def targets
         (map (lambda (target) (if (string? target) target (cadr target)))
              (.get tao3k/yuanxu.init.exports std-make-spec)))
@@ -33,7 +34,11 @@
         (lambda (target) (check-equal? (and (member target targets) #t) #t))
         '("modules/funflow/func" "modules/funflow/control-plane/api"
           "modules/funflow/control-plane/runtime-command-descriptor"
-          "modules/funflow/workload" "modules/funflow/bundle-v1")))
+          "modules/funflow/workload" "modules/funflow/bundle-v1"
+          "modules/funflow/control-plane/agent-harness"))
+      (def job-targets
+        (package-library-spec root 'tao3k/yuanxu '("modules/funflow/func.ss")))
+      (check-equal? (member "modules/funflow/control-plane/agent-harness" job-targets) #f))
     (test-case "shared imports are projected once in dependency order; unused sources stay lazy"
       (call-with-temporary-directory "package-library-"
         (lambda (root)

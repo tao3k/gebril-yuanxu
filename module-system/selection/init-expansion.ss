@@ -55,7 +55,7 @@
              (syntax (key (.ref (get) 'key)))
              (syntax (key (get))))))
        (when (ormap (lambda (mount)
-                      (memq mount '(tests std-make-spec admit-current))) mounts)
+                      (memq mount '(tests std-make-spec admit-current .project-build))) mounts)
          (raise-syntax-error #f "mount conflicts with an init export" stx))
        (with-syntax
          ((exports-binding

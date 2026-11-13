@@ -15,6 +15,7 @@
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-entry-action)
         (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
         (runtime: :clan/poo/object)
+        (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/source/build unique-build-inputs module-test-source-spec retained-build-entries BuildSpecContract)
         (only-in :clan/poo/mop validate)
@@ -301,12 +302,13 @@
       (validate BuildSpecContract
         (.o module-spec: module-value retained-spec: library-value spec: value))
       value)
+    (def spec-site (make-slot-cache 'spec))
     (def (with-admitted-spec receiver action)
       (current!)
-      (admit-spec (.ref receiver 'spec))
+      (admit-spec (.ref/inline receiver spec-site))
       (begin0 (action)
         (current!)
-        (admit-spec (.ref receiver 'spec))))
+        (admit-spec (.ref/inline receiver spec-site))))
     (call-with-build-stage 'projection-current current!)
     (.o (:: projection) selected-graph: (.ref graph 'selected-graph) build-graph: graph
         compiler-identities: (map (cut .ref <> 'compiler-identity) entries)

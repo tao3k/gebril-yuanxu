@@ -76,11 +76,11 @@
     (scan-module-test-sources selection context selected-owners suite)))
 
 (def (scan-module-test-sources selection context selected-owners suite)
-  ;; Reuse the selection's publication/source cache, including the reader's
-  ;; Gerbil-observed private and compiler dependencies. Do not resolve a second
-  ;; Graph or link a business scope. A test owner still needs valid sources;
-  ;; dependency/feature composition is admitted only on explicit Graph demand.
-  (for-each (lambda (owner) ((.ref selection 'prepare-publication) owner)) selected-owners)
+  ;; Module-owned tests retain the publication's private inputs. Qualification
+  ;; files belong to the init declaration and use only the Loader's owner
+  ;; metadata here. Their build projection admits the selected Graph separately.
+  (unless (eq? suite 'qualification)
+    (for-each (lambda (owner) ((.ref selection 'prepare-publication) owner)) selected-owners))
   (def observations '())
   (def directories '())
   (def parents '())
