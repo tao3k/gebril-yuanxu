@@ -3,6 +3,7 @@
 (import :std/test :clan/poo/object
         (only-in :gerbil/expander eval-module module-context? module-context-path module-context-export)
         (only-in :gerbil/expander/module __module-registry)
+        (only-in :gerbil/runtime/init __modstate __modstate-mx)
         (only-in :std/error Error? Error-message)
         (only-in :tao3k/yuanxu/t/qualification/module-scale/fixture DeclarationFixture RuntimeValueFixture)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
@@ -46,6 +47,21 @@
           (check-equal? (private-interfaces) '())
           (def build-context (car delivered))
           (check-equal? (module-context-export build-context) '())
+          ;; The expander registry and runtime import table have independent
+          ;; lifetimes. Read the latter under Gerbil's own lock.
+          (def runtime-import-state
+            (dynamic-wind
+              (lambda () (mutex-lock! __modstate-mx))
+              (lambda () (hash-get __modstate build-context))
+              (lambda () (mutex-unlock! __modstate-mx))))
+          ;; Accept either lifecycle. If Gerbil keeps an entry, it must hold
+          ;; only the void completion, never the delivered POO publication.
+          (check-equal?
+            (or (not runtime-import-state)
+                (and (eq? (car runtime-import-state) 'ready)
+                     (void? (cadr runtime-import-state)))) #t)
+          (displayln "PRIVATE-INTERFACE-RUNTIME-IMPORT-STATE "
+                     (if runtime-import-state 'ready 'absent))
           (check-equal? (void? (eval-module build-context)) #t)
           (check-equal? (.get publication identity) 'custom/example)
           (def scope

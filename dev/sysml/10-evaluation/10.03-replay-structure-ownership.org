@@ -80,6 +80,25 @@ The near-equal post-collection totals show little retained accounting
 state in these samples. The elapsed times and process peaks are single
 runs and do not establish the transient allocation cost of accounting.
 
+** Private Interface import state
+
+The installed Gerbil's =core-import-module= records source Contexts in
+the expander registry. Evaluation of a top-level =import= also records
+the Context as a strong key in =__modstate=, under the runtime import
+mutex. The deferred-reader test observed =ready= after the closed
+Interface had delivered its POO publication and its expander registry
+aliases had been removed. The value in the runtime entry was =void=.
+The runtime entry still reaches the Context and its import descriptors.
+Counting the expander aliases alone therefore understates retention.
+
+Any lifecycle change must use Gerbil's module evaluation and preserve
+the same import authorization, prelude and one-time initializer promise.
+Keep authored imports inside the owner Context, including their phase,
+initialization order and failure. Releasing private Interface state
+requires proving that no other lookup uses its private Context as a
+public module. The diagnostic confirms one remaining root. It does not
+measure its retained bytes or its share of GC time.
+
 The 16/32-owner census also traced cross-fixture retention after deleting
 the first fixture's source tree and collecting twice. The first init's
 path and module ID still resolved to the same registered Gerbil Context.
