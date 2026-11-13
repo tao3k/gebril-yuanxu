@@ -968,6 +968,16 @@ This is a live-heap reading. Peak RSS and attributable allocations need
 separate measurements. Sparse attribution measured directory, admission and
 scope/value phases at 1.86, 3.17 and 7.77 seconds in a separate demand sequence.
 
+A local macOS diagnostic with the =24bdc84= Scheme build and pinned POO
+completed the dense declaration Case under its 650-second capacity profile
+and 4 GiB heap fence. The graph phase took 541.98 s wall and 266.22 s CPU,
+including 44.73 s GC wall. It recorded the same 58,692,026 replay visits and
+3,080,709,640 bytes of live heap after collection. The host denied the
+process-level RSS sample, and the Gambit allocation counter was negative.
+The run exceeds the 180-second performance target. The declaration Case now
+reports a fixed set of inclusive stages when invoked with =stages=, retaining
+partial counters if the Case fails. The normal path retains its scalar checks.
+
 The Ubuntu build-input negative controls passed on this revision. The
 source-spec test failed when Gerbil Make resolved the JsonSchema dependency
 to the isolated fixture after the projection had captured the same Module ID

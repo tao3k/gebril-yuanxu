@@ -20,13 +20,15 @@
   (def measured
     (measure-runtime count 'runtime-graph-start
       (lambda ()
-        (call-with-values
-          (lambda ()
-            (call-with-module-source-operation-measurement
-              (lambda () (.get FixtureExports tests selected-graph))
-              accounting?: (cond-expand (yuanxu-module-test-stage-accounting 'stages)
-                                         (else #f))))
-          cons))))
+        (cond-expand
+          (yuanxu-module-test-stage-accounting
+           (measure-source-work count 'runtime-graph-start
+             (lambda () (.get FixtureExports tests selected-graph)) 'stages))
+          (else
+           (defvalues (graph counts)
+             (call-with-module-source-operation-measurement
+               (lambda () (.get FixtureExports tests selected-graph)) accounting?: #f))
+           (cons graph counts))))))
   (def graph (car measured))
   (def counts (cdr measured))
   (def (calls operation) (hash-ref counts (list 'calls operation) 0))
@@ -169,21 +171,39 @@
 ;; Scalar-only attribution of the same real fixture. Preserve the original
 ;; exception (including raised #f) after reporting partial operation totals.
 ;; This adds no source observer of its own and changes no Case or heap budget.
+(def (measure-source-work count phase action accounting?)
+  (def failed? #f)
+  (def cause #f)
+  (defvalues (value times)
+    (call-with-module-source-operation-measurement
+      (lambda ()
+        (with-catch
+          (lambda (failure) (set! failed? #t) (set! cause failure) #f)
+          action)) accounting?: accounting?))
+  (yuanxu-write-observation-line!
+    "runtime-phase-work modules=%s phase=%s failed?=%s metrics=%s"
+    count phase failed?
+    (if (eq? phase 'runtime-graph-start)
+      (map (lambda (stage)
+             (list stage
+                   (hash-ref times (list 'calls stage) 0)
+                   (hash-ref times stage 0.)
+                   (+ (hash-ref times (list 'cpu-user stage) 0.)
+                      (hash-ref times (list 'cpu-system stage) 0.))
+                   (hash-ref times (list 'read-attempts stage) 0)))
+           '(selected-owner-closure reader-preparation-start reader-wrapper-expansion
+             reader-interface-start reader-admission-start reader-current source-init-current
+             metadata-replay selected-core-projection selected-topological-resolution))
+      (hash->list times)))
+  (when (eq? phase 'runtime-graph-start)
+    (yuanxu-write-observation-line!
+      "declaration-stage-work columns=stage,calls,wall,cpu,read-attempts replay-visits=%s init-characters=%s"
+      (hash-ref times '(visits metadata-replay) 0)
+      (hash-ref times '(characters source-init-current) 0)))
+  (if failed? (raise cause) (cons value times)))
 (def (measure-runtime-source count phase action (accounting? #f) observer: (observer 'absent))
   (measure-runtime count phase
-    (lambda ()
-      (def failed? #f)
-      (def cause #f)
-      (defvalues (value times)
-        (call-with-module-source-operation-measurement
-          (lambda ()
-            (with-catch
-              (lambda (failure) (set! failed? #t) (set! cause failure) #f)
-              action)) accounting?: accounting?))
-      (yuanxu-write-observation-line!
-        "runtime-phase-work modules=%s phase=%s failed?=%s metrics=%s"
-        count phase failed? (hash->list times))
-      (if failed? (raise cause) value))
+    (lambda () (car (measure-source-work count phase action accounting?)))
     observer: observer))
 (def (verify-runtime-attribution FixtureExports count _source-root accounting?: (accounting? #f))
   (check-equal? (current-module-source-observer) #f)
