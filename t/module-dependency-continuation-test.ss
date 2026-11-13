@@ -1,18 +1,14 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set!) runtime.)
-        (only-in :clan/poo/object .o .get .all-slots .putslot! $thunk-slot-spec object?
-                 object-%reads object-%instance object-%all-slots object-read-issued?)
-        (only-in :clan/poo/slot-observation call-with-slot-read-observer slot-read-value)
-        (only-in :clan/poo/mop Type.)
+        (only-in :clan/poo/object .get)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/module-system/source/admission
-                 module-source-read current-module-source-observer admit-module-value!)
-        (only-in :tao3k/yuanxu/module-system/source/publication ModulePublicationContract
-                 module-publication-contract-current?)
+                 module-source-read current-module-source-observer)
+        (only-in :tao3k/yuanxu/module-system/source/publication module-publication-contract-current?)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file))
+        (only-in "./qualification/module-publication/fixtures.ss"
+                 with-publication-source write-file exception-message))
 (export module-dependency-continuation-test)
 (def module-dependency-continuation-test
   (test-suite "Runtime dependency continuation with the maintained publication producer"
@@ -77,39 +73,46 @@
               (check-equal? (> (hash-ref counts 'candidate-admitted 0) 0) #t)
               (check-equal? (module-publication-contract-current?) #t))))
         '(declaration feature)))
-    (yuanxu-test-case "a new cold dependency after shape checking retains the full return guard"
+    (yuanxu-test-case "a source edit during contract lookup refuses before demanding an imported owner's scope"
       (with-publication-source
         (lambda (root module-root _source _view)
           (check-equal? (module-publication-contract-current?) #t)
           (def marker (path-expand "cold-dependency-must-not-run" root))
+          (def provider (path-expand "modules/custom/other" root))
+          (def config (path-expand "config.ss" module-root))
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
-          (write-file (path-expand "config.ss" module-root)
-            "(import (only-in :clan/poo/object .o .putslot! $thunk-slot-spec) \"./types.ss\") (def PendingRequirement (.o module-id: 'custom/other contract: FixtureContract)) (export PendingRequirement)")
-          ;; scope-contract is read AFTER the predicate checks requires. This
-          ;; mutates a separate child receiver, not the actively computing Core.
+            "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example) (other))")
+          (write-file (path-expand "types.ss" provider)
+            "(def ProviderValue 'provider) (export ProviderValue)")
+          (write-file (path-expand "interface.ss" provider)
+            (object->string
+              `(.def Provider identity: 'custom/other
+                core: (.o scope-contract: (error "provider scope contract demanded")
+                          exports: (begin
+                            (call-with-output-file ,marker
+                              (lambda (out) (display "unexpected" out)))
+                            (.o)))
+                features: (.o))))
           (write-file (path-expand "interface.ss" module-root)
             (call-with-output-string
               (lambda (port)
+                (write '(import (only-in "../other/types.ss" ProviderValue)) port)
+                (newline port)
                 (write
                   `(.def Fixture identity: 'custom/example
-                     core:
-                     (.o requires: (.o First: PendingRequirement)
-                       scope-contract:
+                     core: (.o scope-contract:
                        (begin
-                         (.putslot! PendingRequirement 'module-id
-                           ($thunk-slot-spec
-                             (lambda ()
-                               (call-with-output-file ,marker
-                                 (lambda (out) (display "unexpected" out)))
-                               'custom/other)))
+                         (unless (eq? ProviderValue 'provider)
+                           (error "wrong imported owner"))
                          (call-with-output-file
-                           (list path: ,(path-expand "config.ss" module-root) truncate: #t)
+                           (list path: ,config truncate: #t)
                            (lambda (out) (display "(def Changed #t) (export Changed)" out)))
                          FixtureContract)
                        exports: FixtureScope)
                      features: (.o)) port))))
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
-          (check-exception (.get view selected-graph) error?)
+          (def refusal (exception-message (lambda () (.get view selected-graph))))
+          (check-equal? (and (string-contains refusal "stale") #t) #t)
+          (check-equal? (and (string-contains (module-source-read config) "def Changed") #t) #t)
           (check-equal? (file-exists? marker) #f)
           (check-equal? (module-publication-contract-current?) #t))))))
