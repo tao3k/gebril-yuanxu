@@ -222,15 +222,20 @@
 
 (def (verify-runtime-selection FixtureExports count _source-root)
   (check-equal? (current-module-source-observer) #f)
+  (def (measure-selection phase action)
+    (cond-expand
+      (yuanxu-module-test-stage-accounting
+        (measure-runtime-source count phase action 'stages))
+      (else (measure-runtime count phase action))))
   (measure-runtime count 'first-namespace
     (lambda () (check-equal? (length (.all-slots (.get FixtureExports modules))) count)))
   (def graph
-    (measure-runtime count 'first-graph
+    (measure-selection 'first-graph
       (lambda () (.get FixtureExports tests selected-graph))))
   (check-equal? (length (.get graph module-order)) count)
   (check-equal? (.ref/cached (.get FixtureExports modules) 'module-1) #f)
   (check-equal? (eq? graph (.get FixtureExports tests selected-graph)) #t)
-  (measure-runtime count 'independent-currentness (lambda () ((.get graph admit-current)))))
+  (measure-selection 'independent-currentness (lambda () ((.get graph admit-current)))))
 
 ;; Scalar-only attribution of the same real fixture. Preserve the original
 ;; exception (including raised #f) after reporting partial operation totals.
