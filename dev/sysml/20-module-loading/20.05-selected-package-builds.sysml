@@ -439,6 +439,14 @@ package YuanxuSelectedPackageBuilds {
                Equal tags after a comment edit keep the selection current.
                A changed tag requires a new selection. */
     }
+    requirement def ProfileCertificateCoverage {
+        doc /* A complete Profile certificate covers every eligible
+               Interface whose tag can alter the selected roots. An
+               owner-local check covers only the operation's source support.
+               Global certification after an edit requires a complete
+               authenticated description of changed candidates or a fresh
+               scan of their tags. */
+    }
     requirement def AdmittedOwnerEdgeHandoff {
         doc /* A closed private candidate supplies its publication and import
                edges from the same admitted record to the owner closure.

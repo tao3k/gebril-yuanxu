@@ -115,23 +115,26 @@
   ;; changed source. Exceptions retain their original cause; no result or
   ;; currentness verdict is retained. Metadata selection does not call this
   ;; guarded business-scope path.
-  (def (check!)
-    (when current! (call-with-module-source-fresh-reads current!)))
+  (def stage-name (if (pair? stage) (car stage) stage))
+  (def (check! boundary)
+    (when current!
+      (module-source-measure-operation (list 'scope-current stage-name boundary)
+        (lambda () (call-with-module-source-fresh-reads current!)))))
   (def (invoke)
-    (check!)
-    (let (value (module-source-measure-operation (if (pair? stage) (car stage) stage)
+    (check! 'before-body)
+    (let (value (module-source-measure-operation stage-name
                  (lambda ()
                    ;; Keep owner-qualified counts in the existing private
                    ;; accounting table, without installing an open observer.
                    (if (pair? stage) (module-source-measure-operation stage thunk) (thunk)))))
-      (check!)
+      (check! 'after-body)
       value))
   (let (observer (current-module-source-observer))
     (if (not observer) (invoke)
       (begin
         ;; Observer delivery is itself open. Do not carry a checked entry
         ;; across start delivery, or accept mutations made by end delivery.
-        (check!)
+        (check! 'before-observer)
         (let ((body-failed? #f) (body-failure #f))
          (let (value
               (dynamic-wind
@@ -153,7 +156,7 @@
                         (error "module link stage and observer failed" stage body-failure cause)
                         (raise cause)))
                     (lambda () (observer (list 'link-stage-end stage) 1))))))
-          (check!)
+          (check! 'after-observer)
           value))))))
 ;; Capture the callback body only. Selection guards and observer delivery keep
 ;; their own checks and never become the callback's local dependencies.
@@ -578,10 +581,12 @@
       (module-source-measure-operation 'link-current
         (lambda ()
           (parameterize ((current-module-source-phase origin))
-            (call-with-module-source-read-cache
-              ;; Each occurrence authenticates its original issued MOP graph.
-              ;; Only the nested filesystem observations may share bytes.
-              check-current!))))
+            (module-source-measure-operation (list 'link-current origin)
+              (lambda ()
+                (call-with-module-source-read-cache
+                  ;; Each occurrence authenticates its original issued MOP graph.
+                  ;; Only the nested filesystem observations may share bytes.
+                  check-current!))))))
       (when (selection-tail) (set-box! (selection-tail) #f)))
     ;; A direct package projection may specialize its owner's scope. Select
     ;; only this owner's results; never borrow a consumer's dependency scope.

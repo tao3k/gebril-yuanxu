@@ -776,6 +776,18 @@ theorem universally_sound_guard_iff_coverage [DecidableEq Node]
   · intro coverage before now current
     exact covered_guard_preserves_currentness required checked before now coverage current
 
+/-- A Profile root certificate includes every owner whose tag can affect
+selection. Selected closure checks cannot certify an omitted candidate. -/
+theorem omitted_profile_candidate_blocks_global_certification [DecidableEq Node]
+    (candidates checked : List Node) (owner : Node)
+    (eligible : owner ∈ candidates) (omitted : owner ∉ checked) :
+    ∃ before after : Node → Nat,
+      (∀ node, node ∈ checked → before node = after node) ∧
+      ¬ (∀ node, node ∈ candidates → before node = after node) := by
+  obtain ⟨before, after, same, changed⟩ :=
+    omitted_support_can_escape checked owner omitted
+  exact ⟨before, after, same, fun all => changed (all owner eligible)⟩
+
 -- A certified operation's cost is its real support width. The theorem does
 -- not manufacture the certification from runtime import edges or object names.
 def operationReads (widths : List Nat) : Nat := widths.sum

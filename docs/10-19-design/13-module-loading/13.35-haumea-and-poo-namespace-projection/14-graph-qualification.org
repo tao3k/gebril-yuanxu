@@ -122,6 +122,21 @@ returned the same value in 78 microseconds with zero directory passes,
 admissions or scope factories. Stage timings are nested. Both measurements
 use compiled prerequisite overlays and the original resource guard.
 
+The boundary-level repeat completed in 72.0 seconds at 940 MiB. Its
+13 scope-phase checks split into eight checks around scope factories and
+admission predicates, three eligibility checks, and two scope-publication
+checks. The eight effect checks took 8.27 seconds wall. Eligibility took
+3.28 seconds and scope publication took 1.99 seconds. These counts
+distinguish independent effect checks from repeated global directory work.
+
+=omitted_profile_candidate_blocks_global_certification= supplies a
+counterexample to treating selected-closure freshness as global Profile
+freshness. An unchecked Interface can acquire the Profile tag even when
+the entire selected closure stays current. An authenticated change set
+can narrow the next global check only if it covers such previously
+unselected Interfaces. Unknown filesystem edits still require fresh
+global certification at the existing public boundary.
+
 * Publication checklist
 
 - [X] POO implementation branch =feat/indexed-graph-algorithms= created from the

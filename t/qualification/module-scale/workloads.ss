@@ -404,16 +404,21 @@
                                        (else #f))))
         (cond-expand
           (yuanxu-module-test-stage-accounting
+            (def (report stage)
+              (yuanxu-write-observation-line!
+                "sparse-stage modules=%s phase=%s stage=%s calls=%s wall=%s cpu=%s"
+                count phase stage (hash-ref work (list 'calls stage) 0)
+                (hash-ref work stage 0.)
+                (+ (hash-ref work (list 'cpu-user stage) 0.)
+                   (hash-ref work (list 'cpu-system stage) 0.))))
             (for-each
-              (lambda (stage)
-                (yuanxu-write-observation-line!
-                  "sparse-stage modules=%s phase=%s stage=%s calls=%s wall=%s cpu=%s"
-                  count phase stage (hash-ref work (list 'calls stage) 0)
-                  (hash-ref work stage 0.)
-                  (+ (hash-ref work (list 'cpu-user stage) 0.)
-                     (hash-ref work (list 'cpu-system stage) 0.))))
+              report
               '(profile-interface-scan directory-current-observations link-current
-                reader-wrapper-expansion reader-admission-start metadata-replay scope-factory)))
+                reader-wrapper-expansion reader-admission-start metadata-replay scope-factory))
+            (for-each report
+              (filter (lambda (stage)
+                        (and (pair? stage) (memq (car stage) '(link-current scope-current))))
+                      (hash-keys work))))
           (else (void)))
         (cons value work))))
   (def (calls measured key) (hash-ref (cdr measured) (list 'calls key) 0))

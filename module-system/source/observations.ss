@@ -146,7 +146,8 @@
 (def (measure-source-operation times name action)
   (if (if (eq? (current-module-source-operation-accounting?) 'stages)
               (or (and (pair? name)
-                       (memq (car name) '(reader-initialization reader-initializer-body
+                       (memq (car name) '(link-current scope-current
+                                         reader-initialization reader-initializer-body
                                          reader-candidate-replay-site)))
                   (memq name '(reader-initialization reader-initializer-body
                            build-main build-specification build-dispatch std-make build-current
