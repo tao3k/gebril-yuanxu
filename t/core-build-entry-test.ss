@@ -1,12 +1,10 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Exercise the actual source-only root entry without a whole Core compile.
+;;; Exercise the ordinary Core entry and the separate selected projection.
 (import :std/test
         (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :clan/poo/object .get .call .o)
-        (only-in :clan/poo/mop validate)
-        (only-in :tao3k/yuanxu/module-system/source/build BuildSpecContract)
         (only-in :std/source this-source-file)
         (only-in "./qualification/module-testing/fixtures.ss" selection-fixture)
         (only-in :std/error Error? Error-message)
@@ -30,9 +28,9 @@
   (when fresh?
     (import-fixture-init! (path-expand "init.ss" (path-directory path)) #t))
   (parameterize ((current-expander-context (import-module path #t #t)))
-    (values (eval-syntax 'main)
-      (yuanxu-project-source-spec (path-expand "init.ss" root)
-        (eval-syntax 'core-spec) root path))))
+    (def libraries (eval-syntax 'core-spec))
+    (values (eval-syntax 'main) libraries
+      (yuanxu-project-source-spec (path-expand "init.ss" root) libraries root path))))
 (def (write-source path text)
   (call-with-output-file (list path: path truncate: #t)
     (lambda (port) (display text port))))
@@ -50,17 +48,19 @@
   (def (target-name target)
     (if (string? target) target (cadr target)))
   (def core-build-entry-test
-    (test-suite "Actual Core entry delegates to Module System Building"
-      (test-case "cold source entry selects JsonSchema and rechecks input bytes"
+    (test-suite "Core build entry and selected Module projection"
+      (test-case "Core builds libraries and selected projection rechecks input bytes"
         (check-equal? (file-exists? (path-expand "lib/tao3k/yuanxu" (getenv "GERBIL_PATH"))) #f)
         (check-equal? (file-exists? (path-expand "bootstrap.ss" root)) #f)
-        (defvalues (run package) (script-main (path-expand "build.ss" root)))
+        (defvalues (run libraries package) (script-main (path-expand "build.ss" root)))
         (displayln "ROOT-ENTRY-READY") (force-output)
         (def spec (spec-of run))
-        ;; Validate the actual final List printed by the official script.
-        ;; A duplicate across Core and Module declarations must fail this gate.
-        (validate BuildSpecContract (.o module-spec: '() retained-spec: spec spec))
-        (def names (map target-name spec))
+        (check-equal? spec libraries)
+        (check-equal? (member "modules/json-schema/interface" (map target-name spec)) #f)
+        (def selected-spec (.get package spec))
+        ;; The projection owns the selected and retained target lists.
+        (.call package .admit-spec selected-spec)
+        (def names (map target-name selected-spec))
         (let (seen (make-hash-table))
           (for-each (lambda (name)
                       (check-equal? (hash-key? seen name) #f)
@@ -99,7 +99,7 @@
             ("core-spec.ss" . "stale prepared build source")
             ("types/contracts.ss" . "compiler tool source changed; use a fresh reader")))
         (check-equal? (spec-of run) spec)
-        (defvalues (fresh fresh-package) (script-main (path-expand "build.ss" root) #t))
+        (defvalues (fresh _fresh-libraries fresh-package) (script-main (path-expand "build.ss" root) #t))
         (check-equal? (spec-of fresh) spec)
         (fresh "clean")
         (let* ((path (path-expand "init.ss" root)) (text (module-source-read path)))
