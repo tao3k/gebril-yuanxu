@@ -1345,6 +1345,40 @@ theorem same_wrapper_binding_does_not_preserve_owner_import :
       wrapperBinding (Key := Nat) (fun _ => none) (fun _ => none) (fun _ => some 2) 0 ∧
     ([2] : List Nat) ≠ [] := by decide
 
+/-- Resolve an ordered trace of demands in one owner. Each demand checks its
+native phase/import authority before consulting the binding projection. -/
+def resolveWrapperDemands {Key Binding Failure : Type}
+    (check : Key → Except Failure Unit) (resolve : Key → Option Binding)
+    (missing : Key → Failure) : List Key → Except Failure (List Binding)
+  | [] => .ok []
+  | key :: tail =>
+    match check key with
+    | .error failure => .error failure
+    | .ok () =>
+      match resolve key with
+      | none => .error (missing key)
+      | some binding => (resolveWrapperDemands check resolve missing tail).map (binding :: ·)
+
+theorem shared_wrapper_projection_keeps_order_and_failure
+    {Key Binding Failure : Type} (check : Key → Except Failure Unit)
+    (original shared : Key → Option Binding) (missing : Key → Failure)
+    (demands : List Key) (exact : ∀ key ∈ demands, original key = shared key) :
+    resolveWrapperDemands check original missing demands =
+      resolveWrapperDemands check shared missing demands := by
+  induction demands with
+  | nil => rfl
+  | cons key tail ih =>
+    have head := exact key (by simp)
+    have rest := ih (fun demand member => exact demand (by simp [member]))
+    simp only [resolveWrapperDemands, head, rest]
+
+theorem wrapper_import_refusal_precedes_missing_binding
+    {Key Binding Failure : Type} (check : Key → Except Failure Unit)
+    (resolve : Key → Option Binding) (missing : Key → Failure) (key : Key)
+    (tail : List Key) (failure : Failure) (refused : check key = .error failure) :
+    resolveWrapperDemands check resolve missing (key :: tail) = .error failure := by
+  simp [resolveWrapperDemands, refused]
+
 /-- Cleanup of an exact native registry alias compares the installed Context.
 The caller must separately establish that the alias is private and no longer
 demanded. Key spelling alone does not establish that ownership. -/

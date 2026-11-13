@@ -490,7 +490,10 @@ package YuanxuPayloadOwnership {
                resolution. A shared-prelude experiment
                removed three direct imports without a consistent CPU win.
                Retain the installed reader's native imports and its effect
-               boundaries. The opt-in thousand-owner diagnostic attributes
+               boundaries. A shared binding projection must preserve the
+               ordered demand trace and the first native import refusal,
+               including when the same demand also lacks a binding.
+               The opt-in thousand-owner diagnostic attributes
                CPU and wall time with no source observer. Ordinary capacity
                uses its original measurement and watchdog. */
     }
