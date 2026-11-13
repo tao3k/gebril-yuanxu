@@ -111,6 +111,23 @@ candidate was discarded. Removing the remaining strong runtime roots
 requires addressing owners with actual imports and preserving the native
 binding, demand and failure behavior.
 
+A second candidate matched the single phase-zero import descriptor after
+native expansion. The ordinary private top Context retained the wrapper's
+export bindings for the subsequent lookup. Gerbil's module evaluator
+forced the wrapper's own promise. Its body still evaluated authored
+imports through their original paths. This reached all 1,000 Interfaces
+and preserved 2,000 initializer calls and 5,870,024 replay visits.
+
+| Variant | First Graph wall / CPU | Collected live bytes | Peak bytes |
+|---------+------------------------+----------------------+------------|
+| Baseline | 57.77 / 42.01 s | 533,230,592 | 1,326,678,016 |
+| Native private evaluator | 55.62 / 44.89 s | 514,366,608 | 1,355,022,336 |
+
+The matched local runs passed under 180 seconds and 4 GiB. The candidate
+reduced retained memory by 18.0 MiB, while measured CPU and peak footprint
+increased. It was discarded. This isolates the retention cost of the
+wrapper Contexts from the much larger cost of admission itself.
+
 The 16/32-owner census also traced cross-fixture retention after deleting
 the first fixture's source tree and collecting twice. The first init's
 path and module ID still resolved to the same registered Gerbil Context.
