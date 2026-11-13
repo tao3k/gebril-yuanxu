@@ -1404,6 +1404,19 @@ theorem retire_wrapper_alias_preserves_replacement
 theorem retiring_a_live_wrapper_alias_changes_resolution :
     retireWrapperAlias (fun _ : Nat => some (5 : Nat)) 2 5 2 ≠ some 5 := by decide
 
+/-- A completed private wrapper has its own native initializer promise.
+Retiring its import-table entry preserves observable results whenever
+only other Contexts are reachable by later import demands. -/
+theorem private_wrapper_retirement_keeps_import_trace
+    [DecidableEq Context] [DecidableEq Result] (states : Context → Option Result)
+    (privateContext : Context) (result : Result) (demands : List Context)
+    (unreachable : privateContext ∉ demands) :
+    demands.map (retireWrapperAlias states privateContext result) = demands.map states := by
+  apply List.map_congr_left
+  intro context member
+  exact retire_wrapper_alias_preserves_other_bindings states privateContext context result
+    (fun same => unreachable (same ▸ member))
+
 /-- A fixed dispatch may retain native read identities and receiver topology.
 Each actual owner still has its own selection and independent authentication. -/
 theorem fixed_dispatch_trace_keeps_owner_and_refusal

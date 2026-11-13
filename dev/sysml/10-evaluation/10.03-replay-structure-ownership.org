@@ -99,6 +99,18 @@ requires proving that no other lookup uses its private Context as a
 public module. The diagnostic confirms one remaining root. It does not
 measure its retained bytes or its share of GC time.
 
+A local candidate retained Gerbil's native expansion and used its native
+module evaluator for a closed Interface with no exports. In the real
+1,000-owner declaration Case it reached just one owner. The other 999
+Interfaces declare a Gerbil import of the provider's Types. The existing
+deferred declaration macro establishes those imports before producing a
+native binding and export. The candidate observed the same 1,000 wrapper
+expansions, 2,000 initializers and 5,870,024 replay visits as the baseline.
+Collected live memory was 533,233,664 versus 533,233,152 bytes. The
+candidate was discarded. Removing the remaining strong runtime roots
+requires addressing owners with actual imports and preserving the native
+binding, demand and failure behavior.
+
 The 16/32-owner census also traced cross-fixture retention after deleting
 the first fixture's source tree and collecting twice. The first init's
 path and module ID still resolved to the same registered Gerbil Context.
