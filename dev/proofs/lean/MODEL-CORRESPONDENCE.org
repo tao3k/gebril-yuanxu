@@ -929,6 +929,29 @@ The selected compiler view indexes its already projected paths during pruning.
 membership. Scheme still inspects every existing entry for ownership and kind.
 The path index is local to the locked action and retains no admission result.
 
+On Core =5b2444f= the local Lab deployment test used POO =734dcba= and
+four Gerbil build workers. The native source-view lifecycle and the four
+build-input mutation controls passed separately. Lab recorded these times
+with the original 120-second outer deadline:
+
+| Phase | Wall time |
+|-
+| Specification | 8.70 s |
+| A cold action to Make entry | 0.50 s |
+| A Make entry to first compile event | 3.53 s |
+| A cold action total | 32.18 s |
+| B cold action total | 26.83 s |
+| B hot action, zero compile events | 1.90 s |
+| Independent B test launch | 73.54 s after process start |
+
+The target inventories matched the selected closure. After cleaning A,
+B's artifact hashes matched its pre-clean snapshot. The outer timeout
+terminated the run before the independent child's first Harness marker.
+Gerbil prepares the test modules before that marker, so this interval
+includes child startup and test imports. It does not supply a business
+evaluation time. These observations do not isolate the speedup of path
+indexing from run-to-run host variation.
+
 * Public platform failure baseline
 
 Run =42373146993= reports all seven failures on =cd794638291d=.
