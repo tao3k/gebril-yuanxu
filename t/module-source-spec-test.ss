@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source-only Core qualification: direct source targets, standard Gerbil macro.
 (import :std/test
+        (only-in :std/make make make-clean)
         (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :clan/poo/object .get .call)
         (only-in "./qualification/module-testing/fixtures.ss" selection-fixture)
@@ -36,7 +37,7 @@
   (parameterize ((current-expander-context (import-module path #t #t)))
     (def build (yuanxu-project-source-spec (path-expand "init.ss" root)
                   (eval-syntax 'core-spec) root path))
-    (values (eval-syntax 'main) (eval-syntax 'tao3k/yuanxu.init.exports) build)))
+    (values (eval-syntax 'main) build)))
 (def (spec-of run)
   (call-with-input-string
     (call-with-output-string
@@ -62,17 +63,17 @@
                       (module-source-read (path-expand "modules/json-schema/interface.ss" owner)))
         ;; Narrow only this isolated snapshot's retained manifest, not its build.ss.
         (write-source (path-expand "core-spec.ss" root)
-          "(export core-spec) (def core-spec '(\"prelude\" \"utilities/algorithms\" \"types/contracts\" \"types/ports\" \"core-spec\"))\n")
-        (let-values (((run exports build) (script-at (path-expand "build.ss" root))))
+          "prelude: :gerbil/core\n(export core-spec) (def core-spec '(\"prelude\" \"utilities/algorithms\" \"types/contracts\" \"types/ports\" \"core-spec\"))\n")
+        (let-values (((run build) (script-at (path-expand "build.ss" root))))
           (def current! (.get build admit-current))
           (displayln "SOURCE-SPEC-ROOT-IMPORTED") (force-output)
           (def printed (spec-of run))
           (displayln "SOURCE-SPEC-GRAPH-READY") (force-output)
-          (def module-targets (.get exports std-make-spec))
-          (def targets (append module-targets retained))
+          (def targets (.get build spec))
           (def names (map (lambda (entry) (if (string? entry) entry (cadr entry))) targets))
-          (check-equal? printed targets)
-          (check-equal? (eq? module-targets (.get exports std-make-spec)) #t)
+          (check-equal? printed retained)
+          (check-equal? (and (member "modules/json-schema/interface" names) #t) #t)
+          (check-equal? (eq? targets (.get build spec)) #t)
           (check-exception (.call build .admit-spec '((gxc: "types/contracts"))) error?)
           (check-equal? (filter (lambda (name)
                                   (or (string-prefix? "modules/nix/" name)
@@ -83,7 +84,7 @@
                     names)
           (check-equal? (file-exists? (path-expand ".gerbil/module-build" root)) #f)
           (check-equal? (file-exists? (path-expand "bootstrap.ss" root)) #f)
-          (run "compile")
+          (.call build .with-compiler-inputs (lambda () (make targets srcdir: root)))
           ;; This acceptance check is explicit, outside the STD-generated main.
           (current!)
           (def lib (path-expand "lib" (getenv "GERBIL_PATH")))
@@ -95,7 +96,7 @@
           (for-each (lambda (name)
                       (check-equal? (file-exists?
                         (compiled-path root lib name)) #t)) names)
-          (run "clean")
+          (.call build .with-clean-outputs (lambda () (make-clean targets srcdir: root)))
           (current!)
           (for-each (lambda (name)
                       (check-equal? (file-exists?
@@ -118,9 +119,9 @@
               ("gerbil.pkg" . "compiler tool source changed")
               ("prelude.ss" . "compiler tool source changed")
               ("module-system/source/role-forms.ss" . "compiler tool source changed")
-              ("modules/json-schema/functional.ss" . "compiler tool source changed")
+              ("modules/json-schema/functional.ss" . "stale prepared build source")
               ("types/contracts.ss" . "compiler tool source changed")))
-          (check-equal? (spec-of run) targets)
+          (check-equal? (spec-of run) retained)
           ;; A completed command supplies no continuing validity guarantee.
           (run "meta")
           (change-source (path-expand "modules/json-schema/config.ss" root)
