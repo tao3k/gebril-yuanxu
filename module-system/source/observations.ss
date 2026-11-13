@@ -451,7 +451,8 @@
   (def expected-length (string-length expected))
   (if (or (< expected-length 32768) (not (scheme-source-path? path)))
     (lambda () (equal? expected (module-source-observe module-source-read path)))
-    (let (snapshot (source-text->snapshot expected))
+    (let* ((snapshot (source-text->snapshot expected))
+           (captured (source-text-snapshot-text snapshot)))
       (def (large-text-current?)
         (observe-read-request path)
         (unless (eq? (module-source-type path) 'regular)
@@ -459,7 +460,11 @@
         ;; Share the physical text with ordinary readers and other guards in
         ;; this window. Compare each guard's own expected text on every call.
         (parameterize ((current-source-text-snapshot snapshot))
-          (equal? expected (source-text-content (read-regular-source path expected-length)))))
+          (let (observed (source-text-content (read-regular-source path expected-length)))
+            ;; An exact byte match returns this private snapshot itself.
+            ;; A different guard's snapshot or a mutable reader view still
+            ;; requires the full comparison against the captured text.
+            (or (eq? captured observed) (equal? captured observed)))))
       (lambda ()
         (if (current-module-source-observer)
           ;; Keep the original query key and read notifications. Ordinary

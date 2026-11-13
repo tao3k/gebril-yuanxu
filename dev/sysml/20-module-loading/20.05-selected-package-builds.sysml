@@ -404,7 +404,10 @@ package YuanxuSelectedPackageBuilds {
                those private premises. Every cache miss still checks all original
                guards in order. Independent calls and effects end the observation
                window; no accepted verdict survives it. Open observers retain
-               the original query and callback order. Lean SourceClosureWork
+               the original query and callback order. In a closed window, an
+               exact byte match may return the text guard's own immutable
+               capture by identity. Distinct captures and mutable reader views
+               require value comparison. Lean SourceClosureWork
                prepend_only_same_size_same_rows and existing Quint index replace,
                dropped-support and stale-approval controls bound this refinement.
                A compiler inventory traversal uses the origin supplied by its

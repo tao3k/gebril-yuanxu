@@ -292,6 +292,14 @@
             (call-with-module-source-read-cache
               (lambda ()
                 (check-equal? (current?) #t)
+                (let (view (module-source-read file))
+                  (string-set! view 8192 #\犬)
+                  (check-equal? (current?) #f)
+                  (check-equal? (other-current?) #t))))
+            (check-equal? (current?) #t)
+            (call-with-module-source-read-cache
+              (lambda ()
+                (check-equal? (current?) #t)
                 (call-with-module-source-callback
                   (lambda () (write-role root "types" different)))
                 (check-equal? (current?) #f))))

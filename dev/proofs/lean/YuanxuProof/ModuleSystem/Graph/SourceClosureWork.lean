@@ -492,6 +492,36 @@ theorem flat_guard_checks_every_frame (frames : List (List Node)) (current : Nod
   | nil => simp
   | cons roots rest ih => simp [ih]
 
+/-- Two location checkpoints can share the same physical observations within
+one closed window. Across an effect boundary the second window supplies its
+own values, so a refusal in the second window remains observable. -/
+theorem repeated_location_guard_in_closed_window
+    (support : List Node) (observed : Node → Bool) :
+    (support.all observed && support.all observed) = support.all observed := by
+  cases support.all observed <;> rfl
+
+/-- Only identity with this guard's own immutable capture supplies equality.
+Another guard's capture and a mutable view must use value comparison. -/
+theorem captured_text_identity_preserves_guard {Text : Type} [DecidableEq Text]
+    (captured observed : Text) (sameCapture : Bool)
+    (sound : sameCapture = true → captured = observed) :
+    (sameCapture || decide (captured = observed)) = decide (captured = observed) := by
+  cases hit : sameCapture
+  · rfl
+  · simp [sound hit]
+
+theorem location_guard_after_effect_refuses
+    (support : List Node) (before after : Node → Bool)
+    (current : support.all before = true)
+    (owner : Node) (required : owner ∈ support) (changed : after owner = false) :
+    (support.all before && support.all after) = false := by
+  simp only [current, Bool.true_and]
+  cases checked : support.all after with
+  | false => rfl
+  | true =>
+    have accepted := List.all_eq_true.mp checked owner required
+    simp [changed] at accepted
+
 structure Work (Node : Type) where
   discovery : Discovery Node
   pops : Nat
