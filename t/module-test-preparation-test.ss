@@ -28,7 +28,7 @@
     (forms root "modules/example/objects.ss" '((def Defaults #t) (export Defaults)))
     (forms root "modules/example/interface.ss"
       '((.def Example identity: 'example features: (.o)
-          core: (.o requires: (.o) scope-contract: Scope
+          core: (.o scope-contract: Scope
                     exports: (error "test discovery evaluated business scope")))))
     (forms root "modules/poison/interface.ss" '((error "unselected module demanded")))
     (forms root "modules/example/tests/shared.ss" '((export answer) (def answer 42)))

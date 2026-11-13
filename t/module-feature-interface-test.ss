@@ -88,7 +88,7 @@
                   (lambda (port)
                     (write
                       `(.def Fixture identity: 'custom/example
-                         core: (.o requires: (.o) scope-contract: FixtureContract
+                         core: (.o scope-contract: FixtureContract
                                    exports: FixtureScope)
                          features: ,features)
                       port))))
@@ -103,7 +103,7 @@
         (lambda (root module-root _source _view)
           (write-file (path-expand "interface.ss" module-root)
             "(.def Fixture identity: 'custom/example
-                core: (.o requires: (.o) scope-contract: FixtureContract
+                core: (.o scope-contract: FixtureContract
                           exports: (.o (:: @ FixtureScope) greeting: Greeting))
                 features: '(memory missing))")
           (def facade (path-expand "features/memory/interface.ss" module-root))
@@ -198,7 +198,7 @@
             "(def OtherConfig (.o)) (export OtherConfig)")
           (write-file other
             "(.def Other identity: 'custom/other
-                core: (.o requires: (.o) scope-contract: (error \"unrelated Core read\")
+                core: (.o scope-contract: (error \"unrelated Core read\")
                           exports: (.o))
                 features: '())")
           (def demand (path-expand "demand.ss" root))
@@ -210,7 +210,7 @@
           (check-exception (.get view selected-graph) error?)
           (write-file other
             "(.def Other identity: 'custom/other
-                core: (.o requires: (.o) scope-contract: ScopeContract exports: (.o))
+                core: (.o scope-contract: ScopeContract exports: (.o))
                 features: '(missing))")
           (def message
             (exception-message
@@ -304,7 +304,7 @@
                   `(import (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor)) port)
                 (write
                   `(.def Fixture identity: 'custom/example
-                    core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope)
+                    core: (.o scope-contract: FixtureContract exports: FixtureScope)
                     features:
                     (.o memory:
                       (.o (:: @ (feature-descriptor

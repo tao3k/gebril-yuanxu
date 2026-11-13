@@ -90,7 +90,7 @@
                        (export FixtureScope))
             interface:
             '((.def Fixture identity: 'custom/example
-                core: (.o requires: (.o) scope-contract: FixtureContract
+                core: (.o scope-contract: FixtureContract
                           exports: FixtureScope)
                 features: (.o))))))
     (test-case "delayed roles still refuse a symbolic private source"
@@ -126,7 +126,7 @@
         (.o config: '((def Greeting (error "shadowed role was evaluated")) (export Greeting))
             interface:
             '((.def Fixture identity: 'custom/example
-                core: (.o requires: (.o) scope-contract: FixtureContract
+                core: (.o scope-contract: FixtureContract
                           exports: (.o Greeting: 'local selected: Greeting))
                 features: (.o))))))
     (test-case "the link checks unused dependencies in order before entering the export body"
@@ -168,7 +168,7 @@
         '((def Scope (error "objects demanded")) (export Scope)))
       (replace-forms (module-path fixture "interface.ss")
         '((.def Module identity: 'module-0
-            core: (.o requires: (.o) scope-contract: ScopeContract
+            core: (.o scope-contract: ScopeContract
                       exports: (.o config: Config object: Scope))
             features: (.o unused: (error "unselected Feature forced")))))
       (def expansions 0)
@@ -196,7 +196,7 @@
         '((def object? 'source-owned) (def Scope object?) (export Scope)))
       (replace-forms (module-path fixture "interface.ss")
         '((.def Module identity: 'module-0
-            core: (.o requires: (.o) scope-contract: ScopeContract
+            core: (.o scope-contract: ScopeContract
                       exports: (.o object: Scope))
             features: (.o unused: (error "unselected Feature forced")))))
       (check-equal? (.get fixture modules module-0 object) 'source-owned))
@@ -213,7 +213,7 @@
         '((def Scope (error "unused Objects role was forced")) (export Scope)))
       (replace-forms (module-path fixture "interface.ss")
         '((.def Module identity: 'module-0
-            core: (.o requires: (.o) scope-contract: ScopeContract exports: Config)
+            core: (.o scope-contract: ScopeContract exports: Config)
             features: (.o))))
       (check-equal? (length (.get (.call (.get fixture exports tests) .select '(module-0)) source selected-graph module-order)) 1)
       (check-equal? (.ref/cached (.get fixture modules) 'module-0) #f)
@@ -225,7 +225,7 @@
       (replace-forms (module-path fixture "interface.ss")
         '((.def Module identity: 'module-0
             Config: (.o value: 9)
-            core: (.o requires: (.o) scope-contract: ScopeContract exports: Config)
+            core: (.o scope-contract: ScopeContract exports: Config)
             features: (.o))))
       (check-equal? (.get fixture modules module-0 value) 9))
     (yuanxu-test-fixture "the selected Graph keeps the actual authoring receipt Type dependency"

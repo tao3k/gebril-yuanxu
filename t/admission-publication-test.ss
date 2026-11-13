@@ -120,7 +120,7 @@
   (def module-publication
     (refine-publication
       (.o identity: 'app/web features: (.o)
-        core: (.o requires: (.o)
+        core: (.o
                 admissions: (.o Scenario: (.o contract-path: '(types Application)
                                              export-path: '(value)))))))
   (def selected

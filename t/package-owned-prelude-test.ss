@@ -60,7 +60,7 @@
               ("types.ss" . "(import :clan/poo/object (only-in :clan/poo/type Record))\n(def Scope (.cc (Record) identity: 'test/scope))\n(export Scope)\n")
               ("build.ss" . "(import :clan/poo/object)\n(.def Build defbuild-script: (.o spec: '(\"facade\")))\n(export Build)\n")
               ("facade.ss" . "(import \"../../consumer.ss\") (export)\n")
-              ("interface.ss" . "(.def Example identity: 'example features: (.o) core: (.o requires: (.o) scope-contract: Scope exports: (.o)))\n")))
+              ("interface.ss" . "(.def Example identity: 'example features: (.o) core: (.o scope-contract: Scope exports: (.o)))\n")))
           (def projection
             (yuanxu-project-source-spec (yuanxu-load-modules (path-expand "modules" root))
                                        '() root (path-expand "init.ss" root)))

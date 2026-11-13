@@ -29,7 +29,7 @@
   (unless (memq owner '(json-schema funflow team/json-schema))
     (error "unselected publication must stay cold"))
   (.o identity: owner features: (.o)
-      core: (.o requires: (.o) scope-contract: ScopeContract
+      core: (.o scope-contract: ScopeContract
                 link: (lambda (_deps) (error "test discovery must not link scope")))))
 
 (def module-qualification-projection-test

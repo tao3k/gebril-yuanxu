@@ -88,7 +88,7 @@
             (string-append "(.def Build defbuild-script: (.o spec: '((exe: \"command\" bin: \"" name "-tool\"))))"))
           (put root (string-append directory "interface.ss")
             (string-append "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Publication identity: '" name
-              " core: (.o requires: (.o) scope-contract: Scope exports: Defaults) features: (.o))"))) modules)
+              " core: (.o scope-contract: Scope exports: Defaults) features: (.o))"))) modules)
       (def expected
         (append '("rootlib")
           (foldr append '()
@@ -274,7 +274,7 @@
               (object->string build-marker)
               " append: #t) (lambda (out) (display \"x\" out))) '((exe: \"command\" bin: \"module-program\"))))"))
           (put root "modules/example/interface.ss"
-            "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Example identity: 'example core: (.o requires: (.o) scope-contract: Scope exports: Config projections: (list Build)) features: (.o))")
+            "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Example identity: 'example core: (.o scope-contract: Scope exports: Config projections: (list Build)) features: (.o))")
           (put root "modules/example/command.ss"
             "(import :clan/poo/object (only-in \"../../init.ss\" module-build-program.init.exports)) (export main) (def (main . args) (unless (null? (.all-slots (.get module-build-program.init.exports Empty))) (error \"compiled empty namespace changed\")) (displayln \"MODULE-PROGRAM-OK \" (list (.get module-build-program.init.exports modules example value) (.get module-build-program.init.exports modules example value))))")
           (call-with-output-file

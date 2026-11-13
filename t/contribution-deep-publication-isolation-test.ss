@@ -62,7 +62,7 @@
 (export Scope)")
 (def (interface-source id app? (target-admission 'Scenario))
   (string-append "(.def Fixture identity: '" (symbol->string id)
-   " core: (.o requires: (.o) scope-contract: ScopeContract "
+   " core: (.o scope-contract: ScopeContract "
    (if app? "admissions: (.o Scenario: (.o export-path: '(Scenario) contract-path: '(types Admission))) "
      (string-append "contributions: (.o database-port: (.o target-owner: 'fixture/application target-admission: '"
        (symbol->string target-admission) " export-path: '(exports policy requirements port))) "))

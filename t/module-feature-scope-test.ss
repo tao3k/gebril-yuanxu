@@ -43,7 +43,7 @@ prelude: :gerbil/core
     config: '((def Config (.o port: 5432)))
     interface:
     `((.def Fixture identity: 'custom/example
-        core: (.o requires: (.o) scope-contract: FixtureContract
+        core: (.o scope-contract: FixtureContract
                   exports: (.o (:: self FixtureScope) port: (.get Config port)))
         features:
         (.o

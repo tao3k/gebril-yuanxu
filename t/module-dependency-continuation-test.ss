@@ -116,7 +116,7 @@
                              (list path: ,(path-expand "config.ss" module-root) truncate: #t)
                              (lambda (out) (display "(def Greeting \"changed during admission\") (export Greeting)" out)))
                            'custom/example)
-                         core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope)
+                         core: (.o scope-contract: FixtureContract exports: FixtureScope)
                          features:
                          ,(if (eq? boundary 'declaration) '(.o)
                             `(.o ci: (begin
@@ -134,7 +134,7 @@
                   (string-append "(call-with-output-file " (object->string marker)
                     " (lambda (out) (display \"unexpected\" out))) (def Greeting \"other\") (export Greeting)"))
                 (write-file (path-expand "interface.ss" other)
-                  "(.def Fixture identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope) features: (.o))")))
+                  "(.def Fixture identity: 'custom/other core: (.o scope-contract: FixtureContract exports: FixtureScope) features: (.o))")))
               (def view (yuanxu-load-modules (path-expand "init.ss" root)))
               (def counts (make-hash-table-eq))
               (def previous (current-module-source-observer))

@@ -51,7 +51,7 @@
      (lambda () (remove-source root)))))
 (def (publication)
   (.o identity: 'custom/example features: (.o)
-      core: (.o requires: (.o) scope-contract: ScopeContract
+      core: (.o scope-contract: ScopeContract
                 link: (lambda (_dependencies) (.o ready: #t)))))
 (def (collection-source root)
   (let (collection (make-yuanxu-module-source-collection

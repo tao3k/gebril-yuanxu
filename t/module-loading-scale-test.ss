@@ -37,7 +37,7 @@
         "(import :clan/poo/object) (def Scope (.o unused: (error \"scope forced\"))) (export Scope)")
       (write-source (path-expand "config.ss" chosen) "(def Enabled #t) (export Enabled)")
       (write-source (path-expand "interface.ss" chosen)
-        "(.def Chosen identity: 'chosen core: (.o requires: (.o) scope-contract: ScopeContract exports: Scope) features: (.o))")
+        "(.def Chosen identity: 'chosen core: (.o scope-contract: ScopeContract exports: Scope) features: (.o))")
       (write-source (path-expand "tests/atomic-test.ss" chosen)
         "(begin-syntax (error \"test expanded during discovery\"))")
       (def previous 1)

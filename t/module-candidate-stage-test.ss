@@ -33,7 +33,7 @@
                     (module-source-read (path-expand role first))))
                 '("types.ss" "objects.ss" "config.ss"))
       (write-file (path-expand "interface.ss" other)
-        "(.def Module identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
+        "(.def Module identity: 'custom/other core: (.o scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
       (setup root first other)
       (def init (path-expand "init.ss" root))
       (def view (yuanxu-load-modules

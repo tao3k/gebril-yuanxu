@@ -39,7 +39,7 @@
                (export FixtureScope))
     config: '((def Greeting "hello") (export Greeting))
     interface: '((.def Fixture identity: 'custom/example
-                   core: (.o requires: (.o) scope-contract: FixtureContract
+                   core: (.o scope-contract: FixtureContract
                              exports: (.o (:: @ FixtureScope) greeting: Greeting))
                    features: (.o)))))
 

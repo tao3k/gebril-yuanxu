@@ -184,7 +184,7 @@
          (write-file (path-expand "build.ss" module-root)
            "(import (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)) (.def Build function: yuanxu-project-source-spec)")
          (write-file (path-expand "interface.ss" module-root)
-           "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o (:: @ FixtureScope) greeting: Greeting) configuration-build: Build) features: (.o))")
+           "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: (.o (:: @ FixtureScope) greeting: Greeting) configuration-build: Build) features: (.o))")
          (def demanded (module-publication-reader))
          (def published (.call demanded read source))
          (check-equal? (hash-key? (observed-paths demanded) projection) #f)

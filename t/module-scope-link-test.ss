@@ -67,7 +67,7 @@
       (def construction-input (.o available?: #t))
       (def provider
         (.o identity: 'core/schema features: (.o)
-            core: (.o requires: (.o) scope-contract: provider-contract
+            core: (.o scope-contract: provider-contract
                       link: (lambda (_dependencies)
                               (unless (.get construction-input available?)
                                 (error "schema source unavailable"))
@@ -366,7 +366,7 @@
       (def declarations
         (.o custom/guestbook:
             (.o identity: 'custom/guestbook features: (.o)
-                core: (.o requires: (.o) scope-contract: contract
+                core: (.o scope-contract: contract
                           link: (lambda (_deps)
                                   (set! factory-ran #t) (set! current #f) (.o ready: #t))))))
       (def view
@@ -489,7 +489,7 @@
           (def declarations
             (.o custom/guestbook:
                 (.o identity: 'custom/guestbook features: (.o)
-                    core: (.o requires: (.o) scope-contract: contract
+                    core: (.o scope-contract: contract
                               link: (lambda (_deps)
                                       (set! linked #t) (set! current #t) (.o))))))
           (def view

@@ -45,7 +45,7 @@
     identity: 'test/checked-dependency))
 (publication-definition ProviderPublication
   identity: 'custom/provider
-  core: (.o requires: (.o) scope-contract: ScopeContract exports: provider-scope)
+  core: (.o scope-contract: ScopeContract exports: provider-scope)
   features: (.o))
 (publication-definition ConsumerPublication
   identity: 'custom/consumer
@@ -94,7 +94,7 @@
       (let* ((before factory-calls)
              (AnyScope (.cc Type. identity: 'test/any .element?: (lambda (_v) #t)))
              (provider (.o identity: 'core/provider features: (.o)
-                           core: (.o requires: (.o) scope-contract: AnyScope link: (lambda (_deps) 42))))
+                           core: (.o scope-contract: AnyScope link: (lambda (_deps) 42))))
              (view (yuanxu-load-modules
                     (.o generation: "publication-dependency-test" module-ids: '(core/provider custom/published)
                         selected: '(custom/published) denied-modules: '()
@@ -131,7 +131,7 @@
       ;; the runtime file reader is outside this Case's boundary.
       (def publication
         (.o identity: 'custom/example features: (.o)
-          core: (.o requires: (.o) scope-contract: ScopeContract
+          core: (.o scope-contract: ScopeContract
                     link: (lambda (_dependencies) (.o greeting: "original")))))
       (def view
         (yuanxu-load-modules
@@ -173,7 +173,7 @@
       ;; the runtime file reader is outside this Case's boundary.
       (def publication
         (.o identity: 'custom/example features: (.o)
-          core: (.o requires: (.o) scope-contract: ScopeContract
+          core: (.o scope-contract: ScopeContract
                     link: (lambda (_dependencies) (.o greeting: "original")))))
       (def view
         (yuanxu-load-modules

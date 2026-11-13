@@ -106,10 +106,10 @@
                     (string-append "(call-with-output-file " (object->string marker)
                       " (lambda (port) (display \"unexpected\" port))) (def Greeting \"other\") (export Greeting)"))
                   (write-file (path-expand "interface.ss" other)
-                    "(.def Fixture identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope) features: (.o))"))
+                    "(.def Fixture identity: 'custom/other core: (.o scope-contract: FixtureContract exports: FixtureScope) features: (.o))"))
                 (write-file (path-expand "interface.ss" module-root)
                   (string-append
-                    "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope) features: (.o ci: (begin (call-with-output-file "
+                    "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: FixtureScope) features: (.o ci: (begin (call-with-output-file "
                     (object->string marker)
                     " (lambda (port) (display \"unexpected\" port))) (error \"Feature executed before source refusal\"))))")))
               (def view (yuanxu-load-modules (path-expand "init.ss" root)))
@@ -150,7 +150,7 @@
                        (call-with-output-file (list path: ,config truncate: #t)
                          (lambda (out) (display ,replacement out)))
                        'custom/example)
-                     core: (.o requires: (.o) scope-contract: FixtureContract
+                     core: (.o scope-contract: FixtureContract
                                exports: FixtureScope)
                      features: (.o)) port))))
           ;; Use a fresh reader after writing the declaration. The mutation
@@ -240,7 +240,7 @@
             (string-append "(call-with-output-file " (object->string marker)
               " (lambda (port) (display \"unexpected\" port))) (def Greeting \"other\") (export Greeting)"))
           (write-file (path-expand "interface.ss" other)
-            "(.def Fixture identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
+            "(.def Fixture identity: 'custom/other core: (.o scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def context (.get view context))
           (def locate (.get context locate))
@@ -325,7 +325,7 @@
             (string-append
               (call-with-output-string
                 (cut write `(import (only-in ,(.get library path) ExternalValue)) <>))
-              "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o value: ExternalValue)) features: (.o))"))
+              "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: (.o value: ExternalValue)) features: (.o))"))
           (def requests 0)
           (def preparations 0)
           (def reader (module-publication-reader))
@@ -358,7 +358,7 @@
             (string-append
               (call-with-output-string
                 (cut write `(import (only-in ,(.get library path) ExternalValue)) <>))
-              "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o value: ExternalValue)) features: (.o))"))
+              "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: (.o value: ExternalValue)) features: (.o))"))
           (def reader (module-publication-reader))
           (.call reader read source)
           (set-load-path! (cons (.get library shadow) (load-path)))
@@ -586,7 +586,7 @@
          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example) (bomb disable: #t))")
          (write-file (path-expand "modules/custom/bomb/interface.ss" root) "(((not readable")
          (write-file (path-expand "interface.ss" module-root)
-           "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (error \"domain scope must remain deferred\")) features: (.o cold: (error \"unselected feature forced\")))")
+           "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: (error \"domain scope must remain deferred\")) features: (.o cold: (error \"unselected feature forced\")))")
          (let ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                (output (path-expand "generated" root)))
            (check-equal? (.get view selected-graph module-order) '(custom/example))
@@ -603,7 +603,7 @@
                                  (exception-message (lambda () (.get view selected-graph)))
                                  "bootstrap cannot import its own interface") #t #f) #t))
            (write-file path
-             "(.def Fixture identity: 'wrong/owner core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o)) features: (.o))")
+             "(.def Fixture identity: 'wrong/owner core: (.o scope-contract: FixtureContract exports: (.o)) features: (.o))")
            (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
              (check-exception (.get view build-graph) error?))))))
 
@@ -749,7 +749,7 @@
       (with-publication-source
        (lambda (root module-root source view)
          (write-file (path-expand "interface.ss" module-root)
-           "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting:)) features: (.o))")
+           "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: (.o greeting:)) features: (.o))")
          ;; The malformed text belongs to a fresh source generation; a held
          ;; SourceRef from before the edit is expected to refuse as stale.
          (let* ((fresh (yuanxu-load-modules (path-expand "modules" root)))

@@ -88,7 +88,7 @@
                        "compiled role export is not a runtime value")))))
     (test-case "only closed runtime role exports use the deferred projection"
       (def interface
-        "(.def Module identity: 'example core: (.o requires: (.o) scope-contract: ScopeContract exports: Config) features: (.o))")
+        "(.def Module identity: 'example core: (.o scope-contract: ScopeContract exports: Config) features: (.o))")
       (check-equal?
         (module-deferred-role-exports interface
           '((types . "(def ScopeContract #f) (export ScopeContract)")

@@ -19,7 +19,7 @@
 (def (write-source path text)
   (create-directory* (path-directory path))
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
-(def (prepare-source root (requires "(.o)"))
+(def (prepare-source root (imports ""))
   (write-source (path-expand "gerbil.pkg" root)
     (string-append "(package: " (symbol->string (gensym 'source-admission-)) ")"))
   (def directory (path-expand "modules/example" root))
@@ -31,8 +31,8 @@
     "(import (only-in :clan/poo/object .o) \"./private/helper.ss\") (def Scope (.o message: greeting)) (export Scope)")
   (write-source (path-expand "config.ss" directory) "(def Enabled #t) (export Enabled)")
   (write-source (path-expand "interface.ss" directory)
-    (string-append "(.def Example identity: 'example core: (.o requires: " requires
-      " scope-contract: ScopeContract exports: Scope) features: (.o))"))
+    (string-append imports " (.def Example identity: 'example core: (.o
+      scope-contract: ScopeContract exports: Scope) features: (.o))"))
   ;; Neither the source guard nor test discovery may expand/evaluate this body.
   (write-source (path-expand "tests/atomic-test.ss" directory)
     "(begin-syntax (error \"test expanded during discovery\")) (error \"test evaluated during discovery\")")

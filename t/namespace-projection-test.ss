@@ -30,7 +30,7 @@
                 (def id (yuanxu-module-source-ref-value source))
                 (set! reads (cons id reads))
                 (.o identity: id features: (.o)
-                    core: (.o requires: (.o) scope-contract: ObjectScope
+                    core: (.o scope-contract: ObjectScope
                               link: (lambda (_dependencies)
                                       (set! forced (cons id forced))
                                       (.o identity: id revision: captured))))))))

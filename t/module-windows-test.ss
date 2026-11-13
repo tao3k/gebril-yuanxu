@@ -141,7 +141,7 @@
             features: (.o))))
       (write-forms (path-expand "scenarios/release/interface.ss" root)
         '((.def Published identity: 'release
-            core: (.o requires: (.o) scope-contract: Scope exports: (.o value: 42))
+            core: (.o scope-contract: Scope exports: (.o value: 42))
             features: (.o))))
       (def (mounted-view file mount)
         (def source (path-expand file root))
@@ -190,7 +190,7 @@
         '((def Cold (error "unvisited sibling Objects ran")) (export Cold)))
       (write-forms (path-expand "interface.ss" spare)
         '((.def Spare identity: 'spare
-            core: (.o requires: (.o) scope-contract: Scope exports: (.o value: Cold))
+            core: (.o scope-contract: Scope exports: (.o value: Cold))
             features: (.o))))
       (write-forms (path-expand "init.ss" root)
         '((import :tao3k/yuanxu/module-system/selection/init-syntax)
@@ -302,7 +302,7 @@
               (export Scope Shared)))
           (write-forms (path-expand "interface.ss" (path-expand directory root))
             `((.def Published identity: ',(if (string-prefix? "modules/" directory) 'engine 'release)
-                core: (.o requires: (.o) scope-contract: Scope
+                core: (.o scope-contract: Scope
                           exports: (.o shared: Shared)) features: (.o)))))
         '("modules/engine" "scenarios/release"))
       (def saved (load-path))
@@ -364,7 +364,7 @@
                 '("types.ss" "objects.ss" "config.ss"))
       (write-forms (path-expand "interface.ss" second)
         '((.def Engine identity: 'engine
-            core: (.o requires: (.o) scope-contract: Scope exports: (.o value: 77))
+            core: (.o scope-contract: Scope exports: (.o value: 77))
             features: (.o))))
       (write-forms (path-expand "init.ss" root)
         '((yuanxu! :load-modules "./modules" mode: explicit rename: Modules (engine)

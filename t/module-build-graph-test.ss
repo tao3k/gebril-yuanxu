@@ -51,7 +51,7 @@
              (string-append "(.def Published identity: '" id
                (if (string=? id "app/web")
                    " core: (.o requires: (.o Schema: (.o module-id: 'core/schema contract: Scope)) scope-contract: Scope exports: (.o greeting: Greeting)) features: (.o))"
-                   " core: (.o requires: (.o) scope-contract: Scope exports: (.o greeting: Greeting)) features: (.o))")))))
+                   " core: (.o scope-contract: Scope exports: (.o greeting: Greeting)) features: (.o))")))))
         '("app/web" "core/schema"))
        (write-file (path-expand "modules/app/web/extra/early.ss" root)
                    "(def Early 'early) (export Early)")
@@ -246,7 +246,7 @@
                       (owner (cdr (assq 'module-id metadata)))
                       (declaration (assq 'declaration-id metadata)))
                  (.o identity: (if declaration (cdr declaration) owner) features: (.o)
-                   core: (.o requires: (.o) scope-contract: Scope
+                   core: (.o scope-contract: Scope
                            projections: (if (eq? owner web-id) projection-values '())
                            link: (lambda (_dependencies) (.o greeting: 'source retained: #t))))))))
          (def view (select (list (projection 'web-package))))

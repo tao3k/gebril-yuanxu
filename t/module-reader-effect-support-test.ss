@@ -57,7 +57,7 @@
                   " (lambda (p) (display \"initialized\" p))) "
                   "(def Greeting \"other\") (export Greeting)"))
               (write-file (path-expand "interface.ss" second-root)
-                "(.def Module identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
+                "(.def Module identity: 'custom/other core: (.o scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
               (def view (yuanxu-load-modules (path-expand "modules" root)))
               (def locate (.get view context locate))
               (def reader (module-publication-reader))
