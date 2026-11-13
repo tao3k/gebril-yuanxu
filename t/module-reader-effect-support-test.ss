@@ -14,7 +14,7 @@
         (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/types ModuleSourceRoleContract)
-        (only-in :tao3k/yuanxu/object-family/read-projection
+        (only-in :clan/poo/read-projection
                  call-with-owned-read-projection current-owned-read-open-guard)
         (only-in :tao3k/yuanxu/object-types/contracts
                  yuanxu-classification-evidence yuanxu-validation-evidence)

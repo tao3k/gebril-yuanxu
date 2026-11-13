@@ -5,7 +5,7 @@
 (import (only-in :std/list/list delete-duplicates/hash foldl foldr)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
         (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         (runtime: :clan/poo/object)
         :tao3k/yuanxu/module-system/source/objects
         :tao3k/yuanxu/module-system/source/publication

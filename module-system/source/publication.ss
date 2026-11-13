@@ -4,7 +4,7 @@
 ;;; Source capabilities supply generation-qualified declarations, never user syntax.
 (import (only-in :std/list/list delete-duplicates/hash)
         (runtime: :clan/poo/object)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         (only-in :clan/poo/mop Type Type. Object define-type element?)
         (only-in :clan/poo/type Record Symbol List Or)
         (only-in :tao3k/yuanxu/object-types/contracts yuanxu-value-admit yuanxu-validation-evidence-accepted?)

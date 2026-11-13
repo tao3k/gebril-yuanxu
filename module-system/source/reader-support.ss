@@ -5,7 +5,7 @@
 (import (only-in :clan/poo/object object-construction-current?
                  call-with-current-slot-reads replay-slot-reads!)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         (only-in :tao3k/yuanxu/module-system/source/preparation module-compiler-source-input-compatible?)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  module-source-measure-operation module-source-measure-replay)

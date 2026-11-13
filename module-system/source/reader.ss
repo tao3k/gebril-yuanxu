@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Assemble the public reader over one generation-local source session.
 (import (only-in :clan/poo/object .o .ref object-construction-current?)
-        (only-in :tao3k/yuanxu/object-family/read-projection current-owned-read-open-guard
+        (only-in :clan/poo/read-projection current-owned-read-open-guard
                  call-with-owned-source-reads owned-read-function-scope?)
         (only-in :tao3k/yuanxu/module-system/source/directory
                  directory-candidate-guard? directory-candidate-guard-invoke)

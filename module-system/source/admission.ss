@@ -8,7 +8,7 @@
         (only-in :clan/poo/mop Type element? validate)
         (only-in :clan/poo/slot-observation
                  call-with-slot-read-observer slot-read-receiver slot-read-key without-observation)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         (only-in :tao3k/yuanxu/module-system/source/role-forms yuanxu-module-allowed-entrypoint-roles
                  yuanxu-module-required-role-files module-role-file)
         (only-in :std/list/list any)

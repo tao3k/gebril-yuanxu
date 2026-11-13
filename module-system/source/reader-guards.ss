@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Authenticate source, metadata and policy at reader operation boundaries.
-(import (only-in :tao3k/yuanxu/object-family/read-projection current-owned-read-open-guard)
+(import (only-in :clan/poo/read-projection current-owned-read-open-guard)
         :tao3k/yuanxu/module-system/source/admission
         :tao3k/yuanxu/module-system/source/reader-session
         :tao3k/yuanxu/module-system/source/reader-support

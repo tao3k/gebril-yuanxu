@@ -16,7 +16,7 @@
                  %call-with-recorded-slot-reads slot-read-observers-compatible? without-observation)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
-        (only-in :tao3k/yuanxu/object-family/read-projection
+        (only-in :clan/poo/read-projection
                  call-with-owned-source-reads owned-read-function-scope?)
         (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :tao3k/yuanxu/module-system/authoring/admission
@@ -27,10 +27,10 @@
                  yuanxu-module-authoring-source-admit
                  yuanxu-module-authoring-admission-accepted?)
         (only-in :tao3k/yuanxu/module-system/authoring/roles ConfigSourceRole.)
-        (only-in :tao3k/yuanxu/poo-clos/types
+        (only-in :clan/poo/clos/types
                  ClosGenericFunction ClosEffectiveMethod ClosInvocationFrame ClosMethod)
-        (only-in :tao3k/yuanxu/poo-clos/objects %prepare-effective-method)
-        (only-in :tao3k/yuanxu/poo-clos/dispatch
+        (only-in :clan/poo/clos/objects %prepare-effective-method)
+        (only-in :clan/poo/clos/dispatch
                  poo-clos-call poo-clos-compute-effective-method))
 (export module-authoring-dispatch-work-test)
 

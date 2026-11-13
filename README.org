@@ -89,7 +89,6 @@ shows the declared window, Interface, native =.get= and leaf =self=/=super= sema
 | =module-system/= | Runtime Module values, schemas, inheritance, SourceRef, static Loader and Catalog |
 | =profile-composition/= | Indexed Module Profile selection and pure ProfileBundle composition |
 | =observability/= | Observations, feedback, slot presentation, memory sampling, testing Case |
-| =poo-clos/= | CLOS-specific metaprotocols over POO objects and MOP |
 
 Within =module-system/=, =types.ss= and =objects.ss= own values and Contracts;
 =funs.ss= and =graph/funs.ss= own pure operations; =config.ss= owns generic
@@ -104,10 +103,9 @@ evaluator. Explicit graph contributions execute once in declaration order.
 Their receipts record application and whether that pass changed the graph; they
 do not assert idempotence or fixed-point convergence.
 
-The CLOS layer adds multiple dispatch, method combination, lifecycle, and
-other CLOS semantics absent from the base MOP. Object identity, slot lookup,
-Type validation, and C4 precedence remain owned by =gerbil-poo=. See
-[[file:poo-clos/README.org][the CLOS implementation notes]] for its API and conformance boundary.
+CLOS consumers import =:clan/poo/clos= from Gerbil-POO. Its CLOS layer
+adds multiple dispatch, method combination, and class lifecycle over
+the existing object and Slot model.
 
 * Boundary with Agentic AI Lab
 

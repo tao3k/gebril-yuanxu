@@ -5,7 +5,7 @@
 ;;; resolver check one selected dependency Graph without another ordering policy.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         (only-in :tao3k/yuanxu/ops/progress current-execution-progress execution-progress!)
         (only-in :tao3k/yuanxu/module-system/graph/funs module-closure)
         (only-in :tao3k/yuanxu/module-system/source/observations

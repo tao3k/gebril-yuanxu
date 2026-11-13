@@ -72,7 +72,7 @@
                                   "module-system/bootstrap/body-inclusion"
                                   "module-system/schema/slot-contracts"
                                   "module-system/source/declaration" "module-system/source/role-forms"
-                                  "object-family/read-projection" "object-family/syntax"
+                                  "object-family/syntax"
                                   "object-types/contracts" "object-types/facts" "object-types/ports"
                                   "observability/funcs" "observability/objects" "observability/types"
                                   "utilities/algorithms" "utilities/functional")) port)))

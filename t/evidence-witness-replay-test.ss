@@ -3,7 +3,7 @@
 (import :std/test :clan/poo/object
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads replay-slot-reads!
                  slot-read-key slot-read-receiver slot-read-dependencies)
-        (only-in :tao3k/yuanxu/object-family/read-projection call-with-owned-read-projection owned-read-leaf!)
+        (only-in :clan/poo/read-projection call-with-owned-read-projection owned-read-leaf!)
         (only-in :tao3k/yuanxu/object-types/contracts yuanxu-classification-evidence yuanxu-validation-evidence)
         (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-memory-snapshot)
         (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)

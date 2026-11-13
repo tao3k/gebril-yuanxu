@@ -13,7 +13,7 @@
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-receiver slot-read-key)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :tao3k/yuanxu/object-family/read-projection
+        (only-in :clan/poo/read-projection
                  call-with-owned-read-projection current-owned-read-open-guard)
         (only-in :tao3k/yuanxu/module-system/authoring/roles make-default-module-authoring-profile)
         (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)

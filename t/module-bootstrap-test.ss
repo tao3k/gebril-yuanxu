@@ -284,7 +284,7 @@
             '(.o .get .ref)))
         '("module-system/building/interface.ss" "module-system/building/build-projection.ss"
           "module-system/source/build.ss" "admission/source.ss"
-          "object-types/contracts.ss" "poo-clos/dispatch.ss")))
+          "object-types/contracts.ss")))
     (yuanxu-test-case "runtime imports preserve deliberate constructor and predicate shadows"
       (for-each
         (lambda (row)

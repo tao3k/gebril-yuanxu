@@ -20,10 +20,10 @@
         :tao3k/yuanxu/module-system/authoring/admission
         (only-in :tao3k/yuanxu/module-system/authoring/roles ModuleAuthoringExecutor.
                  yuanxu-default-module-authoring-profile)
-        (only-in :tao3k/yuanxu/poo-clos/objects
+        (only-in :clan/poo/clos/objects
                  poo-clos-generic-protocol poo-clos-generic-function
                  poo-clos-compose-method-bundle poo-clos-add-method poo-clos-remove-method)
-        (only-in :tao3k/yuanxu/poo-clos/dispatch poo-clos-call)
+        (only-in :clan/poo/clos/dispatch poo-clos-call)
         :tao3k/yuanxu/module-system/authoring/import-policy
         :tao3k/yuanxu/module-system/authoring/projection)
 (export module-authoring-test)

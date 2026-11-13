@@ -26,16 +26,16 @@
                  yuanxu-poo-slot-authoring-self-reference?)
         ;; Role admission needs dispatch and immutable method declarations, not
         ;; the aggregate class evolution/reflection/load-form publication.
-        (only-in :tao3k/yuanxu/poo-clos/objects
+        (only-in :clan/poo/clos/objects
                  poo-clos-generic-protocol
                  poo-clos-generic-binding-current poo-clos-compose-method-bundle
                  clos-call-carrier-policy-guard)
-        (only-in :tao3k/yuanxu/object-family/read-projection call-with-owned-read-projection
+        (only-in :clan/poo/read-projection call-with-owned-read-projection
                  owned-read-function-scope? owned-read-method! owned-read-derived!
                  owned-read-fields-present?)
-        (only-in :tao3k/yuanxu/poo-clos/generic-syntax .defgeneric .defmethod)
-        (only-in :tao3k/yuanxu/poo-clos/dispatch poo-clos-call poo-clos-compute-applicable-methods)
-        (only-in :tao3k/yuanxu/poo-clos/method-bundle-syntax .defmethod-bundle)
+        (only-in :clan/poo/clos/generic-syntax .defgeneric .defmethod)
+        (only-in :clan/poo/clos/dispatch poo-clos-call poo-clos-compute-applicable-methods)
+        (only-in :clan/poo/clos/method-bundle-syntax .defmethod-bundle)
         (only-in :tao3k/yuanxu/module-system/authoring/roles ModuleAuthoringExecutor. ModuleSourceRole. ConfigSourceRole.))
 
 (export ModuleAuthoringAnalysisProtocol

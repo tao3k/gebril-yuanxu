@@ -9,7 +9,7 @@
         (only-in :gerbil/runtime/gambit unbound-global-exception?)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads slot-read-dependencies slot-read-receiver)
         (only-in "./qualification/retention/payload.ss" report-retained-reads)
-        (only-in :tao3k/yuanxu/poo-clos/types ClosEffectiveMethod ClosInvocationFrame)
+        (only-in :clan/poo/clos/types ClosEffectiveMethod ClosInvocationFrame)
         (only-in :tao3k/yuanxu/t/qualification/module-scale/fixture DeclarationFixture)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-export-name)
         (only-in :tao3k/yuanxu/module-system/building/test-observation ModuleTestingProfile.)
