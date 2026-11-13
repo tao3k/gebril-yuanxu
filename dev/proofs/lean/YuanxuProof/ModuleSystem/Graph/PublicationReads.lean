@@ -1417,6 +1417,38 @@ theorem private_wrapper_retirement_keeps_import_trace
   exact retire_wrapper_alias_preserves_other_bindings states privateContext context result
     (fun same => unreachable (same ▸ member))
 
+/-- Recording visits preparation and admission in row order. The collector
+accumulates in reverse and returns the original ordered groups. -/
+theorem publication_root_groups_preserve_order
+    (rows : List (Option (List Read × List Read))) :
+    (rows.foldl (fun groups row =>
+      match row with
+      | none => groups
+      | some (preparation, admission) => admission :: preparation :: groups) []).reverse =
+    rows.foldr (fun row groups =>
+      match row with
+      | none => groups
+      | some (preparation, admission) => preparation :: admission :: groups) [] := by
+  suffices ∀ initial : List (List Read),
+      (rows.foldl (fun groups row =>
+        match row with
+        | none => groups
+        | some (preparation, admission) => admission :: preparation :: groups) initial).reverse =
+      initial.reverse ++ rows.foldr (fun row groups =>
+        match row with
+        | none => groups
+        | some (preparation, admission) => preparation :: admission :: groups) [] by
+    simpa using this []
+  induction rows with
+  | nil => simp
+  | cons row tail ih =>
+    intro initial
+    cases row with
+    | none => simpa using ih initial
+    | some segments =>
+      rcases segments with ⟨preparation, admission⟩
+      simpa [List.reverse_cons, List.append_assoc] using ih (admission :: preparation :: initial)
+
 /-- A fixed dispatch may retain native read identities and receiver topology.
 Each actual owner still has its own selection and independent authentication. -/
 theorem fixed_dispatch_trace_keeps_owner_and_refusal

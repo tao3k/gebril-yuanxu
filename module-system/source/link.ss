@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Generation-local linking over admitted source capabilities. The filesystem source adapter remains separate from runtime loading.
-(import (only-in :std/list/list delete-duplicates/hash foldl foldr)
+(import (only-in :std/list/list delete-duplicates/hash foldl)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
         (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
         (only-in :clan/poo/read-projection owned-read-function-scope?)
@@ -17,7 +17,7 @@
         :tao3k/yuanxu/module-system/source/preparation
         :tao3k/yuanxu/module-system/source/directory
         (only-in :tao3k/yuanxu/module-system/source/reader-support call-with-publication-reads
-                 merge-publication-read-roots)
+                 merge-publication-root-segments)
         (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?))
 (import (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path))
 (export yuanxu-load-modules module-namespace-project module-program-namespace module-program-feature call-with-linked-prepared-guards
@@ -484,11 +484,8 @@
           roots:
           (module-source-measure-operation 'metadata-root-merge
             (lambda ()
-              (merge-publication-read-roots
-                (foldr (lambda (record groups)
-                         (let (segments (linked-publication-metadata-roots record))
-                           (if segments (cons (car segments) (cons (cdr segments) groups)) groups)))
-                       '() (.get index rows)))))
+              (merge-publication-root-segments (.get index rows)
+                linked-publication-metadata-roots)))
           ;; Route only: a protected invocation still authenticates all
           ;; ORIGINAL reads, holds the receivers and rechecks on return.
           ;; Unprotected callers authenticate independently before proceeding.

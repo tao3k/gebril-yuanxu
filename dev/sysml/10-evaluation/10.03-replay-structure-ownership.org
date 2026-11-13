@@ -128,6 +128,20 @@ reduced retained memory by 18.0 MiB, while measured CPU and peak footprint
 increased. It was discarded. This isolates the retention cost of the
 wrapper Contexts from the much larger cost of admission itself.
 
+** Root aggregation stack bound
+
+Ubuntu PR 22 at =7a04cf3= finished first Graph in 402.70 seconds and
+reported a stack overflow during independent currentness. Root aggregation
+used the installed Gerbil's non-tail =foldr= over all publication rows.
+The candidate streams both segments of each row into the existing POO
+collector, in forward order. Aggregation uses constant stack space and
+avoids allocating a second list of groups.
+=PublicationReads.publication_root_groups_preserve_order= proves that the
+ordered preparation and admission groups sent to POO are identical,
+including rows without roots. POO still owns deduplication and issuance
+authentication. This removes one unbounded stack path. The Ubuntu log
+does not identify the failing frame.
+
 The 16/32-owner census also traced cross-fixture retention after deleting
 the first fixture's source tree and collecting twice. The first init's
 path and module ID still resolved to the same registered Gerbil Context.
