@@ -17,9 +17,10 @@ standard =std/test= Suites/Cases and let the installed tool own discovery,
 module setup/cleanup, assertions and the Harness verdict. No development execution adapter may wrap the official CLI. Metadata helpers
 may project a complete file partition, but cannot run or interpret a Harness. Explicit tests of process APIs
 may exercise those APIs, but do not define the ordinary test execution path.
-For the published Module suites, =just test-selected-modules= reads
-=Exports.tests= and passes its file list to one =gerbil test=
-invocation. Author Cases and Fixtures with the macros from
+For the published Module suites, =just test-selected-modules= first compiles
+the init-selected Module projection with =std/make=. It then reads
+=Exports.tests= and passes its file list to one =gerbil test= invocation.
+Author Cases and Fixtures with the macros from
 =:tao3k/yuanxu/testing=.
 Support compilation belongs to the independent build entry and its existing
 =std/make= specification and issuance boundary. Source currentness, contribution

@@ -111,6 +111,7 @@ test-selected-modules:
     #!/usr/bin/env bash
     set -euo pipefail
     export GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}"
+    {{ gerbil_compiler_environment }} timeout --signal=TERM --kill-after=5s 300s gxi {{ gerbil_test_runtime_options }} dev/build-published-modules.ss
     files=()
     selected=$(gxi {{ gerbil_test_runtime_options }} -e '(import (only-in "./dev/ci-inventory.ss" main))' -e '(main "--published")')
     test -n "$selected"
