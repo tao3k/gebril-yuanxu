@@ -27,7 +27,11 @@
           (display (string-append "example/" name) port)
           (display "\n(import :gerbil/core)\n(export (import: :gerbil/core))\n" port)))
       (parameterize ((current-expander-context (make-top-context)))
-        (proc root package identity)))))
+        (def previous (load-path))
+        (dynamic-wind
+          void
+          (lambda () (proc root package identity))
+          (lambda () (set-load-path! previous)))))))
 (def package-owned-prelude-test
   (test-suite "Package-owned language registration"
     (test-case "product prelude retains standard source and target identity"

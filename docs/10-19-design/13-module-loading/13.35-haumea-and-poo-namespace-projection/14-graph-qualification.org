@@ -171,6 +171,14 @@ expansion, native replay, source guards and selected graph construction on the
 same workload. Preserve effect boundaries and read counts on both sides of
 any optimization.
 
+A local dense-selection repeat at =229606c= stopped inside first Graph
+admission. The incomplete span consumed 599.35 seconds wall, 179.22 seconds
+CPU and 39.43 seconds GC wall before the 650-second Case watchdog fired.
+The sampled stack was in Gerbil =core-bind-syntax!= and =core-expand-module-begin=
+under =reader-read-publication=. This identifies the operation at interruption;
+the stack sample does not attribute the preceding span. The outer command
+returned 137 and the Harness recorded the duration failure.
+
 * Publication checklist
 
 - [X] POO implementation branch =feat/indexed-graph-algorithms= created from the
