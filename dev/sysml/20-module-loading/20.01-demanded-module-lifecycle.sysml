@@ -28,6 +28,13 @@ package YuanxuModuleLoading {
                observation window. A matching receiver revision alone does not
                establish that a separately mutable sequence is unchanged. */
     }
+    requirement def ProfileClassificationRevision {
+        doc /* Preserve candidate directory order. Reclassify changed inputs
+               only when an authenticated change set covers every differing
+               classification input. Decoder policy is part of that input.
+               Unknown revisions require complete Profile currentness. A tag
+               match does not approve the selected owner's source bytes. */
+    }
     part def PublicationPreflight {
         ref part declaration : SelectedDeclarations;
         attribute descriptorsValid : Boolean;

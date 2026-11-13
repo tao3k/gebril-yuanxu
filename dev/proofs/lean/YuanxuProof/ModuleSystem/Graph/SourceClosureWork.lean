@@ -752,6 +752,35 @@ theorem omitted_profile_candidate_blocks_global_certification [DecidableEq Node]
     omitted_support_can_escape checked owner omitted
   exact ⟨before, after, same, fun all => changed (all owner eligible)⟩
 
+/-- A Profile certificate records the classification of every candidate, in
+directory order. A tracked edit can restrict classification to changed
+inputs only when it covers every changed classification input. The input
+includes the file and its decoder policy. Unknown changes need a full check. -/
+theorem profile_delta_preserves_ordered_selection [DecidableEq Node]
+    {Input Tag : Type} (candidates changed : List Node)
+    (before after : Node → Input) (classify : Input → Tag) (select : Tag → Bool)
+    (complete : ∀ owner ∈ candidates, owner ∉ changed → before owner = after owner) :
+    candidates.filter (fun owner =>
+      select (classify (if owner ∈ changed then after owner else before owner))) =
+      candidates.filter (fun owner => select (classify (after owner))) := by
+  apply List.filter_congr
+  intro owner member
+  by_cases edited : owner ∈ changed
+  · simp [edited]
+  · simp [edited, complete owner member edited]
+
+/-- Content edits with unchanged tags do not change Profile roots. The
+selected owner's independent source guard still observes the content edit. -/
+theorem profile_same_classification_preserves_selection
+    {Input Tag : Type} (candidates : List Node) (before after : Node → Input)
+    (classify : Input → Tag) (select : Tag → Bool)
+    (same : ∀ owner ∈ candidates, classify (before owner) = classify (after owner)) :
+    candidates.filter (fun owner => select (classify (before owner))) =
+      candidates.filter (fun owner => select (classify (after owner))) := by
+  apply List.filter_congr
+  intro owner member
+  rw [same owner member]
+
 def candidateDecision [DecidableEq Node] (enabled denied : List Node)
     (owner : Node) : Option Bool :=
   if owner ∈ denied then some false

@@ -317,7 +317,9 @@
                         (if (or (current-module-source-observer)
                                 (not (eq? (current-readtable) __*readtable*)))
                           (equal? tags (module-source-observe interface-tags file))
-                          (let (observed (module-source-observe module-source-read file))
+                          ;; The reader already owns the physical path entry
+                          ;; in this window. Compare this guard's own tag evidence.
+                          (let (observed (module-source-read file))
                             (or (string=? text observed)
                                 (equal? tags (module-interface-tags file observed)))))))
                 observations))

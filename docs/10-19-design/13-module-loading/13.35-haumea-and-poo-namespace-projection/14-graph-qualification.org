@@ -225,6 +225,18 @@ than a before/after latency claim. The source observation fix eliminates
 duplicate file opens inside one window; each independent effect can still
 change an unselected Interface's eligibility and requires its own check.
 
+=SourceClosureWork.profile_delta_preserves_ordered_selection= proves the
+next boundary for Profile currentness. Given the live ordered directory
+roster and a complete change set for classification inputs, reclassifying
+only changed inputs yields the same ordered roots as classifying all owners.
+Completeness includes the decoder policy and any previously excluded owner.
+The Scheme Profile check still reads all candidates when source provenance
+cannot supply that change set. Its closed tag comparison now reads the
+existing physical path entry directly, avoiding a redundant generic query
+lookup for every Interface. Open observers and alternate readtables keep the
+original decoder route. The 1,000-owner Profile test passes, including the
+unselected-owner tag-change refusal.
+
 * Publication checklist
 
 - [X] POO implementation branch =feat/indexed-graph-algorithms= created from the
