@@ -387,3 +387,24 @@ index and revision path once a Module edit can identify the exact old
 snapshot, changed rows and dependency registrations. Preserve independent
 source and author-effect checks and use full admission when the edit origin
 is unknown. The [[file:../../dev/sysml/20-module-loading/20.06-local-dependency-order.sysml][local dependency order contract]] records this boundary.
+
+* Feature flag observation and admitted-row shortcut
+
+The historical admitted-row candidate above decides its no-Feature path after
+reading each decision's =selection-flags=. The ordinary projection reads flags
+again while collecting selected Features for reached owners. Reusing the first
+empty observation as authority for omitting that later read requires a stable
+observation across the intervening work. No open source observer is not by
+itself a proof of that stability or of equivalent callback and lazy-slot
+behavior. The current Release also emits a =selected-topology= progress event
+before the final currentness check; any future adaptation must retain that
+callback boundary.
+
+=DependencyOrderRepair.skip_later_flags_exact= states a sufficient condition
+for equal returned flag lists. =early_empty_does_not_certify_later_flags=
+constructs an abstract counterexample without it. This is a model of values,
+not a demonstration that an actual Gerbil execution reaches the change, nor
+proof that omitting a slot read preserves effects or diagnostics. The shortcut
+remains a candidate until those runtime premises, fallback behavior and the
+existing mutation and downstream gates are independently tested. These laws
+and the former sparse measurement are not a dense end-to-end improvement.

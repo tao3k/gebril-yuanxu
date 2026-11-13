@@ -88,4 +88,23 @@ theorem guarded_rows_exact
 #guard guardedRows (id : Nat → Nat) [1] [(7, [1])] (fun _ => [2]) (fun _ => [3]) false ==
   [(1, [3]), (7, [1])]
 
+/-- A no-Feature shortcut skips the later Feature flag observation only when
+its earlier empty result remains authoritative through that observation.
+This models returned flags, not callback delivery, lazy forcing, diagnostics,
+or the runtime mechanism that could establish the premise. -/
+def skipLaterFlags {Flag : Type} (early late : List Flag) : List Flag :=
+  if early.isEmpty then [] else late
+
+theorem skip_later_flags_exact {Flag : Type} (early late : List Flag)
+    (stableEmpty : early = [] → late = []) : skipLaterFlags early late = late := by
+  cases early with
+  | nil => simp [skipLaterFlags, stableEmpty rfl]
+  | cons head tail => simp [skipLaterFlags]
+
+/-- Matching the first empty observation cannot rule out a Feature appearing
+before the later read. Runtime reachability still needs an executable control. -/
+theorem early_empty_does_not_certify_later_flags :
+    skipLaterFlags ([] : List Bool) [true] ≠ [true] := by
+  decide
+
 end YuanxuProof.ModuleSystem.Graph.DependencyOrderRepair
