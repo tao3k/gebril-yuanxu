@@ -355,8 +355,13 @@
     "business-eval-complete modules=%s admissions=2 scopes=2 demanded=module-1 provider=module-0 unrelated=cold"
     count)
   (def graph
-    (measure-runtime count 'full-graph-after-business
-      (lambda () (.get FixtureExports tests selected-graph))))
+    (cond-expand
+      (yuanxu-module-test-stage-accounting
+        (measure-runtime-source count 'full-graph-after-business
+          (lambda () (.get FixtureExports tests selected-graph)) 'stages))
+      (else
+        (measure-runtime count 'full-graph-after-business
+          (lambda () (.get FixtureExports tests selected-graph))))))
   (check-equal? (length (.get graph module-order)) count)
   (yuanxu-write-observation-line!
     "business-eval-full-graph modules=%s declarations=%s" count (length (.get graph module-order))))

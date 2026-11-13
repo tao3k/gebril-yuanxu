@@ -329,20 +329,17 @@
                              (hash-put! (reader-session-kernel-inputs session) child input)
                              (hash-put! (reader-session-kernel-owners session) child owner)
                              (hash-put! (reader-session-kernel-data session) child assets)
-                             (when initialization-current!
-                               (hash-put! (reader-session-kernel-initializers session) child initialization-current!))
+                             (hash-put! (reader-session-kernel-initializers session) child initialization-current!)
                              (reader-add-input-guard! session input)
                              ;; Initialization support remains live after the
                              ;; transfer. A successful handoff is not approval
                              ;; for a later source or receiver mutation.
-                             (when initialization-current!
-                               (reader-session-add-guard! session
-                                 (make-source-preparation #f #f #f #f initialization-current! #f #f)))
+                             (reader-session-add-guard! session
+                               (make-source-preparation #f #f #f #f initialization-current! #f #f))
                              (for-each (lambda (asset)
                                          (reader-add-input-guard! session asset)
                                          (record-input! asset)) assets))
-                           (when initialization-current!
-                             (reader-enroll-candidate! session initialization-current!)))
+                           (reader-enroll-candidate! session initialization-current!))
                          (lambda (child)
                            (and (captured-import-context? (reader-session-compiler-contexts session) child)
                                 (begin (tool-context child #f) #t)))))))
