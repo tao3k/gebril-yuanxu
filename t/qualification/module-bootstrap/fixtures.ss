@@ -65,18 +65,19 @@
         (lambda (port)
           (display "prelude: :gerbil/core\n" port)
           (write '(export core-spec) port) (newline port)
-          ;; These package libraries are separate from the selected Module.
-          ;; Keep their compiled interfaces in the cold fixture too, so Make
-          ;; can distinguish a hot build from one with missing imports.
-          (write '(def core-spec '("prelude" "core-spec"
-                                  "module-system/selection/init-syntax"
-                                  "module-system/bootstrap/body-inclusion"
-                                  "module-system/schema/slot-contracts"
-                                  "module-system/source/declaration" "module-system/source/role-forms"
-                                  "object/syntax"
-                                  "types/contracts" "types/facts" "types/ports"
-                                  "observability/funcs" "observability/objects" "observability/types"
-                                  "utilities/algorithms" "utilities/functional")) port)))
+          ;; The process smoke needs the real prelude and its local import.
+          ;; Other source fixtures exercise the wider selected projection.
+          (write `(def core-spec ',(if sample
+                                   '("prelude" "core-spec" "module-system/selection/init-syntax")
+                                   '("prelude" "core-spec"
+                                     "module-system/selection/init-syntax"
+                                     "module-system/bootstrap/body-inclusion"
+                                     "module-system/schema/slot-contracts"
+                                     "module-system/source/declaration" "module-system/source/role-forms"
+                                     "object/syntax"
+                                     "types/contracts" "types/facts" "types/ports"
+                                     "observability/funcs" "observability/objects" "observability/types"
+                                     "utilities/algorithms" "utilities/functional"))) port)))
       (.o root: fixture-root state: fixture-state cold: #t))))
 
 (def (link-fixture-dependencies source target)
