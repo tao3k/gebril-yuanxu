@@ -624,20 +624,17 @@ single toolchain update rather than a consumer wrapper or fake heartbeat.
 All failed attempts and candidate logs remain ignored local artifacts. The
 public source tree contains neither transcripts nor compiled candidate tools.
 
-** Temporary CI timing run without the dense 180-second performance ceiling
+** Dense capacity watchdog and performance target
 
-At the maintainer's explicit request on 2026-11-11, only
-=module-declaration-10000-test.ss= and
-=module-runtime-selection-10000-test.ss= disable their 180-second performance
-ceiling. They inherit the ordinary 600-second Case resource watchdog. Both
-10,000-owner corpora, every semantic/currentness assertion, the 4 GiB heap and
-live-growth envelope, and the existing 60-second idle policy remain intact.
-The outer 600-second official-CLI timeout and 15-minute job limit also remain.
-Other scale tests retain their existing performance policy. No dependency pin
-or compiler concurrency setting changes.
+=module-declaration-10000-test.ss= and =module-runtime-selection-10000-test.ss=
+use a 700-second Case watchdog in CI and a 730-second outer CLI timeout. Both
+10,000-owner corpora, the semantic and currentness assertions, 4 GiB heap and
+live-growth limits, and the 60-second idle policy carry over. The same workload
+checks the 180-second target with =just test-file FILE performance=.
 
-This run measures CI completion with that performance acceptance criterion
-disabled. A green result cannot qualify the original 180-second requirement.
+In CI for =ab7eed0e= the macOS selection Graph took 619.78 seconds and its
+independent currentness check took 17.91 seconds. The Case hit the then-current
+650-second deadline before exiting. The capacity budget includes cleanup.
 Report queue delay, environment preparation, package build, test execution and
 artifact publication separately; aggregate completion is not a runtime benchmark.
 

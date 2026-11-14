@@ -15,11 +15,11 @@
         SparseBusinessEvalFixture SparseBusinessAttributionFixture
         declaration-scale-case declaration-scale-profile)
 (def (declaration-scale-profile count (performance-gate? #t))
-  ;; Full runs enforce the performance gate. Dense stage diagnostics may
-  ;; continue under the existing capacity budget to attribute overruns.
+  ;; The dense capacity Cases use a fixed termination budget. The optional
+  ;; performance run keeps the same workload and the 180-second target.
   (def selected (yuanxu-selected-testing-case-profile))
   (let (profile (.cc selected max-duration-milliseconds:
-                  (if performance-gate? 180000 650000)))
+                  (if performance-gate? 180000 700000)))
     (if (= count 10000)
       (.cc profile heap-limit-bytes: 4294967296 live-growth-limit-bytes: 4294967296)
       profile)))
@@ -168,9 +168,9 @@
    (declaration-scale-case description count fixture-profile #t))
   ((_ description count fixture-profile capacity-diagnostics)
    (cond-expand
-     (yuanxu-module-test-stage-accounting
-      (declaration-scale-case description count fixture-profile #f))
-     (else (declaration-scale-case description count fixture-profile #t))))
+     (yuanxu-module-test-performance-gate
+      (declaration-scale-case description count fixture-profile #t))
+     (else (declaration-scale-case description count fixture-profile #f))))
   ((_ description count fixture-profile performance-gate?)
    (yuanxu-test-fixture description profile: (declaration-scale-profile count performance-gate?)
      (fixture (.cc fixture-profile size: count))

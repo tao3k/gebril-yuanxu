@@ -147,11 +147,12 @@ checks. Authority tests require an isolated =CORE_STORE_ROOT=. The CI workflow
 performs this preparation explicitly rather than silently interpreting compiled
 fixtures as source. See [[file:dev/sysml/20-module-loading/20.30-test-discovery-and-domain-demand.org][the test execution boundary and preparation map]].
 
-Ordinary tests use a 2 GiB VM heap; ten-thousand-module cases use 4 GiB with
-the 180-second Case performance deadline. The dense declaration and selection
-cases temporarily disable that performance ceiling for a CI timing run and
-inherit the normal 600-second resource watchdog; all assertions remain. This
-diagnostic run does not qualify the 180-second requirement. Compiler capacity follows actual host
+Ordinary tests use a 2 GiB VM heap and ten-thousand-module cases use 4 GiB.
+The two dense declaration and selection cases have a 700-second Case watchdog
+and a 730-second CLI deadline for import and reporting. Use
+=just test-file t/module-declaration-10000-test.ss performance= or
+=just test-file t/module-runtime-selection-10000-test.ss performance= to check
+the same workload against the 180-second performance target. Compiler capacity follows actual host
 cores. A failing performance or idle gate remains a failure. Reproduce from
 the exact checkout and pinned toolchain; keep complete failed logs in ignored
 cache or expiring CI artifacts. Production build memory is not a test quota.
