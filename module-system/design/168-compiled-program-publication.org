@@ -76,6 +76,12 @@ behavior for linked units; Yuanxu still constructs a business scope only on
 leaf demand. The linker's signed Feature decisions retain their existing
 dependencies and checks.
 
+An Interface with a compiled deferred declaration enrolls the roles enumerated
+by its resolver in the same native dependency graph. When Gerbil imports the
+generated Interface =.ssi= for compilation, it re-enrolls those role IDs from
+the consumer's admitted library products. Ordinary dynamic imports still
+activate the role only when the resolver requests its value.
+
 Source value factories retain the invoking reader's import owner. Replacing
 =current-expander-module-import= with =core-import-module= bypasses the reader's
 dependency enrollment, especially when the imported context already exists.

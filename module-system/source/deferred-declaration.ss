@@ -10,7 +10,8 @@
                  current-expander-module-import core-import-module core-module->prelude-context
                  module-context-export module-export-name)
         (only-in :clan/poo/io module-action)
-        (only-in :tao3k/yuanxu/module-system/source/compiled-role compiled-role-values)
+        (only-in :tao3k/yuanxu/module-system/source/compiled-role
+                 bind-program-interfaces compiled-role-values)
         (only-in :std/list/list delete-duplicates/hash append-map)
         (rename-in (only-in :tao3k/yuanxu/module-system/source/declaration .def)
                    (.def publication-.def))
@@ -508,6 +509,18 @@
                             (lambda () (set! direct private?) stock)))
                         (module-source-measure-operation 'reader-lexical-fallback
                           (lambda () (rewrite form)))))) forms))))
+       (def link-dependencies
+         (syntax-case #'resolver ()
+           ((kind (role owner names) ...)
+            (eq? (stx-e #'kind) 'compiled)
+            (with-syntax ((bind (quote-syntax bind-program-interfaces))
+                          ((path ...) (map (lambda (_) #f) (syntax->list #'(owner ...))))
+                          ((identity ...)
+                           (map (lambda (owner)
+                                  (string->symbol (string-append ":" (symbol->string (stx-e owner)))))
+                                (syntax->list #'(owner ...)))))
+              #'(bind (path ...) (identity ...))))
+           (_ #'(begin))))
        (def resolver-expression
          (syntax-case #'resolver ()
            ((kind (role owner (name ...)) ...)
@@ -528,7 +541,8 @@
          (let (expanded
                 (stx-wrap-source
                   (core-cons 'begin
-                    (if direct definitions (cons #'(def loader (resolver)) definitions)))
+                    (if direct definitions
+                      (cons link-dependencies (cons #'(def loader (resolver)) definitions))))
                   (stx-source input)))
            (if rewrap? (syntax-local-rewrap expanded) expanded)))))))
 
