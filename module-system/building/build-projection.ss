@@ -339,12 +339,11 @@
     ;; Capture once from the very import contexts that selected the native
     ;; targets. The guard on each captured input still runs for every link.
     (def identities (map (cut .ref <> 'compiler-identity) entries))
-    (def borrowed-inputs
-      (delay
-        (module-static-compiler-inputs
-          (append (if (.slot? graph 'link-contexts) (.ref graph 'link-contexts) '())
-                  (reverse retained-contexts))
-          identities)))
+    (def captured-static
+      (module-static-compiler-inputs
+        (append (if (.slot? graph 'link-contexts) (.ref graph 'link-contexts) '())
+                (reverse retained-contexts))
+        identities))
     (call-with-build-stage 'projection-current current!)
     (.o (:: projection) selected-graph: (.ref graph 'selected-graph) build-graph: graph
         compiler-identities: identities
@@ -354,8 +353,7 @@
         (filter (lambda (id) (not (memq id (.ref projection 'compiler-identities))))
           (map (cut .ref <> 'compiler-identity) compiler-input-entries))
         source-inputs: observed
-        static-inputs:
-        (force borrowed-inputs)
+        static-inputs: captured-static
         .with-static-inputs:
         (lambda (action) (with-static-compiler-inputs (list projection action)))
         .admit-spec: admit-spec
