@@ -452,9 +452,10 @@
                   (when (and source-tree
                              (or (not (equal? kernel kernel-root))
                                  ((.ref source-tree 'within-window?) path)))
-                    (unless (reader-prepare-public-dependency session path)
-                      (public-dependency-input path #f #t)
-                      (error "public source identity changed" path)))
+                    (let (owned-root (and (equal? kernel kernel-root) kernel))
+                      (unless (reader-prepare-public-dependency session path owned-root)
+                        (public-dependency-input path #f #t owned-root: owned-root)
+                        (error "public source identity changed" path))))
                   (shared-context original-path kernel reload?)))
             (else
              ;; Public dependencies may expand a relative source import
