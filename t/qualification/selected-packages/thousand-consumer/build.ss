@@ -6,7 +6,7 @@
         (only-in :clan/poo/object .get .call)
         (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :tao3k/yuanxu/module-system/building/products current-build-source-directory build-output-directory)
-        (only-in "../../../../dev/gerbil/clean-outputs.ss" clean-selected-outputs!))
+        (only-in "./clean-outputs.ss" clean-selected-outputs!))
 
 (def (main (operation "compile"))
   (def script (this-source-file))

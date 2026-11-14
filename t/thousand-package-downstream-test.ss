@@ -92,6 +92,10 @@
           (for-each (lambda (state) (create-directory* (path-expand "lib" state))) (list a b))
           (invoke (list "python3" (path-expand "dev/thousand_package_fixture.py" (.get package-source source-root)) fixture "--profile")
                   (.get package-source source-root) a producer)
+          (copy-file (path-expand "dev/gerbil/clean-outputs.ss" (.get package-source source-root))
+                     (path-expand "clean-outputs.ss" consumer))
+          (copy-file (path-expand "clean-outputs.ss" consumer)
+                     (path-expand "missing-provider/clean-outputs.ss" fixture))
           (def modules (path-expand "modules" producer))
           (def owners
             (filter (lambda (name)

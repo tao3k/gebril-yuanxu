@@ -89,6 +89,8 @@
                   command-root installed)
           (def producer (path-expand "producer" fixture))
           (def consumer (path-expand "package-consumer" fixture))
+          (copy-file (path-expand "dev/gerbil/clean-outputs.ss" command-root)
+                     (path-expand "clean-outputs.ss" consumer))
           ;; Commit only generated fixtures. User checkouts/configuration are untouched.
           (for-each
             (lambda (repository)
