@@ -196,7 +196,7 @@
         (prepared (make-hash-table)) (checks '()) (check-inputs '()) (other '())
         (asset-values '()) (asset-paths (make-hash-table))
         (native-targets (make-hash-table))
-        (make-inputs '()) (link-contexts '())
+        (make-inputs '()) (borrowed-contexts '())
         (native-binaries (make-hash-table))
         (library-sources (make-hash-table))
         (package-values '()) (package-demands '()) (library-demands '()) (package-refused? #f)
@@ -317,7 +317,7 @@
             (add-source! path owner contributor input (not (equal? path program-source)))))
         entries)
       (def (admit-context context)
-        (when program-source (set! link-contexts (cons context link-contexts)))
+        (when program-source (set! borrowed-contexts (cons context borrowed-contexts)))
         (def identity (expander-context-id context))
         (when (owned? identity)
           (let* ((relative (build-target-name identity (symbol->string package) language))
@@ -704,7 +704,7 @@
           assets: (reverse asset-values)
           .package: (lambda (directory) (write-selected-package graph directory))
           entries: (reverse entry-values) other-projections: (reverse other)
-          link-contexts: (reverse link-contexts)
+          link-contexts: (reverse borrowed-contexts)
           ;; A compiler input can appear only once in STD Make. A source
           ;; required as a library cannot also be an executable target.
           std-make-targets:

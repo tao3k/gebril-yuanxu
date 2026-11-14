@@ -336,9 +336,18 @@
       (begin0 (action)
         (current!)
         (admit-spec (.ref/inline receiver spec-site))))
+    ;; Capture once from the very import contexts that selected the native
+    ;; targets. The guard on each captured input still runs for every link.
+    (def identities (map (cut .ref <> 'compiler-identity) entries))
+    (def borrowed-inputs
+      (delay
+        (module-static-compiler-inputs
+          (append (if (.slot? graph 'link-contexts) (.ref graph 'link-contexts) '())
+                  (reverse retained-contexts))
+          identities)))
     (call-with-build-stage 'projection-current current!)
     (.o (:: projection) selected-graph: (.ref graph 'selected-graph) build-graph: graph
-        compiler-identities: (map (cut .ref <> 'compiler-identity) entries)
+        compiler-identities: identities
         ;; Sources outside the selected Module roots remain observed compiler
         ;; dependencies; ordinary Core libraries have their own package list.
         dependency-identities:
@@ -346,10 +355,7 @@
           (map (cut .ref <> 'compiler-identity) compiler-input-entries))
         source-inputs: observed
         static-inputs:
-        (module-static-compiler-inputs
-          (append (if (.slot? graph 'link-contexts) (.ref graph 'link-contexts) '())
-                  (reverse retained-contexts))
-          (.ref projection 'compiler-identities))
+        (force borrowed-inputs)
         .with-static-inputs:
         (lambda (action) (with-static-compiler-inputs (list projection action)))
         .admit-spec: admit-spec
