@@ -14,7 +14,7 @@
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module package-library-spec/source-context)
         (only-in :tao3k/yuanxu/module-system/building/source-package
                  package-prelude-identity call-with-build-source-fallbacks)
-        (only-in :tao3k/yuanxu/module-system/building/program-products make-target-spec program-targets make-target? StdMakeRowContract)
+        (only-in :tao3k/yuanxu/module-system/building/program-products make-target-spec program-targets make-target? resolve-make-target-inputs StdMakeRowContract)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
         (only-in :std/string/path path-absolute? path-default-extension subpath?)
         (only-in :std/list/list find foldl)
@@ -196,6 +196,7 @@
         (prepared (make-hash-table)) (checks '()) (check-inputs '()) (other '())
         (asset-values '()) (asset-paths (make-hash-table))
         (native-targets (make-hash-table))
+        (make-inputs '()) (link-contexts '())
         (native-binaries (make-hash-table))
         (library-sources (make-hash-table))
         (package-values '()) (package-demands '()) (library-demands '()) (package-refused? #f)
@@ -316,6 +317,7 @@
             (add-source! path owner contributor input (not (equal? path program-source)))))
         entries)
       (def (admit-context context)
+        (when program-source (set! link-contexts (cons context link-contexts)))
         (def identity (expander-context-id context))
         (when (owned? identity)
           (let* ((relative (build-target-name identity (symbol->string package) language))
@@ -394,7 +396,10 @@
                         (kind (if (string? spec) gxc: (car spec)))
                         (options (if (string? spec) '() (cddr spec)))
                         (path (confined-build-path (cdr root) name))
-                        (program? (eq? kind exe:)))
+                        (program? (eq? kind exe:))
+                        (spec (resolve-make-target-inputs spec
+                                (car (module-source-package-info (path-directory (.ref publication 'path))))
+                                (lambda (input) (set! make-inputs (cons input make-inputs))))))
                    (cond ((hash-get native-targets path)
                           => (lambda (previous)
                                (if (equal? previous spec)
@@ -680,7 +685,7 @@
       (def value
         (.o (:: graph) compiler-inputs:
           (unique-build-inputs
-           (append init-inputs
+           (append init-inputs make-inputs
                    (foldr append '() (map (cut .ref <> 'source-inputs) asset-values))
                    (foldr append '()
                           (map (lambda (entry) (.ref (.ref entry 'input) 'source-inputs))
@@ -699,6 +704,7 @@
           assets: (reverse asset-values)
           .package: (lambda (directory) (write-selected-package graph directory))
           entries: (reverse entry-values) other-projections: (reverse other)
+          link-contexts: (reverse link-contexts)
           ;; A compiler input can appear only once in STD Make. A source
           ;; required as a library cannot also be an executable target.
           std-make-targets:
@@ -789,7 +795,7 @@
                            (and (pair? (cdr raw-options)) (cadr raw-options))
                            (and (string? name) (path-strip-directory name)))))
               (options (if explicit-bin? (and bin-name (cddr raw-options)) raw-options)))
-         (unless (and (string? name) (list? options) (andmap string? options)
+         (unless (and (make-target? spec) (list? options)
                       (andmap module-source-name? (string-split name #\/))
                       (not (string-suffix? ".ss" name)))
            (error "invalid retained Scheme target" spec))
@@ -871,7 +877,15 @@
   (def entries '())
   (def support-contexts '())
   (def compiler-observations (.ref entry 'source-inputs))
-  (def compiler-targets (retained-build-entries retained root package-prefix '() programs?: #t))
+  (def compiler-targets
+    (retained-build-entries
+      (map (lambda (target)
+             (resolve-make-target-inputs target root
+               (lambda (input)
+                 (set! observations (cons input observations))
+                 (set! compiler-observations (cons input compiler-observations)))))
+           retained)
+      root package-prefix '() programs?: #t))
   (def targets-by-identity (make-hash-table-eq))
   (def static-inputs-api
     (module-binding-action "tao3k/yuanxu/module-system/source/static-inputs" 'module-static-compiler-inputs))

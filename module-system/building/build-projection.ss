@@ -18,6 +18,8 @@
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/source/build unique-build-inputs module-test-source-spec retained-build-entries BuildSpecContract)
+        (only-in :tao3k/yuanxu/module-system/building/program-products resolve-make-target-inputs)
+        (only-in :tao3k/yuanxu/module-system/source/static-inputs module-static-compiler-inputs)
         (only-in :clan/poo/mop validate)
         (only-in :tao3k/yuanxu/module-system/source/preparation build-target-name yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source
                  call-with-module-compiler-inputs call-with-module-compiler-input-bindings)
@@ -29,6 +31,11 @@
   (module-entry-action 'tao3k/yuanxu/module-system/building/build-projection
     "tao3k/yuanxu/module-system/building/artifacts"
     'tao3k/yuanxu/module-system/building/artifacts#call-with-build-artifact-issuance))
+(def with-static-compiler-inputs
+  (module-entry-action 'tao3k/yuanxu/module-system/building/build-projection
+    "tao3k/yuanxu/module-system/building/artifacts"
+    'tao3k/yuanxu/module-system/building/artifacts#call-with-static-compiler-inputs))
+
 (def process-build-artifacts
   (module-entry-action 'tao3k/yuanxu/module-system/building/build-projection
     "tao3k/yuanxu/module-system/building/artifacts"
@@ -159,6 +166,8 @@
                 (lambda (input actual)
                   (and (eq? input value) (eq? actual checker) (state)))))
             value))
+         (retained-inputs '())
+         (retained-contexts '())
          (kept (module-source-measure-operation 'build-retained-entries
                  (lambda ()
                    (call-with-module-source-read-cache
@@ -172,15 +181,32 @@
           (let* ((names (map (lambda (target) (if (string? target) target (cadr target))) retained))
                  (source-prefix
                    (string-append (path-strip-trailing-directory-separator (path-normalize root)) "/"))
-                 (closure
-                  (package-library-spec/source-context root (string->symbol package-prefix)
-                    (map (lambda (name) (string-append name ".ss")) names) void
-                    (lambda (context)
-                      (let (path (module-context-path context))
-                        (and (string? path) (string=? (path-extension path) ".ss")
-                             (string-prefix? source-prefix (path-normalize path)) context))))))
+                 (program? (ormap (lambda (row) (and (pair? row) (eq? (car row) exe:))) retained)))
+            (def (local-source? context)
+              (let (path (module-context-path context))
+                (and (string? path) (string=? (path-extension path) ".ss")
+                     (string-prefix? source-prefix (path-normalize path)))))
+            (def seen (and program? (make-hash-table-eq)))
+            (def closure
+              (package-library-spec/source-context root (string->symbol package-prefix)
+                (map (lambda (name) (string-append name ".ss")) names)
+                void
+                (lambda (context)
+                  (if (local-source? context) context
+                      (begin
+                        (when program?
+                          (for-each-build-module context
+                            (lambda (dependency)
+                              (set! retained-contexts (cons dependency retained-contexts)))
+                            seen))
+                        #f)))))
             (filter (lambda (name) (not (member name names))) closure)))
-         (retained (append additional-spec retained))
+         (retained
+          (append additional-spec
+            (map (lambda (target)
+                   (resolve-make-target-inputs target root
+                     (lambda (input) (set! retained-inputs (cons input retained-inputs)))))
+                 retained)))
          (kept
           (append
             (retained-build-entries additional-spec root package-prefix graph-entries
@@ -219,6 +245,7 @@
          (foreign? (ormap (lambda (entry) (not (local-entry? entry))) entries))
          (observed (unique-build-inputs
                      (append (.ref entry-input 'source-inputs) (.ref graph 'compiler-inputs)
+                       retained-inputs
                        (foldr append '()
                          (map (lambda (entry) (.ref (.ref entry 'input) 'source-inputs)) kept)))))
          (module-value
@@ -318,6 +345,13 @@
         (filter (lambda (id) (not (memq id (.ref projection 'compiler-identities))))
           (map (cut .ref <> 'compiler-identity) compiler-input-entries))
         source-inputs: observed
+        static-inputs:
+        (module-static-compiler-inputs
+          (append (if (.slot? graph 'link-contexts) (.ref graph 'link-contexts) '())
+                  (reverse retained-contexts))
+          (.ref projection 'compiler-identities))
+        .with-static-inputs:
+        (lambda (action) (with-static-compiler-inputs (list projection action)))
         .admit-spec: admit-spec
         .prepare-compiler-contexts:
         (lambda ()

@@ -67,13 +67,41 @@
             (((gxc: "library" "-O")) ((gxc: "library" "-debug")))
             (((exe: "first" bin: "tool")) ((exe: "second" bin: "tool")))))
         (check-equal? (checked '("first") '("second")) '("first" "second")))
+      (test-case "native Make prerequisites remain part of a guarded projection"
+        (call-with-temporary-directory "make-prerequisites"
+          (lambda (root)
+            (def entry (path-expand "build.ss" root))
+            (def header (path-expand "include/probe.h" root))
+            (write-source (path-expand "gerbil.pkg" root) "(package: make-prerequisites)\n")
+            (write-source entry "(export #t)\n")
+            (write-source (path-expand "probe.ss" root) "(export #t)\n")
+            (write-source header "/* first */\n")
+            (def graph
+              (.o entries: '() compiler-inputs: '() other-projections: '()
+                  selected-graph: #f compiler-current: void))
+            (def (project input)
+              (yuanxu-project-source-spec (.o build-graph: graph)
+                `((gxc: "probe" (extra-inputs: (,input)) "-cc-options" "-DPROBE"))
+                root entry))
+            (def projection (project "include/probe.h"))
+            (check-equal? (.get projection spec)
+              `((gxc: "probe" (extra-inputs: (,(path-normalize header))) "-cc-options" "-DPROBE")))
+            (check-equal? (cdr (assoc (path-normalize header) (.get projection source-inputs)))
+                          "/* first */\n")
+            (check-exception (project "../probe.h") Error?)
+            (check-exception (project header) Error?)
+            (check-exception (project "missing.h") Error?)
+            (create-symbolic-link header (path-expand "linked.h" root))
+            (check-exception (project "linked.h") Error?)
+            (write-source header "/* second */\n")
+            (check-exception ((.get projection admit-current)) Error?))))
       (test-case "a retained executable preserves its options; duplicate sources are refused"
         (call-with-temporary-directory "build-product-boundary"
           (lambda (temporary)
             (write-source (path-expand "gerbil.pkg" temporary) "(package: build-products)\n")
             (write-source (path-expand "build.ss" temporary) "(export #t)\n")
             (write-source (path-expand "entry.ss" temporary)
-              "(def (main . args) (void)) (export main)\n")
+              "(import :clan/poo/object) (def (main . args) (void)) (export main)\n")
             (def graph
               (.o entries: '() compiler-inputs: '() other-projections: '()
                   selected-graph: #f compiler-current: void))
@@ -85,6 +113,10 @@
             (def selected-product (project (list program)))
             (check-equal? (.get selected-product spec) (list program))
             (check-equal? (.get selected-product compiler-identities) '(build-products/entry))
+            (check-equal? (and (member "clan__poo__object.scm"
+                                   (map (lambda (input) (.get input name))
+                                        (.get selected-product static-inputs))) #t)
+                          #t)
             (check-equal? (.call selected-product .admit-spec (.get selected-product spec)) (list program))
             (for-each
               (lambda (spec)
