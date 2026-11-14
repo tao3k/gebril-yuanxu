@@ -7,7 +7,7 @@
 ;;; Invariant: algorithms emit analysis facts only; runtime execution is out.
 
 (import :tao3k/yuanxu/graph/types-core
-        (only-in :std/hash/misc hash-ensure-modify!)
+        (only-in :std/list/list group-same)
         (only-in :std/struct/queue dequeue! enqueue! make-Queue queue-empty?))
 
 (export yuanxu-graph-node-ids/rev
@@ -17,6 +17,7 @@
         ;; Internal traversal primitives shared by algorithms and rooted views.
         graph-adjacency-ref
         edge-pairs->outgoing-index
+        edge-pairs->incoming-index
         walk-adjacency/indexed)
 
 ;; : (-> [YuanxuGraphNode] [Object] [Object])
@@ -57,17 +58,21 @@
 (def (graph-adjacency-ref index id)
   (or (hash-get index id) '()))
 
-(def (edge-pairs->outgoing-index edge-pairs outgoing-index)
-  (if (null? edge-pairs)
-    outgoing-index
-    (let* ((edge-pair (car edge-pairs))
-           (source (car edge-pair))
-           (target (cadr edge-pair)))
-      (hash-ensure-modify! outgoing-index
-                           source
-                           (lambda () '())
-                           (lambda (targets) (cons target targets)))
-      (edge-pairs->outgoing-index (cdr edge-pairs) outgoing-index))))
+;; Structural POO graphs collapse repeated edges. Workflow views expose
+;; the original edge order and multiplicity, so group the authored rows.
+(def (edge-pairs->adjacency-index edge-pairs endpoint neighbor)
+  (def rows (make-hash-table))
+  (for-each
+    (lambda (bucket)
+      (hash-put! rows (endpoint (car bucket)) (map neighbor bucket)))
+    (group-same edge-pairs key: endpoint))
+  rows)
+
+(def (edge-pairs->outgoing-index edge-pairs)
+  (edge-pairs->adjacency-index edge-pairs car cadr))
+
+(def (edge-pairs->incoming-index edge-pairs)
+  (edge-pairs->adjacency-index edge-pairs cadr car))
 
 (def (walk-adjacency/indexed adjacency-index start-ids)
   (let ((visited (make-hash-table))
