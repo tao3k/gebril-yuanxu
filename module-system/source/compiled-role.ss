@@ -31,14 +31,24 @@ prelude: :gerbil/core
        (else binding))))
   (def (compiled-role-context owner origin (relative-source #f))
     (def context (core-context-top (current-expander-context) module-context?))
-    ;; A relative template import takes its identity from the source package.
-    ;; Use Gerbil's import resolution for that ID, then use the Context enrolled
-    ;; by the enclosing compiler for export bindings.
+    ;; The template import already enrolled the dependency. A selected build
+    ;; may place the caller in a temporary compiler directory while retaining
+    ;; the dependency at its original source path. Resolve the relative name
+    ;; against the caller's Gerbil identity, without opening either pathname.
     (def relative-owner
       (and relative-source
-           (expander-context-id
-             (import-module (core-resolve-module-path (stx-e relative-source)
-                                                      (module-context-path context))))))
+           (let* ((caller (symbol->string (expander-context-id context)))
+                  (base (path-directory caller))
+                  (path (string-append base (path-strip-extension (stx-e relative-source)))))
+             (let loop ((parts (string-split path #\/)) (parent '()))
+               (cond
+                ((null? parts) (string->symbol (string-join (reverse parent) "/")))
+                ((member (car parts) '("" ".")) (loop (cdr parts) parent))
+                ((equal? (car parts) "..")
+                 (unless (pair? parent)
+                   (raise-syntax-error #f "template import escapes module identity" origin relative-source))
+                 (loop (cdr parts) (cdr parent)))
+                (else (loop (cdr parts) (cons (car parts) parent))))))))
     ;; The compiler already enrolled the prepared role in this Context.
     ;; Re-resolving its public name would discard that admitted source context
     ;; and can select the original unwrapped role or stale installed metadata.
