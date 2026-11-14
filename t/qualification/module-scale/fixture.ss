@@ -33,7 +33,6 @@
       (displayln "declaration-stage end=" name " seconds=" (- (real-time) started))
       (force-output))))
 (def (write-forms path forms)
-  (create-directory* (path-directory path))
   (call-with-output-file path
     (lambda (port) (for-each (lambda (form) (write form port) (newline port)) forms))))
 (.def DeclarationFixture
@@ -71,9 +70,12 @@
                    (yuanxu! :test-dir "./t" source: "./modules" mode: auto profile: security))
                  `((import :tao3k/yuanxu/module-system/selection/init-syntax)
                    (yuanxu! :test-dir "./t" source: "./modules" mode: explicit ,@(map list ids)))))
+        (def modules-root (path-expand "modules" fixture-root))
+        (create-directory modules-root)
         (for-each
           (lambda (id)
-            (def directory (path-expand (symbol->string id) (path-expand "modules" fixture-root)))
+            (def directory (path-expand (symbol->string id) modules-root))
+            (create-directory directory)
             (write-fixture-source (path-expand "types.ss" directory)
               '((import (only-in :clan/poo/mop Type.)
                         (only-in :clan/poo/object object?))
@@ -133,8 +135,11 @@
             modules: (declaration-stage 'module-namespace (lambda () (.get exports modules)))))))
   .release:
   (lambda (fixture)
-    (clear-temporary-file! (.get fixture root))
-    (check-equal? (file-exists? (.get fixture root)) #f)))
+    (def root (.get fixture root))
+    (declaration-stage 'fixture-release
+      (lambda ()
+        (clear-temporary-file! root)
+        (check-equal? (file-exists? root) #f)))))
 
 (.def (RuntimeValueFixture @ DeclarationFixture)
   runtime-values?: #t

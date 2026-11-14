@@ -16,8 +16,10 @@
                  %call-with-recorded-slot-reads slot-read-observers-compatible? without-observation)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
+        (only-in :tao3k/yuanxu/module-system/source/observations
+                 current-module-source-observer call-with-module-source-operation-measurement)
         (only-in :clan/poo/read-projection
-                 call-with-owned-source-reads owned-read-function-scope?)
+                 call-with-owned-source-reads owned-read-function-scope? current-owned-read-open-guard)
         (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :tao3k/yuanxu/module-system/authoring/admission
                  ModuleAuthoringAnalysisGeneric ModuleAuthoringAnalysisProtocol
@@ -288,22 +290,54 @@
           (yuanxu-write-observation-line! "authoring-return-probe code=%s calls=%s" code calls)
           (eq? code 'invalid-effective-method-result)))
       (check-equal? calls 1))
+    (yuanxu-test-case "stock source role authenticates once and forwards reads in datum order"
+      (def interface (yuanxu-module-interface "stock-role-order" (Record) '()))
+      (def (admit)
+        (call-with-values
+          (lambda ()
+            (yuanxu-module-authoring-source-admit interface 'objects
+              '((def First 1) (def Second 2) (def Third 3))))
+          list))
+      (admit)
+      (def (measure)
+        (defvalues (result reads) (%call-with-recorded-slot-reads admit))
+        (check-equal? result '(#t #f))
+        (filter (lambda (read)
+                  (eq? (slot-read-receiver read) ModuleAuthoringAnalysisGeneric))
+                reads))
+      (defvalues (stock times)
+        (call-with-module-source-operation-measurement measure accounting?: #f))
+      (def individual (parameterize ((current-module-source-observer void)) (measure)))
+      (check-equal? (hash-ref times '(calls source-authoring-role-checkpoint) 0) 1)
+      (check-equal? (pair? stock) #t)
+      (check-equal? (length stock) (length individual))
+      (check-equal? (andmap eq? stock individual) #t))
     (yuanxu-test-case "source role resolves again after the previous result Type runs"
       (def interface (yuanxu-module-interface "role-return-boundary" (Record) '()))
       (def profile (.get interface authoring))
       (def original (.ref YuanxuModuleAuthoringDiagnostics '.validate))
       (def calls 0)
+      (def guards 0)
       (dynamic-wind
         (lambda ()
           (.put! YuanxuModuleAuthoringDiagnostics '.validate
             (lambda (value)
+              (check-equal? (> guards calls) #t)
               (set! calls (1+ calls))
               (when (= calls 1) (.put! profile 'objects ConfigSourceRole.))
               (original value))))
         (lambda ()
+          (check-exception
+            (parameterize ((current-owned-read-open-guard
+                            (lambda () (raise 'authoring-validation-guard-refused))))
+              (yuanxu-module-authoring-source-admit interface 'objects '((def First 1))))
+            (cut eq? <> 'authoring-validation-guard-refused))
+          (check-equal? calls 0)
           (defvalues (accepted? diagnostic)
-            (yuanxu-module-authoring-source-admit interface 'objects
-              '((def First 1) (stage build))))
+            (parameterize ((current-owned-read-open-guard
+                            (lambda () (set! guards (1+ guards)))))
+              (yuanxu-module-authoring-source-admit interface 'objects
+                '((def First 1) (stage build)))))
           (check-equal? accepted? #f)
           (check-equal? (.get diagnostic code) 'poo-config-must-compose-maintained-values)
           (check-equal? (.get diagnostic role) 'config)

@@ -4,7 +4,7 @@
 (import (only-in :std/test test-suite test-case check-equal? check-exception)
         (for-template :std/func :std/iter :gerbil/core)
         (rename-in (only-in :std/iter/iterators in-list) (in-list original-in-list))
-        (only-in :clan/poo/object .get .o .cc .ref)
+        (only-in :clan/poo/object .get .o .cc .ref .all-slots)
         (only-in :tao3k/yuanxu/modules/json-schema/interface JsonSchema)
         (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor)
         (only-in :tao3k/yuanxu/module-system/source/link module-program-namespace module-program-feature)
@@ -22,11 +22,15 @@
                          (lambda _ (error "compiled publication must not import metadata"))))
           (module-program-namespace 'tao3k/yuanxu/init
             (.o (tao3k/yuanxu/modules/json-schema/interface
-                  (.o declaration: 'json-schema publication: JsonSchema imports: '() features: (.o))))
-            '((tao3k/yuanxu/modules/json-schema/interface))
-            '(((json-schema) . tao3k/yuanxu/modules/json-schema/interface)))))
+                  (.o declaration: 'json-schema publication: JsonSchema imports: '() features: (.o)))
+                (test/sibling
+                  (.o publication: (error "unrequested sibling publication was initialized"))))
+            '((tao3k/yuanxu/modules/json-schema/interface) (test/sibling))
+            '(((json-schema) . tao3k/yuanxu/modules/json-schema/interface)
+              ((sibling) . test/sibling)))))
       (parameterize ((current-expander-module-import
                        (lambda _ (error "compiled scope must not import metadata"))))
+        (check-equal? (.all-slots namespace) '(json-schema sibling))
         (check-equal? (procedure? (.get (.get namespace json-schema) normalize)) #t)))
     (test-case "compiled namespace refuses relabeled declarations and undeclared dependencies"
       (def (consume value declared (dependencies '()))

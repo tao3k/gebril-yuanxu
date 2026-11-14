@@ -7,6 +7,130 @@ import YuanxuProof.ModuleSystem.Loading.DependencyPublication
 namespace YuanxuProof.ModuleSystem.Graph.PublicationReads
 open TestAdmission
 
+section ReplayRouteSchedule
+
+variable {Receiver Failure : Type} [DecidableEq Receiver]
+
+-- A bootstrap read has no receiver table route. Record the first ordinary
+-- occurrence only, in the same preorder as the issued-read validation.
+def routeSchedule (seen : List Receiver) : List (Option Receiver) → List Bool
+  | [] => []
+  | none :: tail => false :: routeSchedule seen tail
+  | some receiver :: tail =>
+    (!decide (receiver ∈ seen)) :: routeSchedule (receiver :: seen) tail
+
+def replayWithSchedule
+    (issue key route live : Option Receiver → Except Failure Unit) :
+    List (Option Receiver) → List Bool → Except Failure Unit
+  | read :: tail, first :: schedule => do
+    issue read
+    key read
+    if first then route read else pure ()
+    live read
+    replayWithSchedule issue key route live tail schedule
+  | _, _ => pure ()
+
+def replayWithSeen
+    (issue key route live : Option Receiver → Except Failure Unit)
+    (seen : List Receiver) : List (Option Receiver) → Except Failure Unit
+  | [] => pure ()
+  | read :: tail => do
+    issue read
+    key read
+    let next ← match read with
+      | none => pure seen
+      | some receiver => do
+        if receiver ∈ seen then pure () else route read
+        pure (receiver :: seen)
+    live read
+    replayWithSeen issue key route live next tail
+
+theorem precomputed_first_routes_preserve_refusal
+    (issue key route live : Option Receiver → Except Failure Unit)
+    (reads : List (Option Receiver)) (seen : List Receiver) :
+    replayWithSchedule issue key route live reads (routeSchedule seen reads) =
+      replayWithSeen issue key route live seen reads := by
+  induction reads generalizing seen with
+  | nil => rfl
+  | cons read tail ih =>
+    cases read with
+    | none =>
+      simp [routeSchedule, replayWithSchedule, replayWithSeen, bind, Except.bind,
+        pure, Except.pure, ih]
+    | some receiver =>
+      by_cases member : receiver ∈ seen <;>
+        simp [routeSchedule, replayWithSchedule, replayWithSeen, bind, Except.bind,
+          pure, Except.pure, member, ih]
+
+-- A successful entry checks a different live input from the return sweep.
+-- The theorem applies separately to each, with that sweep's actual checker.
+example : routeSchedule ([] : List Nat) [none, some 1, some 1, some 2] =
+    [false, true, false, true] := rfl
+
+end ReplayRouteSchedule
+
+-- The inventory is fixed for this traversal. The metaclass and checker
+-- are selected from the live state immediately before each field predicate.
+def recordMembership (select : State → Field → Checker)
+    (check : Checker → State → Field → Except Failure (Bool × State)) :
+    List Field → State → Except Failure (Bool × State)
+  | [], state => .ok (true, state)
+  | field :: rest, state => do
+    let (ok, next) ← check (select state field) state field
+    if ok then recordMembership select check rest next else pure (false, next)
+
+theorem copied_inventory_preserves_live_dispatch
+    (select : State → Field → Checker)
+    (check : Checker → State → Field → Except Failure (Bool × State))
+    (inventory : List Field) (state : State) :
+    recordMembership select check (inventory.map id) state =
+      recordMembership select check inventory state := by
+  simp
+
+theorem equal_live_checker_preserves_field
+    (select : State → Field → Checker)
+    (check : Checker → State → Field → Except Failure (Bool × State))
+    (state : State) (field : Field) (shared : Checker)
+    (same : select state field = shared) :
+    check shared state field = check (select state field) state field := by rw [same]
+
+-- If a predicate changes the metaclass or checker, a previously selected
+-- method can change acceptance even though the ordered inventory is stable.
+example :
+    recordMembership (fun state (_ : Nat) => state)
+      (fun checker _ field =>
+        (.ok (if field == 0 then (true, false) else (checker, checker)) :
+          Except Unit (Bool × Bool))) [0, 1] true ≠
+    recordMembership (fun _ (_ : Nat) => true)
+      (fun checker _ field =>
+        (.ok (if field == 0 then (true, false) else (checker, checker)) :
+          Except Unit (Bool × Bool))) [0, 1] true := by
+  change Except.ok (false, false) ≠ (Except.ok (true, true) : Except Unit (Bool × Bool))
+  intro same
+  cases same
+
+example :
+    recordMembership (fun state (_ : Nat) => state)
+      (fun checker _ field =>
+        (.ok (if field == 0 then (true, false) else (checker, checker)) :
+          Except Unit (Bool × Bool))) [0, 1] true = .ok (false, false) := rfl
+
+-- A prepared presence hit has no nested reads. It still delivers the original
+-- signed read, checks the revision, and enters the normal absence/MOP path
+-- on a miss. Precheck failure precedes either branch.
+theorem prepared_presence_preserves_delivery {Read Failure : Type}
+    (precheck unchanged : Except Failure Unit) (record : List Read → Read)
+    (deliver : Read → Except Failure Bool)
+    (present : Bool) (ordinary : Except Failure (Bool × List Read))
+    (hit : ordinary = .ok (present, [])) :
+    (do precheck
+        let (_, dependencies) ← ordinary
+        unchanged
+        deliver (record dependencies)) =
+    (do precheck; unchanged; deliver (record [])) := by
+  rw [hit]
+  cases precheck <;> rfl
+
 -- Identity normalization preserves the full original suffix. No assumption
 -- about callback purity, Contract identity labels or token payload equality.
 theorem same_roots_same_demands (deps : α → List α) (left right : List α)
@@ -920,6 +1044,49 @@ theorem unchanged_stock_support_preserves_results_and_refusal
     checkStockRun check stock = checkStockEach check stock := by
   cases check <;> cases stock <;> rfl
 
+/-- A role-sized check can retain the exact per-datum result and delivery
+sequence. Empty roles need no method authentication. A nonempty closed role
+uses one POO frame, which still owns an independent return check. -/
+def closedRoleCheck {Failure Result Read : Type}
+    (entry exit : Except Failure Unit)
+    (rows : List (Except Failure (Result × List Read))) :
+    Except Failure (List (Result × List Read)) :=
+  match rows with
+  | [] => .ok []
+  | _ :: _ => do
+      let results ← checkStockRun entry rows
+      exit
+      pure results
+
+theorem closed_role_preserves_ordered_delivery {Failure Result Read : Type}
+    (entry : Except Failure Unit)
+    (rows : List (Except Failure (Result × List Read))) :
+    closedRoleCheck entry (.ok ()) rows = checkStockEach entry rows := by
+  cases rows with
+  | nil => rfl
+  | cons first rest =>
+    unfold closedRoleCheck
+    rw [unchanged_stock_support_preserves_results_and_refusal]
+    cases checkStockEach entry (first :: rest) <;> rfl
+
+theorem stale_role_support_at_return_refuses {Failure Result Read : Type}
+    (failure : Failure) (result : Result) (delivery : List Read) :
+    closedRoleCheck (.ok ()) (.error failure) [.ok (result, delivery)] =
+      .error failure := rfl
+
+/-- A closed preparation reads one live metadata value for several fields.
+After author code the next observation remains a separate operand. -/
+theorem preparation_fields_share_one_observation {Metadata Key Value : Type}
+    (readField : Metadata → Key → Value) (reads : Key → Metadata)
+    (before after : Metadata) (fields : List Key) (afterField : Key)
+    (sameWindow : ∀ key ∈ fields, reads key = before) :
+    (fields.map (fun key => readField (reads key) key), readField after afterField) =
+      (fields.map (readField before), readField after afterField) := by
+  congr 1
+  apply List.map_congr_left
+  intro key member
+  rw [sameWindow key member]
+
 -- The author call owns two fresh guards. The next closed run consumes the
 -- post-effect state, even if the previous run had valid support.
 def stockAroundOpen {World Failure Result : Type}
@@ -1169,6 +1336,22 @@ theorem candidate_return_retry_cannot_grant_success {Failure : Type} (refused : 
 theorem candidate_return_checks_after_checkpoint {Failure : Type} (stale : Failure) :
     replayCheckpoint (.ok ()) (.ok ()) (.error stale : Except Failure Unit) =
       .error stale := rfl
+
+-- A maintained method never calls the effect guard. An independently
+-- replaced method only runs after the guard for this invocation succeeds.
+def checkedValidationMethod {Failure Result : Type}
+    (maintained : Bool) (before : Except Failure Unit)
+    (validate : Unit → Except Failure Result) : Except Failure Result := do
+  if maintained then pure () else before
+  validate ()
+
+theorem maintained_validation_preserves_result {Failure Result : Type}
+    (before : Except Failure Unit) (validate : Unit → Except Failure Result) :
+    checkedValidationMethod true before validate = validate () := rfl
+
+theorem replacement_validation_preserves_guard_refusal {Failure Result : Type}
+    (refused : Failure) (validate : Unit → Except Failure Result) :
+    checkedValidationMethod false (.error refused) validate = .error refused := rfl
 
 -- Forwarding uses exactly the ordered native traversal, not its set of
 -- receivers or a list of reconstructed records. Earlier captures keep their
@@ -2067,6 +2250,50 @@ theorem shared_source_input_exact {Owner Input : Type}
     rcases result with empty | checked
     · simp [empty] at member
     · exact (sameCut owner member).trans checked
+
+/-- Reusing a captured policy footprint requires the fresh capture to carry
+the same ordered receiver revisions. Each later checkpoint still compares
+those revisions to its own live state. -/
+theorem shared_policy_capture_preserves_checkpoints {Receiver Revision : Type}
+    [DecidableEq Revision] (baseline fresh : List (Receiver × Revision))
+    (sameCapture : fresh = baseline) (live : Receiver → Revision) :
+    baseline.all (fun row => decide (live row.1 = row.2)) =
+      fresh.all (fun row => decide (live row.1 = row.2)) := by
+  subst fresh
+  rfl
+
+/-- Stock policy reuse requires both the maintained receiver order and a
+live revision check. Either mismatch selects the fresh traversal. -/
+def choosePolicyCapture {Receiver Revision : Type}
+    [DecidableEq Receiver] [DecidableEq Revision]
+    (baseline : List (Receiver × Revision)) (stockRoots roots : List Receiver)
+    (captureRevision : Receiver → Revision)
+    (fresh : List (Receiver × Revision)) : List (Receiver × Revision) :=
+  if roots = stockRoots ∧
+      baseline.all (fun row => decide (captureRevision row.1 = row.2)) = true
+  then baseline else fresh
+
+theorem stock_policy_guard_preserves_ordered_revision_checks {Receiver Revision : Type}
+    [DecidableEq Receiver] [DecidableEq Revision]
+    (baseline fresh : List (Receiver × Revision)) (stockRoots roots : List Receiver)
+    (captureRevision : Receiver → Revision)
+    (sameTraversal : roots = stockRoots →
+      fresh = baseline.map (fun row => (row.1, captureRevision row.1))) :
+    choosePolicyCapture baseline stockRoots roots captureRevision fresh = fresh := by
+  unfold choosePolicyCapture
+  split
+  · rename_i eligible
+    rw [sameTraversal eligible.1]
+    have pointwise := List.all_eq_true.mp eligible.2
+    symm
+    calc
+      baseline.map (fun row => (row.1, captureRevision row.1)) = baseline.map id := by
+        apply List.map_congr_left
+        intro row member
+        have current := of_decide_eq_true (pointwise row member)
+        exact Prod.ext rfl current
+      _ = baseline := List.map_id baseline
+  · rfl
 
 /-- Reusing the old input at a second checkpoint can accept a changed
 source, even when both owners require exactly the same input identity. -/

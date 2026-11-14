@@ -4,7 +4,7 @@
 (import :std/test :clan/poo/object
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in "../init.ss" tao3k/yuanxu.init.exports )
+        (only-in "../init.ss" tao3k/yuanxu.init.exports Modules Scenarios)
         (rename-in (only-in "../init.ss" tao3k/yuanxu.init.exports) (tao3k/yuanxu.init.exports ModuleNamespace))
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/building/test-projection module-test-projection module-test-file-source)
@@ -45,12 +45,14 @@
       (check-equal? (.ref/cached (.get tao3k/yuanxu.init.exports tests) 'selected-graph) #f))
     (test-case "namespace reflection returns real keys without demanding leaf values"
       (def scenarios (.get tao3k/yuanxu.init.exports Scenarios))
+      (check-equal? (eq? Scenarios scenarios) #t)
       (check-equal? (.all-slots/sort scenarios) '(applications services))
       (check-equal? (.all-slots/sort (.get scenarios services)) '(gitea postgresql))
       (check-equal? (.all-slots/sort (.get scenarios applications)) '(gitea-postgresql))
       (check-equal? (.ref/cached (.get scenarios applications) 'gitea-postgresql) #f)
       (check-equal? (.ref/cached (.get scenarios services) 'postgresql) #f)
       (def modules (.get tao3k/yuanxu.init.exports Modules))
+      (check-equal? (eq? Modules modules) #t)
       (check-equal? (eq? modules (.get tao3k/yuanxu.init.exports Modules)) #t)
       (check-equal? (eq? modules (.get ModuleNamespace Modules)) #t)
       (check-equal? (let ((init-modules-getter 'caller-binding))

@@ -8,7 +8,10 @@
 
 (import :tao3k/yuanxu/modules/funflow/control-plane/task
         :tao3k/yuanxu/modules/funflow/control-plane/runtime-protocol
-        :tao3k/yuanxu/modules/funflow/control-plane/runtime-command-invocation)
+        (for-template "./runtime-command-invocation.ss")
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/source/compiled-role
+                 bind-deferred-interfaces deferred-interface-values))
 
 (export RuntimeAdapterContract
         make-runtime-adapter
@@ -27,6 +30,15 @@
         adapter-fetch
         adapter-store-put
         adapter-store-get)
+
+(bind-deferred-interfaces
+  (#f)
+  (:tao3k/yuanxu/modules/funflow/control-plane/runtime-command-invocation))
+
+(def command-adapter
+  (.o invocation: (deferred-interface-values
+                    tao3k/yuanxu/modules/funflow/control-plane/runtime-command-invocation
+                    (runtime-command-result) module-binding-action)))
 
 ;;; Function slots are the runtime boundary; Scheme policy calls these slots
 ;;; without owning the heavy implementation behind them.
@@ -175,8 +187,10 @@
 
 ;; : (-> RuntimeCommand ExecutionRequest AdapterResult)
 (def (rust-command-submit command request)
-  (runtime-command-result command (rust-request-envelope request)))
+  ((.get command-adapter invocation runtime-command-result)
+   command (rust-request-envelope request)))
 
 ;; : (-> RuntimeCommand ExecutionRequest AdapterResult)
 (def (rust-command-store-put command request)
-  (runtime-command-result command (rust-request-envelope request 'store-put)))
+  ((.get command-adapter invocation runtime-command-result)
+   command (rust-request-envelope request 'store-put)))

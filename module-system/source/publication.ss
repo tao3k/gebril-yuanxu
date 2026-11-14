@@ -31,9 +31,12 @@
 (define-type (ScopeType @ Type.)
   .element?: (lambda (value)
                (and (object? value)
-                    (element? Type value)
-                    (element? ScopeTypeShape value)
-                    (not (ormap (cut .slot? value <>) '(.classify .obligations .admit))))))
+                    (module-source-measure-operation 'scope-shape-type
+                      (cut element? Type value))
+                    (module-source-measure-operation 'scope-shape-record
+                      (cut element? ScopeTypeShape value))
+                    (module-source-measure-operation 'scope-shape-protocol
+                      (lambda () (not (ormap (cut .slot? value <>) '(.classify .obligations .admit))))))))
 (define-type ModuleFeatureRefinementContract
   (.cc (Record refine: [Callable optional: #t] contract: [ScopeType optional: #t])
        identity: 'module/feature-refinement))
@@ -55,9 +58,12 @@
                          admissions: [AdmissionRoutes optional: #t]
                          scope-contract: [ScopeType])]))
 (def (module-publication? value)
-  (and (element? PublicationShape value)
-       (let (core (.ref value 'core))
-         (and (.slot? core 'exports) (not (.slot? core 'requires)) (not (.slot? core 'link))))))
+  (and (module-source-measure-operation 'publication-shape-record
+         (cut element? PublicationShape value))
+       (module-source-measure-operation 'publication-shape-core
+         (lambda ()
+           (let (core (.ref value 'core))
+             (and (.slot? core 'exports) (not (.slot? core 'requires)) (not (.slot? core 'link))))))))
 (define-type (ModulePublicationContract @ Type.)
   identity: 'module/publication .element?: module-publication?)
 ;; Capture at definition, before contributors can extend the descriptor. A

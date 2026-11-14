@@ -8,7 +8,7 @@
         reader-session-guards reader-session-guard-count reader-session-add-guard!)
 
 ;; One unpublished operation's support, released after its recording frame.
-(defstruct candidate-support (guards tools tool-rows open? epoch-current metadata-current) final: #t)
+(defstruct candidate-support (guards tools tool-rows open? epoch-current metadata-current directory-location?) final: #t)
 
 (defstruct reader-session
   (guard-support dependencies refused? evaluated-interface-bindings

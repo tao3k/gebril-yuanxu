@@ -54,6 +54,14 @@
            (if mount
              (syntax (key (.ref (get) 'key)))
              (syntax (key (get))))))
+       (def (mount-binding mount)
+         (let (name (datum->syntax (syntax ctx) mount))
+           (with-syntax ((name name) (value exports-value-id))
+             #'(begin
+                 (defsyntax name
+                   (identifier-rules ()
+                     (id (identifier? #'id) (.ref value 'name))))
+                 (export name)))))
        (when (ormap (lambda (mount)
                       (memq mount '(tests std-make-spec admit-current .project-build))) mounts)
          (raise-syntax-error #f "mount conflicts with an init export" stx))
@@ -72,6 +80,7 @@
                 (string-join (string-split (module-id->path-string (expander-context-id owner)) #\/) "__"))))
           (exports-value exports-value-id)
           ((mount-slot ...) (map namespace-slot mounts))
+          ((mount-export ...) (map mount-binding (filter identity mounts)))
           (module-source-getter getter))
          (syntax
            (begin
@@ -92,6 +101,7 @@
                  (id (identifier? #'id)
                      (.ref exports-value 'std-make-spec))))
              (export exports-binding make-spec-binding)
+             mount-export ...
              ;; Runtime runtime modules have one result, not projection values.
              (void))))))
     (_ (raise-syntax-error #f

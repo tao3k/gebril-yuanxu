@@ -428,6 +428,28 @@ package YuanxuSelectedPackageBuilds {
                the enrolled path. Lean ImportCorrespondence
                closed_terminal_kind_handoff specifies the closed cut. */
     }
+    requirement def PublicationPolicyCapture {
+        doc /* The closed stock publication policy shares its captured
+               revision footprint only after the current getters supply the
+               same ordered receivers and live revision validation succeeds.
+               Each checkpoint still performs live revision validation.
+               Changed footprints and open observers use a fresh capture.
+               Lean PublicationReads stock_policy_guard_preserves_ordered_revision_checks
+               relates the root and revision guard to the ordered fresh capture.
+               shared_policy_capture_preserves_checkpoints covers later checks. */
+    }
+    requirement def StockAuthoringRoleAuthentication {
+        doc /* A closed, nonempty role run may share authentication of the
+               unchanged stock method support. It retains the result and
+               ordered read delivery of each datum and the protected return
+               check. An author effect divides the run into independent
+               checks. An empty role needs no method authentication.
+               Lean PublicationReads closed_role_preserves_ordered_delivery
+               and stale_role_support_at_return_refuses specify this cut.
+               Scheme uses native re-observation with a nested recording frame.
+               Open observers and changed role policies retain individual
+               dispatch. */
+    }
     requirement def CandidateReplaySites {
         doc /* Attribute declaration-before, declaration-inputs, role-entry,
                role-return, declaration-after and candidate-admitted
@@ -487,6 +509,13 @@ package YuanxuSelectedPackageBuilds {
                Contexts and effects retain the independent path. Per-candidate
                preparation/admission support is joined only inside one boundary,
                never across two initializers or Contract callbacks. */
+    }
+    requirement def SourceRoleValidatorEffectBoundary {
+        doc /* POO examines the selected diagnostics validator read. The
+               maintained method keeps the native call. A replacement must
+               pass the effect guard before each invocation. Guard refusal
+               prevents the replacement from running. A later datum resolves
+               its SourceRole again after an earlier callback returns. */
     }
     requirement def ValidationOnlyNativeReplay {
         doc /* The POO fixed-result replay retains the native topology

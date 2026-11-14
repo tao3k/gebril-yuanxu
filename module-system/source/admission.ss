@@ -177,10 +177,13 @@
        (let* ((file (module-role-file role))
               (path (path-expand file module-root))
               (required? (member file yuanxu-module-required-role-files)))
-         (when (or required? (module-source-type path))
-           (unless (eq? (module-source-type path) 'regular)
+         (def kind (and (not required?) (module-source-type path)))
+         (when (or required? kind)
+           (unless (eq? (if (or required? (current-module-source-observer))
+                          (module-source-type path) kind) 'regular)
              (error "module role must be a regular file" module-name role path))
-           (let* ((text (reader path))
+           (let* ((text (module-source-measure-operation 'source-role-open
+                          (lambda () (reader path))))
                   (datums (module-source-measure-operation 'source-parse
                             (lambda () (call-with-input-string text read-all)))))
              (observe-source 'role-parses)
@@ -257,12 +260,23 @@
 (def default-style-policy-current
   (module-source-object-policy (module-source-style-policy-support)))
 (def (module-source-style-policy-current?) (default-style-policy-current))
+(def default-publication-policy-roots
+  (cons ModulePublicationContract (module-source-style-policy-support)))
+(def default-publication-policy-current
+  (module-source-object-policy default-publication-policy-roots reject-protocols?: #f))
 (def (module-source-publication-policy)
   ;; Snapshot the actual policy/Contract references before role execution.
   ;; Runtime initializer scratch reads are not admission requirements.
-  (module-source-object-policy
-    (cons ModulePublicationContract (module-source-style-policy-support))
-    reject-protocols?: #f))
+  (def roots (cons ModulePublicationContract (module-source-style-policy-support)))
+  ;; Keep the actual getters and their read delivery. Only share the revision
+  ;; footprint when those getters returned the exact maintained receivers.
+  ;; A later check still compares revisions even after an independent effect.
+  (if (and (not (current-module-source-observer)) (owned-read-function-scope?)
+           (equal? (length roots) (length default-publication-policy-roots))
+           (andmap eq? roots default-publication-policy-roots)
+           (default-publication-policy-current))
+    default-publication-policy-current
+    (module-source-object-policy roots reject-protocols?: #f)))
 
 
 ;; Resolve an existing declaration path. Missing associations are programmer
@@ -311,7 +325,8 @@
                (validate descriptor candidate))))
       (if (eq? candidate checked) scope (.cc scope 'config checked)))))
 (def (admit-module-publication! source expected-id publication context-value)
-  (unless (yuanxu-module-source-ref? source)
+  (unless (module-source-measure-operation 'source-ref-admission
+            (lambda () (yuanxu-module-source-ref? source)))
     (error "module publication requires a SourceRef" expected-id source))
   (let* ((evidence (admit-module-value! ModulePublicationContract publication context-value))
          ;; The public value Contract may return a different checked receiver.
@@ -326,7 +341,8 @@
       (unless (eq? (yuanxu-module-source-ref-kind source) 'local)
         (error "root-qualified publication requires a local native source" expected-id))
       (let-values (((_prelude native-id _namespace _body)
-                     (core-read-module/sexp (yuanxu-module-source-ref-value source))))
+                     (module-source-measure-operation 'source-native-owner-read
+                       (lambda () (core-read-module/sexp (yuanxu-module-source-ref-value source))))))
         (unless (eq? expected-id native-id)
           (error "root-qualified publication differs from native source identity" expected-id native-id))))
     (unless (and (or (not declaration) owner)

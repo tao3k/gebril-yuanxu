@@ -5,10 +5,10 @@
         (only-in :clan/poo/object .get .call .ref/cached)
         (only-in :clan/poo/mop TypeError?)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :tao3k/yuanxu/modules/funflow/objects Job. Task.)
+        (only-in :tao3k/yuanxu/modules/funflow/job-prototypes Job. Task.)
         (only-in :tao3k/yuanxu/modules/funflow/control-plane/runtime-command-descriptor
                  runtime-command-fields->manifest)
-        (only-in :tao3k/yuanxu/testing yuanxu-test-fixture))
+        (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export funflow-atomic-test)
 (.def Workspace
   .acquire: (lambda () (let (directory (make-temporary-file-name "funflow-atomic-"))

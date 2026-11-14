@@ -5,11 +5,10 @@
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .+ .get .ref .slot? .ref/cached .all-slots/sort)
-        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case
-                 yuanxu-test-case/with yuanxu-default-testing-case-profile)
+        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/module-system/source/observations
-                 module-source-text-guard module-source-read module-source-observe
-                 call-with-module-source-read-cache current-module-source-observer module-source-type)
+                 module-source-text-guard module-source-read module-source-type
+                 call-with-module-source-read-cache call-with-module-source-operation-measurement)
         (only-in :clan/poo/mop Type.)
         :tao3k/yuanxu/module-system/feature/model
         :tao3k/yuanxu/module-system/source/objects
@@ -282,64 +281,32 @@
            ((.get view admit-current))
            (create-directory (path-expand "modules/new-category" root))
            (check-exception ((.get view admit-current)) error?)))))
-    ;; The feature requests the cost probe; the ordinary Case profile keeps
-    ;; both comparison lanes free of the source observer.
-    (yuanxu-test-case/with yuanxu-default-testing-case-profile
-      "large selection source checks exact decoded text through EOF"
+    (yuanxu-test-case "large selection shares bytes within one checkpoint and rejects same-size edits"
       (with-sources
        (lambda (root)
          (def init (path-expand "init.ss" root))
-         (def prefix (string-append ";" (make-string 8190 #\x) "界"
+         (def prefix (string-append ";" (make-string 65534 #\x) "界"
                                      (make-string 28000 #\y)))
          (def selection "\r\n(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\")\r\n")
          (write-source init (string-append prefix selection))
          (def view (yuanxu-load-modules init read-publication: (fixture-reader void)))
          ((.get view admit-current))
          (def check-text (module-source-text-guard init (module-source-read init)))
-         (check-equal? (call-with-module-source-read-cache check-text) #t)
-         (write-source init (substring prefix 0 8193))
+         (defvalues (_result counts)
+           (call-with-module-source-operation-measurement
+             (lambda ()
+               (call-with-module-source-read-cache
+                 (lambda ()
+                   (check-equal? (check-text) #t)
+                   (check-equal? (check-text) #t))))
+             accounting?: #f))
+         (check-equal? (hash-ref counts '(source reads) 0) 1)
+         (write-source init (substring prefix 0 65537))
          (check-equal? (call-with-module-source-read-cache check-text) #f)
          (write-source init (string-append prefix selection))
          (check-equal? (call-with-module-source-read-cache check-text) #t)
-         (cond-expand
-          (yuanxu-module-test-observation
-           (let ()
-             (check-equal? (current-module-source-observer) #f)
-             (def path (path-expand "large-selection.ss" root))
-             (write-source path
-               (call-with-output-string
-                 (lambda (port)
-                   (display "(yuanxu! :test-dir \"./t\" mode: explicit" port)
-                   (for-each (lambda (index)
-                               (display " (module-" port)
-                               (display index port)
-                               (display ")" port))
-                             (iota 10000))
-                   (display ")\n" port))))
-             (def expected (module-source-read path))
-             (def (whole) (equal? expected (module-source-observe module-source-read path)))
-             (def chunks (module-source-text-guard path expected))
-             (def iterations (iota 120))
-             (for-each
-               (lambda (lane)
-                 (def action (if (eq? lane 'whole) whole chunks))
-                 (def accepted? #f)
-                 (def stats
-                   (##exec-stats
-                     (lambda ()
-                       (set! accepted?
-                         (andmap (lambda (_) (call-with-module-source-read-cache action))
-                                 iterations)))))
-                 (check-equal? accepted? #t)
-                 (write (list 'selection-text-cost lane (string-length expected) (length iterations)
-                           (filter (lambda (metric)
-                                     (memq (car metric) '(real-time user-time sys-time gc-user-time gc-sys-time)))
-                                   stats)))
-                 (newline) (force-output))
-               '(whole chunks whole chunks))))
-          (else (void)))
          ;; Keep the same size, directory, and decoded selection.
-         (string-set! prefix 8191 #\語)
+         (string-set! prefix 65535 #\語)
          (write-source init (string-append prefix selection))
          (check-exception ((.get view admit-current)) error?))))
     (yuanxu-test-case "module-local init is relative to its own source, required disable fails"

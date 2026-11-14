@@ -16,7 +16,7 @@
            (ids (.ref graph 'module-order))
            (nodes (.ref graph 'nodes))
            (inputs (.ref build 'entries))
-           (aliases (make-hash-table))
+           (interfaces (make-hash-table))
            (imports '()))
       (def (current!)
         ((.ref input 'admit-current))
@@ -24,17 +24,10 @@
       (current!)
       (def (role-value input binding)
         (def identity (.ref input 'compiler-identity))
-        (def key (cons identity binding))
-        (or (hash-get aliases key)
-          ;; These imports and references are serialized together in a private
-          ;; compiler input. An uninterned symbol loses identity on read-back
-          ;; and makes an unchanged source view differ on each build.
-          (let (name (string->symbol (string-append "%yuanxu-publication-"
-                                       (number->string (hash-length aliases)))))
-            (hash-put! aliases key name)
-            ;; This value import is the runtime edge to the publication.
-            (set! imports (cons (list identity (.ref input 'path) binding name) imports))
-            name)))
+        (unless (hash-key? interfaces identity)
+          (hash-put! interfaces identity #t)
+          (set! imports (cons (cons identity (.ref input 'path)) imports)))
+        `(.ref (compiled-role-values ',identity '(,binding)) ',binding))
       (def (publication-input id)
         (def entry (find (lambda (entry)
                           (and (eq? (.ref entry 'kind) 'publication)
@@ -119,10 +112,12 @@
           `((import (only-in :clan/poo/object .o .cc .ref)
                     (only-in :tao3k/yuanxu/module-system/source/link module-program-namespace module-program-feature)
                     (only-in :tao3k/yuanxu/module-system/selection/init-expansion expand-yuanxu-program-declaration)
-                    ,@(map (lambda (row)
-                              `(rename-in (only-in ,(cadr row) ,(caddr row))
-                                 (,(caddr row) ,(cadddr row))))
-                            (reverse imports)))
+                    (only-in :tao3k/yuanxu/module-system/source/compiled-role
+                             compiled-role-values bind-program-interfaces))
+            (bind-program-interfaces
+              ,(map cdr (reverse imports))
+              ,(map (lambda (row) (string->symbol (string-append ":" (symbol->string (car row)))))
+                    (reverse imports)))
             (expand-yuanxu-program-declaration ,declaration ,(.ref entry 'path)
               (lambda ()
                 (module-program-namespace ',(.ref input 'compiler-identity)

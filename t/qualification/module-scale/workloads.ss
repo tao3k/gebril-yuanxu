@@ -57,7 +57,9 @@
   (def current! (.get graph admit-current))
   ;; Measure the normal live Graph. GC is an Observability measurement,
   ;; not cache invalidation: the same selected Graph remains reachable.
-  (def held (yuanxu-debug-memory-snapshot 'graph-held collect?: #t))
+  (def held
+    (measure-runtime count 'graph-held-collection
+      (lambda () (yuanxu-debug-memory-snapshot 'graph-held collect?: #t))))
   (yuanxu-write-observation-line!
     "reader-graph-live modules=%s live-bytes=%s" count (.get held live-bytes))
   (check-equal? (eq? graph (.get FixtureExports tests selected-graph)) #t)
@@ -66,10 +68,12 @@
       (call-with-output-file (list path: path truncate: #t)
         (lambda (port) (display original port) (newline port))))
     (lambda ()
-      (check-exception (current!)
-        (lambda (exception)
-          (and (Error? exception)
-               (string=? (Error-message exception) "stale module scope generation")))))
+      (measure-runtime count 'stale-init-refusal
+        (lambda ()
+          (check-exception (current!)
+            (lambda (exception)
+              (and (Error? exception)
+                   (string=? (Error-message exception) "stale module scope generation")))))))
     (lambda ()
       (call-with-output-file (list path: path truncate: #t) (cut display original <>))))
 )
@@ -174,6 +178,9 @@
 (def (measure-source-work count phase action accounting?)
   (def failed? #f)
   (def cause #f)
+  (def graph-summary?
+    (or (eq? phase 'runtime-graph-start)
+        (and (= count 10000) (eq? phase 'first-graph))))
   (defvalues (value times)
     (call-with-module-source-operation-measurement
       (lambda ()
@@ -183,24 +190,35 @@
   (yuanxu-write-observation-line!
     "runtime-phase-work modules=%s phase=%s failed?=%s metrics=%s"
     count phase failed?
-    (if (eq? phase 'runtime-graph-start)
+    (if graph-summary?
       (map (lambda (stage)
              (list stage
                    (hash-ref times (list 'calls stage) 0)
                    (hash-ref times stage 0.)
                    (+ (hash-ref times (list 'cpu-user stage) 0.)
                       (hash-ref times (list 'cpu-system stage) 0.))
-                   (hash-ref times (list 'read-attempts stage) 0)))
+                   (hash-ref times (list 'read-attempts stage) 0)
+                   (hash-ref times (list 'visits stage) 0)))
            '(selected-owner-closure reader-preparation-start reader-wrapper-expansion
+             source-authoring source-authoring-profile source-authoring-role source-authoring-role-checkpoint
+             source-role-open source-ref-preparation source-ref-admission source-native-owner-read
              reader-interface-start reader-admission-start reader-value-admission
+             publication-shape-record publication-shape-core
+             scope-shape-type scope-shape-record scope-shape-protocol
              reader-admission-evidence reader-current reader-native-identity
              reader-tool-source-current reader-source-guards source-init-current
+             (reader-candidate-replay-site declaration-before)
+             (reader-candidate-replay-site declaration-inputs)
+             (reader-candidate-replay-site declaration-after)
+             (reader-candidate-replay-site role-entry)
+             (reader-candidate-replay-site role-return)
+             reader-candidate-entry-replay reader-candidate-return-replay reader-candidate-fused-return-replay
              metadata-replay metadata-checkpoints selected-core-projection
              selected-topological-resolution))
       (hash->list times)))
-  (when (eq? phase 'runtime-graph-start)
+  (when graph-summary?
     (yuanxu-write-observation-line!
-      "declaration-stage-work columns=stage,calls,wall,cpu,read-attempts replay-visits=%s init-characters=%s"
+      "declaration-stage-work columns=stage,calls,wall,cpu,read-attempts,replay-visits total-replay-visits=%s init-characters=%s"
       (hash-ref times '(visits metadata-replay) 0)
       (hash-ref times '(characters source-init-current) 0)))
   (if failed? (raise cause) (cons value times)))

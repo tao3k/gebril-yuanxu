@@ -3,11 +3,12 @@
 prelude: :gerbil/core
 ;;; Export resolution belongs to compilation; runtime demand uses Gerbil loading.
 (import (only-in :clan/poo/object object<-alist)
+        (only-in :clan/poo/slot-observation without-observation)
         (only-in :gerbil/runtime/loader load-module)
         (for-syntax :gerbil/expander
                     (only-in :gerbil/compiler compile-module)
                     (only-in :gerbil/compiler/base module-id->path-string)))
-(export compiled-role-values)
+(export compiled-role-values bind-program-interfaces bind-deferred-interfaces deferred-interface-values)
 
 (begin-syntax
   ;; The compiler facade loads its driver; this native driver operation is
@@ -30,7 +31,7 @@ prelude: :gerbil/core
        (else binding))))
   (def (compiled-role-context owner origin)
     (def context (core-context-top (current-expander-context) module-context?))
-    ;; The compiler already imported the prepared role through for-template.
+    ;; The compiler already enrolled the prepared role in this Context.
     ;; Re-resolving its public name would discard that admitted source context
     ;; and can select the original unwrapped role or stale installed metadata.
     (def (find-role imports)
@@ -80,6 +81,53 @@ prelude: :gerbil/core
                 (raise-syntax-error #f "compiled role export is not a runtime value" origin name))
               (cons name (binding-id binding)))))) names))))
 
+;; Enroll the admitted source paths in Gerbil's compiler Context. Expand the
+;; import for its link edges without emitting a phase-zero import expression
+;; in the library loader. Re-enroll when a native executable imports the SSI.
+(defsyntax (bind-program-interfaces stx)
+  (syntax-case stx ()
+    ((_ (path ...) (identity ...))
+     (begin
+       (parameterize ((current-expander-phi 0))
+         (for-each (lambda (path owner)
+                     (core-expand (datum->syntax #'path
+                                    (list 'import
+                                      (list 'runtime:
+                                        (or (stx-e path)
+                                            (module-context-path
+                                              (compiled-role-context
+                                                (let (name (symbol->string (stx-e owner)))
+                                                  (string->symbol (substring name 1 (string-length name))))
+                                                stx))))))))
+                   (syntax->list #'(path ...))
+                   (syntax->list #'(identity ...))))
+       #'(begin-syntax
+           (when (and (current-expander-compiling?)
+                      (string? (module-context-path (current-expander-context)))
+                      (string-suffix? ".ssi" (module-context-path (current-expander-context))))
+             (parameterize ((current-expander-phi 0))
+               (for-each (lambda (owner) (core-expand (list 'import (list 'runtime: owner))))
+                         '(identity ...)))))))))
+
+;; Ordinary source libraries already declare these paths with for-template.
+;; Reuse the same admitted Context for native compilation and static linking.
+(defsyntax (bind-deferred-interfaces stx)
+  (syntax-case stx ()
+    ((_ (path ...) (identity ...))
+     (if (current-expander-compiling?)
+       #'(bind-program-interfaces (path ...) (identity ...))
+       #'(begin)))))
+
+(defsyntax (deferred-interface-values stx)
+  (syntax-case stx ()
+    ((_ module (name ...) source-action)
+     (if (current-expander-compiling?)
+       #'(compiled-role-values 'module '(name ...))
+       (with-syntax ((path (symbol->string (syntax->datum #'module))))
+         #'(object<-alist
+             (list (cons 'name (let (call (source-action path 'name))
+                                 (lambda args (call args)))) ...)))))))
+
 (defsyntax (compiled-role-values stx)
   (syntax-case stx (quote)
     ((_ (quote owner) (quote (name ...)))
@@ -106,20 +154,24 @@ prelude: :gerbil/core
          ;; its registered descriptor; a missing role must never load a checkout.
          ;; Dynamic library consumption keeps Gerbil's ordinary loader protocol.
          #'(begin
-             (if (##lookup-registered-module 'creator)
-               (begin
-                 (when (and owns-export? (not (##lookup-registered-module 'unit)))
-                   (error "compiled Module role is absent from program" owner))
-                 ;; Static SCM bodies omit the dynamic wrapper's dependency
-                 ;; loads. Demand the compiler's ordered runtime closure first;
-                 ;; Gambit retains initialization state and once-only execution.
-                 ;; Empty reexport facades have no descriptor or body to run.
-                 (for-each
-                   (lambda (dependency)
-                     (when (##lookup-registered-module dependency)
-                       (##load-module dependency)))
-                   '(dependency-unit ... unit)))
-               (load-module owner))
+             ;; Native initializers construct and revise their own Objects.
+             ;; Their reads do not belong to the demanding slot. Keep the
+             ;; publication value and subsequent contract reads in its scope.
+             (without-observation
+               (lambda ()
+                 (if (##lookup-registered-module 'creator)
+                   (begin
+                     (when (and owns-export? (not (##lookup-registered-module 'unit)))
+                       (error "compiled Module role is absent from program" owner))
+                     ;; Static bodies omit the dynamic wrapper's dependency loads.
+                     ;; Gambit owns once-only initialization. Empty reexport
+                     ;; facades have no descriptor or body to run.
+                     (for-each
+                       (lambda (dependency)
+                         (when (##lookup-registered-module dependency)
+                           (##load-module dependency)))
+                       '(dependency-unit ... unit)))
+                   (load-module owner))))
              (object<-alist
                (list
                  (cons 'public

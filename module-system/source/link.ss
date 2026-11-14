@@ -225,8 +225,10 @@
                                (module-order #f))
   (def ids (or module-order (.all-slots publications)))
   (def generation (symbol->string identity))
+  (def signed-feature-roots (map car (filter (lambda (row) (pair? (cdr row))) decision-rows)))
   (def context
     (.o generation module-ids: ids selected: ids denied-modules: '()
+        feature-roots: signed-feature-roots
         intent:
         (.o mode: 'explicit
             decisions: (map (lambda (row)
@@ -875,10 +877,11 @@
          (def graph
            (cond
             ((and selected (memq id roots)) (linked-selection-graph selected))
-            ((and (not realization) candidate-read paired-context-current?
-                  (paired-context-current?) (object-construction-current?)
-                  (not (current-module-source-observer)) (owned-read-function-scope?)
-                  (.slot? context-value 'feature-roots))
+            ((and (.slot? context-value 'feature-roots)
+                  (or (.slot? context-value 'compiled-leaves)
+                      (and (not realization) candidate-read paired-context-current?
+                           (paired-context-current?) (object-construction-current?)
+                           (not (current-module-source-observer)) (owned-read-function-scope?))))
              ;; The same resolver checks all signed Feature decisions and their
              ;; Core requirements, plus the requested owner's closure.
              (let (feature-roots (.ref context-value 'feature-roots))

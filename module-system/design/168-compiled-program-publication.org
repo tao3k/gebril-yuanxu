@@ -60,17 +60,21 @@ or contributor-supplied strategy flag is introduced.
 
 * Role projection
 
-Generated program publications import each selected role value through an
-ordinary Gerbil =only-in= / =rename-in= import of its admitted source path.
-These are runtime dependency edges: a =for-template= edge alone has negative
-phase and does not enroll the role in Gerbil's executable closure. The emitted
-expression references the hygienic private binding directly. It does not add a
-loader, role registry, or value cache. Optional =Config= retains its existing
-absence semantics.
+The compiler enrolls admitted Interfaces in Gerbil's executable dependency
+graph during expansion. The generated dynamic library contains the namespace
+and its POO slots. When an executable compiler imports the native interface
+metadata, the expansion enrolls the same native dependency identities again.
+This preserves the static link closure across separately built packages.
 
-The separate =compiled-role-values= API retains its static-unit refusal and
-Gerbil dynamic-library protocol. That API is not a replacement for the ordinary
-runtime imports needed by the generated program publication.
+A publication slot reads the compiler-resolved binding through
+=compiled-role-values= on demand. Gerbil owns dynamic loading and Gambit owns
+linked units. POO's =without-observation= confines module initialization
+reads to the initializing code. Publisher and contract reads still belong to
+the demanding slot. Renamer reflection enumerates the compiled namespace without
+forcing those slots. A standalone executable retains Gambit's native preload
+behavior for linked units; Yuanxu still constructs a business scope only on
+leaf demand. The linker's signed Feature decisions retain their existing
+dependencies and checks.
 
 Source value factories retain the invoking reader's import owner. Replacing
 =current-expander-module-import= with =core-import-module= bypasses the reader's

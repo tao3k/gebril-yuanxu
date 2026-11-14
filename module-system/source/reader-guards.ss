@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Authenticate source, metadata and policy at reader operation boundaries.
-(import (only-in :clan/poo/read-projection current-owned-read-open-guard)
+(import (only-in :clan/poo/read-projection current-owned-read-open-guard owned-read-function-scope?)
         :tao3k/yuanxu/module-system/source/admission
         :tao3k/yuanxu/module-system/source/reader-session
         :tao3k/yuanxu/module-system/source/reader-support
@@ -104,7 +104,18 @@
           (lambda () (observer (list 'publication-guard-end origin) 1)))
         (module-source-measure-operation 'reader-current
           (lambda ()
-            (module-source-measure-operation (list 'reader-current origin) check!))))
+            (module-source-measure-operation (list 'reader-current origin)
+              (lambda ()
+                (let (candidate ((reader-session-candidate session)))
+                  (if (and candidate (not (candidate-support-open? candidate))
+                           (candidate-support-directory-location? candidate)
+                           (owned-read-function-scope?) (object-construction-current?)
+                           (reader-fixed-candidate-guards? candidate))
+                    ;; Directory and prepared-input checks observe the same
+                    ;; bytes in this closed checkpoint. The caller still ends
+                    ;; the window before expansion, initialization or admission.
+                    (call-with-module-source-read-cache check!)
+                    (check!))))))))
       ;; Open observers (including one which removes itself), public checks
       ;; and open candidate callbacks may alter native metadata. No verdict
       ;; crosses their return. A closed candidate's fixed source checks have

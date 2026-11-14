@@ -383,7 +383,7 @@ category metadata across windows. =dependency_only_window_keeps_roots= and
 =dependency_only_window_keeps_projection= prove that a nonmatching auxiliary
 window adds no roots and preserves the ordinary dependency projection for
 fixed admitted dependencies and eligible owners. Lab's
-=yuanxu-deployment-downstream-test.ss= exercises the corresponding OpenTofu,
+=t/yanxu/modules/services/opentofu/deployment-test.ss= exercises the corresponding OpenTofu,
 Nix, JsonSchema and Funflow cross-package Graph. Empty-category rejection and
 relative path resolution remain Scheme boundary obligations. The Lean laws assume admitted roots and
 do not prove the Gerbil tag reader or native compiler.
@@ -1025,3 +1025,288 @@ source-spec test failed when Gerbil Make resolved the JsonSchema dependency
 to the isolated fixture after the projection had captured the same Module ID
 from the original checkout. The build barrier's deadlock was a downstream
 symptom of the failed import coordinator.
+
+On =f151537=, the Ubuntu 180-second declaration Case completed its first
+graph in 173.46 seconds wall, with 172.81 seconds CPU and 21.37 seconds GC
+wall. The watchdog fired at 180.419 seconds during fixture release. The
+whole Case remains the gate, including release and refusal checks.
+The separate Ubuntu selection Case was interrupted in its first graph
+at 180.088 seconds in the Case, with 175.00 seconds in the graph phase.
+The local Lab run on =9892283a= with Core =f151537= reached specification
+entry and timed out before the specification returned. That sample gives
+no measurement of the independent B child's startup or imports.
+
+=shared_policy_capture_preserves_checkpoints= permits the stock publication
+policy to share its immutable receiver/revision footprint after the actual
+getters return the same ordered identities and the footprint is checked.
+Each later boundary rechecks live revisions. Open observers and changed
+policy footprints retain per-candidate capture.
+=stock_policy_guard_preserves_ordered_revision_checks= establishes the
+selection of that footprint from stock roots and live revisions. The
+correspondence assumes a revision change when a POO prototype edge changes,
+so a fresh traversal from the same roots has the same ordered support.
+
+The local 180-second declaration gate with shared stock support still
+expired in the first graph at 180.009 seconds. The incomplete graph used
+166.747 seconds wall and 71.436 seconds CPU. Fixture materialization took
+10.273 seconds and release during unwinding took 11.198 seconds. The
+interrupted stack was comparing the bytes of =init.ss=. This locates one
+remaining source read cost. Its elapsed contribution requires stage
+accounting, and the different runner CPU times cannot measure the effect
+of sharing the policy footprint.
+The local selection gate also expired within the first graph at 180.832
+seconds. Namespace construction took 3.261 seconds. The interrupted graph
+used 159.579 seconds wall and 63.476 seconds CPU. Its stack was in the
+Gerbil source reader during native import.
+
+With stage accounting under the same 180-second gate, the declaration
+run completed 5,114 value admissions and expired before topology. The
+partial first graph took 168.127 seconds wall and 102.622 seconds CPU.
+Value admission accounted for 29.619 seconds CPU, metadata replay for
+23.887 seconds CPU across 30,687 calls, and the =init.ss= guard for 8.503
+seconds CPU with 4,976,975,030 characters physically read. These series
+include nested spans. Neither the graph topology stage nor fixture
+release explains the interrupted first graph.
+
+The Lab snapshot completed specification in 16.156 seconds wall and
+6.455 seconds CPU. Its selected graph accounted for 13.995 seconds wall.
+Cold A and B used 36.893 and 30.287 seconds. Clean A used 0.135 seconds
+and hot B used 1.799 seconds with no compile events. The B product hashes
+were checked after clean. The test process reached the first import
+marker 1.746 seconds after the request, then reached the aggregate
+120-second limit inside import expansion before the business `.get`.
+The test never reached its final runtime product and prerequisite checks.
+
+For optimization, value admission and ordered native replay are separate
+levers. The value span includes the named Type's validation and production
+of classification/validation evidence. A repeated footprint comparison
+alone leaves that work and the traversal visit count intact. For source
+checks, the exact-byte lower bound in
+=exact_effect_separated_probe_iff_complete= rules out reusing only a
+timestamp or an earlier successful check. Repeated complete reads can
+only be removed within an existing closed observation window, or replaced
+using an independently authenticated source revision.
+
+The 16-owner calibration ran serially in baseline, candidate, candidate,
+baseline order with the same POO build and stage accounting. All four
+runs completed with 95,930 replay visits and 100 replay calls. CPU
+medians were 219.73 to 150.58 ms for the inclusive admission span,
+101.22 to 97.51 ms for metadata replay, and 754.60 to 742.85 ms for the
+selected-owner closure. Policy capture precedes the admission span, so
+the inclusive admission difference does not directly time the capture.
+Two samples per arm and identical traversal counts do not establish a
+replay improvement at capacity.
+
+The =f151537= macOS dense selection job completed 172.478 seconds in
+the first-graph span before its Case deadline at 180.018 seconds. The
+interrupted stack was =observe-default-method!= calling POO issued-read
+authentication during datum analysis. The stock policy capture precedes
+this inner dispatch and does not combine its per-datum checks.
+The dense declarations job also expired at 180.001 seconds, with 169.235
+seconds wall and 155.278 seconds CPU in its incomplete first graph. Its
+interrupted stack was in the =init.ss= byte comparator. The packaged
+module suites and the distinct dense-values gate passed on macOS.
+
+=closed_role_preserves_ordered_delivery= and
+=stale_role_support_at_return_refuses= specify the next role-level change.
+Only a run of stock datum dispatch under unchanged support can share
+authentication. Keep each datum's result and ordered read delivery, keep
+the protected return check, and split the run at independent effects.
+Scheme uses native =reobserve-slot-reads!= for the role checkpoint.
+The inner recording frame forwards the original per-datum occurrences
+after the protected return. An instrumented observer or changed role
+policy uses the individual dispatch path. The closed candidate Reader
+also encloses directory and prepared-input guards in the same existing
+source observation window, which ends before Gerbil or author code runs.
+
+The stock-role test compares the original Generic read identities and
+order against individual dispatch and observes one role checkpoint.
+The result Type mutation control still changes the next datum's role.
+The former directory microbenchmark is replaced by a physical-read
+assertion and a same-size change at a UTF-8 chunk boundary.
+
+With both Scheme changes, the local 4 GiB gates still failed in the
+first graph. Declarations reached 180.004 seconds, with 158.969 seconds
+wall and 49.633 seconds CPU in the graph. The interrupted stack was
+opening a source file in publication preparation. Selection reached
+180.034 seconds, with 155.142 seconds wall and 37.100 seconds CPU in the
+graph. Its stack was constructing a SourceRef read during value admission.
+Both Gerbil processes returned zero despite the Case/Harness errors.
+Those failures do not establish the magnitude of the optimization.
+
+The same candidate passed the isolated build-input mutation gate. Lab
+reached specification completion in 16.822 seconds and the first A
+compile event 10.039 seconds after A started. The 120-second process
+deadline interrupted cold A before Make returned. The longer import
+stage trace remains available for a run that reaches the B test process.
+
+The next Core candidate pins POO PR 17 at =6ed403d=. Module Authoring
+uses the upstream lexical =.generic-object= accessor, bundle composition
+and the callable generated by =.defgeneric=. Warm presence reads use
+POO's prepared-slot path. Source
+preparation projects its owner, declaration and root from one observed
+metadata value only in the closed prefix. The identity check after author
+policy still reads live metadata. The diagnostic stages distinguish role
+opens, SourceRef checks at preparation and admission, and the independent
+Gerbil owner read.
+
+The instrumented 180-second, 4 GiB gates reached 8,456 and 8,930 owner
+value admissions respectively before expiry. The table reports partial CPU
+totals in seconds. Nested timings are inclusive.
+
+| Stage | Real declarations | Complete selected declarations |
+|-------+-------------------+--------------------------------|
+| Role file opens | 1.814 | 2.348 |
+| SourceRef preparation | 0.052 | 0.057 |
+| SourceRef admission | 0.192 | 0.090 |
+| Value admission | 42.023 | 44.771 |
+| Metadata replay | 35.878 | 40.961 |
+| Init currentness | 13.298 | 13.951 |
+
+The first graph did not complete in either case. Debug sweeps recorded
+48,091,102 and 50,782,885 visits. Reuse of replay traversal and checking
+its live inputs are separate: upstream POO owns both operations, while
+Yuanxu owns the call sites and their effect boundaries.
+
+** SourceRole validator and focused admission attribution
+
+=checkedValidationMethod= describes the actual method read during SourceRole
+validation. The maintained validator keeps the ordinary native call.
+An overridden validator enters the POO effect guard before invocation.
+=replacement_validation_preserves_guard_refusal= preserves the guard's
+refusal and prevents the callback from running on that path. In the Scheme
+negative control the first validator invocation changes the role. The second
+invocation must run its own guard and dispatch under the new role.
+
+A 16-owner source run accounted for 134.47 ms of value-admission CPU.
+POO subject validation used 133.80 ms. The named Type preflight, contextual
+obligation lookup and receipt construction together used about 0.42 ms.
+The hot call is the actual PublicationShape membership check. Skipping
+descriptor preflight would address little of this cost. The same run
+recorded 100 metadata replays and 95,930 visits. Declaration before/input/
+after and role entry/return measurements are inclusive; the existing
+protected return accounts for 23.28 ms CPU within its enclosing return.
+
+** Lab deployment runtime boundary
+
+With the 120-second aggregate and 60-second idle limits, the Lab harness
+passed the A/B cold inventories, A cleanup isolation and B hot zero-compile
+checks. The independent B child completed expansion of =use.ss= but produced
+no initializer or business =.get= marker before the idle refusal. A two-second
+sample caught the child in =dyld= native image mapping, with 171 samples in
+=__fcntl=. Running the same gate outside the sandbox also reached the idle
+refusal, with ordinary compile and clean results. The host log for the
+earlier exit 137 contains no matching termination or memory-pressure event
+for that PID. These are separate observations.
+
+The detailed 16-owner run spent 190.54 ms of its 192.14 ms value-admission
+CPU in the native =PublicationShape= Record membership check. The nested
+ScopeType Type, Record and excluded-protocol checks accounted for about
+2.67 ms within that Record span. Entry, input, declaration return and role
+entry/return are reported individually. They cross source preparation,
+Gerbil initialization or value admission. Their separate checks therefore
+require separate justification under =same_window_preserves_first_refusal=.
+
+In an alternating four-run calibration, deduplicating the preparation and
+admission root spines before the existing native return replay left the
+work count at 100 replay calls and 95,930 distinct-record visits in every
+run. The issuer already deduplicates traversal within each replay. The
+extra collector was removed. A text-comparison shortcut was also ruled
+out by the mutable source-view control, which changes the comparison
+result without leaving the enclosing source window.
+The final calibration attributes 14,656 visits apiece to declaration entry,
+inputs, declaration return, role entry and role return. These are logical
+visits reported by POO, not a count of internal protection sweeps. Stage
+times are inclusive.
+
+During native load, repeated reads of the child's open file descriptors
+showed successive selected products: Funflow =runtime-protocol~1.o1=,
+OpenTofu =collections~1.o1=, consumer =init~1.o1=, and Nix
+=contracts~0.o1= and =types~0.o1=. The single-file stall hypothesis
+does not explain these observations. This was a diagnostic run with
+dyld logging enabled, under the original Lab deadline.
+An independent run with eight native build workers passed both cold
+inventories, clean isolation and the hot zero-compile check. It again
+reached the idle refusal after expansion and before the B initializer.
+
+** Record membership and native Gerbil image boundaries
+
+The warmed two-field Record probe ran under the native read collector.
+In 10,000 iterations, Record membership took 134 ms CPU. A single field
+through =slot-checker= took 70 ms and calling its already resolved body
+took 47 ms. Separate probes took 13 ms for candidate presence, 8 ms for
+candidate value, and 18 ms each for declared-type lookup and the absent
+constant probe. These timings have separate collection costs and are not
+additive. Field dispatch reads the current Slot metaclass and its checker
+before reading the candidate. Hoisting either across field predicates
+would require proving that those predicates cannot change the later reads.
+
+=prepared_presence_preserves_delivery= permits omitting the nested
+collection of an indexed positive lookup with an empty nested trace.
+The prototype kept revision verification, original signed read delivery,
+and the existing miss and callback path. The warm captured membership
+probe saved about 0.39 MB across 2,000 operations (22.09 to 21.70 MB).
+CPU medians stayed near 20 ms. The simpler unobserved positive lookup also
+failed to improve the 16-owner source admission consistently. Neither
+prototype is a production change or a sufficient scale-gate candidate.
+
+The retained Lab B inventory had 86 module wrappers, 82 runtime bodies
+and 21 phase blocks, all native object images. The generated =init.ssi=
+loads =init~1= at expansion and =init~0= for runtime bindings. Gerbil's
+generated wrappers load runtime dependencies by Module ID. The library
+gate passed both cold inventories, A cleanup isolation and the hot
+zero-compile check, then hit the original idle limit before business
+=.get=. A separate =gxc -exe= probe recovered the B closure with native
+link edges after rebuilding the stale =compiled-role= compiler prerequisite.
+It reached native program compilation but did not link a runnable binary
+within 120 seconds. This probe does not qualify the original library gate.
+
+** Dense CI baseline and replay route schedule
+
+The successful =c8510881= CI uses POO =734dcba=. These are the first Graph
+spans in seconds. Total CPU includes GC CPU, and GC wall is included in
+Graph wall.
+
+| Platform | Workload | Wall | CPU | GC wall | GC CPU |
+|----------+----------+------+------+---------+--------|
+| Ubuntu | declarations | 221.97 | 221.51 | 20.89 | 20.89 |
+| Ubuntu | selection | 197.22 | 196.81 | 20.41 | 20.37 |
+| macOS | declarations | 521.12 | 459.72 | 160.54 | 143.11 |
+| macOS | selection | 392.99 | 364.14 | 112.52 | 101.85 |
+
+Both declarations ran 10,000 wrapper expansions and 20,000 initializers,
+reported 58,692,026 replay visits, and retained about 2.98 GB of live heap.
+The standard CI logs do not attribute separate CPU to value admission
+and replay. The local counters above use a different POO revision and
+report inclusive stage costs. Neither boundary can be reconstructed by
+subtracting GC CPU from the full Graph span.
+
+=precomputed_first_routes_preserve_refusal= models a byte per traversal
+position in the existing POO projection. The byte selects the first
+ordinary route check for its receiver. Bootstrap reads join the protected
+receiver set and do not consume that check. The native sweep still checks
+live issuance, key grammar, route and value in their original order.
+Entry and callback return run separate sweeps on the live state. This
+model assumes the same supported callback-free native sweep as the
+existing receiver-position implementation.
+
+The isolated Scheme prototype on POO =6ed403d= passed the 35 issued-read
+cases after updating the internal topology assertion to compare first
+ordinary positions. The tests retained route replacement, forgery,
+bootstrap, missing values and callback-return checks. On the real
+256-owner fixture, ABBA replay CPU was 1.027 and 1.200 seconds for the
+baseline and 1.091 and 1.112 seconds for the candidate. Every run
+reported 1,504,490 visits and about 268.75 MB live after collection.
+The benchmark's warm 64 by 128 shape changed from 56.12 to 55.36 ms
+CPU per 12 replays. These comparisons do not show a consistent useful
+gain on real owners. The prototype remains isolated.
+
+On the separate Lab A/B gate, specification took 24.23 seconds.
+The A and B cold actions completed in 19.84 and 15.28 seconds. A
+cleanup took 0.15 seconds and preserved B's hashes. The B hot
+action completed in 1.60 seconds with zero compile events. The
+consumer test started at 65.95 seconds and its runtime-test module
+initialized at 71.39 seconds. The combined child Harness appeared at
+114.03 seconds. The original outer deadline terminated the process
+before the business test returned. The open interval includes other
+selected test-module imports before Harness entry.

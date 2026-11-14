@@ -58,7 +58,7 @@
           (if directory-location? (directory-candidate-guard-invoke location) location))
         (def tools (list->hash-table (reader-session-interpreter-observations session)))
         (def scope (make-candidate-support '() tools (source-observation-rows tools)
-                      #f epoch-current location-current!))
+                      #f epoch-current location-current! directory-location?))
         (with-catch
           (lambda (failure) (set! (reader-session-refused? session) #t) (raise failure))
           (lambda ()

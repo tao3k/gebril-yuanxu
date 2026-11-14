@@ -18,7 +18,10 @@
         :tao3k/yuanxu/modules/funflow/control-plane/policy
         :tao3k/yuanxu/modules/funflow/control-plane/runtime-protocol
         :tao3k/yuanxu/modules/funflow/control-plane/runtime-adapter
-        :tao3k/yuanxu/modules/funflow/control-plane/replay
+        (for-template "./replay.ss")
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/source/compiled-role
+                 bind-deferred-interfaces deferred-interface-values)
         :tao3k/yuanxu/modules/funflow/control-plane/runner-support/validation
         :tao3k/yuanxu/modules/funflow/control-plane/runner-support/receipt
         :tao3k/yuanxu/modules/funflow/control-plane/runner-support/adapter-dispatch)
@@ -41,6 +44,15 @@
         runner-run-either
         runner-run-value-or-recover
         runner-run-replay-report)
+
+(bind-deferred-interfaces
+  (#f)
+  (:tao3k/yuanxu/modules/funflow/control-plane/replay))
+
+(def runner-replay
+  (.o report: (deferred-interface-values
+                tao3k/yuanxu/modules/funflow/control-plane/replay
+                (validate-replay-report) module-binding-action)))
 
 ;; : (-> Value Receipt RunResult)
 (defstruct run-result (value receipt) transparent: #t)
@@ -118,7 +130,7 @@
 (def (runner-run-replay-report runner flow input)
   (let* ((plan (runner-plan runner flow))
          (result (runner-run runner flow input)))
-    (validate-replay-report plan (run-result-receipt result))))
+    ((.get runner-replay report validate-replay-report) plan (run-result-receipt result))))
 
 ;;; Boundary: validation is the only pre-run traversal over planned nodes.
 ;;; Invariant: each node is checked against both strategy and adapter support.

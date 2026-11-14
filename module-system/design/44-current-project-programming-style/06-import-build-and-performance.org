@@ -50,7 +50,7 @@ every action. It checks stable compiler prerequisite Context paths, zero
 business scopes during source projection, and native B product initialization
 in an independent qualification harness. First =.get= and selected owner suites
 execute in that process without warming scopes in the parent.
-Lab's runtime CI invokes the deployment file separately through its 240-second
+Lab's runtime CI invokes the deployment file separately through its 120-second
 aggregate =just test-file= gate, validates its complete receipt, and retains its
 output. Its action and idle limits are 120 and 60 seconds, respectively.
 The broad runtime unit batch cannot substitute its longer aggregate deadline.

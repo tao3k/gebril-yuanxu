@@ -157,8 +157,13 @@ cores. A failing performance or idle gate remains a failure. Reproduce from
 the exact checkout and pinned toolchain; keep complete failed logs in ignored
 cache or expiring CI artifacts. Production build memory is not a test quota.
 
-Core's =t/= tests cover shared semantics. Agentic AI Lab retains product selection
-and cross-package integration tests.
+Core's =t/thousand-package-downstream-test.ss= owns the package-independent
+downstream contract. An independent consumer selects one Profile, runs native
+=.get=, compiles the selected closure, and checks hot builds and cleanup
+isolation. =t/selected-source-view-lifecycle-test.ss= covers compiler-input
+currentness, retry, and pruning. Both fixtures belong to Core and run without
+Agentic AI Lab. Lab's OpenTofu service tests exercise its deployment Profile
+and public schema operation.
 
 * Module System design proposals
 

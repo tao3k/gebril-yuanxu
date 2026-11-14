@@ -12,11 +12,27 @@
         (only-in "control-plane/flow.ss" flow-compose)
         (only-in "control-plane/task.ss" execution-request-name execution-request-request execution-request-input
                  make-external-task make-pure-task)
-        (only-in "control-plane/runtime-adapter.ss" make-runtime-adapter)
         (only-in "control-plane/runtime-protocol.ss" make-adapter-result adapter-result-value)
         (only-in "control-plane/strategy.ss" make-local-eager-strategy)
-        (only-in "control-plane/runner.ss" make-runner runner-run run-result-value run-result-receipt))
+        (for-template "control-plane/runtime-adapter.ss" "control-plane/runner.ss")
+        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/source/compiled-role
+                 bind-deferred-interfaces deferred-interface-values))
 (export job-graph job-flow run-job)
+
+(bind-deferred-interfaces
+  (#f #f)
+  (:tao3k/yuanxu/modules/funflow/control-plane/runtime-adapter
+   :tao3k/yuanxu/modules/funflow/control-plane/runner))
+
+;; Importing a Job prototype or projecting its graph leaves execution cold.
+(def job-runtime
+  (.o adapter: (deferred-interface-values
+                 tao3k/yuanxu/modules/funflow/control-plane/runtime-adapter
+                 (make-runtime-adapter) module-binding-action)
+      runner: (deferred-interface-values
+                tao3k/yuanxu/modules/funflow/control-plane/runner
+                (make-runner runner-run run-result-value run-result-receipt) module-binding-action)))
 
 (def (symbol-set? values)
   (and (list? values) (every symbol? values)
@@ -118,12 +134,13 @@
       (lambda ()
         (dynamic-wind void
           (lambda ()
-            (let* ((adapter (make-runtime-adapter 'ops '(external) submit
+            (let* ((adapter ((.get job-runtime adapter make-runtime-adapter) 'ops '(external) submit
                               unsupported-ops-operation unsupported-ops-operation unsupported-ops-operation))
-                   (runner (make-runner (make-local-eager-strategy) adapter))
-                   (outcome (runner-run runner (job-flow job projection workspace) (.o))))
-              (set! results (run-result-value outcome))
-              (set! flow-receipt-value (run-result-receipt outcome))))
+                   (runtime (.get job-runtime runner))
+                   (runner ((.get runtime make-runner) (make-local-eager-strategy) adapter))
+                   (outcome ((.get runtime runner-run) runner (job-flow job projection workspace) (.o))))
+              (set! results ((.get runtime run-result-value) outcome))
+              (set! flow-receipt-value ((.get runtime run-result-receipt) outcome))))
           finalize)))
     (when (pair? cleanup-failures)
       (error "Funflow finalizer failed" primary-failure (reverse cleanup-failures)))

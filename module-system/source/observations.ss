@@ -137,12 +137,20 @@
                             reader-admission-start reader-native-import reader-role-import
                             reader-tool-inputs reader-private-closure reader-compile-start
                             reader-eval-start metadata-replay source-init-current
+                            source-native-owner-read source-role-open
                             compiler-input-lookup compiler-role-inventory
                             compiler-import-before compiler-import-after
                             compiler-view-before compiler-view-after)))
               (measure-source-read-attempts times name
                 (lambda () (measure-source-operation times name action)))
-              (measure-source-operation times name action))))))))
+                  (if (and (pair? name) (eq? (car name) 'reader-candidate-replay-site))
+                    (let (before (hash-ref times '(visits metadata-replay) 0))
+                      (dynamic-wind void
+                        (lambda () (measure-source-operation times name action))
+                        (lambda ()
+                          (hash-update! times (list 'visits name)
+                            (cut + <> (- (hash-ref times '(visits metadata-replay) 0) before)) 0))))
+                    (measure-source-operation times name action)))))))))
 (def (measure-source-operation times name action)
   (if (if (eq? (current-module-source-operation-accounting?) 'stages)
               (or (and (pair? name)
@@ -156,9 +164,11 @@
                            selected-owner-closure selected-core-projection selected-topological-resolution
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
                            reader-admission-start reader-value-admission reader-admission-evidence scope-factory
+                           publication-shape-record publication-shape-core
+                           scope-shape-type scope-shape-record scope-shape-protocol
                            reader-current reader-native-identity reader-tool-source-current reader-source-guards
                            metadata-replay metadata-checkpoints observed-metadata-replay publication-guard-sweep
-                           reader-candidate-fused-return-replay
+                           reader-candidate-entry-replay reader-candidate-return-replay reader-candidate-fused-return-replay
                            metadata-index metadata-root-merge metadata-cache-miss-receivers
                            source-init-current source-authoring-profile-checkpoint
                            reader-tool-inputs reader-private-closure reader-private-prepare
@@ -168,6 +178,9 @@
                            reader-expander-compile reader-expander-eval
                            reader-expander-phase-compile reader-expander-phase-eval
                            source-authoring source-authoring-profile source-authoring-role
+                           source-authoring-role-checkpoint
+                           source-ref-preparation source-ref-admission source-native-owner-read
+                           source-role-open
                            source-direction source-import-policy source-parse)))
               (and (current-module-source-operation-accounting?)
                  (memq name '(metadata-replay selection-current selected-graph reader-current source-read
@@ -378,6 +391,7 @@
 (def (scheme-source-path? path)
   (equal? (path-extension path) ".ss"))
 (def source-read-chunk-size 8192)
+(def source-snapshot-chunk-size 65536)
 (def (source-text->snapshot text)
   (def snapshot (string-copy text))
   (def bytes (string->utf8 snapshot))
@@ -385,7 +399,7 @@
   (make-source-text-snapshot snapshot
     (let loop ((start 0))
       (if (= start size) '()
-        (let (end (min (+ start source-read-chunk-size) size))
+        (let (end (min (+ start source-snapshot-chunk-size) size))
           (cons (subu8vector bytes start end) (loop end)))))))
 (def (decode-source-bytes bytes)
   (def port (open-input-u8vector (cons* init: bytes source-file-settings)))
@@ -407,7 +421,7 @@
   (call-with-input-source-file path
     (lambda (port)
       (def expected (source-text-snapshot-chunks snapshot))
-      (def buffer (make-u8vector source-read-chunk-size))
+      (def buffer (make-u8vector (u8vector-length (car expected))))
       (def (decode-change matched tail)
         (decode-source-bytes
           (u8vector-concatenate
@@ -420,7 +434,7 @@
               (decode-change matched (u8vector next))))
           (let* ((chunk (car chunks))
                  (size (u8vector-length chunk))
-                 (target (if (= size source-read-chunk-size) buffer (make-u8vector size)))
+                 (target (if (= size (u8vector-length buffer)) buffer (make-u8vector size)))
                  (count (read-subu8vector target 0 size port)))
             (if (and (= count size) (equal? target chunk))
               (loop (cdr chunks) (1+ matched))
