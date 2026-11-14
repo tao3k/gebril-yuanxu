@@ -1,0 +1,58 @@
+;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+;;; Explicit development cleanup for products left by the native Make clean.
+(import (only-in :gerbil/expander core-read-module/sexp)
+        (only-in :std/misc/process run-process)
+        (only-in :std/string/path path-default-extension)
+        (only-in :tao3k/yuanxu/module-system/building/products artifact-files)
+        (only-in :tao3k/yuanxu/module-system/source/observations module-source-name? module-source-type))
+(export clean-selected-outputs! main)
+
+(def (clean-selected-outputs! identities library (native-clean void))
+  (def root (path-strip-trailing-directory-separator (path-expand library)))
+  (def (check-parent! directory)
+    (def parent (path-strip-trailing-directory-separator directory))
+    (unless (equal? parent root)
+      (check-parent! (path-directory parent))
+      (let (kind (module-source-type parent))
+        (unless (or (not kind) (eq? kind 'directory))
+          (error "selected output parent is not a directory" parent)))))
+  (for-each
+    (lambda (identity)
+      (unless (and (symbol? identity)
+                   (andmap module-source-name? (string-split (symbol->string identity) #\/)))
+        (error "invalid clean module identity" identity))
+      (check-parent! (path-directory (path-expand (symbol->string identity) root))))
+    identities)
+  (let (kind (module-source-type root))
+    (unless (or (not kind) (eq? kind 'directory))
+      (error "selected output root is not a directory" root)))
+  (check-parent! (path-expand "static" root))
+  (def files (artifact-files identities root #f))
+  (for-each
+    (lambda (path)
+      (unless (eq? (module-source-type path) 'regular)
+        (error "selected compiler output is not a regular file" path)))
+    files)
+  (native-clean)
+  (for-each (lambda (path)
+              (when (file-exists? path)
+                (displayln "... remove " path)
+                (delete-file path)))
+            files))
+
+(def (main source-root library . command)
+  ;; stdin is the existing defbuild-script spec. Gerbil reads the source
+  ;; header so an explicit package declaration determines the output owner.
+  (def spec (read))
+  (unless (list? spec) (error "expected Gerbil build spec" spec))
+  (def (library-id name)
+    (def source (path-expand (path-default-extension name ".ss") source-root))
+    (let-values (((_prelude id _namespace _body) (core-read-module/sexp source))) id))
+  (def (identities row)
+    (match row
+      ((? string? name) (list (library-id name)))
+      ([gxc: name . _] (list (library-id name)))
+      ([ssi: _ . nested] (apply append (map identities nested)))
+      (else '())))
+  (clean-selected-outputs! (apply append (map identities spec)) library
+    (lambda () (run-process command stdin-redirection: #f stdout-redirection: #f))))

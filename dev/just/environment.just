@@ -15,3 +15,8 @@ gerbil_test_runtime_options := "-:max-heap=" + gerbil_test_max_heap + ",debug=" 
 # Darwin GCC must use the platform assembler/linker, even when Nix adds tools
 # earlier in PATH. This is GCC's standard routing variable, not a Lab protocol.
 gerbil_compiler_environment := if os() == "macos" { "env -u SDKROOT COMPILER_PATH=/usr/bin" } else { "env -u SDKROOT" }
+
+yuanxu_clean_path := env_var_or_default("GERBIL_PATH", justfile_directory() + "/.gerbil")
+yuanxu_clean_loadpath := env_var_or_default("GERBIL_LOADPATH", yuanxu_clean_path + "/lib")
+yuanxu_clean_env := ("GERBIL_PATH=" + quote(yuanxu_clean_path) +
+    " GERBIL_LOADPATH=" + quote(yuanxu_clean_loadpath) + " " + gerbil_compiler_environment)

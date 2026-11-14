@@ -49,12 +49,10 @@
                 (lambda ()
                   (core-resolve-library-module-path
                     (string->symbol (string-append ":" (symbol->string identity))))))))))
-    ;; A native SSI may legitimately coexist with its owned source. Bind only
-    ;; an ALREADY imported actual context, never permission inferred from an
-    ;; artifact suffix or a matching filename. Keep that instance/name/path for
-    ;; later checks; changing load-path cannot retarget this observation.
-    (def compiled
-      (and (string? resolved) (string=? (path-extension resolved) ".ssi")
+    ;; Bind the context Gerbil actually imported. A path that resolves to the
+    ;; authored source already has a source observation and needs no binding.
+    (def imported
+      (and (string? resolved) (not (equal? (path-normalize resolved) (path-normalize path)))
         (let (context (or (hash-get __module-registry resolved)
                          (hash-get __module-registry (path-normalize resolved))))
           (and (module-context? context) (eq? identity (expander-context-id context))
@@ -63,11 +61,11 @@
                (vector context identity (string-copy (module-context-path context)))))))
     (def observed
       (or (and binding (vector-ref binding 0) binding)
-          (and owned-root compiled)
+          (and owned-root imported)
           binding
           (and (string? resolved) (equal? (path-normalize resolved) (path-normalize path))
                (vector #f identity (string-copy path)))
-          compiled))
+          imported))
     (def binding-current?
       (or (not observed)
           (and (eq? identity (vector-ref observed 1))

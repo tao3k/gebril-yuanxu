@@ -4,7 +4,7 @@
 ;;; Prepare compiler input from selected local sources; never import or run them.
 (import (only-in :tao3k/yuanxu/module-system/building/products
                  build-output-directory current-build-source-directory current-build-compiler-options
-                 invalidate-build-products! artifact-files static-product-path
+                 artifact-files static-product-path
                  call-with-selected-output-lock selected-output-source-directory)
         (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path)
         (only-in :clan/poo/object .o .ref .ref/cached .slot? object? object-protocol
@@ -18,7 +18,7 @@
         (only-in :tao3k/yuanxu/module-system/source/declaration include-module-body)
         (only-in :tao3k/yuanxu/module-system/source/config-prelude)
         (only-in :tao3k/yuanxu/module-system/source/module-prelude)
-        (only-in :std/io/tempfile call-with-temporary-directory)
+        (only-in :std/io/tempfile call-with-temporary-directory make-temporary-file-name)
         (only-in :gerbil/runtime/gambit current-readtable)
         (only-in :gerbil/runtime/syntax __*readtable*)
         (only-in :gerbil/expander current-expander-module-import expander-context-id syntax-e
@@ -872,12 +872,7 @@
       (cond
         (bootstrap-prelude
          (when previous
-           (call-with-module-source-callback
-             (lambda ()
-               ;; A former compiled-route descriptor must not authorize the
-               ;; product that the source bootstrap is about to replace.
-               (invalidate-build-products! (list identity) libdir)
-               (delete-file target)))))
+           (call-with-module-source-callback (lambda () (delete-file target)))))
         ((or (not preserve-unrecorded?) previous
              (not (module-source-type (static-product-path identity libdir))))
          (let ()
@@ -912,11 +907,15 @@
                       (path-strip-trailing-directory-separator (path-directory name)) out)
                     (newline out))))))
           (unless (equal? previous content)
-            ;; A crash after invalidation cannot reuse the previous native marker.
+            ;; Make compares the generated source input with its own outputs.
             (call-with-module-source-callback
               (lambda ()
-                (invalidate-build-products! (list identity) libdir)
-                (create-directory* (path-directory target))
-                (call-with-output-file (list path: target truncate: #t) (lambda (out) (display content out)))))))))
+                (def temporary (make-temporary-file-name target))
+                (unwind-protect
+                  (begin
+                    (call-with-output-file (list path: temporary truncate: #t)
+                      (lambda (out) (display content out)))
+                    (rename-file temporary target #t))
+                  (when (file-exists? temporary) (delete-file temporary)))))))))
       (module-source-measure-operation 'compiler-view-after
         (lambda () ((.ref input 'admit-current))))) batch))))

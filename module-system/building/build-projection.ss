@@ -11,7 +11,7 @@
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module call-with-build-stage package-library-spec/source-context)
         (only-in :tao3k/yuanxu/module-system/building/products build-output-directory
                  current-build-source-directory current-build-module-roots call-with-selected-output-lock
-                 selected-output-source-directory artifact-files clean-build-artifacts!)
+                 selected-output-source-directory artifact-files)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-entry-action)
         (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
         (runtime: :clan/poo/object)
@@ -375,21 +375,16 @@
           (def libdir (build-output-directory))
           (call-with-selected-output-lock libdir
             (lambda ()
-              (def identities (.ref projection 'compiler-identities))
-              (begin0
-                (with-admitted-spec projection
-                  (lambda ()
-                    (artifact-files identities libdir #f)
-                    ;; Unified Make targets need the same prefix-free directory.
-                    (if foreign?
-                      (let (directory (selected-output-source-directory libdir))
-                        (create-directory* directory)
-                        (parameterize ((current-build-source-directory directory))
-                          (action)))
-                      (action))))
-                ;; STD Make cleans its declared outputs. A selected source
-                ;; environment also owns the remaining dynamic generations.
-                (when foreign? (clean-build-artifacts! identities libdir))))))
+              (with-admitted-spec projection
+                (lambda ()
+                  (artifact-files (.ref projection 'compiler-identities) libdir #f)
+                  ;; Unified Make targets need the same prefix-free directory.
+                  (if foreign?
+                    (let (directory (selected-output-source-directory libdir))
+                      (create-directory* directory)
+                      (parameterize ((current-build-source-directory directory))
+                        (action)))
+                    (action)))))))
         .compile: (lambda (libdir action)
                     (publication-current!)
                     (issue-build-artifacts
