@@ -12,12 +12,11 @@
         (only-in "json-schema-validate.ss" yuanxu-json-schema-contract-artifact-validate)
         (only-in "json-schema-contract.ss" yuanxu-json-schema->contract))
 (export read-schema normalize-schema compile-schema schema-contract validate-schema)
-(bind-deferred-interfaces
-  (#f)
-  (:tao3k/yuanxu/modules/json-schema/json-schema-source))
+(bind-deferred-interfaces "./json-schema-source.ss")
 
 (def schema-reader
   (.o source-reader: (deferred-interface-values
+                       "./json-schema-source.ss"
                        tao3k/yuanxu/modules/json-schema/json-schema-source
                        (yuanxu-json-schema-read-file) module-binding-action)))
 

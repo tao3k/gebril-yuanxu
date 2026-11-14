@@ -45,12 +45,11 @@
         runner-run-value-or-recover
         runner-run-replay-report)
 
-(bind-deferred-interfaces
-  (#f)
-  (:tao3k/yuanxu/modules/funflow/control-plane/replay))
+(bind-deferred-interfaces "./replay.ss")
 
 (def runner-replay
   (.o report: (deferred-interface-values
+                "./replay.ss"
                 tao3k/yuanxu/modules/funflow/control-plane/replay
                 (validate-replay-report) module-binding-action)))
 

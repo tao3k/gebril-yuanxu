@@ -29,8 +29,16 @@ prelude: :gerbil/core
         (parameterize ((current-expander-marks '()))
           (resolve-identifier (alias-binding-e binding) 0 context)))
        (else binding))))
-  (def (compiled-role-context owner origin)
+  (def (compiled-role-context owner origin (relative-source #f))
     (def context (core-context-top (current-expander-context) module-context?))
+    ;; A relative template import takes its identity from the source package.
+    ;; Use Gerbil's import resolution for that ID, then use the Context enrolled
+    ;; by the enclosing compiler for export bindings.
+    (def relative-owner
+      (and relative-source
+           (expander-context-id
+             (import-module (core-resolve-module-path (stx-e relative-source)
+                                                      (module-context-path context))))))
     ;; The compiler already enrolled the prepared role in this Context.
     ;; Re-resolving its public name would discard that admitted source context
     ;; and can select the original unwrapped role or stale installed metadata.
@@ -42,11 +50,12 @@ prelude: :gerbil/core
                               (module-export-context (module-import-source entry)))
                              ((module-context? entry) entry)
                              (else #f))))
-          (if (and (module-context? source) (eq? owner (expander-context-id source)))
+          (if (and (module-context? source) (eq? (or relative-owner owner) (expander-context-id source)))
             source
             (find-role (cdr imports))))))
     (or (and context (find-role (module-context-import context)))
-        (raise-syntax-error #f "compiled role requires its declared template import" origin owner)))
+        (raise-syntax-error #f "compiled role requires its declared template import" origin
+                            (or relative-owner owner))))
   (def (role-runtime-bindings context names origin)
     (def exports (make-hash-table-eq))
     (for-each
@@ -113,16 +122,23 @@ prelude: :gerbil/core
 ;; Reuse the same admitted Context for native compilation and static linking.
 (defsyntax (bind-deferred-interfaces stx)
   (syntax-case stx ()
-    ((_ (path ...) (identity ...))
+    ((_ path ...)
      (if (current-expander-compiling?)
-       #'(bind-program-interfaces (path ...) (identity ...))
+       (let (contexts (map (cut compiled-role-context #f stx <>) (syntax->list #'(path ...))))
+         (with-syntax (((source ...) (map module-context-path contexts))
+                       ((identity ...)
+                        (map (lambda (context)
+                               (string->symbol
+                                 (string-append ":" (symbol->string (expander-context-id context)))))
+                             contexts)))
+           #'(bind-program-interfaces (source ...) (identity ...))))
        #'(begin)))))
 
 (defsyntax (deferred-interface-values stx)
   (syntax-case stx ()
-    ((_ module (name ...) source-action)
+    ((_ source module (name ...) source-action)
      (if (current-expander-compiling?)
-       #'(compiled-role-values 'module '(name ...))
+       #'(compiled-role-values 'module '(name ...) source)
        (with-syntax ((path (symbol->string (syntax->datum #'module))))
          #'(object<-alist
              (list (cons 'name (let (call (source-action path 'name))
@@ -131,9 +147,11 @@ prelude: :gerbil/core
 (defsyntax (compiled-role-values stx)
   (syntax-case stx (quote)
     ((_ (quote owner) (quote (name ...)))
+     #'(compiled-role-values 'owner '(name ...) #f))
+    ((_ (quote owner) (quote (name ...)) relative)
      (let* ((owner (stx-e #'owner))
             (names (syntax->datum #'(name ...)))
-            (context (compiled-role-context owner stx))
+            (context (compiled-role-context owner stx (and (stx-e #'relative) #'relative)))
             (rows (role-runtime-bindings context names stx))
             (namespace (module-context-ns context))
             (owns-export?

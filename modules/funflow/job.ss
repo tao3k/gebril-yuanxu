@@ -20,17 +20,16 @@
                  bind-deferred-interfaces deferred-interface-values))
 (export job-graph job-flow run-job)
 
-(bind-deferred-interfaces
-  (#f #f)
-  (:tao3k/yuanxu/modules/funflow/control-plane/runtime-adapter
-   :tao3k/yuanxu/modules/funflow/control-plane/runner))
+(bind-deferred-interfaces "control-plane/runtime-adapter.ss" "control-plane/runner.ss")
 
 ;; Importing a Job prototype or projecting its graph leaves execution cold.
 (def job-runtime
   (.o adapter: (deferred-interface-values
+                 "control-plane/runtime-adapter.ss"
                  tao3k/yuanxu/modules/funflow/control-plane/runtime-adapter
                  (make-runtime-adapter) module-binding-action)
       runner: (deferred-interface-values
+                "control-plane/runner.ss"
                 tao3k/yuanxu/modules/funflow/control-plane/runner
                 (make-runner runner-run run-result-value run-result-receipt) module-binding-action)))
 

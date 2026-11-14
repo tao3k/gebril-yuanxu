@@ -31,12 +31,11 @@
         adapter-store-put
         adapter-store-get)
 
-(bind-deferred-interfaces
-  (#f)
-  (:tao3k/yuanxu/modules/funflow/control-plane/runtime-command-invocation))
+(bind-deferred-interfaces "./runtime-command-invocation.ss")
 
 (def command-adapter
   (.o invocation: (deferred-interface-values
+                    "./runtime-command-invocation.ss"
                     tao3k/yuanxu/modules/funflow/control-plane/runtime-command-invocation
                     (runtime-command-result) module-binding-action)))
 
