@@ -3,9 +3,9 @@
 ;;; Compiler projection of the admitted selection; no business scope execution.
 (import (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source module-compiler-init-forms)
         (runtime: :clan/poo/object)
-        (only-in :std/list/list find delete-duplicates/hash)
+        (only-in :std/list/list find)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
-        (only-in :tao3k/yuanxu/module-system/source/observations module-source-read))
+        (only-in :tao3k/yuanxu/module-system/source/observations module-source-read module-source-type))
 (export project-program-init init-compiler-forms)
 
 (def (project-program-init view build entry)
@@ -16,7 +16,7 @@
            (ids (.ref graph 'module-order))
            (nodes (.ref graph 'nodes))
            (inputs (.ref build 'entries))
-           (aliases (make-hash-table))
+           (interfaces (make-hash-table))
            (imports '()))
       (def (current!)
         ((.ref input 'admit-current))
@@ -24,17 +24,10 @@
       (current!)
       (def (role-value input binding)
         (def identity (.ref input 'compiler-identity))
-        (def key (cons identity binding))
-        (or (hash-get aliases key)
-          ;; These imports and references are serialized together in a private
-          ;; compiler input. An uninterned symbol loses identity on read-back
-          ;; and makes an unchanged source view differ on each build.
-          (let (name (string->symbol (string-append "%yuanxu-publication-"
-                                       (number->string (hash-length aliases)))))
-            (hash-put! aliases key name)
-            ;; This value import is the runtime edge to the publication.
-            (set! imports (cons (list identity (.ref input 'path) binding name) imports))
-            name)))
+        (unless (hash-key? interfaces identity)
+          (hash-put! interfaces identity #t)
+          (set! imports (cons (cons identity (.ref input 'path)) imports)))
+        `(.ref (compiled-role-values ',identity '(,binding)) ',binding))
       (def (publication-input id)
         (def entry (find (lambda (entry)
                           (and (eq? (.ref entry 'kind) 'publication)
@@ -72,18 +65,13 @@
                (def names (if (list? features) features (.all-slots features)))
                `(,id (.o declaration: ',(.ref original 'identity)
                          publication: ,value
+                         imports: ',(.ref node 'imports)
+                         build-spec?: ,(.slot? original '__std-make-spec)
+                         test-spec?: ,(and (module-source-type
+                                            (path-expand "tests" (path-directory (.ref prepared 'path))))
+                                          #t)
                          features: (.o ,@(map (lambda (name)
                                                `(,name ,(feature-value id (.ref original 'identity) name value))) names))))) ids))
-      (def resolutions
-        (map (lambda (id)
-               (def node (find (lambda (node) (and (eq? (.ref node 'kind) 'module-core)
-                                                 (eq? (.ref node 'identity) id))) nodes))
-               (def requires (.ref (.ref (.ref node 'publication) 'core) 'requires))
-               `(,id (.o ,@(map (lambda (reference)
-                                 `(,reference ',((.ref graph 'resolve-module-id) id reference)))
-                               (delete-duplicates/hash
-                                 (map (lambda (alias) (.ref (.ref requires alias) 'module-id))
-                                      (.all-slots requires))))))) ids))
       (def decisions
         (filter-map (lambda (row)
                       (and (memq (.ref row 'identity) ids)
@@ -124,14 +112,16 @@
           `((import (only-in :clan/poo/object .o .cc .ref)
                     (only-in :tao3k/yuanxu/module-system/source/link module-program-namespace module-program-feature)
                     (only-in :tao3k/yuanxu/module-system/selection/init-expansion expand-yuanxu-program-declaration)
-                    ,@(map (lambda (row)
-                              `(rename-in (only-in ,(cadr row) ,(caddr row))
-                                 (,(caddr row) ,(cadddr row))))
-                            (reverse imports)))
+                    (only-in :tao3k/yuanxu/module-system/source/compiled-role
+                             compiled-role-values bind-program-interfaces))
+            (bind-program-interfaces
+              ,(map cdr (reverse imports))
+              ,(map (lambda (row) (string->symbol (string-append ":" (symbol->string (car row)))))
+                    (reverse imports)))
             (expand-yuanxu-program-declaration ,declaration ,(.ref entry 'path)
               (lambda ()
                 (module-program-namespace ',(.ref input 'compiler-identity)
-                  (.o ,@publications) (.o ,@resolutions) ',decisions ',rows))))))
+                  (.o ,@publications) ',decisions ',rows ',ids))))))
       (current!)
       (.cc entry 'kind 'init-publication
         'input (.cc input 'compiler-forms emitted 'admit-current current!)))))

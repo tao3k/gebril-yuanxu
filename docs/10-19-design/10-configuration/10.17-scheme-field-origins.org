@@ -8,7 +8,7 @@ The follow-up [[file:10.18-runtime-copy-source-boundaries.org][10.18]] audits th
 attribution gaps. Its updated query distinguishes diagnostic visibility from
 conservative source observations without changing the runtime operators.
 
-The existing [[file:../../../object-syntax/path-slots.ss][authoring .def/.o/brace bindings]] now carry the original slot token's
+The existing [[file:../../../syntax/path-slots.ss][authoring .def/.o/brace bindings]] now carry the original slot token's
 file, one-based line and column into its runtime slot specification. No new
 configuration syntax, Loader entry, field schema, global origin registry or
 user-maintained source table is introduced. The compiler still lowers shared

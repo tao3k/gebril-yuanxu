@@ -48,7 +48,7 @@ Lean v4.34.0. No dependency refresh/upgrade was performed. At that historical
 verification cut, the then-current contract source was copied byte-for-byte
 into an isolated source scope; its hash matched the working checkout before
 and after the probe. The maintained probes now import
-=:yuanxu/object-types/contracts=. This namespace migration does not reissue the
+=:yuanxu/types/contracts=. This namespace migration does not reissue the
 historical verification receipt. Canonical :clan/poo imports resolve the
 isolated dependency-pin sources at 099b381588360a8a49fd772f666a1a00351366f5.
 Object, MOP, brace and support source hashes are recorded in the receipt.

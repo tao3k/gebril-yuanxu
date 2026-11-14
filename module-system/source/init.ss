@@ -9,27 +9,10 @@
                  module-feature-declaration?)
         (only-in :tao3k/yuanxu/module-system/selection/objects yuanxu-user-module-selection))
 (export module-init-intent module-init-export-name module-interface-tags module-init-source-root
-        module-init-compiler-source-roots
         module-interface-declaration?)
 
-;; A source window reads Gerbil's installed checkout tree. Keep the package
-;; base fixed after first use, as Gerbil does, without initializing its CLI or
-;; creating package and output directories during source discovery.
-(def native-package-root
-  (delay (path-expand "pkg" (gerbil-path))))
-(def (native-package-checkout package)
-  (and package (path-expand package (force native-package-root))))
 (def (module-init-source-root intent source-path)
-  (def package (and (.slot? intent 'package) (.ref intent 'package)))
-  (path-expand (.ref intent 'root)
-    (or (native-package-checkout package) (path-directory source-path))))
-
-(def (module-init-compiler-source-roots declaration source-path)
-  (let-values (((windows _) (parse-module-init (list declaration) source-path)))
-    (filter-map (lambda (window)
-                  (with ([_ _ _ _ _ _ package] window)
-                    (native-package-checkout package)))
-                windows)))
+  (path-expand (.ref intent 'root) (path-directory source-path)))
 
 ;; A filename is not a Module declaration. Native public library facades can
 ;; also be named interface.ss; they remain ordinary compiler import edges.
@@ -86,17 +69,18 @@
       (.o identity disabled? disable-specified? source-root
           selection: (.+ (yuanxu-user-module-selection group module flags)
                           (.o enabled?: (not disabled?))))))
-  (def (intent window)
-    (with ([mode root mount profile root-explicit? rows package] window)
-      (.o mode root mount profile root-explicit? package init-source: source-path
+  (def (intent window default-tests)
+    (with ([mode root mount profile root-explicit? rows local-tests] window)
+      (.o mode root mount profile root-explicit? init-source: source-path
+          test-dir: (or local-tests default-tests)
           decisions: (map decision rows))))
-  (let-values (((windows mounted?) (parse-module-init forms source-path)))
-    (def intents (map intent windows))
+  (let-values (((windows mounted? test-directory) (parse-module-init forms source-path)))
+    (def intents (map (cut intent <> test-directory) windows))
     (if mounted?
       (.o mode: (if (any (lambda (window) (eq? (.ref window 'mode) 'auto)) intents)
                   'auto 'explicit)
           root: (.ref (car intents) 'root) root-explicit?: #t init-source: source-path
-          windows: intents
+          windows: intents test-dir: test-directory
           decisions: (foldr append '()
                        (map (lambda (window)
                               (def name (.ref window 'mount))

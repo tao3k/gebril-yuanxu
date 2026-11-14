@@ -4,7 +4,7 @@
 
 (import :std/test
         :clan/poo/object
-        :tao3k/yuanxu/object-family/role-syntax
+        :tao3k/yuanxu/object/role-syntax
         :tao3k/yuanxu/module-system/feature/domain-case/interface
         :tao3k/yuanxu/module-system/feature/domain-case/syntax)
 

@@ -24,7 +24,7 @@
   (write-file path
     (call-with-output-string
       (lambda (port)
-        (write `(yuanxu! mode: explicit :custom (example ,@flags)) port))))
+        (write `(yuanxu! :test-dir "./t" mode: explicit :custom (example ,@flags)) port))))
   (yuanxu-load-modules path))
 
 (def publication-roles
@@ -39,7 +39,7 @@
                (export FixtureScope))
     config: '((def Greeting "hello") (export Greeting))
     interface: '((.def Fixture identity: 'custom/example
-                   core: (.o requires: (.o) scope-contract: FixtureContract
+                   core: (.o scope-contract: FixtureContract
                              exports: (.o (:: @ FixtureScope) greeting: Greeting))
                    features: (.o)))))
 
@@ -52,7 +52,7 @@
        (write-file (path-expand "gerbil.pkg" root)
                    (string-append "(package: " (symbol->string package) ")"))
        (write-file (path-expand "init.ss" root)
-                   "(yuanxu! mode: explicit :custom (example))")
+                   "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
        ;; The Fixture owns runtime source materialization and cleanup. Cases
        ;; refine role forms as ordinary POO values rather than escaped strings.
        (let (sources (.+ publication-roles roles))

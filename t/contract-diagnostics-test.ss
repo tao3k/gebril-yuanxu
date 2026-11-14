@@ -8,7 +8,7 @@
         (only-in :tao3k/yuanxu/modules/json-schema/json-schema-diagnostics
                  yuanxu-json-schema-validation-diagnostic?)
         (only-in :std/error Error Error?)
-        (only-in :tao3k/yuanxu/object-types/contracts
+        (only-in :tao3k/yuanxu/types/contracts
                  YuanxuContract. yuanxu-predicate-contract YuanxuValidationEvidence)
         (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))

@@ -6,8 +6,6 @@
   identity: 'funflow
   tags: '(workflow)
   core:
-  (.o requires: (.o)
-      scope-contract: FunflowScopeContract
-      projections: (list Build)
+  (.o scope-contract: FunflowScopeContract
       exports: (.o (:: @ FunflowModule.) config: Config))
   features: (.o))

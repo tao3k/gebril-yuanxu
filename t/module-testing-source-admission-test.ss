@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
+        (only-in :gerbil/runtime/syntax SyntaxError? SyntaxError-message)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/building/test-projection module-test-projection)
         (only-in :tao3k/yuanxu/module-system/source/reader module-publication-reader)
@@ -19,7 +20,7 @@
 (def (write-source path text)
   (create-directory* (path-directory path))
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
-(def (prepare-source root (requires "(.o)"))
+(def (prepare-source root (imports ""))
   (write-source (path-expand "gerbil.pkg" root)
     (string-append "(package: " (symbol->string (gensym 'source-admission-)) ")"))
   (def directory (path-expand "modules/example" root))
@@ -31,8 +32,8 @@
     "(import (only-in :clan/poo/object .o) \"./private/helper.ss\") (def Scope (.o message: greeting)) (export Scope)")
   (write-source (path-expand "config.ss" directory) "(def Enabled #t) (export Enabled)")
   (write-source (path-expand "interface.ss" directory)
-    (string-append "(.def Example identity: 'example core: (.o requires: " requires
-      " scope-contract: ScopeContract exports: Scope) features: (.o))"))
+    (string-append imports " (.def Example identity: 'example core: (.o
+      scope-contract: ScopeContract exports: Scope) features: (.o))"))
   ;; Neither the source guard nor test discovery may expand/evaluate this body.
   (write-source (path-expand "tests/atomic-test.ss" directory)
     "(begin-syntax (error \"test expanded during discovery\")) (error \"test evaluated during discovery\")")
@@ -43,10 +44,28 @@
                 "(error \"unrelated selected publication evaluated\")"))
     '("types.ss" "objects.ss" "config.ss" "interface.ss"))
   (write-source (path-expand "init.ss" root)
-    "(yuanxu! source: \"./modules\" mode: explicit (example) (poison))")
+    "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit (example) (poison))")
   directory)
 (def module-testing-source-admission-test
   (test-suite "Test source admission is distinct from complete Graph admission"
+    (yuanxu-test-fixture "qualification discovery needs Loader metadata and test files only"
+      (root Workspace)
+      (prepare-source root "(import :unavailable/qualification-dependency)")
+      (write-source (path-expand "init.ss" root)
+        "(yuanxu! :load-modules \"./modules\" mode: explicit rename: App :test-dir \"./t\" (example))")
+      (def file (path-expand "t/yanxu/App/example/layout-test.ss" root))
+      (write-source file "(error \"qualification test evaluated during discovery\")")
+      (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
+      (def tests (module-test-projection selection '(example) 'qualification))
+      (check-equal? (.get tests spec) (list file))
+      (check-equal? (.ref/cached selection 'selected-graph) #f)
+      ((.get tests admit-current))
+      (write-source file "(error \"changed qualification test\")")
+      (check-exception ((.get tests admit-current)) error?)
+      (check-exception (.get tests selected-graph)
+        (lambda (failure)
+          (and (SyntaxError? failure)
+               (equal? (SyntaxError-message failure) "cannot find library module")))))
     (yuanxu-test-fixture "one selected owner leaves the shared Graph and unrelated publication cold"
       (root Workspace)
       (def directory (prepare-source root))
@@ -139,24 +158,28 @@
         (lambda () (.put! policy 'validate original))))
     (yuanxu-test-fixture "required dependency policy remains a Graph obligation"
       (root Workspace)
-      (prepare-source root "(.o Missing: (.o module-id: 'absent contract: ScopeContract))")
+      (prepare-source root "(import \"../absent/objects.ss\")")
+      (write-source (path-expand "modules/absent/interface.ss" root)
+        "(.def Absent identity: 'absent core: (.o scope-contract: ScopeContract exports: Scope) features: (.o))")
+      (write-source (path-expand "modules/absent/objects.ss" root)
+        "(def Unavailable #t) (export Unavailable)")
       ;; Remove the sibling sensitivity probe: the Graph must now fail solely
       ;; because example's own required Module is unavailable.
       (write-source (path-expand "init.ss" root)
-        "(yuanxu! source: \"./modules\" mode: explicit (example))")
+        "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit (example))")
       (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
-      (def tests (module-test-projection selection '(example)))
-      ((.get tests admit-current))
       (check-equal? (.ref/cached selection 'selected-graph) #f)
-      (check-exception (.get selection selected-graph)
+      (check-exception (module-test-projection selection '(example))
         (lambda (exception)
           (and (Error? exception)
-               (string=? (Error-message exception) "required module not explicitly declared")))))
+               (string=? (Error-message exception) "source import belongs to an unselected Module"))))
+      (check-equal? (.ref/cached selection 'selected-graph) #f)
+      (check-exception (.get selection selected-graph) error?))
     (yuanxu-test-fixture "explicit Graph access returns the original selection object"
       (root Workspace)
       (prepare-source root)
       (write-source (path-expand "init.ss" root)
-        "(yuanxu! source: \"./modules\" mode: explicit (example))")
+        "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit (example))")
       (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
       (def tests (module-test-projection selection '(example)))
       (check-equal? (eq? (.get tests selected-graph) (.get selection selected-graph)) #t))))

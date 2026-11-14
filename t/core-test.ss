@@ -6,7 +6,7 @@
 (import (only-in :std/test test-suite test-case check-equal?)
         (only-in :clan/poo/object .o .ref .call .cc object-slots object-%slot-funs
                  $constant-slot-spec? object-protocol-set!)
-        (only-in :tao3k/yuanxu/object-types/ports Port valid-port?)
+        (only-in :tao3k/yuanxu/types/ports Port valid-port?)
         (only-in :clan/poo/mop define-type element?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
         (only-in :tao3k/yuanxu/ops/progress execution-progress!)
@@ -14,12 +14,12 @@
                  call-with-yuanxu-debug-memory-case-watchdog
                  yuanxu-debug-memory-policy YuanxuDebugDurationAnomaly?
                  YuanxuDebugMemoryAnomaly-receipt YuanxuDebugDurationAnomaly-receipt)
-        (only-in :tao3k/yuanxu/object-types/contracts
+        (only-in :tao3k/yuanxu/types/contracts
                  YuanxuObjectContract.
                  yuanxu-predicate-contract
                  yuanxu-contract-admit
                  yuanxu-validation-evidence-accepted?)
-        (only-in :tao3k/yuanxu/object-family/syntax
+        (only-in :tao3k/yuanxu/object/syntax
                  defpoo-object-family)
         (only-in :tao3k/yuanxu/composition/lineage
                  yuanxu-lineage-analysis

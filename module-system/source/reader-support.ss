@@ -5,7 +5,7 @@
 (import (only-in :clan/poo/object object-construction-current?
                  call-with-current-slot-reads replay-slot-reads!)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         (only-in :tao3k/yuanxu/module-system/source/preparation module-compiler-source-input-compatible?)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  module-source-measure-operation module-source-measure-replay)
@@ -14,7 +14,7 @@
         capture-source-preparation source-preparation-current? source-observation-rows
         publication-read-current require-publication-policy! publication-metadata-entry
         publication-metadata-tail publication-metadata-current call-with-publication-reads
-        merge-publication-read-roots)
+        merge-publication-root-segments)
 
 ;; The existing preparation registry owns constructor output and its actual
 ;; checker identity. No successful source check or user purity tag is stored.
@@ -65,16 +65,18 @@
           (dynamic-wind
             (lambda () (observer '(metadata-replay-start runtime) 1))
             (lambda ()
-              (if (object-construction-current?)
-                (with-catch
-                  (lambda (cause)
-                    ;; Recover the diagnostic prefix in the same synchronous
-                    ;; state. No source observer runs between these checks.
-                    (with-catch (lambda (_failure) (void)) count-prefix!)
-                    (raise cause))
-                  (lambda ()
-                    (set! visits (call-with-current-slot-reads reads values))))
-                (count-prefix!)))
+              (module-source-measure-operation 'observed-metadata-replay
+                (lambda ()
+                  (if (object-construction-current?)
+                    (with-catch
+                      (lambda (cause)
+                        ;; Recover the diagnostic prefix in the same synchronous
+                        ;; state. No source observer runs between these checks.
+                        (with-catch (lambda (_failure) (void)) count-prefix!)
+                        (raise cause))
+                      (lambda ()
+                        (set! visits (call-with-current-slot-reads reads values))))
+                    (count-prefix!)))))
             (lambda ()
               (observer 'metadata-replay-visits visits)
               (observer '(metadata-replay-end runtime) 1))))))))
@@ -86,12 +88,19 @@
   (lambda () (location-current!) (require-publication-policy! policy-current?)))
 (def (publication-metadata-tail policy-current?)
   (lambda () (require-publication-policy! policy-current?)))
-(def (merge-publication-read-roots groups)
-  ;; Use the existing native capture's identity set. No intermediate
-  ;; concatenated spine, replay, or second observer delivery is needed.
+(def (merge-publication-root-segments rows segments-for)
+  ;; Emit preparation then admission in publication order. The native
+  ;; collector already tracks first occurrence and reverses its result.
   (defvalues (_ roots)
     (%call-with-recorded-slot-reads
-      (lambda () (for-each %record-slot-reads! groups))
+      (lambda ()
+        (for-each
+          (lambda (row)
+            (let (segments (segments-for row))
+              (when segments
+                (%record-slot-reads! (car segments))
+                (%record-slot-reads! (cdr segments)))))
+          rows))
       unique-roots?: #t))
   roots)
 (def (publication-metadata-current policy-current? preparation-current!

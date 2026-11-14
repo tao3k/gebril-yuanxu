@@ -4,9 +4,6 @@ import YuanxuProof.Admission.SerialUse
 namespace YuanxuProof.Admission.CallPhases
 open SnapshotLifetime
 
-def quintSourceDigest : String :=
-  "sha256:f49b64724a278b0124d4fd0d2e3505c6b7d3d2c64c15a976dcc80d8a8aca1b6d"
-
 structure Frame where
   receiver : Nat
   slot : Nat

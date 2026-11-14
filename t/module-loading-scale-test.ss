@@ -29,7 +29,7 @@
       (write-source (path-expand "gerbil.pkg" root)
         (string-append "(package: " (symbol->string (gensym 'scale-)) ")"))
       (write-source (path-expand "init.ss" root)
-        "(yuanxu! source: \"./modules\" mode: auto)")
+        "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: auto)")
       (def chosen (path-expand "modules/chosen/" root))
       (write-source (path-expand "types.ss" chosen)
         "(import (only-in :clan/poo/mop Type.) (only-in :clan/poo/object object?)) (def ScopeContract (.cc Type. identity: 'scale .element?: object?)) (export ScopeContract)")
@@ -37,7 +37,7 @@
         "(import :clan/poo/object) (def Scope (.o unused: (error \"scope forced\"))) (export Scope)")
       (write-source (path-expand "config.ss" chosen) "(def Enabled #t) (export Enabled)")
       (write-source (path-expand "interface.ss" chosen)
-        "(.def Chosen identity: 'chosen core: (.o requires: (.o) scope-contract: ScopeContract exports: Scope) features: (.o))")
+        "(.def Chosen identity: 'chosen core: (.o scope-contract: ScopeContract exports: Scope) features: (.o))")
       (write-source (path-expand "tests/atomic-test.ss" chosen)
         "(begin-syntax (error \"test expanded during discovery\"))")
       (def previous 1)
@@ -100,9 +100,7 @@
            (hash-update! calls id (cut + <> 1) 0)
            (def declaration
              (.o identity: id features: (.o)
-                 core: (.o requires: (if (eq? id shared) (.o)
-                                        (.o Shared: (.o module-id: shared)))
-                           exports: (error "resolver linked business scope"))))
+                 core: (.o exports: (error "resolver linked business scope"))))
            ;; A completed batch of actual publications is work progress, not a
            ;; timer or output heartbeat. Exact-once counts are asserted below.
            (set! completed (1+ completed))
@@ -112,7 +110,8 @@
          (def graph
            (select-module-graph
              (.o selected: ids denied-modules: '() generation: "scale")
-             ids read-publication void))
+             ids read-publication void
+             (lambda (id) (if (eq? id shared) '() (list shared)))))
          (check-equal? (length (.get graph module-order)) size)
          (check-equal? (car (.get graph module-order)) shared)
          (check-equal? (hash-length calls) size)

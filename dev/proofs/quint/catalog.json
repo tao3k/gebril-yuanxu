@@ -1622,6 +1622,11 @@
       "negative": true
     },
     {
+      "model": "CandidatePublication_dropProfileCandidate",
+      "invariant": "FinalCurrent",
+      "negative": true
+    },
+    {
       "model": "CandidatePublication_earlyVisible",
       "invariant": "CommitOnly",
       "negative": true
@@ -2702,273 +2707,6 @@
       "negative": true
     }
   ],
-  "bindings": [
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/IncrementalRoles.lean",
-      "model": "IncrementalRoles.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/PayloadSharing.lean",
-      "model": "ThunkConstruction.qnt",
-      "declaration": "thunkConstructionDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Loading/MetadataProjection.lean",
-      "model": "ModuleDemand.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/TestMakeLayout.lean",
-      "model": "TestMakeLayout.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/TestPublicationReuse.lean",
-      "model": "TestPublicationReuse.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/SelectionReplay.lean",
-      "model": "SelectionReplay.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/SelectionReplay.lean",
-      "model": "SelectionReplayTopology.qnt",
-      "declaration": "topologySourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/RootCollection.lean",
-      "model": "RootCollection.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/ReadRetention.lean",
-      "model": "ReadRetention.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/IssuedRootForwarding.lean",
-      "model": "IssuedRootForwarding.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/SourceWindows.lean",
-      "model": "SourceWindows.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/RootChild.lean",
-      "model": "RootChild.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/ReturnWindows.lean",
-      "model": "ReturnWindows.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/ReplayBoundary.lean",
-      "model": "ReplayBoundary.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/IdentityDFS.lean",
-      "model": "IdentityDFS.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/ReadOnlyEntry.lean",
-      "model": "ReadOnlyEntry.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/SnapshotEntry.lean",
-      "model": "SnapshotEntry.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/ClosedTail.lean",
-      "model": "ClosedTail.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/CheckerOrigin.lean",
-      "model": "CheckerOrigin.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/MetadataRoute.lean",
-      "model": "MetadataRoute.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/CoreBuildPublication.lean",
-      "model": "CoreBuildPublication.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/CoreBuildHandoff.lean",
-      "model": "CoreBuildHandoff.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/CoreApprovedRecovery.lean",
-      "model": "CoreApprovedRecovery.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/CoreStoreRecovery.lean",
-      "model": "CoreStoreRecovery.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/SourceLoader.lean",
-      "model": "SourceLoader.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/IssuedLoading.lean",
-      "model": "IssuedLoading.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/ArtifactClosure.lean",
-      "model": "ArtifactClosure.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/StoreLowering.lean",
-      "model": "StoreLowering.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/MetadataAllocation.lean",
-      "model": "MetadataAllocation.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/MetadataOwnership.lean",
-      "model": "MetadataOwnership.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/ReplayOwnership.lean",
-      "model": "ReplayOwnership.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/RouteMutation.lean",
-      "model": "RouteMutation.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/IssuerProjection.lean",
-      "model": "IssuerProjection.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/IssuerProjection.lean",
-      "model": "IssuerSequence.qnt",
-      "declaration": "sequenceSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/IssuedRead.lean",
-      "model": "IssuedRead.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/ReturnTail.lean",
-      "model": "ReturnTail.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/AdmissionBody.lean",
-      "model": "AdmissionBody.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/CallPhases.lean",
-      "model": "CallPhases.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/SerialUse.lean",
-      "model": "SerialUse.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Admission/SnapshotLifetime.lean",
-      "model": "SnapshotLifetime.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/Graph/Operations.lean",
-      "model": "GraphOperations.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/TestAdmission.lean",
-      "model": "TestSourceAdmission.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
-      "model": "SourceClosureWork.qnt",
-      "declaration": "quintSourceDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
-      "model": "SourcePrefix.qnt",
-      "declaration": "sourcePrefixQuintDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
-      "model": "DependencyContinuation.qnt",
-      "declaration": "dependencyContinuationQuintDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
-      "model": "ReaderEffectSupport.qnt",
-      "declaration": "readerEffectSupportQuintDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
-      "model": "CandidatePublication.qnt",
-      "declaration": "candidatePublicationQuintDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
-      "model": "CandidateLocation.qnt",
-      "declaration": "candidateLocationQuintDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
-      "model": "CompilerEnrollment.qnt",
-      "declaration": "compilerEnrollmentQuintDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
-      "model": "AuthoringStage.qnt",
-      "declaration": "authoringStageQuintDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
-      "model": "CarrierReturn.qnt",
-      "declaration": "carrierReturnQuintDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/SourceClosureWork.lean",
-      "model": "CarrierAdmission.qnt",
-      "declaration": "carrierAdmissionQuintDigest"
-    },
-    {
-      "proof": "dev/proofs/lean/YuanxuProof/ModuleSystem/Graph/OwnedReads.lean",
-      "model": "WitnessReplay.qnt",
-      "declaration": "witnessReplayQuintDigest"
-    }
-  ],
   "owners": [
     "core-spec.ss",
     "dev/proofs/lean/ArtifactClosureCheck.lean",
@@ -3089,7 +2827,6 @@
     "modules/funflow/types.ss",
     "modules/json-schema/objects.ss",
     "modules/json-schema/types.ss",
-    "object-family/read-projection.ss",
     "observability/memory.ss",
     "observability/testing-fixture.ss",
     "observability/testing-script.ss",
@@ -3100,12 +2837,6 @@
     "ops/selected-packages.ss",
     "ops/tests/atomic-test.ss",
     "ops/types.ss",
-    "poo-clos/classes.ss",
-    "poo-clos/dispatch.ss",
-    "poo-clos/method-bundle-syntax.ss",
-    "poo-clos/objects.ss",
-    "poo-clos/syntax.ss",
-    "poo-clos/types.ss",
     "t/artifact-authority-test.ss",
     "t/artifact-closure-test.ss",
     "t/build-artifact-publication-test.ss",
@@ -3172,8 +2903,6 @@
     "t/mop-store-boundary-test.ss",
     "t/mop-thunk-construction-test.ss",
     "t/persistent-selected-head-test.ss",
-    "t/poo-clos-dispatch-test.ss",
-    "t/poo-clos-method-bundle-test.ss",
     "t/qualification/build-publication/compile.ss",
     "t/qualification/build-publication/projection.ss",
     "t/qualification/build-publication/store-producer.ss",

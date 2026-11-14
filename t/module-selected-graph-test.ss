@@ -2,6 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/test test-suite check-equal? check-exception)
+        (only-in :std/error Error? Error-message)
         (only-in :std/list/list find)
         (only-in :std/source this-source-file)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax
@@ -25,7 +26,8 @@
   (.cc Type. identity: 'test/selected-scope .element?: (lambda (_value) #t)))
 (def (publication id requirement-values feature-values (factory (lambda (_dependencies) (.o ready: #t))))
   (.o identity: id features: feature-values
-      core: (.o requires: requirement-values scope-contract: Scope link: factory)))
+      imports: (map (lambda (name) (.get (.ref requirement-values name) module-id)) (.all-slots requirement-values))
+      core: (.o scope-contract: Scope exports: (factory #f))))
 (def (requirement id) (.o module-id: id contract: Scope))
 (def (descriptor name (required-ids '()) (conflict-ids '()))
   (feature-descriptor
@@ -42,6 +44,7 @@
     (.o generation: "selected-v1" init-source: "fixture/init.ss" intent: intent-value
         module-ids: '(app/web core/schema unused/bomb) selected: selected-values
         denied-modules: denied-values current?: (lambda (_generation) #t)
+        import-owners: (lambda (source) (.get (.ref declarations (yuanxu-module-source-ref-value source)) imports))
         locate: make-yuanxu-module-generated-source
         read-publication: (lambda (source)
                             (let (id (yuanxu-module-source-ref-value source))
@@ -60,9 +63,10 @@
     (.o app/web: (publication 'app/web (.o Schema: (requirement 'core/schema))
                     (.o unused: (error "unselected Feature forced")))
         core/schema: (publication 'core/schema (.o) (.o))))
-  (def c (context declarations '((yuanxu! mode: explicit :core (schema) :app (web)))))
+  (def c (context declarations '((yuanxu! :test-dir "./t" mode: explicit :core (schema) :app (web)))))
   (%call-with-recorded-slot-reads
-    (lambda () (select c '(app/web) (cut .ref declarations <>) void))
+    (lambda () (select c '(app/web) (cut .ref declarations <>) void
+                 (lambda (id) (.get (.ref declarations id) imports))))
     unique-roots?: #t))
 (def (core-spec-count reads)
   (def seen (make-hash-table-eq))
@@ -95,19 +99,24 @@
                 (.all-slots expected)))
     (yuanxu-test-case "completed topology reports progress before final currentness"
       (def now 0)
+      (def checks 0)
       (def refused (gensym 'stale-selection))
       (call-with-execution-progress #f #f
         (lambda (state)
           (set! now 10)
           (check-exception
             (core-sample
-              (lambda (context roots read-publication _current!)
+              (lambda (context roots read-publication _current! imported-owners)
                 (select-module-graph context roots read-publication
                   (lambda ()
-                    (check-equal? (execution-progress-idle-milliseconds state) 0)
-                    (raise refused)))))
+                    (set! checks (+ checks 1))
+                    (case checks
+                      ((1) (check-equal? (execution-progress-idle-milliseconds state) 10))
+                      ((2) (check-equal? (execution-progress-idle-milliseconds state) 0)
+                           (raise refused)))) imported-owners)))
             (lambda (error) (eq? error refused))))
-        clock: (lambda () now)))
+        clock: (lambda () now))
+      (check-equal? checks 2))
     (yuanxu-test-case "unknown observation retains ordinary Core Feature specifications"
       (call-with-slot-read-observer (lambda (_read) (void))
         (lambda ()
@@ -160,7 +169,7 @@
       (def reads 0)
       (def c
         (.cc (context (.o app/web: (publication 'app/web (.o) (.o)))
-               '((yuanxu! mode: auto))
+               '((yuanxu! :test-dir "./t" mode: auto))
                (lambda (_id) (set! reads (+ reads 1))))
           'module-ids '() 'selected '()
           'current? (lambda (_generation) current?)
@@ -172,18 +181,19 @@
     (yuanxu-test-case "publication admission may force author slots; its post-check remains independent"
       (def current? #t)
       (def p
-        (.o identity: 'app/web features: (.o)
+        (.o identity: 'app/web features: (.o) imports: '()
             core: (begin
                     (set! current? #f)
-                    (.o requires: (.o)
-                        scope-contract: Scope
-                        link: (lambda (_dependencies) (.o))))))
+                    (.o scope-contract: Scope exports: (.o)))))
       (def c
         (.cc (context (.o app/web: p)
-               '((yuanxu! mode: explicit :app (web))))
+               '((yuanxu! :test-dir "./t" mode: explicit :app (web))))
           'current? (lambda (_generation) current?)))
       (def v (yuanxu-load-modules c))
-      (check-exception (.get v selected-graph) error?)
+      (check-exception (.get v selected-graph)
+        (lambda (cause)
+          (and (Error? cause)
+               (equal? (Error-message cause) "stale module scope generation"))))
       (check-equal? current? #f))
     (yuanxu-test-case "candidate Graph reuses publication identity and checks after lazy author code"
       (def reads 0)
@@ -196,12 +206,12 @@
         (.o early: (begin (set! current? #f) (descriptor 'early))))
       (def p (publication 'app/web (.o) features))
       (def c (context (.o app/web: p)
-                '((yuanxu! source: "modules" mode: explicit :app (web +early)))))
+                '((yuanxu! :test-dir "./t" source: "modules" mode: explicit :app (web +early)))))
       (check-exception
         (select-module-graph c '(app/web)
           (lambda (_id) (set! reads (+ reads 1)) p) current!) error?)
       (check-equal? reads 1)
-      (check-equal? checks 1))
+      (check-equal? checks 2))
     (yuanxu-test-case "metadata admission stays cold until demanded and never runs scope factories"
       (let* ((reads '()) (factories 0)
              (declarations
@@ -214,7 +224,7 @@
                   unused/bomb: (error "disabled publication forced")))
              (v (yuanxu-load-modules
                  (context declarations
-                  '((yuanxu! mode: explicit :app (web +late +early -off) :core (schema) :unused (bomb -future disable: #t)))
+                  '((yuanxu! :test-dir "./t" mode: explicit :app (web +late +early -off) :core (schema) :unused (bomb -future disable: #t)))
                   (lambda (id) (set! reads (cons id reads)))))))
         (check-equal? reads '())
         (let (graph (.get v selected-graph))
@@ -239,7 +249,7 @@
                  (context (.o app/web:
                            (publication 'app/web (.o Schema: (requirement 'core/schema)) (.o)
                             (lambda (_deps) (set! factories (+ factories 1)) (.o))))
-                  '((yuanxu! mode: explicit :app (web) :core (schema disable: #t)))
+                  '((yuanxu! :test-dir "./t" mode: explicit :app (web) :core (schema disable: #t)))
                   (lambda (id) (set! reads (cons id reads)))))))
         (check-exception (.get v selected-graph) error?)
         (check-equal? reads '(app/web))
@@ -252,21 +262,21 @@
                            late: (descriptor 'late '(app/web/early))) forms))
            (check-exception (.get v modules app web ready) error?)
            (check-exception ((.get v admit-current)) error?)))
-       '(((yuanxu! mode: explicit :app (web +late -early)))
-         ((yuanxu! mode: explicit :app (web +late))))))
+       '(((yuanxu! :test-dir "./t" mode: explicit :app (web +late -early)))
+         ((yuanxu! :test-dir "./t" mode: explicit :app (web +late))))))
     (yuanxu-test-case "Feature conflicts reject before executable scope exposure"
       (let (v (view (.o early: (descriptor 'early '() '(app/web/late)) late: (descriptor 'late))
-                    '((yuanxu! mode: explicit :app (web +early +late)))))
+                    '((yuanxu! :test-dir "./t" mode: explicit :app (web +early +late)))))
         (check-exception (.get v selected-records) error?)
         (check-exception ((.get v admit-current)) error?)))
     (yuanxu-test-case "unknown positive and negative names are rejected"
       (for-each (lambda (flag)
-                  (let (v (view (.o) `((yuanxu! mode: explicit :app (web ,flag)))))
+                  (let (v (view (.o) `((yuanxu! :test-dir "./t" mode: explicit :app (web ,flag)))))
                     (check-exception (.get v selected-graph) error?))) '(+typo -typo)))
     (yuanxu-test-case "publication owner identity cannot be forged by a Feature"
       (for-each
         (lambda (feature)
-          (let (v (view (.o early: feature) '((yuanxu! mode: explicit :app (web +early)))))
+          (let (v (view (.o early: feature) '((yuanxu! :test-dir "./t" mode: explicit :app (web +early)))))
             (check-exception (.get v selected-graph) error?)))
         (list (.+ (descriptor 'early) (.o owner-module-id: 'other/module))
               (.o owner-module-id: 'other/module)
@@ -274,18 +284,18 @@
     (yuanxu-test-case "Feature cycles and mandatory Core cycles use the existing resolver"
       (let (v (view (.o early: (descriptor 'early '(app/web/late))
                         late: (descriptor 'late '(app/web/early)))
-                    '((yuanxu! mode: explicit :app (web +early +late)))))
+                    '((yuanxu! :test-dir "./t" mode: explicit :app (web +early +late)))))
         (check-exception (.get v selected-graph) error?))
-      (let (v (view (.o) '((yuanxu! mode: explicit :app (web))) (.o Self: (requirement 'app/web))))
+      (let (v (view (.o) '((yuanxu! :test-dir "./t" mode: explicit :app (web))) (.o Self: (requirement 'app/web))))
         (check-exception (.get v selected-graph) error?)))
     (yuanxu-test-case "optional dependencies only order Features actually selected"
       (let (v (view (.o early: (descriptor 'early)
                         late: (.+ (descriptor 'late) (.o optional-requires: '(app/web/early))))
-                    '((yuanxu! mode: explicit :app (web +late -early)))))
+                    '((yuanxu! :test-dir "./t" mode: explicit :app (web +late -early)))))
         (check-equal? (.get v selected-graph feature-order) '(app/web/late))))
     (yuanxu-test-case "independent Features retain explicit init order"
       (let (v (view (.o early: (descriptor 'early) late: (descriptor 'late))
-                    '((yuanxu! mode: explicit :app (web +late +early)))))
+                    '((yuanxu! :test-dir "./t" mode: explicit :app (web +late +early)))))
         (check-equal? (.get v selected-graph feature-order) '(app/web/late app/web/early))))
     (yuanxu-test-case "cross-owner Feature edges and contributions follow dependency order"
       (let* ((remote (feature-descriptor
@@ -297,13 +307,13 @@
                       (publication 'app/web (.o Schema: (requirement 'core/schema))
                        (.o late: (descriptor 'late '(core/schema/validate))))
                       core/schema: (publication 'core/schema (.o) (.o validate: remote)))
-                  '((yuanxu! mode: explicit :app (web +late) :core (schema +validate)))))))
+                  '((yuanxu! :test-dir "./t" mode: explicit :app (web +late) :core (schema +validate)))))))
         (check-equal? (.get v selected-graph feature-order) '(core/schema/validate app/web/late))
         (check-equal? (.get v selected-graph feature-contributions components) '(validate late))))
     (yuanxu-test-case "selected metadata does not force contribution payloads"
       (let (v (view (.o early: (.+ (descriptor 'early)
                                   (.o components: (error "payload demanded"))))
-                    '((yuanxu! mode: explicit :app (web +early)))))
+                    '((yuanxu! :test-dir "./t" mode: explicit :app (web +early)))))
         (check-equal? (.get v selected-graph feature-order) '(app/web/early))
         (check-equal? (and (string-contains
                            (failure-message (lambda () (.get v selected-graph feature-contributions)))
@@ -311,12 +321,12 @@
     (yuanxu-test-case "required negative diagnostics retain requester, target and denying origin"
       (let* ((v (view (.o early: (error "negative descriptor demanded")
                          late: (descriptor 'late '(app/web/early)))
-                     '((yuanxu! mode: explicit :app (web +late -early)))))
+                     '((yuanxu! :test-dir "./t" mode: explicit :app (web +late -early)))))
              (message (failure-message (lambda () (.get v selected-graph)))))
         (for-each (lambda (text) (check-equal? (and (string-contains message text) #t) #t))
                   '("selected Graph rejected" "fixture/init.ss" "selected-v1" "app/web/late" "app/web/early" "denied?"))))
     (yuanxu-test-case "same-layer contradictions and reserved identity paths reject at init"
       (for-each
-       (lambda (row) (check-exception (module-init-intent `((yuanxu! mode: explicit :app ,row)) "init.ss") error?))
+       (lambda (row) (check-exception (module-init-intent `((yuanxu! :test-dir "./t" mode: explicit :app ,row)) "init.ss") error?))
        '((web +early -early) (web +early +early) (web +nested/name) (web +:core)))))
 )

@@ -17,6 +17,7 @@
 (def (module-prepared-source-binding prepared binding (related '())
                                     context-current!: (context-current! void)
                                     role-imports?: (role-imports? #f)
+                                    init-source: (init-source #f)
                                     shared-contexts: (shared-contexts #f)
                                     shared-inputs: (shared-inputs #f)
                                     private-sources: (private-sources '())
@@ -98,6 +99,8 @@
                             (source (or (and (string? requested) (path-normalize requested))
                                         (and runtime-id (hash-get artifact-paths runtime-id))))
                             (target (and source (hash-get wrappers source))))
+                       (when (and init-source source (equal? source init-source))
+                         (error "Build cannot import its owner init" source))
                        (cond
                          ((pair? target)
                           (when reload? (error "shared publication context reload requires a fresh reader"))

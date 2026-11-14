@@ -9,7 +9,7 @@ prelude: :gerbil/core
                  core-library-package-plist core-library-package-path-prefix)
         (only-in :std/list/list delete-duplicates/hash))
 (export package-prelude-identity register-module-build-source! module-build-source-path
-        call-with-build-input-path package-build-script-path)
+        call-with-build-input-path call-with-build-source-fallbacks package-build-script-path)
 
 ;; The init-owned source projection chooses its compiler inputs. std/make owns
 ;; the output directory separately; runtime consumers retain their normal path.
@@ -18,6 +18,14 @@ prelude: :gerbil/core
                                  (refuse (lambda () (error "source projection changed its compiler input context")))
                                  source-roots: (source-roots '())
                                  make-source: (make-source #f))
+  (with-build-input-path output action refuse source-roots '() make-source))
+
+(def (call-with-build-source-fallbacks roots action)
+  (with-build-input-path #f action
+    (lambda () (error "source projection changed its compiler input context"))
+    '() roots #f))
+
+(def (with-build-input-path output action refuse source-roots source-fallbacks make-source)
   (def previous (load-path))
   (def (canonical path)
     (path-strip-trailing-directory-separator (path-normalize (path-expand path))))
@@ -39,6 +47,11 @@ prelude: :gerbil/core
       (set! inputs (append sources (filter (lambda (path)
                                             (not (member (canonical path) source-origins)))
                                           inputs)))))
+  (unless (null? source-fallbacks)
+    ;; The same prerequisite may appear in GERBIL_LOADPATH and Gerbil's
+    ;; default user library. Keep its first position when adding fallbacks.
+    (set! inputs (delete-duplicates/hash (append inputs source-fallbacks)
+                   key: canonical from-end?: #t)))
   (def input-origins (map canonical inputs))
   (dynamic-wind
     (lambda () (set-load-path! inputs))

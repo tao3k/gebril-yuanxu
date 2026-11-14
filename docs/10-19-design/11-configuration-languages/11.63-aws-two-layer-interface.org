@@ -98,7 +98,7 @@ At the recipe level, the desired ordinary user edit remains a value assignment:
   instances.test.type: "t3.medium")
 #+end_src
 
-The current [[file:../../../object-syntax/path-slots.ss][path-slot lowering]] only accepts dotted =>.+ forms. Deep direct
+The current [[file:../../../syntax/path-slots.ss][path-slot lowering]] only accepts dotted =>.+ forms. Deep direct
 assignment is STILL A UX GAP, despite the existing design examples. Do not
 invent a successful run for the target above or require ordinary users to learn
 several explicit nested refinements as its permanent replacement. Correct path

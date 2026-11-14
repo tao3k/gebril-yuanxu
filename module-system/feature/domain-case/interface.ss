@@ -13,13 +13,13 @@
         (only-in :std/crypto/digest sha256)
         (only-in :std/encoding/hex hex-encode)
         (only-in :std/list/list every)
-        :tao3k/yuanxu/object-family/role-syntax
+        :tao3k/yuanxu/object/role-syntax
         :tao3k/yuanxu/composition/roles
         (only-in :tao3k/yuanxu/utilities/functional
                  yuanxu-all?
                  yuanxu-member?
                  yuanxu-list-of?)
-        (only-in :std/list/list fold fold-right map find filter-map remove append-map))
+        (only-in :std/list/list append-map))
 
 ;; : (-> PooDomainCaseCache)
 (def (yuanxu-domain-case-cache)

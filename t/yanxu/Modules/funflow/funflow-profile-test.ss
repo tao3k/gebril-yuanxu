@@ -2,7 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 (import (only-in :std/test test-suite test-case check-equal? check-exception)
-        :tao3k/yuanxu/object-syntax/path-slots
+        :tao3k/yuanxu/syntax/path-slots
         :tao3k/yuanxu/profile-composition/selection-syntax
         (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-local-source)
         (only-in :clan/poo/object .get .ref .ref/cached .slot?)
@@ -15,7 +15,7 @@
                  yuanxu-cicd-check-map-name yuanxu-cicd-check-map-checks
                  yuanxu-cicd-check-compensation-refs)
         (only-in :tao3k/yuanxu/modules/funflow/dependency-graph yuanxu-cicd-check-map->dependency-graph)
-        (only-in "../../../scenarios/funflow/scope.ss"
+        (only-in "../../../../scenarios/funflow/scope.ss"
                  FunflowProfiles. Funflow make-funflow-scope)
         (only-in :tao3k/yuanxu/modules/funflow/config-prototypes
                  funflow-check funflow-pipeline

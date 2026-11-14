@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Filesystem controls only; marker repair never issues artifact authority.
+;;; Explicit clean and read-only product checks never issue artifact authority.
 (import :std/test
+        (only-in "../dev/gerbil/clean-outputs.ss" clean-selected-outputs!)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/make make-clean)
         (rename-in (only-in :std/build-script defbuild-script)
@@ -10,7 +11,7 @@
         (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
         (only-in :tao3k/yuanxu/module-system/building/artifacts
-                 repair-build-products! require-build-products! test-build-publication)
+                 require-build-products! test-build-publication)
         :clan/poo/object)
 (export build-product-recovery-test)
 (def (write-product root relative)
@@ -133,7 +134,7 @@
               (make-clean '("unit") srcdir: root prefix: "fixture")
               (check-equal? (file-exists? (path-expand relative default)) #f))
             (cut setenv "GERBIL_PATH" previous)))))
-    (test-case "a missing dynamic phase invalidates only its own marker"
+    (test-case "explicit cleanup of an incomplete module preserves unselected products"
       (call-with-temporary-directory "product-recovery"
         (lambda (root)
           (for-each (cut write-product root <>)
@@ -141,14 +142,14 @@
               "fixture/unit~1.scm" "static/fixture__unit.scm"
               "static/fixture__unselected.scm"))
           (check-exception (require-build-products! '(fixture/unit) root) error?)
-          (repair-build-products! '(fixture/unit) root)
+          (clean-selected-outputs! '(fixture/unit) root)
           (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #f)
           (check-equal? (file-exists? (path-expand "static/fixture__unselected.scm" root)) #t)
-          ;; Completed phases leave an ordinary Gerbil marker reusable.
-          (write-product root "fixture/unit~1.o1")
-          (write-product root "static/fixture__unit.scm")
+          ;; A complete rebuild passes the read-only product check.
+          (for-each (cut write-product root <>)
+            '("fixture/unit.ssi" "fixture/unit.o1" "fixture/unit.scm"
+              "fixture/unit~1.scm" "fixture/unit~1.o1" "static/fixture__unit.scm"))
           (require-build-products! '(fixture/unit) root)
-          (repair-build-products! '(fixture/unit) root)
           (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #t))))
     (test-case "non-regular runtime products refuse without deleting a marker"
       (call-with-temporary-directory "product-refusal"
@@ -156,7 +157,7 @@
           (for-each (cut write-product root <>)
             '("fixture/unit.ssi" "static/fixture__unit.scm"))
           (create-directory* (path-expand "fixture/unit.o1" root))
-          (check-exception (repair-build-products! '(fixture/unit) root) error?)
+          (check-exception (clean-selected-outputs! '(fixture/unit) root) error?)
           (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #t))))
     (test-case "Gerbil directory aliases share one publication identity without crossing prefixes"
       (call-with-temporary-directory "publication-prefix"

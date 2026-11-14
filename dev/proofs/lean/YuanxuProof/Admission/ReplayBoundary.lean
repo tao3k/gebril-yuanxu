@@ -8,9 +8,6 @@ producer/metadata/observer closure is a correspondence obligation, not an axiom.
 namespace YuanxuProof.Admission.ReplayBoundary
 open SourceWindows
 
-def quintSourceDigest : String :=
-  "sha256:908ac74de776c9bc39af5d3f2153b85a1bb5aa8c1a3d407fd6c53409087f4a7c"
-
 structure Request where
   path : String
   expected : String
@@ -189,5 +186,23 @@ private def reworded : Request :=
 -- Acceptance-equivalent input pairs do not guarantee diagnostic equivalence.
 theorem changing_first_origin_changes_diagnostic :
     firstIssue [.source json] changed ≠ firstIssue [.source reworded] changed := by decide
+
+section Profile
+variable {Text Tags : Type} [DecidableEq Text] [DecidableEq Tags]
+
+/-- A deterministic literal decoder includes both valid tag rows and refusals.
+    Currentness compares the decoded row whenever the observed text differs. -/
+def profileRowCurrent (decode : Text → Tags) (original observed : Text) : Bool :=
+  if observed = original then true else decide (decode observed = decode original)
+
+theorem profile_row_current_matches_decode
+    (decode : Text → Tags) (original observed : Text) :
+    profileRowCurrent decode original observed = decide (decode observed = decode original) := by
+  by_cases same : observed = original
+  · subst observed
+    simp [profileRowCurrent]
+  · simp [profileRowCurrent, same]
+
+end Profile
 
 end YuanxuProof.Admission.ReplayBoundary

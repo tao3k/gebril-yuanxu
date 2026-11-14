@@ -71,6 +71,34 @@ The proof retains the captured root identity and signed dependency lists.
 Dependency declaration changes use the old reverse index for invalidation and
 the new forward graph for admission, as in the existing publication model.
 
+=DependencyPublication.registration_membership_matches_cold= specifies the
+successor reverse index from the exact predecessor and the rewritten consumer
+rows. Registrations of other consumers are inherited. A rewritten consumer
+keeps precisely its successor providers, so an old-only provider must lose
+that consumer. =exact_of_registration_delta= composes these laws with the
+forward frame to obtain the publication's exact-index premise. The native
+implementation must establish the laws through the existing POO persistent
+bucket edits. The theorem does not certify a particular bucket iterator or
+claim its enumeration cost.
+
+The following records are historical investigations at the revisions named
+below. Candidate runtime paths are not asserted to be present in v0.1.0, and
+partial or failed checks do not qualify its performance or mutation gates.
+
+For an unaffected owner, =TrackedEdit.retained_demand_matches_successor=
+requires the exact retained root spine and unchanged signed edges on its
+unchanged receivers. It then proves equality of old and successor demanded
+support. =retain_current_in_successor= combines this shape guarantee with the
+writer's separate freshness frame. Unreported edges can introduce new
+required reads even when the root and its previously checked value stay live.
+
+=retained_preorder_matches_successor= strengthens the frame to ordered
+traversal. The same signed rows give the same pending and visited lists at
+every fuel bound, including before the walk finishes. The existing indexed
+discovery refinement transfers the result to its ordered projection. This
+retains the order needed for first-refusal diagnostics when an owner reuses
+the captured support.
+
 Two new constructive counterexamples constrain the implementation:
 
 - =incomplete_index_can_miss_stale_support=: an omitted shared provider edge
@@ -96,6 +124,127 @@ commits a rival generation cannot release a mixture. Retired tickets and failed
 admissions retain the existing refusal/fencing behavior. No new epoch store or
 parallel certificate registry is needed.
 
+A producer that returns from an external effect must stage against its
+original snapshot handle. Checking the head and then asking =stage= to select
+the current one leaves a gap in which a rival can publish. The POO candidate
+uses =stage expected:= to authenticate and bind the handle under the head
+lock. Submit retains its own head and ticket checks. Lean's
+=expected_snapshot_binds_exact_handle= covers the identity binding, and
+=GraphSnapshot= now exercises a rival before staging as well as a rival
+during admission. The native case keeps old and new certificate objects
+paired with their respective graphs across dependency deletion, refusal and
+subsequent provider edits.
+
+The isolated Core consumer passes the snapshot returned by the existing
+build-required transition through compiler completion and handoff admission.
+Its native build and artifact publication suite passed, including warm child
+handoff and joint/mismatched artifact refusals. The trial qualifies that
+consumer call path. The checked-in Core dependency still selects its previous
+POO pin, and directory refresh needs its own authenticated source edit path.
+
+PR #19 source =2847dd0= uses the =tao3k/yuanxu= package identity. In a separate
+native build of that exact source, the same consumer change installed POO
+=6c34717= through =gerbil deps --install=, generated TAGS and passed
+=gerbil build=. The candidate restores the 180-second performance gate on
+both dense Cases before running them with the existing 4 GiB limit. The
+public PR's timing-only result uses a different gate and dependency pin.
+
+Ubuntu run =43270834526= at Core =7cb4744= pins POO =261a961=. Both
+dense tests pass =#f= as the performance-gate argument. They retain the 4 GiB
+limit and functional assertions. The unobserved first Graph took 193.00 s
+wall, 191.78 s CPU, and 22.93 s GC wall. The observed declaration Graph took
+335.68 s wall, 335.21 s CPU, and 60.63 s GC wall. These job passes are timing
+diagnostics. Both first Graph stages alone exceed the 180-second Case budget.
+
+On macOS at the same head, the dense-declarations job used its 4 GiB
+diagnostic profile. Fixture materialization took 8.19 s and Init import
+took 0.405 s. The artifact reached =runtime-graph-start= without a completion
+receipt. The outer 600-second command watchdog with five seconds of kill
+grace ended the run with exit 137 at about 605 s.
+The separate dense-selection job reached its idle watchdog inside the first
+Graph phase. Partial measurements show 566.95 s wall, 505.67 s CPU and
+182.38 s GC wall. Inclusive metadata replay was 128.77 s, admission was
+158.97 s, Init currentness was 64.65 s and topological resolution was
+14.40 s. The idle limit was 60 s and the watchdog observed 74.106 s without
+progress. The interrupted stack was reading a source file during a reader
+currentness check. These spans overlap.
+
+The unobserved first Graph recorded 60,004 metadata replays and 59,592,075
+read visits. Inclusive wall times were 63.58 s for metadata replay, 48.87 s
+for admission, and 37.45 s for Init currentness. Init guards reread
+11,120,353,964 characters across 80,006 read attempts. Selected core
+projection took 2.01 s and topological resolution took 0.51 s. These spans
+can overlap. This run used scalar timing, so it gives no operation-local CPU
+or physical allocation bound. The separate dense-values job reached first
+scope in 535 ms and first value in 7.60 ms after its namespace phase. It does
+not compose with the dense selection measurement into one business EVAL.
+
+The directory candidate guard checks the same root Init observation for each
+owner. Reuse inside a verified input cut is sound by
+=PublicationReads.shared_source_input_exact=. The counterexample
+=shared_input_identity_does_not_cross_effect= shows why a common path or
+shared read identity is insufficient. The existing Scheme source observation
+window supplies this condition only inside its closed scope. The reader
+still needs fresh checks across opaque expansion and author effects. Reducing
+the wider work requires binding exact Init input to authenticated source
+revisions, then invalidating its registered consumers when that input changes.
+
+=exact_effect_separated_probe_iff_complete= treats each byte observation as
+a pair of checkpoint and byte position. If effects may change source freely
+between checkpoints, omitting any pair admits an undetected edit at that
+checkpoint. This bounds exact byte-probe schemes for arbitrary input states.
+An authenticated revision with complete changed-input registration gives a
+different premise, covered by the tracked edit laws above.
+
+In the fallback for unrestricted source writes,
+=PublicationReads.exact_source_probe_iff_complete= proves that an exact
+comparison must cover every position. A same-length edit can change any
+omitted position while preserving all probed values. The existing source
+admission Case now includes a same-length mutation near EOF. The matching
+Gerbil fault consumed the entire decoded input but compared only the first
+two chunks. The native check with complete comparison passed, and the
+truncated comparison returned true on the changed input and failed the Case.
+This control constrains future source revision shortcuts while keeping the
+ordinary file path and effect checks intact.
+
+On this native candidate, the dense selection Case stopped at 180.001 s
+after 5,167 Interface return checkpoints, before topological scheduling.
+Its first Graph took 138.56 s wall and 100.30 s CPU before refusal, with
+29 collections. Metadata replay took 32.91 s inclusive for 29,736,948
+visits. The =init.ss= currentness guard took 23.38 s inclusive and value
+admission took 36.14 s inclusive. These timings overlap. The observed dense
+declaration Case reached 7,976 owners before its duration refusal.
+
+The independent sparse business Case passed under the original budget with
+10,000 directories, one selected root, two admissions and two scopes. Its
+cold native =.get= took 1.029 s wall and 1.008 s CPU. The existing native
+artifact publication suite also passed warm handoff, joint modification
+refusal and projection mismatch refusal on the =tao3k/yuanxu= identity.
+
+The build-input mutation gate passed =before-order=. The positive
+=before-admission= control hit the 60-second idle watchdog while loading
+the compiled artifact library. The isolated fault cases never ran.
+
+A separate two-owner candidate-stage diagnostic used the existing POO issuer
+to inspect the original read identities. Each preparation had 206 roots and
+916 reachable records, of which 901 were identical across the two owners.
+Each admission had 356 records and shared 273. The overlap was measured by
+token identity. A controlled writer frame and an unknown author effect have
+different authority. Shared tokens identify a target for native reuse only
+when the independent effect check can still establish currentness.
+
+The POO issuer keeps a private snapshot of each structural key. An isolated
+Gerbil control changed both the producer's list and the exposed record key.
+POO =6c34717= accepted the changed read. POO =a682d15= rejected it and passed
+all 35 cases in the issued-read suite.
+
+An alternating CPU comparison evaluated storing key classification in the
+existing topology index. Warm replay of 8,258 reads fell from 56.95 to
+52.74 ms. Cold preparation of 258 reads rose from 3.35 to 3.73 ms. The index
+candidate was dropped. The Lean theorem
+=authenticated_key_shape_preserves_sweep= records the conditions under which
+classification can be reused within a sweep.
+
 POO already has =schedule-invalidation= continuation, weak dependency stamps,
 witness trees, construction caches and coordinated component snapshots. Their
 preconditions still matter. =component-publication:call-with-snapshot= currently
@@ -113,6 +262,115 @@ certificate publisher. Reusing either fact as proof of this integration would
 be incorrect.
 
 * Correspondence and gates
+
+An isolated POO trial at =a682d15= removes a duplicate membership-table
+build in the owned publication path. The predecessor SCC partition already
+indexes every member. Lean =GraphRoster.membership_preflight_exact= proves
+that the point checks preserve membership decisions if that index is exact.
+The Gerbil component and graph-order suites passed. A matched fault that
+recognized an absent member reached joint approval, and the focused test
+rejected the resulting refusal. Successful additions and removals still
+enumerate support and rebuild the SCC and quotient. POO =7d68b83= takes
+the qualified preflight change. In a four-run comparison at 10,000 owners,
+refusal CPU fell from 618 to 44 microseconds. Successful removal still
+took about 2.5 seconds and rebuilt the graph.
+
+The next POO Lean trial models a support edit using stable ordinals.
+=membership_delta_support_exact= reduces dangling-edge admission to the
+edited rows and the old inverse buckets of retired providers.
+=padded_scc_exact= and =retired_ordinal_is_isolated= show that retaining
+retired ordinals as isolated placeholders preserves the active graph's SCCs.
+The Scheme support-change path still needs this incremental handoff.
+
+The isolated Scheme SCC candidate retires an owner after both adjacency
+indexes show isolation. The old ordinal table and ordered roster remain
+shared, and only the active owner and representative indexes receive edits.
+Later row validation uses active membership. The differential fixture clears
+the last incoming edge, retires the now isolated owner, then creates an SCC
+among the survivors and compares it with cold discovery. The matching fault
+uses ordinal presence as membership and accepts a read of the retired owner.
+This candidate is outside the component-publication coordinator.
+
+The paired source projection splices out only the retired ordinal's code
+and base witnesses. A mutation of an input used exclusively by the retired
+role stales the historical snapshot and leaves the successor current.
+Atomic publication must also authenticate the locality of the group builder.
+The current Scheme builder callback receives the whole source. A real
+publication control removes an isolated node and the surviving group's
+callback refuses after reading the successor roster. The coordinator returns
+the old snapshot. Lean =retired_member_can_change_opaque_builder= and
+=local_builder_reuse= distinguish the unrestricted callback from one whose
+result factors through unchanged member inputs.
+
+The integrated POO trial recognizes the exact native member builder and the
+unchanged default construction policy. Under these conditions the existing
+coordinator publishes the source, SCC, value and witness retirements together.
+In the 10,000-owner paired fixture, isolated removal CPU fell from 3.104 s
+to 113 microseconds and zero surviving groups were rebuilt. The ordinary
+approval callback still runs. Its seeded default random-source probe gave
+755757912 after full reconstruction and 471195553 after sparse retirement.
+The preflight refusal probe agrees across paths. An approval depending on the
+default random source could therefore accept only one path. The candidate
+remains isolated pending equivalence at this effect boundary.
+
+The follow-up probe cloned the pinned Gambit random source at real phase
+boundaries and found the number of hash-seed-sized draws needed to reach
+the observed state. The first full 10,000-owner deletion matched 430,002
+draws through the measured phases, including 269,983 during materialization.
+Giving the explicit Graph symbol tables a private seed removed about 10,000
+draws and left materialization effectively unchanged. Giving the POO object
+tables explicit seeds reduced the first materialization to 89,763 equivalent
+draws. Including the private slot layout tables reduced that phase to 9,999.
+This diagnostic changes existing private seed allocation to identify its
+source. It supplies no timing data or permission to change ordinary POO
+behavior. Lean =run_publication_application_projection= proves that
+separating private seed transitions preserves application state when the
+ordered application effects agree.
+
+After the remaining private duplicate checks received explicit seeds in
+the diagnostic, both the full and sparse 10,000-owner invocations passed,
+all measured phases matched zero application draws, and both approval probes
+returned 424786072. The next implementation must scope seed isolation to
+native preparation and preserve the existing ordinary SlotLayout behavior
+and application callback boundaries.
+
+The next isolated trial scopes private seed use to the sealed SCC projection
+and native isolated retirement preparation. Ordinary SlotLayout keeps its
+original seed draw. Approval explicitly enters ordinary seed mode and
+restores the prior mode on return or refusal. The Lean scope projection,
+native shape suite, component publication suite and rank repair suite
+passed. Removing the approval scope boundary fails the native control.
+The paired 10,000-owner probes still differ at successful approval
+(749967239 full and 334324448 sparse). Source capture and group materialization
+continue to use ordinary seeds. The scoped trial has not been published.
+
+The quotient trial next scoped generated group code and owned schedule
+preparation. The paired 10,000-owner diagnostic measured zero default
+random-state advances in both phases, down from 19,998 and 70,003 equivalent
+draws. Materialization still used the ordinary policy and matched 268,960
+draws in the first full deletion. The component suite exercises an authored
+equation and approval from a nested private scope, with ordinary seed mode
+restored before either callback. Removing the materializer's application
+boundary caused the authored equation to refuse private seed mode, and
+the expected startup assertion failed.
+
+The next trial authenticates fragment assembly by the exact member and
+provider lenses, warm protocol-free accessors and unchanged native
+descriptors. The closure still enters ordinary mode for member evaluation,
+lens getters and setters, and cooking. In the 10,000-owner full-deletion
+probe, equivalent default draws during materialization fell from 269,983
+to 88,705. Both probes passed. The remaining work is in closure evaluation
+and source capture. The Lean handoff law is conditional on equivalent
+prepared observations and preserves the original closure refusal.
+Removing the warm-lens check made the cold lens initializer reject the
+private mode. Removing the closure boundary made the actual lens getter
+reject it. Both faults failed startup at the expected assertion.
+
+Core PR #19 advanced to =bda33b6= with a change that reports completion of
+topology before independent source validation. The latest checked state
+had green Lean and eight Quint jobs. Ubuntu package build was running and
+macOS package build was queued. The prior dense failures describe their own
+head only. The new commit has no observed dense acceptance yet.
 
 The producer audit found a separate upstream handoff gap at POO =6446abe=.
 =component-publication= retains a lineage invalidation continuation, but

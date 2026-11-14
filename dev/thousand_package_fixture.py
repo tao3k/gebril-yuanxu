@@ -23,7 +23,7 @@ def generate(root: Path, profile: bool = False) -> None:
     (producer / "build.ss").chmod(0o755)
     write(producer / ".gitignore", "manifest.ss\n")
     write(producer / "init.ss",
-          '(yuanxu! source: "./modules" mode: explicit '
+          '(yuanxu! :test-dir "./t" source: "./modules" mode: explicit '
           + " ".join(f"(module-{n})" for n in range(1000)) + ")\n")
     for number in range(1000):
         owner = producer / "modules" / f"module-{number}"
@@ -45,19 +45,22 @@ def generate(root: Path, profile: bool = False) -> None:
               if number > 1 else "(def evaluations 0)"))
         write(owner / "config.ss", "(def Config (error \"unselected Config initializer ran\"))\n"
               if number > 1 else "(def Config (.o port: 5432))\n")
-        requires = "(.o)" if number == 0 else "(.o Shared: (.o module-id: 'module-0 contract: ScopeContract))"
-        build = " projections: (list Build)" if number == 1 else ""
+        imports = "" if number == 0 else (
+            '(import (rename-in (only-in "../module-0/types.ss" ScopeContract)\n'
+            '                   (ScopeContract ProviderScopeContract)))\n'
+        )
         # Interface categories remain explicit even for consumers selecting IDs.
         tags = " tags: '(security)" if number == 1 else " tags: '(other)"
-        write(owner / "interface.ss", f"""(.def Module identity: 'module-{number}{tags}
-  core: (.o requires: {requires} scope-contract: ScopeContract
-    exports: (.o (:: @ Scope.) config: Config){build})
+        write(owner / "interface.ss", f"""{imports}(.def Module identity: 'module-{number}{tags}
+  core: (.o scope-contract: ScopeContract
+    exports: (.o (:: @ Scope.) config: Config))
   features: (.o unused: (error "unselected Feature forced")))
 """)
     # A genuine owner-local native target. Its C compilation fails if the
     # selected owner's compiler options are lost in cross-package projection.
-    write(producer / "modules/module-1/build.ss", """(def Build
-  '((gxc: "support" "-cc-options" "-DYUANXU_THOUSAND_OWNER=1")))
+    write(producer / "modules/module-1/build.ss", """(.def Build
+  defbuild-script:
+  (.o spec: '((gxc: "support" "-cc-options" "-DYUANXU_THOUSAND_OWNER=1"))))
 """)
     write(producer / "modules/module-1/support.ss", """(begin-foreign
   (c-declare "#ifndef YUANXU_THOUSAND_OWNER\n#error selected owner compiler option missing\n#endif"))
@@ -76,19 +79,19 @@ def generate(root: Path, profile: bool = False) -> None:
     selection = "mode: auto rename: Corpus profile: security" if profile else (
         "mode: explicit rename: Corpus (module-0) (module-1)"
     )
-    write(consumer / "init.ss", f'(yuanxu! :load-modules {window} {selection})\n')
+    write(consumer / "init.ss", f'(yuanxu! :test-dir "./t" :load-modules {window} {selection})\n')
     control = root / "scope-control"
     write(control / "gerbil.pkg",
           "(package: yuanxu-thousand-scope-control prelude: :tao3k/yuanxu/prelude)\n")
     write(control / "init.ss",
-          f'(yuanxu! :load-modules {window} mode: explicit rename: Corpus (module-0) (module-1) (module-2))\n')
+          f'(yuanxu! :test-dir "./t" :load-modules {window} mode: explicit rename: Corpus (module-0) (module-1) (module-2))\n')
     write(control / "use.ss", (templates / "scope-control.ss").read_text())
     missing = root / "missing-provider"
     for source in consumer.iterdir():
         if source.name != "init.ss":
             write(missing / source.name, source.read_text())
     write(missing / "init.ss",
-          f'(yuanxu! :load-modules {window} mode: explicit rename: Corpus (module-1))\n')
+          f'(yuanxu! :test-dir "./t" :load-modules {window} mode: explicit rename: Corpus (module-1))\n')
     shutil.copytree(templates.parent / "package-consumer", root / "package-consumer")
     installed_build = root / "package-consumer" / "build.ss"
     shutil.copyfile(templates / "build.ss", installed_build)

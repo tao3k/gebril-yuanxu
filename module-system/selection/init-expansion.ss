@@ -26,13 +26,14 @@
   (def (expand-declaration stx (program #f) (origin #f))
   (syntax-case stx ()
     ((ctx option value init-clause ...)
-     (memq (syntax->datum (syntax option)) '(mode: source: :load-modules))
+     (memq (syntax->datum (syntax option)) '(mode: source: :load-modules :test-dir))
      ;; Normalize literal data only. One private getter is shared by all mounts;
      ;; expansion does not demand a Module scope or a test executor.
-     (let* ((mounts
+     (let* ((owner (core-context-top (current-expander-context) module-context?))
+            (mounts
              (module-init-mounts
-               (list (cons 'yuanxu! (cdr (syntax->datum stx))))))
-            (owner (core-context-top (current-expander-context) module-context?))
+               (list (cons 'yuanxu! (cdr (syntax->datum stx))))
+               (or (and origin (syntax->datum origin)) (and owner (module-context-path owner)))))
             (getter (genident 'init-modules-getter))
             (base-exports (genident 'init-exports))
             ;; An exported identifier transformer needs a stable private runtime
@@ -53,8 +54,16 @@
            (if mount
              (syntax (key (.ref (get) 'key)))
              (syntax (key (get))))))
+       (def (mount-binding mount)
+         (let (name (datum->syntax (syntax ctx) mount))
+           (with-syntax ((name name) (value exports-value-id))
+             #'(begin
+                 (defsyntax name
+                   (identifier-rules ()
+                     (id (identifier? #'id) (.ref value 'name))))
+                 (export name)))))
        (when (ormap (lambda (mount)
-                      (memq mount '(tests std-make-spec admit-current))) mounts)
+                      (memq mount '(tests std-make-spec admit-current .project-build))) mounts)
          (raise-syntax-error #f "mount conflicts with an init export" stx))
        (with-syntax
          ((exports-binding
@@ -63,6 +72,7 @@
           (make-spec-binding (datum->syntax (syntax ctx) 'std-make-spec))
           (exports-base base-exports)
           (compiled-program (or program #'#f))
+          (compiled-selection? (if program #'#t #'#f))
           (source-origin (or origin #'(this-source-file ctx)))
           (native-unit
             (datum->syntax (syntax ctx)
@@ -70,6 +80,7 @@
                 (string-join (string-split (module-id->path-string (expander-context-id owner)) #\/) "__"))))
           (exports-value exports-value-id)
           ((mount-slot ...) (map namespace-slot mounts))
+          ((mount-export ...) (map mount-binding (filter identity mounts)))
           (module-source-getter getter))
          (syntax
            (begin
@@ -78,7 +89,7 @@
                (yuanxu-init-build
                  source-origin
                  '(yuanxu! option value init-clause ...)
-                 compiled-program 'native-unit))
+                 compiled-program 'native-unit compiled-selection?))
              (def exports-value (.+ exports-base (.o mount-slot ...)))
              (defsyntax exports-binding
                (identifier-rules ()
@@ -90,6 +101,7 @@
                  (id (identifier? #'id)
                      (.ref exports-value 'std-make-spec))))
              (export exports-binding make-spec-binding)
+             mount-export ...
              ;; Runtime runtime modules have one result, not projection values.
              (void))))))
     (_ (raise-syntax-error #f

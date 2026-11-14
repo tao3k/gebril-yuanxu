@@ -200,7 +200,7 @@
             (check-equal? (rejects? "conflicting retained compiler options"
                             (lambda () (project (list (append overlap-spec '("-debug")))))) #t)
             (check-equal? (rejects? "duplicate retained compiler target"
-                            (lambda () (project '("object-types/contracts" "object-types/contracts")))) #t)
+                            (lambda () (project '("types/contracts" "types/contracts")))) #t)
             (check-equal? (rejects? "retained build entries require"
                             (lambda () (project #t))) #t)
             (let (original (module-source-read entry))
@@ -211,15 +211,15 @@
                 (lambda () (write-source entry original))))
             ((.get artifact admit-current))
             (let* ((links (path-expand "links" temporary))
-                   (link (path-expand "object-types/contracts.ss" links))
+                   (link (path-expand "types/contracts.ss" links))
                    (build (path-expand "build.ss" links)))
-              (create-directory* (path-expand "object-types" links))
+              (create-directory* (path-directory link))
               (write-source (path-expand "gerbil.pkg" links) "(package: tao3k/yuanxu)\n")
               (write-source build "(export #t)")
               (dynamic-wind
-                (lambda () (create-symbolic-link (path-expand "object-types/contracts.ss" root) link))
+                (lambda () (create-symbolic-link (path-expand "types/contracts.ss" root) link))
                 (lambda () (check-equal? (rejects? "non-regular or a symlink"
-                                          (lambda () (project '("object-types/contracts") links build))) #t))
+                                          (lambda () (project '("types/contracts") links build))) #t))
                 (lambda () (delete-file link))))
             (let* ((foreign (path-expand "foreign" temporary))
                    (build (path-expand "build.ss" foreign)))

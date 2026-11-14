@@ -13,6 +13,279 @@ This study does not change the compiler, add a Core graph cache or relax a gate.
 
 * Actual runtime owners
 
+The observed declaration diagnostic uses the existing =stages= mode on
+=t/module-declaration-10000-test.ss=. It reports
+=publication-guard-sweep= for the complete fallback pass and
+=observed-metadata-replay= for native read validation inside each guard.
+These windows overlap. Observer delivery before and after native validation
+belongs to the enclosing guard. The normal Case and its observer still run
+with their original limits and checks. Compare the diagnostic separately
+with the normal run, since accounting has a per-guard cost.
+
+The 16-owner calibration passed with the stage-enabled fixture and existing
+compiled dependencies. That run confirmed the reporting path and counted
+16 wrapper expansions and 16 declaration admissions. It did not include
+the newly instrumented production units. Loading those units as source next
+to the compiled dependents failed before the calibration reported a Case.
+Compiling the three instrumented units with Gerbil =2591dcd= resolved
+that launch failure. The same 16-owner calibration passed under the
+180-second / 4 GiB process guard, in 10.655 seconds with a sampled peak of
+536,281,088 bytes. It recorded four fallback sweeps (22.50 ms wall,
+22.47 ms CPU) and 256 observed native replay spans (71.56 ms wall,
+71.14 ms CPU). The native total also includes replays outside those
+sweeps. Neither total can be subtracted from the other.
+
+With the same compiled units, the metadata-index suite passed, including
+observer mutation and first-refusal controls. The 1,000-owner declaration
+Case passed in 29.04 seconds at a sampled 1,479,278,592-byte process peak.
+The observed graph took 20.16 seconds wall, 19.77 seconds CPU and 1.74 seconds
+GC wall. The following inclusive spans can nest.
+
+| Span | Calls | CPU | Wall |
+|------+-------+-----+------|
+| Native observed metadata replay | 16,000 | 6.01 s | 6.10 s |
+| Fallback publication sweep | 4 | 2.65 s | 2.65 s |
+| Declaration admission | 1,000 | 5.15 s | 5.26 s |
+| Interface wrapper expansion | 1,000 | 1.12 s | 1.16 s |
+
+The 10,000-owner diagnostic was stopped by the unchanged 4 GiB process
+guard at 153.247 seconds and 4,323,694,280 bytes. Its last completed
+sample had 7,400 declarations, 4,294,109,640 bytes of VM heap and
+2,138,350,568 bytes live. The guard killed the process during declaration
+admission, before the final sweep. The 1,000-owner timing cannot establish
+the cost of the 10,000-owner final replay.
+
+* Admission retention calibration
+
+The declaration fixture's =stages= mode now displays the reader's existing
+power-of-two binding census. At 256 publications the reader held 1,280
+private bindings, zero private code bodies and zero evaluated Interface
+bindings in that counter. This is a count of the reader's tables, not a
+heap traversal. The earlier 16/32-owner native Context census independently
+found no retained initializer thunks or code bodies on the private Types
+contexts. These observations narrow the next retention comparison to
+publication and source evidence, live Context binding payload and other
+reachable objects.
+
+| Owners | Live after explicit collection, ordinary | Live after explicit collection, stages |
+|--------+------------------------------------------+----------------------------------------|
+|    256 | 269,256,232 bytes | 269,323,264 bytes |
+|  1,000 | 483,535,464 bytes | 483,597,920 bytes |
+
+These totals include the runtime and fixture. The ordinary 1,000-owner
+run exited successfully in 105.33 seconds with a sampled process-tree
+peak of 1,396,621,312 bytes. Its Graph window was 44.79 seconds wall and
+26.09 seconds CPU. The earlier stages run peaked at 1,479,278,592 bytes.
+The near-equal post-collection totals show little retained accounting
+state in these samples. The elapsed times and process peaks are single
+runs and do not establish the transient allocation cost of accounting.
+
+** Private Interface import state
+
+The installed Gerbil's =core-import-module= records source Contexts in
+the expander registry. Evaluation of a top-level =import= also records
+the Context as a strong key in =__modstate=, under the runtime import
+mutex. The deferred-reader test observed =ready= after the closed
+Interface had delivered its POO publication and its expander registry
+aliases had been removed. The value in the runtime entry was =void=.
+The runtime entry still reaches the Context and its import descriptors.
+Counting the expander aliases alone therefore understates retention.
+
+Any lifecycle change must use Gerbil's module evaluation and preserve
+the same import authorization, prelude and one-time initializer promise.
+Keep authored imports inside the owner Context, including their phase,
+initialization order and failure. Releasing private Interface state
+requires proving that no other lookup uses its private Context as a
+public module. The diagnostic confirms one remaining root. It does not
+measure its retained bytes or its share of GC time.
+
+A local candidate retained Gerbil's native expansion and used its native
+module evaluator for a closed Interface with no exports. In the real
+1,000-owner declaration Case it reached just one owner. The other 999
+Interfaces declare a Gerbil import of the provider's Types. The existing
+deferred declaration macro establishes those imports before producing a
+native binding and export. The candidate observed the same 1,000 wrapper
+expansions, 2,000 initializers and 5,870,024 replay visits as the baseline.
+Collected live memory was 533,233,664 versus 533,233,152 bytes. The
+candidate was discarded. Removing the remaining strong runtime roots
+requires addressing owners with actual imports and preserving the native
+binding, demand and failure behavior.
+
+A second candidate matched the single phase-zero import descriptor after
+native expansion. The ordinary private top Context retained the wrapper's
+export bindings for the subsequent lookup. Gerbil's module evaluator
+forced the wrapper's own promise. Its body still evaluated authored
+imports through their original paths. This reached all 1,000 Interfaces
+and preserved 2,000 initializer calls and 5,870,024 replay visits.
+
+| Variant | First Graph wall / CPU | Collected live bytes | Peak bytes |
+|---------+------------------------+----------------------+------------|
+| Baseline | 57.77 / 42.01 s | 533,230,592 | 1,326,678,016 |
+| Native private evaluator | 55.62 / 44.89 s | 514,366,608 | 1,355,022,336 |
+
+The matched local runs passed under 180 seconds and 4 GiB. The candidate
+reduced retained memory by 18.0 MiB, while measured CPU and peak footprint
+increased. It was discarded. This isolates the retention cost of the
+wrapper Contexts from the much larger cost of admission itself.
+
+** Root aggregation stack bound
+
+Ubuntu PR 22 at =7a04cf3= finished first Graph in 402.70 seconds and
+reported a stack overflow during independent currentness. Root aggregation
+used the installed Gerbil's non-tail =foldr= over all publication rows.
+The candidate streams both segments of each row into the existing POO
+collector, in forward order. Aggregation uses constant stack space and
+avoids allocating a second list of groups.
+=PublicationReads.publication_root_groups_preserve_order= proves that the
+ordered preparation and admission groups sent to POO are identical,
+including rows without roots. POO still owns deduplication and issuance
+authentication. This removes one unbounded stack path. The Ubuntu log
+does not identify the failing frame.
+
+The 16/32-owner census also traced cross-fixture retention after deleting
+the first fixture's source tree and collecting twice. The first init's
+path and module ID still resolved to the same registered Gerbil Context.
+Reading its existing public export binding recovered the identical POO
+Exports object, whose cached namespace was still the first fixture's
+namespace. The first selection source still held its cached Graph. The
+test retained only weak object witnesses and path strings between the
+fixtures. Authenticating the historical Graph still refused the missing
+source, and the second fixture completed independently.
+
+This identifies surviving runtime roots between fixture lifetimes. The
+10,000-owner gate uses one fixture, so the result does not attribute the
+single-fixture admission peak to the prior init binding. A comparison of
+per-owner publication evidence and reader state remains necessary.
+
+* Prepared Gerbil identity
+
+Preparation resolves the Interface identity with =core-read-module/sexp=.
+It keeps the identity on the prepared input and verifies the associated
+source bytes and Gerbil package observations. Root-qualified publication
+admission reads the Interface again after validation, before comparing the
+declared owner. That position matters because expansion and Contract methods
+can execute effects.
+
+[[file:../../proofs/lean/YuanxuProof/Admission/PreparedModuleIdentity.lean][PreparedModuleIdentity]]
+proves that a prepared identity preserves the first refusal and result if its
+complete native inputs still agree with the inputs at admission. It also
+proves that a previously matching identity can accept a source whose current
+identity fails. Source bytes alone do not establish the premise. The runtime
+must also account for the Gerbil reader and package resolution state after
+effects. The Scheme admission path still calls the native reader at the
+original boundary.
+
+A temporary, stage-only Scheme probe reused the existing
+=reader-native-identity= label. That label already measures compiler-tool
+Context checks, so its totals combine two operations.
+The 1,000-owner =module-runtime-attribution= Case passed under the
+180-second / 4 GiB guard in 52.309 s at a sampled process-tree footprint
+of 1,469,743,104 bytes. The first Graph admission phase took 33.472 s wall
+and 25.723 s CPU. The combined label reported 6,004 calls, 0.898 s wall,
+0.727 s CPU, 5,420,544 bytes of VM allocation and zero collections.
+The same phase accounted for
+6.673 s CPU inside metadata replay and 7.335 s inside declaration
+admission. These inclusive spans can overlap.
+
+A second run used the independent =reader-admission-native-reread= label.
+It passed the same Case under the same guard in 94.986 s, with a sampled
+process-tree footprint of 1,300,004,864 bytes. That label did not occur.
+The 6,004 calls stayed under =reader-native-identity= and all belong to
+compiler-tool Context checks. The fixture uses a single-root Context.
+The second Interface parse applies only to source references carrying
+=declaration-id= from a root-qualified window. It therefore cannot explain
+the dense single-root fixture's admission cost. Both probes stay outside
+production.
+
+The same run identified the five repeated preparation checkpoint sites:
+
+| Site | Calls | Inclusive CPU |
+|------+-------+---------------|
+| Before declaration | 1,000 | 1.923 s |
+| After input enrollment | 1,000 | 0.679 s |
+| Before role evaluation | 1,000 | 0.647 s |
+| After role evaluation | 1,000 | 0.722 s |
+| After declaration evaluation | 1,000 | 0.716 s |
+
+The candidate return contributes a separate sixth check. Role entry and
+return bracket actual Gerbil evaluation. Declaration return follows
+evaluation of the Interface. The input-enrollment check follows wrapper
+preparation and input registration. Any proposal to combine two checks
+must first identify the effects between their exact program points.
+The whole admission phase visited 5,961,075 read records, including the
+aggregate replay, across 6,004 metadata replay calls.
+
+* Candidate tool observation tables
+
+A serial 1,000-owner =stages= run measured the private tool table copy
+at candidate entry and the later source-row snapshots separately. It
+passed under the 180-second / 4 GiB guard in 26.758 seconds with a
+1,458,520,064-byte sampled process-tree peak. The observed Graph window
+was 19.489 seconds wall and 18.792 seconds CPU.
+
+| Operation | Calls | CPU | Wall | Signed VM account |
+|-----------+-------+-----+------+-------------------|
+| Candidate tool table copy | 1,000 | 2.965 ms | 2.961 ms | 3,648,000 |
+| Reader source-row snapshots | 6,002 | 6.649 ms | 6.471 ms | 5,569,856 |
+
+Neither span overlapped GC. The VM account is still an allocation diagnostic,
+as described in [[file:10.02-runtime-accounting.org][10.02]]. These two
+operations together consumed about 0.05% of the measured Graph CPU.
+The trial instrumentation was removed. Sharing candidate tables would
+change enrollment ownership and possibly the observed failure order,
+with little measured CPU to recover in this fixture. The experiment
+does not measure retained source evidence reachable from other roots.
+
+* Ordered source evidence experiment
+
+The existing collector stores accepted rows in reverse order and copies the
+spine on replay. The candidate kept them in first-observed order and captured
+the last pair before replay. The Lean source-window model proves the ordered
+prefix remains exact when an observer appends a row. A runtime control
+enrolls a source during replay, mutates it, and checks that the next replay
+refuses it with the recorded diagnostic. The source observation and source
+admission suites passed with the candidate.
+
+Four guarded 1,000-owner runs in ABBA order all completed. The candidate
+reduced sampled process-tree peak from a median 1.484 GB to 1.436 GB.
+Post-collection live bytes stayed near 483.65 MB. Graph CPU rose from
+19.89 s to 23.78 s and Graph wall from 22.09 s to 27.30 s. GC wall
+rose from 1.71 s to 4.05 s. The production candidate was reverted.
+The semantic control also applies to the original collector.
+
+* Candidate eligibility and publication evidence
+
+The linker reads the original admitted evidence from each linked
+publication when producing the selected runtime record. Its public
+=publication-evidence= refers to the normalized candidate, as exercised
+by =t/module-declaration-value-test.ss=. Dropping that evidence at the
+Graph handoff would change the linked record and its identity contract.
+
+The separate eligibility list probe ran 1,000 times in the guarded
+1,000-declaration fixture. It accounted for 3.57 ms CPU and 4.48 ms wall
+with no overlapping GC. The complete run passed in 45.105 seconds at a
+sampled 1,436,270,592-byte process-tree peak. The probe was removed. The
+linear list lookup still has a quadratic worst case for the full roster,
+but this measurement does not prioritize an additional index over the
+measured publication and replay work.
+
+The existing retained-read census now groups validation and classification
+evidence by receiver identity. It reads only already populated fields. Each
+row reports the receiver count and distinct issued records reached from the
+query, rather than attributing an exclusive share of the heap.
+
+| Cold fixture | Validation receivers / reads | Classification receivers / reads | Total issued reads |
+|--------------+------------------------------+----------------------------------+--------------------|
+| 16 owners    | 24 / 456                     | 24 / 312                         |              3,196 |
+| 32 owners    | 40 / 760                     | 40 / 520                         |              5,148 |
+
+In this comparison each additional owner adds one receiver of each kind
+and 32 evidence reads. The census also passed both hot queries, the stale
+first-fixture source control, and the second fixture's independent query.
+These read counts do not establish retained bytes. Any change to the
+publication projection must preserve the receipt object, its checked
+candidate and the observed read order around replaceable Type methods.
+
 The measured dependency is gerbil-poo =096da65e0dfb57df397ee16c78f71643847ec46b=,
 =object.ss= SHA256
 =c28abad72240d848b98a8cf062af1aa727064eb44b97046d1c7a2327f68fb2bb=.

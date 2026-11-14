@@ -7,6 +7,130 @@ import YuanxuProof.ModuleSystem.Loading.DependencyPublication
 namespace YuanxuProof.ModuleSystem.Graph.PublicationReads
 open TestAdmission
 
+section ReplayRouteSchedule
+
+variable {Receiver Failure : Type} [DecidableEq Receiver]
+
+-- A bootstrap read has no receiver table route. Record the first ordinary
+-- occurrence only, in the same preorder as the issued-read validation.
+def routeSchedule (seen : List Receiver) : List (Option Receiver) → List Bool
+  | [] => []
+  | none :: tail => false :: routeSchedule seen tail
+  | some receiver :: tail =>
+    (!decide (receiver ∈ seen)) :: routeSchedule (receiver :: seen) tail
+
+def replayWithSchedule
+    (issue key route live : Option Receiver → Except Failure Unit) :
+    List (Option Receiver) → List Bool → Except Failure Unit
+  | read :: tail, first :: schedule => do
+    issue read
+    key read
+    if first then route read else pure ()
+    live read
+    replayWithSchedule issue key route live tail schedule
+  | _, _ => pure ()
+
+def replayWithSeen
+    (issue key route live : Option Receiver → Except Failure Unit)
+    (seen : List Receiver) : List (Option Receiver) → Except Failure Unit
+  | [] => pure ()
+  | read :: tail => do
+    issue read
+    key read
+    let next ← match read with
+      | none => pure seen
+      | some receiver => do
+        if receiver ∈ seen then pure () else route read
+        pure (receiver :: seen)
+    live read
+    replayWithSeen issue key route live next tail
+
+theorem precomputed_first_routes_preserve_refusal
+    (issue key route live : Option Receiver → Except Failure Unit)
+    (reads : List (Option Receiver)) (seen : List Receiver) :
+    replayWithSchedule issue key route live reads (routeSchedule seen reads) =
+      replayWithSeen issue key route live seen reads := by
+  induction reads generalizing seen with
+  | nil => rfl
+  | cons read tail ih =>
+    cases read with
+    | none =>
+      simp [routeSchedule, replayWithSchedule, replayWithSeen, bind, Except.bind,
+        pure, Except.pure, ih]
+    | some receiver =>
+      by_cases member : receiver ∈ seen <;>
+        simp [routeSchedule, replayWithSchedule, replayWithSeen, bind, Except.bind,
+          pure, Except.pure, member, ih]
+
+-- A successful entry checks a different live input from the return sweep.
+-- The theorem applies separately to each, with that sweep's actual checker.
+example : routeSchedule ([] : List Nat) [none, some 1, some 1, some 2] =
+    [false, true, false, true] := rfl
+
+end ReplayRouteSchedule
+
+-- The inventory is fixed for this traversal. The metaclass and checker
+-- are selected from the live state immediately before each field predicate.
+def recordMembership (select : State → Field → Checker)
+    (check : Checker → State → Field → Except Failure (Bool × State)) :
+    List Field → State → Except Failure (Bool × State)
+  | [], state => .ok (true, state)
+  | field :: rest, state => do
+    let (ok, next) ← check (select state field) state field
+    if ok then recordMembership select check rest next else pure (false, next)
+
+theorem copied_inventory_preserves_live_dispatch
+    (select : State → Field → Checker)
+    (check : Checker → State → Field → Except Failure (Bool × State))
+    (inventory : List Field) (state : State) :
+    recordMembership select check (inventory.map id) state =
+      recordMembership select check inventory state := by
+  simp
+
+theorem equal_live_checker_preserves_field
+    (select : State → Field → Checker)
+    (check : Checker → State → Field → Except Failure (Bool × State))
+    (state : State) (field : Field) (shared : Checker)
+    (same : select state field = shared) :
+    check shared state field = check (select state field) state field := by rw [same]
+
+-- If a predicate changes the metaclass or checker, a previously selected
+-- method can change acceptance even though the ordered inventory is stable.
+example :
+    recordMembership (fun state (_ : Nat) => state)
+      (fun checker _ field =>
+        (.ok (if field == 0 then (true, false) else (checker, checker)) :
+          Except Unit (Bool × Bool))) [0, 1] true ≠
+    recordMembership (fun _ (_ : Nat) => true)
+      (fun checker _ field =>
+        (.ok (if field == 0 then (true, false) else (checker, checker)) :
+          Except Unit (Bool × Bool))) [0, 1] true := by
+  change Except.ok (false, false) ≠ (Except.ok (true, true) : Except Unit (Bool × Bool))
+  intro same
+  cases same
+
+example :
+    recordMembership (fun state (_ : Nat) => state)
+      (fun checker _ field =>
+        (.ok (if field == 0 then (true, false) else (checker, checker)) :
+          Except Unit (Bool × Bool))) [0, 1] true = .ok (false, false) := rfl
+
+-- A prepared presence hit has no nested reads. It still delivers the original
+-- signed read, checks the revision, and enters the normal absence/MOP path
+-- on a miss. Precheck failure precedes either branch.
+theorem prepared_presence_preserves_delivery {Read Failure : Type}
+    (precheck unchanged : Except Failure Unit) (record : List Read → Read)
+    (deliver : Read → Except Failure Bool)
+    (present : Bool) (ordinary : Except Failure (Bool × List Read))
+    (hit : ordinary = .ok (present, [])) :
+    (do precheck
+        let (_, dependencies) ← ordinary
+        unchanged
+        deliver (record dependencies)) =
+    (do precheck; unchanged; deliver (record [])) := by
+  rw [hit]
+  cases precheck <;> rfl
+
 -- Identity normalization preserves the full original suffix. No assumption
 -- about callback purity, Contract identity labels or token payload equality.
 theorem same_roots_same_demands (deps : α → List α) (left right : List α)
@@ -217,6 +341,26 @@ theorem fused_entry_keeps_independent_return
     (do splitReplayEntry issued (fun read => do issued read; live read) reads
         authenticateAndVisit after (fun _ => ()) reads) := by
   rw [fused_entry_preserves_split_refusal, split_entry_second_issuance_reads_same_state]
+
+/-- Route key shape is signed structure. A projected shape can replace the
+runtime key grammar check only after the current issuance check. Live state
+and the first-refusal order still belong to the current sweep. -/
+theorem authenticated_key_shape_preserves_sweep
+    (issued grammar projected live : Read → Except Failure Unit) (reads : List Read)
+    (signedShape : ∀ read, issued read = .ok () → projected read = grammar read) :
+    authenticateAndVisit (fun read => do issued read; projected read; live read)
+      (fun _ => ()) reads =
+    authenticateAndVisit (fun read => do issued read; grammar read; live read)
+      (fun _ => ()) reads := by
+  have same : (fun read => do issued read; projected read; live read) =
+      (fun read => do issued read; grammar read; live read) := by
+    funext read
+    cases checked : issued read with
+    | error failure => rfl
+    | ok result =>
+      cases result
+      simp [signedShape read checked]
+  rw [same]
 
 -- A retry determines the original diagnostic precedence. A concurrent
 -- restoration during that retry cannot erase the already observed refusal.
@@ -530,6 +674,19 @@ example : joinedDispatch (Result := Nat) false true true (.ok 1) ≠
 wrapper may deliver directly. An open or compiled declaration uses its binding. -/
 def directDelivery (privateWrapper stock : Bool) : Bool := privateWrapper && stock
 
+/-- The import continuation supplies syntax that already has the marks required
+for native resolution. The direct include supplies the original reader syntax. -/
+def declarationBindingInput {Syntax : Type} (rewrap : Syntax → Syntax)
+    (rawInclude : Bool) (input : Syntax) : Syntax :=
+  if rawInclude then rewrap input else input
+
+theorem declaration_binding_input_agrees {Syntax Binding : Type}
+    (rewrap : Syntax → Syntax) (resolve : Syntax → Binding)
+    (source : Syntax) (rawInclude : Bool) :
+    resolve (declarationBindingInput rewrap rawInclude
+      (if rawInclude then source else rewrap source)) = resolve (rewrap source) := by
+  cases rawInclude <;> rfl
+
 structure WrapperDelivery (Owner Payload : Type) where
   owner : Owner
   payload : Payload
@@ -607,6 +764,33 @@ theorem same_window_preserves_first_refusal
   | nil => rfl
   | cons reads rest ih =>
     simp only [List.flatten_cons, authenticate_append, authenticateLanes, ih]
+
+/-- Each publication observer may change the state before the next lane.
+Sharing a traversal does not justify sharing a successful verdict. -/
+def authenticateObservedLanes (auth : State → Read → Except Failure Unit)
+    (observe : Nat → State → State) (position : Nat) (state : State) :
+    List (List Read) → Except Failure Unit
+  | [] => .ok ()
+  | reads :: lanes => do
+    let live := observe position state
+    authenticateAndVisit (auth live) (fun _ => ()) reads
+    authenticateObservedLanes auth observe (position + 1) live lanes
+
+theorem inert_observers_preserve_lane_order (auth : State → Read → Except Failure Unit)
+    (position : Nat) (state : State) (lanes : List (List Read)) :
+    authenticateObservedLanes auth (fun _ state => state) position state lanes =
+      authenticateLanes (auth state) lanes := by
+  induction lanes generalizing position with
+  | nil => rfl
+  | cons reads lanes ih => simp [authenticateObservedLanes, authenticateLanes, ih]
+
+theorem second_observer_can_invalidate_same_read :
+    let auth (state : Bool) (_ : Nat) : Except String Unit :=
+      if state then .ok () else .error "stale slot dependency"
+    authenticateLanes (auth true) [[7], [7]] = .ok () ∧
+      authenticateObservedLanes auth (fun position _ => position == 0)
+        0 true [[7], [7]] = .error "stale slot dependency" := by
+  exact ⟨rfl, rfl⟩
 
 -- Nesting protected checks unwinds the last lane first. A shared topology
 -- cannot justify reversing the original return authentication when more than
@@ -806,6 +990,19 @@ theorem segmented_roots_preserve_first_refusal
       authenticateAndVisit auth (fun _ => ()) (rows.map fun row => row.1 ++ row.2).flatten := by
   rw [flatten_root_segments]
 
+/-- A publication captured with an observer keeps its split guard even if
+the observer removes itself before the next check. -/
+def retainedJoinedRoots (fused observed : Bool) (preparation admission : List Read) :
+    Option (List Read) :=
+  if fused || !observed then some (preparation ++ admission) else none
+
+theorem join_on_demand_preserves_guard_input (fused observed : Bool)
+    (preparation admission : List Read) :
+    (if fused || !observed then some (preparation, admission) else none).map
+      (fun segments => segments.1 ++ segments.2) =
+    retainedJoinedRoots fused observed preparation admission := by
+  cases fused <;> cases observed <;> rfl
+
 -- Only recorded identity membership is selected here. The projection's
 -- live issuer and receiver checks remain in their original order.
 theorem bounded_recorded_lookup_preserves_ordered_membership
@@ -846,6 +1043,49 @@ theorem unchanged_stock_support_preserves_results_and_refusal
     (check : Except Failure Unit) (stock : List (Except Failure Result)) :
     checkStockRun check stock = checkStockEach check stock := by
   cases check <;> cases stock <;> rfl
+
+/-- A role-sized check can retain the exact per-datum result and delivery
+sequence. Empty roles need no method authentication. A nonempty closed role
+uses one POO frame, which still owns an independent return check. -/
+def closedRoleCheck {Failure Result Read : Type}
+    (entry exit : Except Failure Unit)
+    (rows : List (Except Failure (Result × List Read))) :
+    Except Failure (List (Result × List Read)) :=
+  match rows with
+  | [] => .ok []
+  | _ :: _ => do
+      let results ← checkStockRun entry rows
+      exit
+      pure results
+
+theorem closed_role_preserves_ordered_delivery {Failure Result Read : Type}
+    (entry : Except Failure Unit)
+    (rows : List (Except Failure (Result × List Read))) :
+    closedRoleCheck entry (.ok ()) rows = checkStockEach entry rows := by
+  cases rows with
+  | nil => rfl
+  | cons first rest =>
+    unfold closedRoleCheck
+    rw [unchanged_stock_support_preserves_results_and_refusal]
+    cases checkStockEach entry (first :: rest) <;> rfl
+
+theorem stale_role_support_at_return_refuses {Failure Result Read : Type}
+    (failure : Failure) (result : Result) (delivery : List Read) :
+    closedRoleCheck (.ok ()) (.error failure) [.ok (result, delivery)] =
+      .error failure := rfl
+
+/-- A closed preparation reads one live metadata value for several fields.
+After author code the next observation remains a separate operand. -/
+theorem preparation_fields_share_one_observation {Metadata Key Value : Type}
+    (readField : Metadata → Key → Value) (reads : Key → Metadata)
+    (before after : Metadata) (fields : List Key) (afterField : Key)
+    (sameWindow : ∀ key ∈ fields, reads key = before) :
+    (fields.map (fun key => readField (reads key) key), readField after afterField) =
+      (fields.map (readField before), readField after afterField) := by
+  congr 1
+  apply List.map_congr_left
+  intro key member
+  rw [sameWindow key member]
 
 -- The author call owns two fresh guards. The next closed run consumes the
 -- post-effect state, even if the previous run had valid support.
@@ -1097,6 +1337,22 @@ theorem candidate_return_checks_after_checkpoint {Failure : Type} (stale : Failu
     replayCheckpoint (.ok ()) (.ok ()) (.error stale : Except Failure Unit) =
       .error stale := rfl
 
+-- A maintained method never calls the effect guard. An independently
+-- replaced method only runs after the guard for this invocation succeeds.
+def checkedValidationMethod {Failure Result : Type}
+    (maintained : Bool) (before : Except Failure Unit)
+    (validate : Unit → Except Failure Result) : Except Failure Result := do
+  if maintained then pure () else before
+  validate ()
+
+theorem maintained_validation_preserves_result {Failure Result : Type}
+    (before : Except Failure Unit) (validate : Unit → Except Failure Result) :
+    checkedValidationMethod true before validate = validate () := rfl
+
+theorem replacement_validation_preserves_guard_refusal {Failure Result : Type}
+    (refused : Failure) (validate : Unit → Except Failure Result) :
+    checkedValidationMethod false (.error refused) validate = .error refused := rfl
+
 -- Forwarding uses exactly the ordered native traversal, not its set of
 -- receivers or a list of reconstructed records. Earlier captures keep their
 -- position and multiplicity.
@@ -1285,6 +1541,40 @@ theorem same_wrapper_binding_does_not_preserve_owner_import :
       wrapperBinding (Key := Nat) (fun _ => none) (fun _ => none) (fun _ => some 2) 0 ∧
     ([2] : List Nat) ≠ [] := by decide
 
+/-- Resolve an ordered trace of demands in one owner. Each demand checks its
+native phase/import authority before consulting the binding projection. -/
+def resolveWrapperDemands {Key Binding Failure : Type}
+    (check : Key → Except Failure Unit) (resolve : Key → Option Binding)
+    (missing : Key → Failure) : List Key → Except Failure (List Binding)
+  | [] => .ok []
+  | key :: tail =>
+    match check key with
+    | .error failure => .error failure
+    | .ok () =>
+      match resolve key with
+      | none => .error (missing key)
+      | some binding => (resolveWrapperDemands check resolve missing tail).map (binding :: ·)
+
+theorem shared_wrapper_projection_keeps_order_and_failure
+    {Key Binding Failure : Type} (check : Key → Except Failure Unit)
+    (original shared : Key → Option Binding) (missing : Key → Failure)
+    (demands : List Key) (exact : ∀ key ∈ demands, original key = shared key) :
+    resolveWrapperDemands check original missing demands =
+      resolveWrapperDemands check shared missing demands := by
+  induction demands with
+  | nil => rfl
+  | cons key tail ih =>
+    have head := exact key (by simp)
+    have rest := ih (fun demand member => exact demand (by simp [member]))
+    simp only [resolveWrapperDemands, head, rest]
+
+theorem wrapper_import_refusal_precedes_missing_binding
+    {Key Binding Failure : Type} (check : Key → Except Failure Unit)
+    (resolve : Key → Option Binding) (missing : Key → Failure) (key : Key)
+    (tail : List Key) (failure : Failure) (refused : check key = .error failure) :
+    resolveWrapperDemands check resolve missing (key :: tail) = .error failure := by
+  simp [resolveWrapperDemands, refused]
+
 /-- Cleanup of an exact native registry alias compares the installed Context.
 The caller must separately establish that the alias is private and no longer
 demanded. Key spelling alone does not establish that ownership. -/
@@ -1309,6 +1599,51 @@ theorem retire_wrapper_alias_preserves_replacement
 
 theorem retiring_a_live_wrapper_alias_changes_resolution :
     retireWrapperAlias (fun _ : Nat => some (5 : Nat)) 2 5 2 ≠ some 5 := by decide
+
+/-- A completed private wrapper has its own native initializer promise.
+Retiring its import-table entry preserves observable results whenever
+only other Contexts are reachable by later import demands. -/
+theorem private_wrapper_retirement_keeps_import_trace
+    [DecidableEq Context] [DecidableEq Result] (states : Context → Option Result)
+    (privateContext : Context) (result : Result) (demands : List Context)
+    (unreachable : privateContext ∉ demands) :
+    demands.map (retireWrapperAlias states privateContext result) = demands.map states := by
+  apply List.map_congr_left
+  intro context member
+  exact retire_wrapper_alias_preserves_other_bindings states privateContext context result
+    (fun same => unreachable (same ▸ member))
+
+/-- Recording visits preparation and admission in row order. The collector
+accumulates in reverse and returns the original ordered groups. -/
+theorem publication_root_groups_preserve_order
+    (rows : List (Option (List Read × List Read))) :
+    (rows.foldl (fun groups row =>
+      match row with
+      | none => groups
+      | some (preparation, admission) => admission :: preparation :: groups) []).reverse =
+    rows.foldr (fun row groups =>
+      match row with
+      | none => groups
+      | some (preparation, admission) => preparation :: admission :: groups) [] := by
+  suffices ∀ initial : List (List Read),
+      (rows.foldl (fun groups row =>
+        match row with
+        | none => groups
+        | some (preparation, admission) => admission :: preparation :: groups) initial).reverse =
+      initial.reverse ++ rows.foldr (fun row groups =>
+        match row with
+        | none => groups
+        | some (preparation, admission) => preparation :: admission :: groups) [] by
+    simpa using this []
+  induction rows with
+  | nil => simp
+  | cons row tail ih =>
+    intro initial
+    cases row with
+    | none => simpa using ih initial
+    | some segments =>
+      rcases segments with ⟨preparation, admission⟩
+      simpa [List.reverse_cons, List.append_assoc] using ih (admission :: preparation :: initial)
 
 /-- A fixed dispatch may retain native read identities and receiver topology.
 Each actual owner still has its own selection and independent authentication. -/
@@ -1732,6 +2067,88 @@ theorem retain_current_after_tracked_edit
       complete clean read demanded)
     (old read demanded)
 
+/-- An unaffected owner carries exactly its former demand through a commit.
+The native writer must keep its original root spine and the signed edges of
+each unchanged receiver. This condition is separate from live slot freshness:
+an unreported new edge would otherwise let a transported verdict miss a read. -/
+theorem retained_demand_matches_successor
+    (prior next : Read → List Read) (roots : Owner → List Read) (nextRoots : List Read)
+    (receiver : Read → Owner) (registered : Owner → Owner → Prop)
+    (changed : Owner → Prop) (owner : Owner)
+    (complete : Covers prior roots receiver registered)
+    (clean : ¬ Affected registered changed owner)
+    (rootFrame : nextRoots = roots owner)
+    (edgeFrame : ∀ read, ¬ changed (receiver read) → next read = prior read)
+    (read : Read) : Demanded next nextRoots read ↔ Demanded prior (roots owner) read := by
+  subst nextRoots
+  have framed : ∀ read, Demanded prior (roots owner) read → next read = prior read :=
+    fun read demand => edgeFrame read
+      (clean_owner_has_no_changed_read prior roots receiver registered changed owner
+        complete clean read demand)
+  constructor
+  · intro demand
+    induction demand with
+    | root read member => exact .root read member
+    | dependency parent child _ edge ih =>
+      exact .dependency parent child ih (by simpa [framed parent ih] using edge)
+  · intro demand
+    induction demand with
+    | root read member => exact .root read member
+    | dependency parent child oldDemand edge ih =>
+      exact .dependency parent child ih (by simpa [framed parent oldDemand] using edge)
+
+theorem retain_current_in_successor
+    (prior next : Read → List Read) (roots : Owner → List Read) (nextRoots : List Read)
+    (receiver : Read → Owner) (registered : Owner → Owner → Prop)
+    (changed : Owner → Prop) (before after : Read → Prop) (owner : Owner)
+    (complete : Covers prior roots receiver registered)
+    (clean : ¬ Affected registered changed owner)
+    (rootFrame : nextRoots = roots owner)
+    (edgeFrame : ∀ read, ¬ changed (receiver read) → next read = prior read)
+    (writerFrame : ∀ read, ¬ changed (receiver read) → before read → after read)
+    (old : Current prior (roots owner) before) : Current next nextRoots after := by
+  intro read demand
+  have original := (retained_demand_matches_successor prior next roots nextRoots receiver
+    registered changed owner complete clean rootFrame edgeFrame read).mp demand
+  exact retain_current_after_tracked_edit prior roots receiver registered changed before after
+    owner complete writerFrame old clean read original
+
+/-- The exact signed edge frame preserves deterministic traversal as well as
+demand membership. Each fixed indexed traversal therefore has the same
+ordered projection when its membership index represents the seen list. -/
+theorem retained_preorder_matches_successor [DecidableEq Read]
+    (prior next : Read → List Read) (roots : Owner → List Read) (nextRoots : List Read)
+    (receiver : Read → Owner) (registered : Owner → Owner → Prop)
+    (changed : Owner → Prop) (owner : Owner)
+    (complete : Covers prior roots receiver registered)
+    (clean : ¬ Affected registered changed owner)
+    (rootFrame : nextRoots = roots owner)
+    (edgeFrame : ∀ read, ¬ changed (receiver read) → next read = prior read)
+    (fuel : Nat) : discover next fuel ⟨[], nextRoots⟩ = discover prior fuel ⟨[], roots owner⟩ := by
+  subst nextRoots
+  apply discover_agrees_inside prior next (Demanded prior (roots owner))
+  · exact fun parent demand child edge => Demanded.dependency parent child demand edge
+  · intro read demand
+    exact edgeFrame read (clean_owner_has_no_changed_read prior roots receiver registered
+      changed owner complete clean read demand)
+  · constructor
+    · simp
+    · exact Demanded.root
+
+/-- Identical roots and a live old root can still miss newly required support
+when the native writer omits a change to a signed edge. -/
+theorem retained_root_alone_cannot_certify_successor :
+    Current (fun _ : Bool => []) [false] (· = false) ∧
+      ¬ Current (fun _ : Bool => [true]) [false] (· = false) := by
+  constructor
+  · intro read demand
+    cases demand with
+    | root read member => simpa using member
+    | dependency parent child _ edge => simp at edge
+  · intro current
+    have impossible := current true (.dependency false true (.root false (by simp)) (by simp))
+    cases impossible
+
 /-- Root projections come from the SAME immutable bundle as the returned
 certificate and index. Concurrent publication cannot retarget a successful
 read's roots to another generation while retaining an old verdict. -/
@@ -1813,6 +2230,144 @@ theorem untracked_write_cannot_transport_currentness :
     exact current () (.root () (by simp))
 
 end TrackedEdit
+
+/-- An exact input observation can serve several owners when the authority
+binds the expected value and guarantees the same observation at each use.
+`owners` are the consumers of this one input, not the entire directory. -/
+theorem shared_source_input_exact {Owner Input : Type}
+    (owners : List Owner) (expected observed : Input) (atUse : Owner → Input)
+    (sameCut : ∀ owner ∈ owners, atUse owner = observed) :
+    (∀ owner ∈ owners, atUse owner = expected) ↔
+      (owners = [] ∨ observed = expected) := by
+  constructor
+  · intro checked
+    cases owners with
+    | nil => exact Or.inl rfl
+    | cons first rest =>
+      have member : first ∈ first :: rest := List.mem_cons_self ..
+      exact Or.inr ((sameCut first member).symm.trans (checked first member))
+  · intro result owner member
+    rcases result with empty | checked
+    · simp [empty] at member
+    · exact (sameCut owner member).trans checked
+
+/-- Reusing a captured policy footprint requires the fresh capture to carry
+the same ordered receiver revisions. Each later checkpoint still compares
+those revisions to its own live state. -/
+theorem shared_policy_capture_preserves_checkpoints {Receiver Revision : Type}
+    [DecidableEq Revision] (baseline fresh : List (Receiver × Revision))
+    (sameCapture : fresh = baseline) (live : Receiver → Revision) :
+    baseline.all (fun row => decide (live row.1 = row.2)) =
+      fresh.all (fun row => decide (live row.1 = row.2)) := by
+  subst fresh
+  rfl
+
+/-- Stock policy reuse requires both the maintained receiver order and a
+live revision check. Either mismatch selects the fresh traversal. -/
+def choosePolicyCapture {Receiver Revision : Type}
+    [DecidableEq Receiver] [DecidableEq Revision]
+    (baseline : List (Receiver × Revision)) (stockRoots roots : List Receiver)
+    (captureRevision : Receiver → Revision)
+    (fresh : List (Receiver × Revision)) : List (Receiver × Revision) :=
+  if roots = stockRoots ∧
+      baseline.all (fun row => decide (captureRevision row.1 = row.2)) = true
+  then baseline else fresh
+
+theorem stock_policy_guard_preserves_ordered_revision_checks {Receiver Revision : Type}
+    [DecidableEq Receiver] [DecidableEq Revision]
+    (baseline fresh : List (Receiver × Revision)) (stockRoots roots : List Receiver)
+    (captureRevision : Receiver → Revision)
+    (sameTraversal : roots = stockRoots →
+      fresh = baseline.map (fun row => (row.1, captureRevision row.1))) :
+    choosePolicyCapture baseline stockRoots roots captureRevision fresh = fresh := by
+  unfold choosePolicyCapture
+  split
+  · rename_i eligible
+    rw [sameTraversal eligible.1]
+    have pointwise := List.all_eq_true.mp eligible.2
+    symm
+    calc
+      baseline.map (fun row => (row.1, captureRevision row.1)) = baseline.map id := by
+        apply List.map_congr_left
+        intro row member
+        have current := of_decide_eq_true (pointwise row member)
+        exact Prod.ext rfl current
+      _ = baseline := List.map_id baseline
+  · rfl
+
+/-- Reusing the old input at a second checkpoint can accept a changed
+source, even when both owners require exactly the same input identity. -/
+theorem shared_input_identity_does_not_cross_effect :
+    let owners := [false, true]
+    let expected := false
+    let firstObservation := false
+    let afterEffect := id (α := Bool)
+    firstObservation = expected ∧
+      ¬ (∀ owner ∈ owners, afterEffect owner = expected) := by
+  constructor
+  · rfl
+  · intro checked
+    have stale := checked true (by simp)
+    simp at stale
+
+/-- A source probe with no revision authority only learns the positions it
+reads. Omitting one position leaves a changed input indistinguishable from
+the expected input, even when the size and every observed position agree. -/
+theorem omitted_source_position_can_hide_edit {size : Nat}
+    (expected : Fin size → Bool) (positions : List (Fin size))
+    (omitted : Fin size) (missing : omitted ∉ positions) :
+    ∃ live : Fin size → Bool,
+      (∀ position ∈ positions, live position = expected position) ∧ live ≠ expected := by
+  let live := fun position => if position = omitted then !expected position else expected position
+  refine ⟨live, ?_, ?_⟩
+  · intro position member
+    have distinct : position ≠ omitted := fun equal => missing (equal ▸ member)
+    simp [live, distinct]
+  · intro equal
+    have atEdit := congrFun equal omitted
+    cases bit : expected omitted <;> simp [live, bit] at atEdit
+
+/-- Exact full comparison from a finite probe requires coverage of every
+position when the contents can change independently at an effect boundary. -/
+theorem exact_source_probe_iff_complete {size : Nat}
+    (expected : Fin size → Bool) (positions : List (Fin size)) :
+    (∀ live : Fin size → Bool,
+      (∀ position ∈ positions, live position = expected position) → live = expected) ↔
+    ∀ position, position ∈ positions := by
+  constructor
+  · intro exactProbe position
+    by_cases member : position ∈ positions
+    · exact member
+    · obtain ⟨live, agrees, different⟩ :=
+        omitted_source_position_can_hide_edit expected positions position member
+      exact False.elim (different (exactProbe live agrees))
+  · intro complete live agrees
+    funext position
+    exact agrees position (complete position)
+
+/-- With independent effects, every checkpoint has its own possible source
+state. A byte read before an effect cannot cover a byte at the next checkpoint.
+Pairs identify observations by both checkpoint and byte position. -/
+theorem exact_effect_separated_probe_iff_complete {checkpoints size : Nat}
+    (expected : Fin checkpoints × Fin size → Bool)
+    (probes : List (Fin checkpoints × Fin size)) :
+    (∀ live : Fin checkpoints × Fin size → Bool,
+      (∀ probe ∈ probes, live probe = expected probe) → live = expected) ↔
+      ∀ probe, probe ∈ probes := by
+  constructor
+  · intro exactProbe probe
+    by_cases member : probe ∈ probes
+    · exact member
+    · let live := fun position => if position = probe then !expected position else expected position
+      have agrees : ∀ position ∈ probes, live position = expected position := by
+        intro position present
+        have distinct : position ≠ probe := fun equal => member (equal ▸ present)
+        simp [live, distinct]
+      have atProbe := congrFun (exactProbe live agrees) probe
+      cases bit : expected probe <;> simp [live, bit] at atProbe
+  · intro complete live agrees
+    funext probe
+    exact agrees probe (complete probe)
 
 -- Runtime correspondence premises remain: eq?-identity normalization,
 -- unmodified original dependency lists, public replay's final recheck,

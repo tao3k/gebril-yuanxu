@@ -7,8 +7,7 @@
 ;;; Invariant: this module owns contract data plumbing, not JSON Schema
 ;;; semantics, object contracts, or runtime execution.
 
-(import (only-in :std/list/list fold-right)
-        (only-in :std/string/misc
+(import (only-in :std/string/misc
                  string-drop))
 
 (export yuanxu-contract-key->string
@@ -216,7 +215,7 @@
 ;;       ```
 ;;     %
 (def (yuanxu-contract-map-pair-with-diagnostics project values diagnostics)
-  (fold-right
+  (foldr
    (lambda (value accumulated)
      (let (parsed (project value))
        (cons (cons (car parsed) (car accumulated))

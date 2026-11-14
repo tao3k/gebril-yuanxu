@@ -247,7 +247,7 @@ run supplies the separate executable correspondence evidence.
 
 The first additional normal-build regression (=build-process-01=) compiled and
 cleaned successfully, then failed an old assertion that selected generated
-=object-family/syntax.scm= must survive clean. Existing Core
+=object/syntax.scm= must survive clean. Existing Core
 =clean-build-artifacts!= and =module-build-artifact-clean-test.ss= explicitly
 own removal of selected generated =.scm= files. The regression now checks BOTH
 removal of that selected output and exact retention of an independently created

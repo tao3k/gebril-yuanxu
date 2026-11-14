@@ -4,7 +4,7 @@
 (import (only-in :std/test test-suite test-case check-equal? check-exception)
         (for-template :std/func :std/iter :gerbil/core)
         (rename-in (only-in :std/iter/iterators in-list) (in-list original-in-list))
-        (only-in :clan/poo/object .get .o .cc .ref)
+        (only-in :clan/poo/object .get .o .cc .ref .all-slots)
         (only-in :tao3k/yuanxu/modules/json-schema/interface JsonSchema)
         (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor)
         (only-in :tao3k/yuanxu/module-system/source/link module-program-namespace module-program-feature)
@@ -22,24 +22,25 @@
                          (lambda _ (error "compiled publication must not import metadata"))))
           (module-program-namespace 'tao3k/yuanxu/init
             (.o (tao3k/yuanxu/modules/json-schema/interface
-                  (.o declaration: 'json-schema publication: JsonSchema features: (.o))))
-            (.o) '((tao3k/yuanxu/modules/json-schema/interface))
-            '(((json-schema) . tao3k/yuanxu/modules/json-schema/interface)))))
+                  (.o declaration: 'json-schema publication: JsonSchema imports: '() features: (.o)))
+                (test/sibling
+                  (.o publication: (error "unrequested sibling publication was initialized"))))
+            '((tao3k/yuanxu/modules/json-schema/interface) (test/sibling))
+            '(((json-schema) . tao3k/yuanxu/modules/json-schema/interface)
+              ((sibling) . test/sibling)))))
       (parameterize ((current-expander-module-import
                        (lambda _ (error "compiled scope must not import metadata"))))
+        (check-equal? (.all-slots namespace) '(json-schema sibling))
         (check-equal? (procedure? (.get (.get namespace json-schema) normalize)) #t)))
     (test-case "compiled namespace refuses relabeled declarations and undeclared dependencies"
-      (def (consume value declared)
+      (def (consume value declared (dependencies '()))
         (.get (module-program-namespace 'tao3k/yuanxu/init
                 (.o (tao3k/yuanxu/modules/json-schema/interface
-                      (.o declaration: declared publication: value features: (.o))))
-                (.o) '((tao3k/yuanxu/modules/json-schema/interface))
+                      (.o declaration: declared publication: value imports: dependencies features: (.o))))
+                '((tao3k/yuanxu/modules/json-schema/interface))
                 '(((json-schema) . tao3k/yuanxu/modules/json-schema/interface))) json-schema))
       (check-exception (consume JsonSchema 'forged) error?)
-      (check-exception
-        (consume (.cc JsonSchema 'core
-                   (.cc (.get JsonSchema core) 'requires
-                     (.o missing: (.o module-id: 'outside)))) 'json-schema) error?))
+      (check-exception (consume JsonSchema 'json-schema '(outside)) error?))
     (test-case "compiled Feature projection checks provenance before qualifying its identities"
       (def refine (lambda (scope) scope))
       (def declared
@@ -88,7 +89,7 @@
                        "compiled role export is not a runtime value")))))
     (test-case "only closed runtime role exports use the deferred projection"
       (def interface
-        "(.def Module identity: 'example core: (.o requires: (.o) scope-contract: ScopeContract exports: Config) features: (.o))")
+        "(.def Module identity: 'example core: (.o scope-contract: ScopeContract exports: Config) features: (.o))")
       (check-equal?
         (module-deferred-role-exports interface
           '((types . "(def ScopeContract #f) (export ScopeContract)")

@@ -9,8 +9,8 @@
         (only-in :clan/poo/type Symbol List)
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :clan/poo/validation-rebinding rebind-validation)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-derived!)
-        (only-in :tao3k/yuanxu/object-types/contracts
+        (only-in :clan/poo/read-projection owned-read-derived!)
+        (only-in :tao3k/yuanxu/types/contracts
                  YuanxuContract. YuanxuObjectContract.
                  yuanxu-classification-evidence)
         (only-in :tao3k/yuanxu/module-system/schema/relations

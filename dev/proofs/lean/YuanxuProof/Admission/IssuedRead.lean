@@ -3,9 +3,6 @@ import YuanxuProof.Admission.MetadataRoute
 
 namespace YuanxuProof.Admission.IssuedRead
 
-def quintSourceDigest : String :=
-  "sha256:bc1f7a6c06c0bc84a7e7c7f6946f200b78a31f713f12eeaadeecde27ae03762b"
-
 -- The producer retains the birth, not the user. Fields project pointer/revision
 -- comparisons performed by the runtime predicate; the private birth is trusted.
 structure Payload where

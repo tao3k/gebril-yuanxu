@@ -8,7 +8,7 @@
         (only-in :tao3k/yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-name? module-source-admit-current!
                  call-with-module-source-read-cache))
-(export module-test-projection module-test-file-source)
+(export module-test-projection module-test-file-source module-owner-test-projection)
 
 ;; Explicit runtime qualification files use the same observation authority as
 ;; module suites. Callers supply files, never a separately maintained guard.
@@ -30,14 +30,19 @@
           ((not (eq? kind 'directory)) (error "module tests must be a real directory" directory))
           (else (list-sort string<? (directory-files directory))))))
 
+(def (module-owner-test-projection selection owner)
+  (def context (.ref selection 'context))
+  (when (memq owner (.ref context 'denied-modules))
+    (error "test owner is disabled" owner))
+  (scan-module-test-sources selection context (list owner) #f))
+
 (def (module-test-projection selection (owners #f) (suite #f))
   (unless (memq suite '(#f integration qualification)) (error "unknown module test suite" suite))
   (def context (.ref selection 'context))
   (when (and owners (.slot? context 'resolve-root) (list? owners) (andmap symbol? owners))
     (set! owners (map (.ref context 'resolve-root) owners)))
-  ;; Ordinary test discovery follows init roots without composing a Graph.
-  ;; Profile defaults below instead use the product's shared dependency closure.
-  ;; Auto leaves may make bounded explicit demands through the same policy.
+  ;; Explicit test demands stay bounded. Aggregate discovery includes the
+  ;; auto catalog; profile defaults use the product's dependency closure.
   (def order (.ref context 'selected))
   (def (eligible? owner)
     (and (not (memq owner (.ref context 'denied-modules)))
@@ -48,23 +53,34 @@
                    (= (length owners) (length (delete-duplicates/hash owners from-end?: #t)))
                    (andmap eligible? owners)))
     (error "test owners must be distinct eligible members of the selection" owners order))
-  (def profiled?
-    (and (.slot? context 'intent)
-         (let (intent (.ref context 'intent))
-           (any (lambda (window) (and (.slot? window 'profile) (.ref window 'profile)))
-                (if (.slot? intent 'windows) (.ref intent 'windows) (list intent))))))
   ;; A category selects a dependency-closed product, shared with native Make.
   ;; Ordinary explicit test discovery remains narrow (and Graph-lazy); an
   ;; explicitly requested owner list remains bounded by the eligibility check.
   (def selected-owners
     (cond (owners owners)
-          (profiled? (.ref (.ref selection 'selected-graph) 'module-order))
+          ((and (.slot? context 'intent)
+                (let (intent (.ref context 'intent))
+                  (any (lambda (window) (and (.slot? window 'profile) (.ref window 'profile)))
+                       (if (.slot? intent 'windows) (.ref intent 'windows) (list intent)))))
+           (.ref (.ref selection 'selected-graph) 'module-order))
+          ((.slot? context 'loader-roots) (.ref context 'loader-roots))
           (else order)))
-  ;; Reuse the selection's publication/source cache, including the reader's
-  ;; Gerbil-observed private and compiler dependencies. Do not resolve a second
-  ;; Graph or link a business scope. A test owner still needs valid sources;
-  ;; dependency/feature composition is admitted only on explicit Graph demand.
-  (for-each (lambda (owner) ((.ref selection 'prepare-publication) owner)) selected-owners)
+  (if (and (not suite) (.slot? selection '.module-test-source))
+    (let* ((sources (map (.ref selection '.module-test-source) selected-owners))
+           (admit-current (lambda ()
+                       ((.ref selection 'admit-current))
+                       (for-each (lambda (source) ((.ref source 'admit-current))) sources))))
+      (.o selected-graph: (.ref selection 'selected-graph)
+          spec: (foldr append '() (map (cut .ref <> 'spec) sources))
+          admit-current))
+    (scan-module-test-sources selection context selected-owners suite)))
+
+(def (scan-module-test-sources selection context selected-owners suite)
+  ;; Module-owned tests retain the publication's private inputs. Qualification
+  ;; files belong to the init declaration and use only the Loader's owner
+  ;; metadata here. Their build projection admits the selected Graph separately.
+  (unless (eq? suite 'qualification)
+    (for-each (lambda (owner) ((.ref selection 'prepare-publication) owner)) selected-owners))
   (def observations '())
   (def directories '())
   (def parents '())
@@ -76,13 +92,18 @@
       (set! parents (cons (cons directory kind) parents))))
   ;; Qualification belongs to the init owner, never to a module implementation.
   ;; Observe ancestor kinds without enumerating sibling owners or Core suites.
-  (def qualification-root
+  (def (owner-qualification-root metadata)
     (and (eq? suite 'qualification)
          (let (init (and (.slot? context 'init-source) (.ref context 'init-source)))
            (unless (string? init) (error "qualification discovery requires an init source"))
-           (let (root (path-expand "t" (path-directory init)))
-             (observe-parent! root)
-             root))))
+           (def declared (assq 'test-dir metadata))
+           (unless (and declared (string? (cdr declared)))
+             (error "qualification discovery requires an explicit :test-dir" init))
+           (def directory (cdr declared))
+           (let walk ((parent (path-directory init)) (parts (append (string-split directory #\/) '("yanxu"))))
+             (let (child (path-expand (car parts) parent))
+               (observe-parent! child)
+               (if (null? (cdr parts)) child (walk child (cdr parts))))))))
   (def (observe-directory! directory)
     (def kind (module-source-type directory))
     (def names (test-directory-files directory))
@@ -92,6 +113,7 @@
    (lambda (owner)
      (let* ((source ((.ref context 'locate) owner))
             (metadata (yuanxu-module-source-ref-metadata source))
+            (qualification-root (owner-qualification-root metadata))
             (mount (assq 'namespace-mount metadata))
             (declaration (assq 'declaration-id metadata))
             (qualification-name

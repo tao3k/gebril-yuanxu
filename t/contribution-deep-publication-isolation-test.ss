@@ -25,7 +25,7 @@
     (begin (for-each (lambda (name) (remove-tree (path-expand name path))) (directory-files path))
            (delete-directory path)) (delete-file path)))
 (def TypesSource
-  "(import :clan/poo/object (only-in :clan/poo/mop Type.) (only-in :tao3k/yuanxu/object-types/contracts yuanxu-predicate-type YuanxuContract. yuanxu-classification-evidence))
+  "(import :clan/poo/object (only-in :clan/poo/mop Type.) (only-in :tao3k/yuanxu/types/contracts yuanxu-predicate-type YuanxuContract. yuanxu-classification-evidence))
 (def ScopeContract (.cc Type. identity: 'fixture/scope .element?: object?))
 (def ObjectValue (yuanxu-predicate-type 'fixture/object object?))
 (def ApplicationContract
@@ -62,7 +62,7 @@
 (export Scope)")
 (def (interface-source id app? (target-admission 'Scenario))
   (string-append "(.def Fixture identity: '" (symbol->string id)
-   " core: (.o requires: (.o) scope-contract: ScopeContract "
+   " core: (.o scope-contract: ScopeContract "
    (if app? "admissions: (.o Scenario: (.o export-path: '(Scenario) contract-path: '(types Admission))) "
      (string-append "contributions: (.o database-port: (.o target-owner: 'fixture/application target-admission: '"
        (symbol->string target-admission) " export-path: '(exports policy requirements port))) "))
@@ -84,7 +84,7 @@
      '("application" "operations" "security") ports)
     (write-source (path-expand "modules/fixture/unused/interface.ss" root) "(((not readable")
     (write-source (path-expand "init.ss" root)
-      "(yuanxu! mode: explicit :fixture (application) (operations) (security) (unused disable: #t))"))
+      "(yuanxu! :test-dir \"./t\" mode: explicit :fixture (application) (operations) (security) (unused disable: #t))"))
    (lambda () (consume root)) (lambda () (remove-tree root))))
 (def (error-message=? expected)
   (lambda (failure) (and (Error? failure) (equal? (Error-message failure) expected))))
@@ -215,7 +215,7 @@
     (done!))))
   (test-case "empty contributions preserve the published Contract and still fence later routes"
    (with-module-tree (lambda (root)
-    (write-source (path-expand "init.ss" root) "(yuanxu! mode: explicit :fixture (application))")
+    (write-source (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :fixture (application))")
     (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
     (def record (.call selection .selected-record 'fixture/application))
     (def original (.get record scope types Admission))

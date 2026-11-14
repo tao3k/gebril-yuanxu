@@ -23,7 +23,7 @@ registry, skip Profile admission, reuse an acceptance result, or suppress reads.
 
 * One construction lifetime, unchanged semantic payloads
 
-[[file:../../../../../object-family/read-projection.ss][The shared ownership implementation]] moved from CLOS to object-family;
+[[file:../../../../../object/read-projection.ss][The shared ownership implementation]] moved from CLOS to object-family;
 there is no forwarding implementation. CLOS and Core receipt producers use the
 same dynamic region. Only an actual maintained constructor may enroll a fresh
 receiver. A kind symbol, nominal Type or contributor's ancestry is insufficient.

@@ -11,21 +11,24 @@
                  core-library-package-path-prefix module-context-code module-context?
                  current-expander-compile current-expander-eval expander-context-table syntax-e
                  core-read-module/sexp core-resolve-module-path __module-registry)
+        (only-in :clan/poo/mop validate)
+        (only-in :tao3k/yuanxu/module-system/building/program-products DefbuildScriptContract)
         (only-in :clan/poo/read-route require-read-route!)
-        (only-in :clan/poo/object .o .ref .slot?)
+        (only-in :clan/poo/object .o .+ .ref .slot? object?)
         (only-in :tao3k/yuanxu/module-system/source/collection
                  yuanxu-module-source-collection-optional-entrypoint)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-feature-interface?)
         :tao3k/yuanxu/module-system/source/admission
         :tao3k/yuanxu/module-system/source/preparation
-        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-resolver
+        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-resolver current-module-build-phase?
                  current-module-feature-reader)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration
                  current-module-role-resolver module-role-values
                  wrapper-delivery? wrapper-delivery-value)
         :tao3k/yuanxu/module-system/source/objects
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
-        (only-in :tao3k/yuanxu/module-system/building/source-package module-build-source-path))
+        (only-in :tao3k/yuanxu/module-system/building/source-package
+                 module-build-source-path call-with-build-source-fallbacks))
 (import :tao3k/yuanxu/module-system/source/reader-support
         :tao3k/yuanxu/module-system/source/reader-evaluation
         :tao3k/yuanxu/module-system/source/import-provenance
@@ -91,6 +94,8 @@
        (def delivered-interface? #f)
        (def feature-inputs #f)
        (def reading-feature? #f)
+       (def imported-owners (make-hash-table-eq))
+       (def owner-order '())
        ;; Runtime import provenance is separate from compiler-tool authority.
        ;; Only the real admitted import below can enroll a Context; names or
        ;; artifact suffixes supplied by a caller cannot create this evidence.
@@ -137,7 +142,13 @@
                          ;; Gerbil's initializer promise must not retain the delivered value.
                          (list (void)))
                        results))))))
-           runtime-context?))
+           runtime-context?
+           (lambda (context)
+             ;; A delayed role can be initialized while reading a later
+             ;; publication. Its wrapper belongs to the session, even after
+             ;; the earlier publication's temporary directory is removed.
+             (let (input (hash-get (reader-session-kernel-inputs session) context))
+               (and input (.ref input 'path))))))
        (def (write-wrapper path forms runtime-identity)
          (let* ((name (string-append (number->string (hash-length wrappers)) "-" (path-strip-directory path)))
                 (target (path-expand name directory)))
@@ -154,6 +165,13 @@
                (for-each (lambda (form) (write form port) (newline port)) forms)))
            (register-reader-wrapper! artifacts target path)
            (hash-put! wrappers path target) target))
+       (def (record-owner! owner)
+         (when (and owner (not reading-feature?))
+           (let (identity (.ref owner 'identity))
+             (unless (or (eq? identity (.ref prepared 'identity))
+                         (hash-key? imported-owners identity))
+               (hash-put! imported-owners identity #t)
+               (set! owner-order (cons identity owner-order))))))
        (def (record-input! input)
          (let (path (.ref input 'path))
            (when (and feature-inputs (not reading-feature?))
@@ -167,13 +185,15 @@
              (reader-enroll-candidate! session (.ref input 'admit-current) input)
              (set! input-values (cons input input-values)))))
        (def (record-data! file text)
+         (def asset-owner (and source-tree ((.ref source-tree 'locate-owner) file)))
+         (def asset-root (if asset-owner (.ref asset-owner 'root) root))
          (def relative
-           (let (prefix (string-append (path-strip-trailing-directory-separator root) "/"))
+           (let (prefix (string-append (path-strip-trailing-directory-separator asset-root) "/"))
              (unless (string-prefix? prefix file)
                (error "configuration asset leaves its Module" file root))
              (substring file (string-length prefix) (string-length file))))
          ;; No escaping directory symlinks, even when the final file is regular.
-         (let walk ((directory root) (parts (string-split relative #\/)))
+         (let walk ((directory asset-root) (parts (string-split relative #\/)))
            (let (next (path-expand (car parts) directory))
              (unless (eq? (module-source-type next) (if (pair? (cdr parts)) 'directory 'regular))
                (error "configuration asset must be owner-confined and regular" file))
@@ -187,6 +207,7 @@
              (make-source-preparation #f asset-current! #f file asset-current! #f (lambda () #t)))
            (record-input!
              (.o kind: 'data path: file relative-path: relative
+                 owner: (if asset-owner (.ref asset-owner 'identity) (.ref prepared 'identity))
                  source-inputs: observations admit-current: asset-current!))))
        (def (within? directory path)
          (string-prefix? (string-append (path-strip-trailing-directory-separator directory) "/") path))
@@ -198,7 +219,7 @@
               (not (member path (.ref prepared 'role-sources)))
               (not (equal? path (.ref prepared 'build-source)))
               (begin
-                (when source-tree ((.ref source-tree 'locate-owner) path))
+                (when source-tree (record-owner! ((.ref source-tree 'locate-owner) path)))
                 (let-values (((_prelude identity _namespace _body) (core-read-module/sexp path)))
                   (let (context (hash-get (reader-session-tool-contexts session) identity))
                     (and context
@@ -206,6 +227,9 @@
                          (equal? path (module-build-source-path context kernel-root))
                          context))))))
        (def (tool-context context reload?)
+         (module-source-measure-operation 'reader-tool-context
+           (lambda () (admit-tool-context context reload?))))
+       (def (admit-tool-context context reload?)
          (when reload? (error "compiler tool reload requires a fresh publication reader"))
          (let (expected (hash-get (reader-session-tool-contexts session) (expander-context-id context)))
            (unless (captured-import-context? (reader-session-compiler-contexts session) context)
@@ -386,7 +410,7 @@
                        ;; input's byte check cannot detect disabled or
                        ;; unselected owners in that tree.
                        (when (and retained source-tree)
-                         ((.ref source-tree 'locate-owner) (.ref input 'path)))
+                         (record-owner! ((.ref source-tree 'locate-owner) (.ref input 'path))))
                        (record-input! input)
                        ;; A retained context is usable only after its
                        ;; ACTUAL transitive input support passes afresh.
@@ -407,12 +431,15 @@
              ;; owner inside this directory. Never bypass that boundary by
              ;; treating every descendant as this Module's private library.
              (let (owner (and source-tree ((.ref source-tree 'locate-owner) path)))
+               (record-owner! owner)
                (if (and owner (not (equal? (path-strip-trailing-directory-separator root)
                                           (path-strip-trailing-directory-separator (.ref owner 'root)))))
                  (shared-context original-path (.ref owner 'root) reload?)
                  (shared-context original-path root reload? #f))))
             ((and source-tree ((.ref source-tree 'locate-owner) path))
-             => (lambda (owner) (shared-context original-path (.ref owner 'root) reload?)))
+             => (lambda (owner)
+                 (record-owner! owner)
+                 (shared-context original-path (.ref owner 'root) reload?)))
             ;; The directory source-tree above has already refused actual
             ;; unselected/disabled Interface owners. An ownerless library
             ;; may therefore use the SAME package-kernel route across window
@@ -425,9 +452,10 @@
                   (when (and source-tree
                              (or (not (equal? kernel kernel-root))
                                  ((.ref source-tree 'within-window?) path)))
-                    (unless (reader-prepare-public-dependency session path)
-                      (public-dependency-input path #f #t)
-                      (error "public source identity changed" path)))
+                    (let (owned-root (and (equal? kernel kernel-root) kernel))
+                      (unless (reader-prepare-public-dependency session path owned-root)
+                        (public-dependency-input path #f #t owned-root: owned-root)
+                        (error "public source identity changed" path))))
                   (shared-context original-path kernel reload?)))
             (else
              ;; Public dependencies may expand a relative source import
@@ -471,14 +499,20 @@
                        (reader-open-boundary! session (list 'public-source path id known-path)))
                      (parameterize ((current-expander-module-import gerbil-import))
                        (gerbil-import original-path #f))))))))))
-       (def (resolve-build!)
+       (def role-kind (.ref prepared 'build-role-kind))
+       (def (reject-package-script!)
+         (error "Module build.ss requires .def Build with defbuild-script:; defbuild-script belongs to the package entry" interface-path))
+       (def (resolve-build/in-context!)
+         (when (eq? role-kind 'package-script) (reject-package-script!))
          (parameterize ((current-module-source-phase 'build-role-before)) (reader-current! session))
          (let* ((path (.ref prepared 'build-source))
                 (input (yuanxu-prepare-module-build-source path void))
                 (related (map (lambda (file)
                                 (yuanxu-prepare-module-build-source file void))
                               (.ref prepared 'role-sources))))
+           (def init-source (assq 'init-source (yuanxu-module-source-ref-metadata source-value)))
            (let (value (module-prepared-source-binding input 'Build related role-imports?: #t
+             init-source: (and init-source (path-normalize (cdr init-source)))
              import-provenance: (list (reader-session-tool-contexts session) (reader-session-tool-paths session) (reader-session-tool-dependencies session)
                                    (reader-session-tool-observations session) (reader-session-compiler-contexts session))
              shared-contexts: (reader-session-kernel-contexts session) shared-inputs: (reader-session-kernel-inputs session)
@@ -494,6 +528,22 @@
                                  (map path-normalize (.ref prepared 'role-sources))))))
                input-values)))
              (parameterize ((current-module-source-phase 'build-role-after)) (reader-current! session)) value)))
+       (def (resolve-build!)
+         (with-module-sources resolve-build/in-context!))
+       (def build-role (and (eq? role-kind 'make-parameters) (.o value: (resolve-build!))))
+       (def (native-spec)
+         (case role-kind
+           ((package-script) (reject-package-script!))
+           ((make-parameters)
+            (let (build (module-build-role-spec build-role))
+              (unless (and (object? build) (.slot? build 'defbuild-script))
+                (error "Module Build requires a defbuild-script slot" interface-path))
+              (.ref (validate DefbuildScriptContract (.ref build 'defbuild-script)) 'spec)))
+           (else (error "Module has no Make contribution" interface-path))))
+       (def (module-build-role-spec role)
+         (unless (current-module-build-phase?)
+           (error "Build is available only in the Module build-publication phase"))
+         (.ref role 'value))
        (def deferred-roles (.ref prepared 'deferred-roles))
        (def (publication-import path (reload? #f))
          (let* ((context (import-request path reload?))
@@ -512,7 +562,9 @@
          ;; file requests before importing: expansion can execute initializers.
          (def requested (syntax-e path))
          (def resolved
-           (and (string? requested) (path-normalize (core-resolve-module-path path))))
+           (and (string? requested)
+                (module-source-measure-operation 'reader-source-resolution
+                  (lambda () (path-normalize (core-resolve-module-path path))))))
          (cond
           ((and resolved (hash-key? artifacts resolved))
            (module-source-measure-operation 'reader-wrapper-expansion
@@ -521,7 +573,8 @@
                (when (equal? resolved interface-wrapper) (set! interface-context context))
                context)))
           ((and resolved (string=? (path-extension resolved) ".ss"))
-           (source-context resolved reload?))
+           (module-source-measure-operation 'reader-source-import
+             (lambda () (source-context resolved reload?))))
           (else
            ;; Compiled libraries must retain their canonical Gerbil
            ;; import closure. Redirect only the caller's source
@@ -551,13 +604,27 @@
                          (and (string? artifact-path)
                               (string=? (path-extension artifact-path) ".ss")
                               artifact-path)))
-                  (owner (and source-tree owned-path
-                              ((.ref source-tree 'locate-owner) owned-path))))
+                  (selected-path
+                    (and source-tree
+                         (or owned-path
+                             (and (not (hash-key? (reader-session-tool-contexts session) identity))
+                                  (let loop ((roots (.ref source-tree 'package-roots)))
+                                    (and (pair? roots)
+                                         (or (module-build-source-path context (car roots))
+                                             (loop (cdr roots)))))))))
+                  (owner (and selected-path ((.ref source-tree 'locate-owner) selected-path))))
+
              ;; Symbol and exact source-path imports share the same
              ;; observed compiler-context and currentness boundary.
              (cond
               ((hash-key? (reader-session-tool-contexts session) identity) (tool-context context reload?))
-              (owner (source-context owned-path reload?))
+              (owner
+               (record-owner! owner)
+               (if (or owned-path
+                       (member selected-path
+                         (map (lambda (name) (path-expand name (.ref owner 'root)))
+                              '("config.ss" "objects.ss" "func.ss" "types.ss"))))
+                 (source-context selected-path reload?) context))
               (else
                (let (source
                      (and owned-path
@@ -574,7 +641,7 @@
                                 (not (equal? kernel kernel-root))
                                 (module-build-source-path context kernel))))))
                  (if source (source-context source reload?) context))))))))
-       (def (resolve-values path names (role? #t))
+       (def (resolve-values/in-context path names role?)
          (reader-current! session 'role-entry)
          (def created? (not (file-exists? directory)))
          (dynamic-wind
@@ -604,6 +671,15 @@
                (release-reader-expansions! completed)
                value))
            (lambda () (when created? (remove-reader-tree directory)))))
+       (def (with-module-sources action)
+         ;; Gerbil resolves symbolic imports before the reader's import hook.
+         ;; Declared windows supply missing source for both publication and
+         ;; deferred role reads while preserving the prerequisite order.
+         (if source-tree
+           (call-with-build-source-fallbacks (.ref source-tree 'package-roots) action)
+           (action)))
+       (def (resolve-values path names (role? #t))
+         (with-module-sources (lambda () (resolve-values/in-context path names role?))))
        (def (resolve-role role names)
          (resolve-values (path-expand (string-append (symbol->string role) ".ss") root) names))
        (def (resolve-feature name)
@@ -619,7 +695,8 @@
            (lambda () (set! reading-feature? #t))
            (lambda () (.ref (resolve-values path '(Feature) #f) 'Feature))
            (lambda () (set! reading-feature? #f))))
-       (dynamic-wind
+       (def (read-interface)
+        (dynamic-wind
         (lambda () (create-directory directory))
         (lambda ()
           (for-each
@@ -642,7 +719,8 @@
                  (current-expander-compile compile)
                  (current-expander-eval evaluate)
                  (current-expander-context (make-top-context))
-                 (current-module-build-resolver resolve-build!)
+                 (current-module-build-resolver
+                   (if build-role (lambda () (module-build-role-spec build-role)) resolve-build!))
                  (current-module-feature-reader resolve-feature)
                  (current-module-role-resolver resolve-role)
                  (current-expander-module-import
@@ -659,7 +737,17 @@
                               (eval-syntax (.ref prepared 'binding))))
                 (set! delivered #f)
                 (parameterize ((current-module-source-phase 'declaration-after)) (reader-current! session))
-                (def result (if consume (consume source-value value) value))
+                (def publication
+                  (if role-kind
+                    (.+ value (.o __std-make-spec:
+                                 (begin
+                                   (unless (current-module-build-phase?)
+                                     (error "Module Make spec is available only in the build phase"))
+                                   (native-spec))))
+                    value))
+                (def owners (reverse owner-order))
+                (hash-put! (reader-session-dependencies session) (cons 'import-owners interface-path) owners)
+                (def result (if consume (consume source-value publication owners) publication))
                 ;; A deferred Build resolver shares this outer interpreter
                 ;; frame. Do not retain the completed candidate's support
                 ;; tables and producer continuation through that resolver.
@@ -718,4 +806,5 @@
           (set! delivered #f)
           (set! interface-context #f)
           (set! interface-wrapper #f)
-          (remove-reader-tree directory)))))))
+          (remove-reader-tree directory))))
+       (with-module-sources read-interface)))))

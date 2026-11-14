@@ -25,7 +25,11 @@ package YuanxuSelectedPackageBuilds {
                Module and Prototype realization are separate operations.
                Gerbil owns package installation and imports. Incremental
                publication compares expected release identities and returns a
-               complete successor only after all point edits pass. */
+               complete successor only after all point edits pass.
+               If a name stores one release directly, promotion to an ordered
+               version index preserves that release identity and adds the
+               new distinct version. The old snapshot retains its original
+               representation and contents. */
     }
 
     requirement def RootQualifiedOwnerIdentity {
@@ -290,7 +294,10 @@ package YuanxuSelectedPackageBuilds {
                exception after changed-input invalidation cannot recreate a
                completion marker. Equal-mtime byte changes must rebuild through
                native Make in a fresh process. Selection changes prune old
-               generated source frames, never adopt unknown files. This is not
+               generated source frames, never adopt unknown files. The walk
+               checks ownership before consulting its extent-local path index.
+               The index preserves membership and traversal order, as specified
+               by SourceView indexed_prune_matches_linear. This is not
                runtime unloading or compiler/power-loss atomicity. Native
                tests retain another environment's products and input identity. */
     }
@@ -356,15 +363,15 @@ package YuanxuSelectedPackageBuilds {
     requirement def ClosedPublicationReadUnion {
         doc /* 13.35 attribution separates complete declaration admission,
                independent currentness and post-admission scope demand in the
-               same 180-second Case. Reuse SourceClosureWork frame accounting
-               and Quint pure-epoch/effect boundaries. Research only: a fixed reader may join
-               its preparation/admission original read roots for ONE native POO
-               replay, preserving ordered root membership and complete support.
+               same 180-second performance target. Reuse SourceClosureWork frame
+               accounting and Quint pure-epoch/effect boundaries. A fixed reader
+               joins its preparation and admission read roots for one native POO
+               replay at the closed return, preserving ordered root membership
+               and complete support. Refusal replays the original checks in
+               order so the first failure remains visible.
                Keep location/policy checks and fresh pre/post-effect guards;
                source observers retain original delivery/order. A topology hit
-               is never a currentness verdict or cross-boundary approval.
-               The per-publication fusion experiment was removed from Scheme;
-               these laws do not establish an installed optimization. */
+               is never a currentness verdict or cross-boundary approval. */
     }
     requirement def NativeSessionMetadataTopology {
         doc /* Main metric: one cold business .get in a thousand-name namespace,
@@ -400,12 +407,48 @@ package YuanxuSelectedPackageBuilds {
                those private premises. Every cache miss still checks all original
                guards in order. Independent calls and effects end the observation
                window; no accepted verdict survives it. Open observers retain
-               the original query and callback order. Lean SourceClosureWork
+               the original query and callback order. In a closed window, an
+               exact byte match may return the text guard's own immutable
+               capture by identity. Distinct captures and mutable reader views
+               require value comparison. Without authenticated revisions, an
+               exact probe covers each byte position at each independent
+               checkpoint, as proved by PublicationReads
+               exact_effect_separated_probe_iff_complete. Lean SourceClosureWork
                prepend_only_same_size_same_rows and existing Quint index replace,
                dropped-support and stale-approval controls bound this refinement.
                A compiler inventory traversal uses the origin supplied by its
                native table row and still reads the Context identity and path
                live. Independent point queries authenticate table membership. */
+    }
+    requirement def TerminalDirectoryObservation {
+        doc /* The closed directory walk enrolls its terminal path-kind check
+               before handing the leaf to publication. The handoff shares the
+               just-observed kind. Open observers and explicit source bindings
+               retain the original check, and independent currentness rechecks
+               the enrolled path. Lean ImportCorrespondence
+               closed_terminal_kind_handoff specifies the closed cut. */
+    }
+    requirement def PublicationPolicyCapture {
+        doc /* The closed stock publication policy shares its captured
+               revision footprint only after the current getters supply the
+               same ordered receivers and live revision validation succeeds.
+               Each checkpoint still performs live revision validation.
+               Changed footprints and open observers use a fresh capture.
+               Lean PublicationReads stock_policy_guard_preserves_ordered_revision_checks
+               relates the root and revision guard to the ordered fresh capture.
+               shared_policy_capture_preserves_checkpoints covers later checks. */
+    }
+    requirement def StockAuthoringRoleAuthentication {
+        doc /* A closed, nonempty role run may share authentication of the
+               unchanged stock method support. It retains the result and
+               ordered read delivery of each datum and the protected return
+               check. An author effect divides the run into independent
+               checks. An empty role needs no method authentication.
+               Lean PublicationReads closed_role_preserves_ordered_delivery
+               and stale_role_support_at_return_refuses specify this cut.
+               Scheme uses native re-observation with a nested recording frame.
+               Open observers and changed role policies retain individual
+               dispatch. */
     }
     requirement def CandidateReplaySites {
         doc /* Attribute declaration-before, declaration-inputs, role-entry,
@@ -429,6 +472,28 @@ package YuanxuSelectedPackageBuilds {
                Gerbil expansion, role execution or author Contract cannot
                inherit a successful verdict from a prior checkpoint. */
     }
+    requirement def ProfileTagCurrentness {
+        doc /* Profile currentness compares the classification from the
+               current Interface with the original classification.
+               Equal tags after a comment edit keep the selection current.
+               A changed tag requires a new selection. */
+    }
+    requirement def ProfileCertificateCoverage {
+        doc /* A complete Profile certificate covers every eligible
+               Interface whose tag can alter the selected roots. An
+               owner-local check covers only the operation's source support.
+               Global certification after an edit requires a complete
+               authenticated description of changed candidates or a fresh
+               scan of their tags. */
+    }
+    requirement def AdmittedOwnerEdgeHandoff {
+        doc /* A closed private candidate supplies its publication and import
+               edges from the same admitted record to the owner closure.
+               The projection invokes no callback between those field reads.
+               Earlier admissions and open candidates keep their independent
+               checks. Closure completion and Graph publication still check
+               the complete observed epoch. */
+    }
     requirement def ProtectedMetadataCheckpoint {
         doc /* Source/policy checkpoints from the paired native producer are
                validation work, not user initialization. One native protected
@@ -444,6 +509,13 @@ package YuanxuSelectedPackageBuilds {
                Contexts and effects retain the independent path. Per-candidate
                preparation/admission support is joined only inside one boundary,
                never across two initializers or Contract callbacks. */
+    }
+    requirement def SourceRoleValidatorEffectBoundary {
+        doc /* POO examines the selected diagnostics validator read. The
+               maintained method keeps the native call. A replacement must
+               pass the effect guard before each invocation. Guard refusal
+               prevents the replacement from running. A later datum resolves
+               its SourceRole again after an earlier callback returns. */
     }
     requirement def ValidationOnlyNativeReplay {
         doc /* The POO fixed-result replay retains the native topology
@@ -474,6 +546,15 @@ package YuanxuSelectedPackageBuilds {
                scoped compiler-input association bridges temporary load-path
                removal; ending that consumer ends the bridge. An SSI spelling
                alone grants no source or execution authority. */
+    }
+    requirement def ObservedPublicationReplay {
+        doc /* Each publication observer can change the live state before
+               validation of the next publication. Authenticate the next
+               lane against that state, even for a repeated read identity.
+               PublicationReads.inert_observers_preserve_lane_order and
+               second_observer_can_invalidate_same_read distinguish an
+               inert trace from an open observer. The latter keeps ordered
+               per-publication validation and the original refusal. */
     }
     requirement def ToolExecutionAndBuildOwnership {
         doc /* Gerbil's actual context origin defines execution provenance.
@@ -611,6 +692,14 @@ package YuanxuSelectedPackageBuilds {
                slot index; the permit hash is discarded. */
     }
 
+    requirement def InterfaceImportBinding {
+        doc /* Native Gerbil establishes authored imports before the
+               declaration continuation. Resolve binding identity on the
+               continuation's rewrapped syntax. Rewrap original syntax once
+               on direct include. Only the verified stock shape in a private
+               interpreter wrapper can deliver the POO value directly. */
+    }
+
     requirement def ProfileTagSelection {
         doc /* A profiled Interface declares a nonempty literal set of distinct
                capability categories. Categories group owners independently of
@@ -619,6 +708,12 @@ package YuanxuSelectedPackageBuilds {
                test discovery share the selected Graph and declared dependencies.
                Testing consumes the selected file list against downstream products.
                Tag metadata cannot evaluate business scopes or widen source authority.
+               Each currentness window observes fresh Interface bytes. With the
+               standard Gerbil readtable and no source observer, exact equality
+               with the admitted text discharges the literal tag check. Changed
+               text is decoded again. An alternate readtable or observer keeps
+               the original decoding path. Profile support includes candidates
+               outside the selected closure.
                Same-category roots are combined across declared windows; an
                auxiliary window without matches remains dependency-eligible.
                Empty tags and categories with no matches across their windows

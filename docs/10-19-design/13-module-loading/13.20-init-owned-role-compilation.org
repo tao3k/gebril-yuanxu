@@ -335,7 +335,7 @@ remain at their original boundaries.
 With =GERBIL_BUILD_VERBOSE=2=, =BUILD-BOOTSTRAP-ROOT= reports each
 explicit root's import time, identity and native path. =BUILD-BOOTSTRAP-COVERAGE=
 reports whether the exact Context had already been reached from an earlier
-root. Flow supplies =object-family/role-syntax=, and the publication reader
+root. Flow supplies =object/role-syntax=, and the publication reader
 and configuration diagnostics supply =configuration/json=. These native import
 edges are present in source and compiled interfaces. Both Contexts enter the
 same catalog and source checks through those edges.
@@ -545,8 +545,8 @@ selection. The old Funflow Profile controls use direct relative source imports,
 not an installed Scenario library target.
 
 The evidence-bearing Yuanxu Type/Contract implementation now lives at
-=object-types/contracts.ss=, published as =:yuanxu/object-types/contracts=.
-There is no compatibility =:yuanxu/types= entry. =object-types/ports.ss= owns
+=types/contracts.ss=, published as =:yuanxu/types/contracts=.
+There is no compatibility =:yuanxu/types= entry. =types/ports.ss= owns
 the shared =Port= descriptor (exact integer 1..65535) and =valid-port?=.
 PostgreSQL and Gitea reference that same descriptor. Protocol connection
 requirements, joint allowed-port obligations, source association, and plan
@@ -570,7 +570,7 @@ Historical frozen experiments retain their own source snapshots and receipts.
 
 The exact-head CI exposed a missing bootstrap-library association after the Port
 move. The temporary source gateway correctly refused a maintained Scenario's
-import of =object-types/ports.ss=: the file was outside the Scenario package and
+import of =types/ports.ss=: the file was outside the Scenario package and
 absent from the Reader's Gerbil-observed Core context catalog. Shared scalar Types
 now join the existing =bootstrap-roots= catalog, so their exact runtime context,
 source identity and transitive observations use the same admission path as Core

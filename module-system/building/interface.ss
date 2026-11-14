@@ -21,8 +21,6 @@
   (module-binding-action "tao3k/yuanxu/module-system/interface" 'yuanxu-load-modules))
 (def build-projector
   (module-binding-action "tao3k/yuanxu/module-system/building/build-projection" 'yuanxu-project-source-spec))
-(def init-compiler-roots
-  (module-binding-action "tao3k/yuanxu/module-system/source/init" 'module-init-compiler-source-roots))
 ;; Source discovery is demanded separately from compilation/signing.
 (def test-source-projector
   (module-binding-action "tao3k/yuanxu/module-system/source/build" 'module-test-source-spec))
@@ -33,18 +31,27 @@
 
 ;; Init exports inert values. Source preparation begins only on demand.
 ;; One init module owns one source epoch; changed input requires a fresh session.
-(def (yuanxu-init-build source declaration (program #f) (unit #f))
+(def (yuanxu-init-build source declaration (program #f) (unit #f) (compiled-selection? #f))
   ;; Owned by this init projection, not a global root of the last source Graph.
   ;; Cache offsets/receiver layouts, never successful checks or unrelated cells.
   (def source-current-site (make-slot-cache 'admit-current))
   (def source-spec-site (make-slot-cache 'spec))
   (def init-file (path-expand source))
-  ;; The parser permits package: only in the declaration's top-level window
-  ;; options. Local windows need no package resolver or second path extent.
-  (def package-windows? (memq 'package: declaration))
   (def input-context-refused? #f)
   (def selection #f)
-  (def compiled (and program (.o modules: (program))))
+  (def compiled (and program (.o value: (program))))
+  (def (test-selected-graph)
+    (if compiled-selection?
+      (begin
+        (admit-init-declaration! (module-source-read init-file))
+        (let (native (.get compiled value selected-graph))
+          (.cc native admit-current:
+            (lambda ()
+              ;; Explicit currentness still authenticates the live source.
+              (def source-graph (.get (selected!) selected-graph))
+              ((.get source-graph admit-current))
+              ((.get native admit-current))))))
+      (.get (selected!) selected-graph)))
   (def tests (make-hash-table))
   ;; Publish guarded test inputs and native Make specifications. No
   ;; Graph acquisition, test discovery or process creation occurs here.
@@ -69,7 +76,7 @@
           ;; .select must not first discover every eligible owner's sources.
           (executable-tests
             (.o source-root: (path-directory (path-expand source))
-                selected-graph: (.get (selected!) selected-graph)
+                selected-graph: (test-selected-graph)
                 spec: (.get (test-source #f 'qualification) spec)
                 admit-current: (lambda () (test-source #f 'qualification)))
             #f 'qualification)))))
@@ -151,27 +158,23 @@
   (def test-source-value
     (executable-tests
       (.o source-root: (path-directory (path-expand source))
-        selected-graph: (.get (selected!) selected-graph)
-        spec: (test-spec)
+        selected-graph: (test-selected-graph)
+        spec:
+        (append (test-spec)
+                (.get (test-source #f 'integration) spec)
+                (.get (test-source #f 'qualification) spec))
         admit-current: test-current!
         .select: test-source)))
-  (def (compiler-source-roots)
-    ;; Only the bound init declaration can name native checkout inputs.
-    (init-compiler-roots (list declaration init-file)))
   (def (refuse-input-context!)
     (set! input-context-refused? #t)
     (error "source projection changed its compiler input context; use a fresh init context"))
   (def (with-input-context output action)
     (when input-context-refused?
       (error "build input context was refused; use a fresh init context"))
-    (call-with-build-input-path output
-      (if package-windows?
-        (lambda ()
-          (call-with-build-input-path output action refuse-input-context!
-            source-roots: (compiler-source-roots)))
-        action)
-      refuse-input-context!))
-  (def (prepare-build)
+    (call-with-build-input-path output action refuse-input-context!))
+  ;; A consumer may add its native entry targets to the same source epoch
+  ;; used by the namespace and test projections.
+  (def (prepare-build (retained '()))
     (with-input-context #f
       (lambda ()
         (module-source-measure-operation 'build-projection
@@ -184,7 +187,7 @@
                   (when (and kind (not (eq? kind 'regular)))
                     (error "package build script must be a regular source" script))
                   (build-projector
-                    (list (selected!) '() root (if kind script init-file)))))))))))
+                    (list (selected!) retained root (if kind script init-file)))))))))))
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
   (def (module-namespace)
@@ -192,12 +195,13 @@
       ;; Dynamic Gerbil objects use generation-local Gambit units. The compiled
       ;; program value already identifies native lowering; a static unit-name
       ;; probe must not send a dynamic namespace back to the source reader.
-      (compiled (.get compiled modules))
+      (compiled (if compiled-selection? (.get compiled value modules) (.get compiled value)))
       ((and unit (##lookup-registered-module unit))
        (error "init has no compiled Module publication" unit))
       (else (.get (selected!) modules))))
   (values
     (.o build: (prepare-build)
+        .project-build: prepare-build
         std-make-spec:
         (with-input-context #f
           (lambda ()

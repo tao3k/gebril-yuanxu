@@ -8,7 +8,7 @@
         (only-in :clan/poo/object .ref)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/slot-observation without-observation)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         :tao3k/yuanxu/module-system/source/reader-support
         :tao3k/yuanxu/module-system/source/preparation
         :tao3k/yuanxu/module-system/source/admission
@@ -22,7 +22,8 @@
 ;; One canonical-library check for publication and configuration readers. This
 ;; prepares observations, never imports, expands or initializes the dependency.
 (def (public-dependency-input path (prepared #f) (report-refusal? #f)
-                              capture: (capture #f) binding: (binding #f) bind: (bind void))
+                              capture: (capture #f) binding: (binding #f) bind: (bind void)
+                              owned-root: (owned-root #f))
   ;; Eligibility probes may return #f. A previously enrolled dependency must
   ;; retain its actual refusal cause; do not replace a stale-source error with
   ;; an ambiguous runtime-identity message. No check is repeated for reporting.
@@ -48,21 +49,23 @@
                 (lambda ()
                   (core-resolve-library-module-path
                     (string->symbol (string-append ":" (symbol->string identity))))))))))
-    ;; A native SSI may legitimately coexist with its owned source. Bind only
-    ;; an ALREADY imported actual context, never permission inferred from an
-    ;; artifact suffix or a matching filename. Keep that instance/name/path for
-    ;; later checks; changing load-path cannot retarget this observation.
+    ;; Bind the context Gerbil actually imported. A path that resolves to the
+    ;; authored source already has a source observation and needs no binding.
+    (def imported
+      (and (string? resolved) (not (equal? (path-normalize resolved) (path-normalize path)))
+        (let (context (or (hash-get __module-registry resolved)
+                         (hash-get __module-registry (path-normalize resolved))))
+          (and (module-context? context) (eq? identity (expander-context-id context))
+               (string? (module-context-path context))
+               (equal? (path-normalize resolved) (path-normalize (module-context-path context)))
+               (vector context identity (string-copy (module-context-path context)))))))
     (def observed
-      (or binding
+      (or (and binding (vector-ref binding 0) binding)
+          (and owned-root imported)
+          binding
           (and (string? resolved) (equal? (path-normalize resolved) (path-normalize path))
                (vector #f identity (string-copy path)))
-          (and (string? resolved) (string=? (path-extension resolved) ".ssi")
-               (let (context (or (hash-get __module-registry resolved)
-                                (hash-get __module-registry (path-normalize resolved))))
-                 (and (module-context? context) (eq? identity (expander-context-id context))
-                      (string? (module-context-path context))
-                      (equal? (path-normalize resolved) (path-normalize (module-context-path context)))
-                      (vector context identity (string-copy (module-context-path context))))))))
+          imported))
     (def binding-current?
       (or (not observed)
           (and (eq? identity (vector-ref observed 1))
@@ -76,10 +79,17 @@
                                    (hash-get __module-registry (path-normalize (vector-ref observed 2)))))))))))
     (if (and binding-current? (string? resolved)
              (or selected?
-                 (and (equal? (path-normalize path)
-                              (path-normalize (if observed (vector-ref observed 2) path)))
+                 (and (equal? (path-normalize resolved) (path-normalize path))
+                      (or owned-root
+                          (equal? (path-normalize path)
+                                  (path-normalize (if observed (vector-ref observed 2) path)))))
+                 ;; Same-package source may already have a compiled Gerbil context.
+                 ;; Retain that exact binding and validate the declared source owner.
+                 (and owned-root observed (vector-ref observed 0)
                       (equal? (path-normalize resolved)
-                              (path-normalize path)))))
+                              (path-normalize (vector-ref observed 2)))
+                      (let (source (module-build-source-path (vector-ref observed 0) owned-root))
+                        (and source (equal? (path-normalize source) (path-normalize path)))))))
       (begin (bind observed) input)
       (refuse 'expected-identity identity 'resolved-path resolved))))
 ;; Check the demanded Gerbil dependency subgraph, not every selected role on each

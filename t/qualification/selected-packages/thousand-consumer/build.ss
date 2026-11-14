@@ -5,7 +5,8 @@
         (only-in :std/make make make-clean)
         (only-in :clan/poo/object .get .call)
         (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
-        (only-in :tao3k/yuanxu/module-system/building/products current-build-source-directory))
+        (only-in :tao3k/yuanxu/module-system/building/products current-build-source-directory build-output-directory)
+        (only-in "./clean-outputs.ss" clean-selected-outputs!))
 
 (def (main (operation "compile"))
   (def script (this-source-file))
@@ -20,5 +21,7 @@
        (lambda () (make spec srcdir: (current-build-source-directory)))))
     ((equal? operation "clean")
      (.call projection .with-clean-outputs
-       (lambda () (make-clean spec srcdir: (current-build-source-directory)))))
+       (lambda ()
+         (clean-selected-outputs! (.get projection compiler-identities) (build-output-directory)
+           (lambda () (make-clean spec srcdir: (current-build-source-directory)))))))
     (else (error "unknown fixture build operation" operation))))

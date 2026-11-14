@@ -42,6 +42,36 @@ flag and the containing epoch guard. It is released after the operation. The
 interpreter clears its completed admission continuation so retained build
 resolvers do not retain the candidate's temporary membership table.
 
+* Owner closure handoff
+
+The Linker hands the owner closure the publication and import edges from the
+same newly admitted closed candidate. Both fields come from the private
+record, with no author or expander callback between the projections. This
+avoids looking up the record a second time through the public validation
+path. Previously admitted records and open candidates retain their
+independent checks. Closure completion and Graph publication independently
+validate the complete observed epoch. Lean's
+=admitted_owner_edges_handoff= checks that projecting the same record
+preserves the admission and commit result.
+
+The matched 64-owner diagnostic reduced complete Link checks from 70 to 8
+and metadata root merges from 62 to 1. Both runs admitted 62 new owners and
+performed 62 protected return checks. The 1,000-owner handoff candidate
+completed in 155.4 seconds at 1.24 GiB peak process-tree footprint with
+stage accounting. Its full-Graph phase took 136.5 seconds wall and 59.2
+seconds CPU, including GC. Wrapper expansion accounted for 87.5 seconds
+wall and 33.4 seconds CPU within that phase. These are nested measurements.
+A run including the retained-role origin change reached the 180-second
+guard during first Graph demand at 10,000 owners, with a 3.32 GiB peak.
+This leaves full-scale qualification open.
+
+In a subsequent 64-owner run, wrapper expansion consumed 1.98 seconds
+of CPU. Its relative-source resolution, source-import handling and captured
+tool Context handling consumed 0.12 seconds CPU combined. Interface reading
+and rewriting consumed another 0.007 seconds CPU. These diagnostic stages
+leave native expansion as the next attribution boundary. They do not support
+changing source authentication or sharing author expansion results.
+
 * SDK support is an identity relationship
 
 Compiler discovery already captures SDK module contexts. The reader now puts

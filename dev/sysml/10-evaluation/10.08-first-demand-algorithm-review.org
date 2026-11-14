@@ -31,6 +31,142 @@ Slot read observation is not a second business evaluator.
 
 * What the evidence establishes
 
+** Profile selection and dense admission on PR 22
+
+Core =0710922= pins Gerbil-POO =f768e69=. In the local native runs,
+the dense 10,000-owner test stopped in first selected-Graph preparation
+at the outer 180-second deadline, with 0.96 GiB peak process footprint.
+Fixture creation took 34.56 s, init import 4.18 s and namespace construction
+26.45 s wall (2.42 s CPU). A sample during first Graph preparation included
+Gerbil expansion, filesystem reads, POO read routes and GC. The independent
+currentness phase had yet to begin.
+
+The separate sparse Profile workload returned the first business value in
+96.29 s wall and 30.78 s CPU. The assertions verified two admissions and two
+owner-qualified scopes in a catalog of 10,000 real Interfaces. Its second
+diagnostic Case stopped in fixture creation at the same outer deadline.
+Whole-suite peak process footprint was 0.70 GiB. These wall measurements
+include host scheduling contention.
+
+The callback-free attribution probe used 1,000 rows of the same fixture.
+Profile discovery scanned once in 0.235 s CPU, with zero admissions and zero
+scope factories. The selected-Graph demand ran six directory currentness
+sweeps costing 0.672 s CPU in total. The subsequent scope demand ran thirteen
+sweeps costing 1.613 s CPU, while its two scope factories used 0.049 s CPU.
+The spans are inclusive. The hot read performed zero directory sweeps.
+
+The Profile scan establishes the selection predicate for the generation.
+An Interface outside the selected closure can change that predicate by
+acquiring the Profile tag. Full Profile certification therefore requires
+coverage of all candidate tag declarations. An exact edit supplied by an
+authenticated producer can narrow a later check to changed declarations.
+The current filesystem path supplies no such edit evidence. Any reuse
+within a synchronous read window must preserve the original checks at each
+Gerbil expansion and author callback.
+
+Ubuntu's dense-selection job at =0710922= reached its existing 650-second
+capacity deadline in first-Graph preparation. The incomplete interval used
+645.46 s CPU, including 104.07 s GC CPU. The interruption backtrace was in
+Gerbil identifier resolution during expansion. The adjacent dense-declaration
+and sparse-business jobs passed their CI gates. This leaves native Interface
+expansion as a separate optimization from Profile directory currentness.
+
+The retained Ubuntu reports show 371.64 s wall and 371.04 s CPU for
+the dense-declaration graph. It expanded 10,000 wrappers, initialized
+20,000 bodies and replayed 58,682,024 metadata records. The sparse
+business request on the same revision used 9.55 s wall and 9.16 s CPU
+for two admissions. The dense fixtures differ in their lazy exports
+expressions. Dense declarations use a fixed failing sentinel. Dense
+selection uses an inherited scope with a Config alias. Both must leave
+business scopes cold while constructing the graph. Compare the declaration
+rewrite routes before attributing the difference to topological work.
+
+The local 128-owner diagnostics counted one direct frame and 127 lexical
+fallbacks in each fixture. Dense selection entered phase compilation 4,064
+times and dense declarations 3,556 times, exactly four extra entries for
+each owner with the authored import. At 1,000 owners the selected-owner
+closure used 41.06 s CPU, wrapper expansion accounted for 23.81 s inclusive,
+and topological resolution used 0.176 s. Wrapper body rewriting itself used
+0.054 s. This puts the next optimization at native binding and lexical
+expansion after the authored import, with the current binding-equivalence
+checks as the gate for any stock frame.
+
+The authored import continuation already receives rewrapped declaration
+syntax. Rewrapping its heads again changed the binding probe and forced
+lexical fallback. The probe now uses the continuation syntax directly,
+while the raw include path still rewraps once. Both compare actual
+Gerbil binding identities. The private stock delivery still follows
+native imports and the existing before/after guards. The Lean theorem
+=PublicationReads.declaration_binding_input_agrees= states the syntax
+handoff equivalence. A publication regression requires a direct frame
+after an authored import and checks the delivered value.
+
+In the 128-owner local comparison, the selected graph took the direct
+route for all 128 owners, up from one. First-graph CPU changed from
+5.49 s to 3.92 s, with GC CPU changing from 0.63 s to 0.21 s.
+Wrapper expansion CPU went from 3.06 s to 0.35 s, and phase
+compilation entries went from 4,064 to zero. Metadata replay still
+ran 772 times in both cases.
+Wall time rose from 5.76 s to 10.06 s in this pair. This establishes
+the path change, with end-to-end capacity requiring its own gate.
+
+The unchanged 10,000-owner case reached the 180-second outer deadline
+in first-Graph preparation with 1.60 GiB peak process footprint. The
+independent currentness phase did not start. The binding correction
+removes the lexical fallback for the tested Interface shape, and the
+remaining admission and replay costs still require work.
+
+With the binding correction, the 128-owner staged run counted 770 reader
+checks and 772 metadata replays. The inclusive CPU totals were 0.993 s
+for reader currentness, 0.832 s for metadata replay, 0.969 s for value
+admission and 0.352 s for wrapper expansion. Native compiler-context
+identity checks used 0.097 s, tool-source checks 0.002 s and enrolled source
+guards 0.297 s. The five metadata replay sites inside the reader each
+occurred once per owner, before declaration preparation, before
+Interface expansion, at role entry, at role return and after Interface
+evaluation. The fused return was a separate replay. The timings overlap.
+
+The closed full-session query now reads the count already maintained
+alongside the guard spine. This removes a linear traversal for the
+query key and leaves its numeric value and guard execution unchanged.
+=SourceClosureWork.prepend_only_same_size_same_rows= supplies the
+append-only support premise. Candidate-local support still uses its
+own width. The measured costs put value admission and native issued-read
+authentication ahead of tool-source scans for the next optimization.
+
+The Profile candidate retains the exact admitted text in the existing
+directory observation. A fresh read with equal bytes avoids another literal
+decode under the standard Gerbil readtable. Changed bytes are decoded in the
+same check, preserving tag-equivalent edits and rejecting invalid or changed
+tags. =ReplayBoundary.profile_row_current_matches_decode= states the decoder
+equivalence. Custom readtables and source observers keep the original path.
+One local 1,000-row pair measured 3.622 s baseline and 3.439 s candidate
+CPU for the first business read. The six admission and thirteen scope
+directory sweeps remained. Their combined CPU changed from 2.182 s to
+2.060 s. The candidate retains one text snapshot per candidate Interface.
+This pair establishes neither a stable end-to-end speedup nor a new
+capacity result.
+
+The candidate's guarded 10,000-row sparse suite completed in 178.23 s
+at 0.94 GiB peak process footprint. The first business request used
+55.56 s wall and 25.33 s CPU, including 1.23 s GC CPU. The separate
+attribution Case measured 2.83 s CPU for directory demand, 6.26 s for
+admission, 15.93 s for scope demand and approximately 9 µs for the hot
+read. Both Cases confirmed the two-owner closure. This is a single
+run on a contended host.
+
+The source-admission, publication and build-input suites passed locally.
+The build-input suite rejected all four injected faults and rechecked the
+unmodified sources. The first publication run hit the 60-second idle
+guard during object loading, then passed on a separate run. The Lab
+OpenTofu deployment probe used its existing 120-second outer deadline.
+Specification preparation used 84.43 s wall and 10.94 s CPU. Cold A
+entered Make and emitted compiler actions through the consumer main module.
+The process timed out before cold A returned, leaving B and the cleanup
+assertions unverified.
+
+** Earlier experiments
+
 The historical sparse 10K catalog request reached two owners and two scopes
 in 2.355719 seconds wall. In a separate diagnostic, directory Context work
 alone consumed 1.233 seconds CPU. The isolated indexed POO factory reduced

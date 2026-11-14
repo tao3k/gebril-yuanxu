@@ -2,8 +2,6 @@
 import LeanPoo.Functional.CacheLookup
 import YuanxuProof.Admission.IssuerProjection
 namespace YuanxuProof.Admission.SelectionReplay
-def quintSourceDigest : String := "sha256:7bb0c519be1ac029d5e5451f1c6c972b74e5d56170639fd1760545ef4cf88e3e"
-
 -- The runtime owner retains a value, not the verdict of an external-source check.
 theorem cached_graph_keeps_value {Name Value Fault : Type} [DecidableEq Name]
     (entries : Name → Option Value) (key : Name) (value : Value)
@@ -15,6 +13,26 @@ def firstError : List (Option Nat) → Option Nat
   | [] => none
   | none :: rest => firstError rest
   | some error :: _ => some error
+
+/-- The closure consumes edges of the exact admitted record. A private table
+handoff preserves the admission failure and the independent commit check. -/
+theorem admitted_owner_edges_handoff {Record Edge Fault : Type}
+    (admit : Except Fault Record) (edges : Record → List Edge)
+    (lookup : Record → Record) (same : ∀ record, lookup record = record)
+    (commit : List Edge → Except Fault (List Edge)) :
+    (admit >>= fun record => commit (edges (lookup record))) =
+    (admit >>= fun record => commit (edges record)) := by
+  cases admit <;> simp [same]
+
+/-- For the same pure parser, an unchanged source has the initially parsed
+tags. Changed source must still be classified by the original parser. -/
+theorem profile_reclassification_on_change {Source Tags : Type} [DecidableEq Source]
+    (classify : Source → Tags) (original current : Source) :
+    (if current = original then classify original else classify current) =
+      classify current := by
+  split
+  next unchanged => rw [unchanged]
+  next _ => rfl
 
 /-- One runtime private operation, with no callback between the two issuance
 queries. The second predicate's failure spelling is irrelevant: on failure the
@@ -122,8 +140,6 @@ theorem cached_false_is_a_value {Name Fault : Type} [DecidableEq Name]
     (hit : entries key = some false) :
     LeanPoo.Functional.ConstructionCache.ensureLookup entries key build = (.ok false, entries) :=
   LeanPoo.Functional.ConstructionCache.ensureLookup_hit entries key false build hit
-
-def topologySourceDigest : String := "sha256:711666f5afe6d73d34cc59caf536311b2eb9907fa675ef049dd0720e13993773"
 
 -- Runtime dependency ownership belongs to gerbil.pkg; LeanPoo belongs to Lake.
 -- Runtime issued-read, inheritance and declaration-index controls

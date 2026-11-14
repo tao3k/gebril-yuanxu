@@ -6,7 +6,6 @@
 ;;; lowering algorithms and arena mutation remain in their dedicated owners.
 (import (only-in :std/list/list fold)
         (only-in :std/crypto/digest sha256)
-        (only-in :std/list/list fold-right)
         (runtime: :clan/poo/object)
         :tao3k/yuanxu/utilities/functional)
 

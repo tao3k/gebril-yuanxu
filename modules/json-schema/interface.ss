@@ -6,7 +6,6 @@
   identity: 'json-schema
   tags: '(schema validation)
   core:
-  (.o requires: (.o)
-      scope-contract: JsonSchemaScopeContract
+  (.o scope-contract: JsonSchemaScopeContract
       exports: JsonSchemaScope)
   features: (.o))

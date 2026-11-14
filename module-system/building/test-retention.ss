@@ -4,7 +4,7 @@
         (only-in :clan/poo/prototype-map prototype-map-length)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-key slot-read-receiver slot-read-instance slot-read-value slot-read-dependencies)
-        (only-in :tao3k/yuanxu/poo-clos/types ClosEffectiveMethod ClosInvocationFrame)
+        (only-in :clan/poo/clos/types ClosEffectiveMethod ClosInvocationFrame)
         (only-in :gerbil/runtime/interface interface-instance? interface-instance-object)
         (only-in :gerbil/runtime/table raw-table? &raw-table-table &raw-table-count raw-table-for-each eq-hash)
         (rename-in (only-in :gerbil/runtime/gambit table?) (table? gambit-table?))

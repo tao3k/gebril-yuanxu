@@ -3,9 +3,6 @@ import YuanxuProof.Admission.CheckerOrigin
 
 namespace YuanxuProof.Admission.MetadataRoute
 
-def quintSourceDigest : String :=
-  "sha256:ec97209e388a676c8ce2ad1dec5af17f26647af302c23f694cafe57ff9a57375"
-
 -- Runtime identity 0 is extracted from the trusted, pinned factory baseline.
 structure Route where
   ref : Nat

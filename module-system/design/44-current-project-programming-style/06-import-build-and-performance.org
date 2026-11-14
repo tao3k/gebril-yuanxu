@@ -12,12 +12,10 @@ The init-owned =std-make-spec= establishes =call-with-build-input-path= around
 source projection and Make dispatch. Prerequisites retain their order. The
 invocation's output directory is the native fallback, including when an
 explicit output is absent from the caller's path. A generated compiler source
-view goes before prerequisites within the same guarded boundary. A =package:=
-window contributes its native checkout from the bound init declaration ahead
-of ordinary prerequisites, so
-installed copies cannot hide selected source dependencies. The source
-reader still admits each reached library through its native identity and
-source guards. Native Make separately owns its output
+view goes before prerequisites within the same guarded boundary. Declared
+module directories supply source fallbacks after the existing prerequisites.
+Gerbil imports identify the reached libraries, and the source reader checks
+their native identity and source guards. Native Make owns the output
 directory and hot/currentness checks. Restore the caller's exact path on every
 exit. If a callback changes the input path, reject the prepared result and
 latch refusal for this init build epoch, including when the callback throws
@@ -52,7 +50,7 @@ every action. It checks stable compiler prerequisite Context paths, zero
 business scopes during source projection, and native B product initialization
 in an independent qualification harness. First =.get= and selected owner suites
 execute in that process without warming scopes in the parent.
-Lab's runtime CI invokes the deployment file separately through its 240-second
+Lab's runtime CI invokes the deployment file separately through its 120-second
 aggregate =just test-file= gate, validates its complete receipt, and retains its
 output. Its action and idle limits are 120 and 60 seconds, respectively.
 The broad runtime unit batch cannot substitute its longer aggregate deadline.
@@ -173,9 +171,9 @@ and semantic result; an optimization without a receipt is not project style.
 Ops is an ordinary Core library, not an optional Module selected through root
 init. Import its published Ops object from =:yuanxu/ops/interface=; functions
 and runtime Script methods share one executor. Core owns compilation through
-its ordinary library roots. Module =core.requires= lists selectable Module
-publications, not built-in library imports. No bootstrap selection or second
-interface registry is required to execute an explicitly declared Script.
+its ordinary library roots. Yuanxu orders selected Module publications using
+the owners of native Gerbil imports. Built-in library imports retain their
+Gerbil identity and an explicitly declared Script can use Ops directly.
 
 A Module must publish the inert vocabulary that its public consumers need.
 Funflow's runtime vocabulary is part of its default object facade; consumers

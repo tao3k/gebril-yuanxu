@@ -3,10 +3,8 @@
 ;;;
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
-(import (only-in :tao3k/yuanxu/modules/funflow/control-plane/signatures
-                 Fun Any Number Integer String Symbol List Pair Null Unit type-description)
-        (only-in :tao3k/yuanxu/modules/funflow/control-plane/flow flow-output-contract)
-        (only-in :tao3k/yuanxu/modules/funflow/control-plane/runtime-protocol AdapterResult))
+(import (only-in "store-flow.ss" make-store-task store-flow put-dir-flow get-dir-flow)
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/signatures type-description))
 ;;; Owner: Store/CAS workflow alignment lives in this workflow module.
 ;;; Boundary: core provides generic task, strategy, config, and adapter slots.
 ;;; Import contract: users opt in through =:tao3k/yuanxu/modules/funflow/store= exports.
@@ -17,7 +15,7 @@
 (import (only-in :tao3k/yuanxu/modules/funflow/control-plane/failure raise-control-plane-failure)
         (only-in :tao3k/yuanxu/modules/funflow/control-plane/task
                  make-task-family-descriptor task-family-registry-extend
-                 default-task-family-registry make-task task? task-name task-kind
+                 default-task-family-registry task? task-name task-kind
                  task-request-operation task-request-payload)
         (only-in :tao3k/yuanxu/modules/funflow/control-plane/strategy
                  make-strategy strategy-name strategy-capabilities
@@ -31,7 +29,7 @@
                  make-request-only-adapter)
         (only-in :tao3k/yuanxu/modules/funflow/control-plane/config make-run-config)
         (only-in :tao3k/yuanxu/modules/funflow/control-plane/flow
-                 default-flow-declaration-registry task-flow flow-name flow-steps
+                 default-flow-declaration-registry flow-name flow-steps
                  flow-input-contract flow-output-contract))
 
 (export store-task-family-descriptor
@@ -198,10 +196,6 @@
                      (make-store-task-family-registry)
                      default-flow-declaration-registry)))
 
-;; : (-> Symbol Symbol Payload Function Task)
-(def (make-store-task name operation payload signature)
-  (make-task name 'store (list 'store operation payload) signature #f))
-
 ;;; Store operation accessors keep CAS semantics explicit at the extension
 ;;; boundary without requiring runners to destructure store request data.
 ;; : (-> Task (U Symbol #f))
@@ -226,36 +220,6 @@
 ;; : (-> Task Boolean)
 (def (task-store-get? task)
   (eq? (task-store-operation task) 'get))
-
-;; : (-> Symbol Symbol Payload Function Flow)
-(def (store-flow name operation payload signature)
-  (task-flow name (make-store-task name operation payload signature)))
-
-;; : (-> Symbol Symbol Payload)
-(def (store-directory-payload task-name operation)
-  (list (cons 'store-task task-name)
-        (cons 'content-kind 'directory)
-        (cons 'operation operation)))
-
-;;; Funflow exposes putDirFlow as the user-facing directory-to-CAS-item arrow.
-;;; The Scheme side keeps this as request data for the runtime adapter.
-;; : (-> Symbol Flow)
-(def (put-dir-flow name)
-  (store-flow
-   name
-   'put
-   (store-directory-payload 'put-dir 'put)
-   (Fun AdapterResult <- String)))
-
-;;; Funflow exposes getDirFlow as the user-facing CAS-item-to-directory arrow.
-;;; The Scheme side only declares the adapter request and flow contracts.
-;; : (-> Symbol Flow)
-(def (get-dir-flow name)
-  (store-flow
-   name
-   'get
-   (store-directory-payload 'get-dir 'get)
-   (Fun AdapterResult <- String)))
 
 ;;; Boundary: store flow primary task is the policy-visible edge for workflow
 ;;; behavior, keeping validation, lookup, or projection responsibilities

@@ -11,9 +11,6 @@ namespace YuanxuProof.Admission.ReadOnlyEntry
 open ReplayBoundary SourceWindows
 open LeanPoo
 
-def quintSourceDigest : String :=
-  "sha256:2af1a9ef54448df1f71d8be5bff3cafb65b8b925060c06eacc33b7b4cb3f0d32"
-
 inductive Kind where
   | bootstrap | cacheMiss | value | structural
   deriving DecidableEq, Repr

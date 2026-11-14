@@ -81,7 +81,7 @@ Types without requiring project-specific diagnostic slots. The runtime
 policy and refuses incomplete metadata after a field addition. A warmed
 parent's metadata cannot silently replace a derived field's actual Type.
 
-=object-types/contracts.ss= composes upstream validate with contextual evidence production.
+=types/contracts.ss= composes upstream validate with contextual evidence production.
 The one-shot source analysis edge is consumed
 before replaceable validation, exactly as before. Contextual children and local/
 platform obligations remain Core concerns. Normalized subjects are passed to

@@ -47,9 +47,6 @@ theorem compiler_bridge_ends_with_consumer :
     publicSourceCurrent true true true false = true ∧
     publicSourceCurrent true true false false = false := by decide
 
-def windowOwnershipQuintDigest : String :=
-  "sha256:faecab83aa8a7cc381eb52b7cf105b5e8b31147130339849495482e876fa885e"
-
 abbrev Path := List String
 abbrev Bindings := Path → Option Path
 

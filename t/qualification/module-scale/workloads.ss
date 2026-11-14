@@ -2,7 +2,6 @@
 ;;; Assertion workloads called by the existing std/test Case in this process.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :tao3k/yuanxu/ops/progress execution-progress!)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-checkpoint)
         (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-memory-snapshot)
@@ -13,120 +12,54 @@
         verify-module-eval-once verify-business-eval-once
         verify-sparse-business-eval verify-sparse-business-attribution)
 
-(def (verify-declaration-scale FixtureExports SelectedCount source-root)
-  (def count (length (.all-slots (.get FixtureExports modules))))
-  (check-equal? count SelectedCount)
-  (def counts (make-hash-table-eq))
-  ;; Bounded phase/family totals, never per-module paths or retained records.
-  ;; Derive the boundary from the acquired fixture's actual source owner.
-  (def source-prefix
-    (path-normalize source-root))
-  (def source-reads (make-hash-table))
-  (def class-construction-reads 0)
-  (def completed-declarations 0)
-  (def replayed-reads 0)
-  (def previous (current-module-source-observer))
-  (def (observe key amount)
-    (def category (if (pair? key) (car key) key))
-    (when (eq? category 'file-read)
-      (let ((phase (if (memq (cadr key)
-                            '(source publication-current declaration-before candidate-admitted
-                              publication-inputs slot-replay return-currentness))
-                    (cadr key) 'other))
-            (family (if (string-prefix? source-prefix (caddr key)) 'module 'runtime)))
-        (hash-update! source-reads (cons phase family) (cut + <> amount) 0)))
-    (when (and (eq? category 'file-read)
-               (string-suffix? "/poo-clos/classes.ss" (caddr key)))
-      (set! class-construction-reads (+ class-construction-reads amount)))
-    ;; This fixture imports only maintained Core/Gerbil libraries and its own roles.
-    ;; Fail at an unexpected fallback rather than spending the full
-    ;; thousand-entry budget proving the same wrong import classification.
-    ;; A warm known import need not import new code. Completion of an
-    ;; actual declaration still advances the Case's scalar progress frame.
-    ;; Do not construct typed checkpoint receipts inside an active reader.
-    ;; Final admission replays every retained publication after discovery. Its
-    ;; existing observer reports actual validated visits, including a rejected
-    ;; prefix. Count work, never output or elapsed time; the Case still owns
-    ;; refusal and the authoritative stop runs before progress can advance.
-    (when (and (eq? category 'metadata-replay-visits) (positive? amount))
-      (set! replayed-reads (+ replayed-reads amount))
-      (execution-progress! '(declaration-replayed-reads) replayed-reads))
-    (when (eq? category 'publication-end)
-      (set! completed-declarations (+ completed-declarations amount))
-      (execution-progress! '(declaration-completed) completed-declarations)
-      ;; Scalar snapshots follow real completed publications, not a timer.
-      ;; Do not force GC or construct POO diagnostics inside this observer.
-      (when (zero? (modulo completed-declarations 100))
-        (let (stats (##process-statistics))
-          (displayln "DECLARATION-MEMORY completed=" completed-declarations
-                     " heap=" (f64vector-ref stats 15)
-                     " live=" (f64vector-ref stats 17)
-                     " build-vm-account=" (f64vector-ref stats 7)
-                     " vm-account-qualified?=false")
-          (force-output))))
-    (when (eq? category 'candidate-open-boundary)
-      ;; Scalar-only failure attribution: constructing a typed receipt here
-      ;; would reenter the admission whose refusal we are diagnosing.
-      (let (stats (##process-statistics))
-        (displayln "DECLARATION-REFUSAL heap=" (f64vector-ref stats 15)
-                   " live=" (f64vector-ref stats 17)
-                   " build-vm-account=" (f64vector-ref stats 7)
-                   " vm-account-qualified?=false")
-        (force-output))
-      (error "closed runtime declaration crossed an unexpected open boundary" (cdr key)))
-    (when (memq category '(publication-start publication-discovered candidate-local-guard candidate-open-guard
-                          reader-declaration reader-body-expanded reader-body-evaluated
-                          compiler-source-import-start publication-guard-run file-read))
-      (hash-update! counts category (cut + <> amount) 0))
-    (when previous (previous key amount)))
-  (def graph
-    (with-catch
-      (lambda (failure)
-        ;; Counters already belong to this observed run. Emit only their
-        ;; bounded summaries once the failed graph has unwound.
-        (yuanxu-write-observation-line!
-          "declaration-source-incomplete modules=%s completed=%s events=%s reads=%s"
-          count completed-declarations (hash->list counts) (hash->list source-reads))
-        (raise failure))
+(def (verify-declaration-scale FixtureExports count source-root)
+  (check-equal? (current-module-source-observer) #f)
+  (def modules (.get FixtureExports modules))
+  (def names (.all-slots modules))
+  (check-equal? (length names) count)
+  (def measured
+    (measure-runtime count 'runtime-graph-start
       (lambda ()
-        (measure-runtime count 'runtime-graph-start
-          (lambda ()
-            (parameterize ((current-module-source-observer observe))
-              (.get FixtureExports tests selected-graph)))
-          observer: 'present))))
+        (cond-expand
+          (yuanxu-module-test-stage-accounting
+           (measure-source-work count 'runtime-graph-start
+             (lambda () (.get FixtureExports tests selected-graph)) 'stages))
+          (else
+           (defvalues (graph counts)
+             (call-with-module-source-operation-measurement
+               (lambda () (.get FixtureExports tests selected-graph)) accounting?: #f))
+           (cons graph counts))))))
+  (def graph (car measured))
+  (def counts (cdr measured))
+  (def (calls operation) (hash-ref counts (list 'calls operation) 0))
   (yuanxu-test-checkpoint 'runtime-graph-ready)
-  (check-equal? source-prefix (path-normalize (path-directory (.get graph init-source))))
-  (yuanxu-write-observation-line! "declaration-source-reads modules=%s counts=%s"
-    count (hash->list source-reads))
-  (check-equal? (eq? graph (.get FixtureExports tests selected-graph)) #t)
+  (check-equal? (path-normalize source-root) (path-normalize (path-directory (.get graph init-source))))
   (check-equal? (length (.get graph module-order)) count)
   (check-equal? (car (.get graph module-order)) 'module-0)
-  (check-equal? (hash-ref counts 'publication-start) count)
-  (check-equal? (hash-ref counts 'publication-discovered) count)
-  ;; Deferred Type construction has its own before/after source checks.
-  ;; Keep those additional guards; never reuse a preflight verdict.
-  (check-equal? (hash-ref counts 'candidate-local-guard) (* 6 count))
-  (check-equal? (hash-get counts 'candidate-open-guard) #f)
-  ;; Prototype-only dispatch queries descriptor values; it must not import
-  ;; or register the optional logical Class construction implementation.
-  (check-equal? class-construction-reads 0)
-  ;; Each interface retains all declaration snapshots. Closed selection
-  ;; expands interface and real Types only; Config/Objects stay cold.
-  ;; module-deferred-reader-test verifies both activate on actual access
-  ;; and invalid Type descriptors still fail before scope linking.
-  (check-equal? (hash-ref counts 'reader-declaration) (* 3 count))
-  (check-equal? (hash-ref counts 'reader-body-expanded) (* 2 count))
-  (check-equal? (hash-ref counts 'reader-body-evaluated) (* 2 count))
-  (check-equal? (.ref/cached (.get FixtureExports modules) 'module-0) #f)
-  ;; The delegated observer already recorded these events. Replaying the
-  ;; assertion counters would double the published work totals.
-  ;; The path is supplied by the actual Graph, never a guessed fixture root.
+  (check-equal? (calls 'candidate-read) count)
+  (check-equal? (calls 'publication-read) 0)
+  (check-equal? (calls 'reader-candidate-fused-return-replay) count)
+  (check-equal? (calls 'reader-wrapper-expansion) count)
+  ;; Only the Interface and Types initialize. The focused deferred-reader
+  ;; tests exercise the open observer, cold Config/Objects and invalid Types.
+  (check-equal? (calls 'reader-compile-start) (* 2 count))
+  (check-equal? (calls 'reader-eval-start) (* 2 count))
+  (check-equal? (calls 'scope-factory) 0)
+  (for-each (lambda (id) (check-equal? (.ref/cached modules id) #f)) names)
+  (yuanxu-write-observation-line!
+    "declaration-source modules=%s wrappers=%s initializers=%s metadata-replay-visits=%s"
+    count (calls 'reader-wrapper-expansion) (calls 'reader-eval-start)
+    (hash-ref counts '(visits metadata-replay) 0))
+  ;; Resolve the exact init through the selected Graph before testing a
+  ;; separate currentness refusal against that same Graph.
   (def path (.get graph init-source))
   (def original (module-source-read path))
   (def current! (.get graph admit-current))
   ;; Measure the normal live Graph. GC is an Observability measurement,
   ;; not cache invalidation: the same selected Graph remains reachable.
-  (def held (yuanxu-debug-memory-snapshot 'graph-held collect?: #t))
+  (def held
+    (measure-runtime count 'graph-held-collection
+      (lambda () (yuanxu-debug-memory-snapshot 'graph-held collect?: #t))))
   (yuanxu-write-observation-line!
     "reader-graph-live modules=%s live-bytes=%s" count (.get held live-bytes))
   (check-equal? (eq? graph (.get FixtureExports tests selected-graph)) #t)
@@ -135,10 +68,12 @@
       (call-with-output-file (list path: path truncate: #t)
         (lambda (port) (display original port) (newline port))))
     (lambda ()
-      (check-exception (current!)
-        (lambda (exception)
-          (and (Error? exception)
-               (string=? (Error-message exception) "stale module scope generation")))))
+      (measure-runtime count 'stale-init-refusal
+        (lambda ()
+          (check-exception (current!)
+            (lambda (exception)
+              (and (Error? exception)
+                   (string=? (Error-message exception) "stale module scope generation")))))))
     (lambda ()
       (call-with-output-file (list path: path truncate: #t) (cut display original <>))))
 )
@@ -222,34 +157,75 @@
 
 (def (verify-runtime-selection FixtureExports count _source-root)
   (check-equal? (current-module-source-observer) #f)
+  (def (measure-selection phase action)
+    (cond-expand
+      (yuanxu-module-test-stage-accounting
+        (measure-runtime-source count phase action 'stages))
+      (else (measure-runtime count phase action))))
   (measure-runtime count 'first-namespace
     (lambda () (check-equal? (length (.all-slots (.get FixtureExports modules))) count)))
   (def graph
-    (measure-runtime count 'first-graph
+    (measure-selection 'first-graph
       (lambda () (.get FixtureExports tests selected-graph))))
   (check-equal? (length (.get graph module-order)) count)
   (check-equal? (.ref/cached (.get FixtureExports modules) 'module-1) #f)
   (check-equal? (eq? graph (.get FixtureExports tests selected-graph)) #t)
-  (measure-runtime count 'independent-currentness (lambda () ((.get graph admit-current)))))
+  (measure-selection 'independent-currentness (lambda () ((.get graph admit-current)))))
 
 ;; Scalar-only attribution of the same real fixture. Preserve the original
 ;; exception (including raised #f) after reporting partial operation totals.
-;; This installs no source observer and changes no Case or heap budget.
-(def (measure-runtime-source count phase action (accounting? #f))
+;; This adds no source observer of its own and changes no Case or heap budget.
+(def (measure-source-work count phase action accounting?)
+  (def failed? #f)
+  (def cause #f)
+  (def graph-summary?
+    (or (eq? phase 'runtime-graph-start)
+        (and (= count 10000) (eq? phase 'first-graph))))
+  (defvalues (value times)
+    (call-with-module-source-operation-measurement
+      (lambda ()
+        (with-catch
+          (lambda (failure) (set! failed? #t) (set! cause failure) #f)
+          action)) accounting?: accounting?))
+  (yuanxu-write-observation-line!
+    "runtime-phase-work modules=%s phase=%s failed?=%s metrics=%s"
+    count phase failed?
+    (if graph-summary?
+      (map (lambda (stage)
+             (list stage
+                   (hash-ref times (list 'calls stage) 0)
+                   (hash-ref times stage 0.)
+                   (+ (hash-ref times (list 'cpu-user stage) 0.)
+                      (hash-ref times (list 'cpu-system stage) 0.))
+                   (hash-ref times (list 'read-attempts stage) 0)
+                   (hash-ref times (list 'visits stage) 0)))
+           '(selected-owner-closure reader-preparation-start reader-wrapper-expansion
+             source-authoring source-authoring-profile source-authoring-role source-authoring-role-checkpoint
+             source-role-open source-ref-preparation source-ref-admission source-native-owner-read
+             reader-interface-start reader-admission-start reader-value-admission
+             publication-shape-record publication-shape-core
+             scope-shape-type scope-shape-record scope-shape-protocol
+             reader-admission-evidence reader-current reader-native-identity
+             reader-tool-source-current reader-source-guards source-init-current
+             (reader-candidate-replay-site declaration-before)
+             (reader-candidate-replay-site declaration-inputs)
+             (reader-candidate-replay-site declaration-after)
+             (reader-candidate-replay-site role-entry)
+             (reader-candidate-replay-site role-return)
+             reader-candidate-entry-replay reader-candidate-return-replay reader-candidate-fused-return-replay
+             metadata-replay metadata-checkpoints selected-core-projection
+             selected-topological-resolution))
+      (hash->list times)))
+  (when graph-summary?
+    (yuanxu-write-observation-line!
+      "declaration-stage-work columns=stage,calls,wall,cpu,read-attempts,replay-visits total-replay-visits=%s init-characters=%s"
+      (hash-ref times '(visits metadata-replay) 0)
+      (hash-ref times '(characters source-init-current) 0)))
+  (if failed? (raise cause) (cons value times)))
+(def (measure-runtime-source count phase action (accounting? #f) observer: (observer 'absent))
   (measure-runtime count phase
-    (lambda ()
-      (def failed? #f)
-      (def cause #f)
-      (defvalues (value times)
-        (call-with-module-source-operation-measurement
-          (lambda ()
-            (with-catch
-              (lambda (failure) (set! failed? #t) (set! cause failure) #f)
-              action)) accounting?: accounting?))
-      (yuanxu-write-observation-line!
-        "runtime-phase-work modules=%s phase=%s failed?=%s metrics=%s"
-        count phase failed? (hash->list times))
-      (if failed? (raise cause) value))))
+    (lambda () (car (measure-source-work count phase action accounting?)))
+    observer: observer))
 (def (verify-runtime-attribution FixtureExports count _source-root accounting?: (accounting? #f))
   (check-equal? (current-module-source-observer) #f)
   (def modules
@@ -336,44 +312,79 @@
     "business-eval-complete modules=%s admissions=2 scopes=2 demanded=module-1 provider=module-0 unrelated=cold"
     count)
   (def graph
-    (measure-runtime count 'full-graph-after-business
-      (lambda () (.get FixtureExports tests selected-graph))))
+    (cond-expand
+      (yuanxu-module-test-stage-accounting
+        (measure-runtime-source count 'full-graph-after-business
+          (lambda () (.get FixtureExports tests selected-graph)) 'stages))
+      (else
+        (measure-runtime count 'full-graph-after-business
+          (lambda () (.get FixtureExports tests selected-graph))))))
   (check-equal? (length (.get graph module-order)) count)
   (yuanxu-write-observation-line!
     "business-eval-full-graph modules=%s declarations=%s" count (length (.get graph module-order))))
 
-(def (check-sparse-business-result exports count value)
+(def (check-sparse-business-result exports value)
   (check-equal? value '(5432))
   (def modules (.get exports modules))
-  (def names (.all-slots modules))
-  (check-equal? (length names) count)
-  (check-equal? (.get exports tests selected-graph module-order) '(module-0 module-1))
-  (for-each (lambda (id)
-              (unless (memq id '(module-0 module-1))
-                (check-equal? (.ref/cached modules id) #f)))
-            names))
+  (check-equal? (.all-slots modules) '(module-1))
+  (check-equal? (.get exports tests selected-graph module-order) '(module-0 module-1)))
 
 (def (verify-sparse-business-eval exports count _source-root)
   (check-equal? (current-module-source-observer) #f)
   (check-equal? (.ref/cached exports 'modules) #f)
-  (def value (measure-runtime count 'sparse-business-cold
-               (lambda () (.get exports modules module-1 plan))))
-  (check-sparse-business-result exports count value)
+  (def run
+    (measure-runtime count 'sparse-business-cold
+      (lambda ()
+        (call-with-values
+          (lambda ()
+            (call-with-module-source-operation-measurement
+              (lambda () (.get exports modules module-1 plan)) accounting?: #f))
+          cons))))
+  (def work (cdr run))
+  (check-equal? (hash-ref work '(calls candidate-read) 0) 2)
+  (check-equal? (hash-ref work '(calls scope-factory) 0) 2)
+  (check-equal? (hash-ref work '(calls (scope-factory module-0)) 0) 1)
+  (check-equal? (hash-ref work '(calls (scope-factory module-1)) 0) 1)
+  (check-sparse-business-result exports (car run))
   (yuanxu-write-observation-line! "sparse-business-ok catalog=%s roots=1 closure=2" count))
 
 (def (verify-sparse-business-attribution exports count _source-root)
   (check-equal? (current-module-source-observer) #f)
-  (measure-runtime count 'sparse-directory
-    (lambda () (check-equal? (length (.all-slots (.get exports modules))) count)))
   (def (measured phase action)
     (measure-runtime count phase
       (lambda ()
-        (call-with-values
-          (lambda () (call-with-module-source-operation-measurement action accounting?: #f))
-          cons))))
+        (defvalues (value work)
+          (call-with-module-source-operation-measurement action
+            accounting?: (cond-expand (yuanxu-module-test-stage-accounting 'stages)
+                                       (else #f))))
+        (cond-expand
+          (yuanxu-module-test-stage-accounting
+            (def (report stage)
+              (yuanxu-write-observation-line!
+                "sparse-stage modules=%s phase=%s stage=%s calls=%s wall=%s cpu=%s"
+                count phase stage (hash-ref work (list 'calls stage) 0)
+                (hash-ref work stage 0.)
+                (+ (hash-ref work (list 'cpu-user stage) 0.)
+                   (hash-ref work (list 'cpu-system stage) 0.))))
+            (for-each
+              report
+              '(directory-context profile-interface-scan directory-current-observations link-current
+                reader-wrapper-expansion reader-admission-start metadata-replay scope-factory))
+            (for-each report
+              (filter (lambda (stage)
+                        (and (pair? stage) (memq (car stage) '(link-current scope-current))))
+                      (hash-keys work))))
+          (else (void)))
+        (cons value work))))
   (def (calls measured key) (hash-ref (cdr measured) (list 'calls key) 0))
   (def (admissions measured)
     (+ (calls measured 'candidate-read) (calls measured 'publication-read)))
+  (def directory
+    (measured 'sparse-directory (lambda () (.all-slots (.get exports modules)))))
+  (check-equal? (car directory) '(module-1))
+  (check-equal? (calls directory 'profile-interface-scan) 1)
+  (check-equal? (admissions directory) 0)
+  (check-equal? (calls directory 'scope-factory) 0)
   (def graph (measured 'sparse-admission (lambda () (.get exports tests selected-graph))))
   (check-equal? (.get (car graph) module-order) '(module-0 module-1))
   (check-equal? (admissions graph) 2)
@@ -383,6 +394,10 @@
   (check-equal? (calls scope 'scope-factory) 2)
   (check-equal? (calls scope '(scope-factory module-0)) 1)
   (check-equal? (calls scope '(scope-factory module-1)) 1)
-  (check-sparse-business-result exports count (car scope))
+  (check-sparse-business-result exports (car scope))
+  (def hot (measured 'sparse-business-hot (lambda () (.get exports modules module-1 plan))))
+  (check-equal? (eq? (car hot) (car scope)) #t)
+  (check-equal? (admissions hot) 0)
+  (check-equal? (calls hot 'scope-factory) 0)
   (yuanxu-write-observation-line!
     "sparse-attribution-ok catalog=%s roots=1 admissions=2 scopes=2 owners=module-0,module-1" count))

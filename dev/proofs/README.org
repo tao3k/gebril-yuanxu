@@ -86,7 +86,7 @@ Test publication reuse is separate from Make target layout. The runtime cache
 owner remains the receiver-indexed POO publication and closed graph result.
 =TestPublicationReuse.qnt= models private decode reuse with fresh admission;
 its matched variants retain stale-admission and foreign-packet counterexamples.
-=Admission/TestPublicationReuse.lean= binds that model's digest. See
+=Admission/TestPublicationReuse.lean= states the corresponding structural laws. See
 [[file:../sysml/10-evaluation/10.01-efficient-caching.org][the caching study]] for the actual call chain, measurements and extraction limits.
 
 =SelectionReplay= separately models the private reader's runtime replay tail.

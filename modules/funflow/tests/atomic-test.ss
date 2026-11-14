@@ -1,12 +1,13 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :tao3k/yuanxu/object-syntax/path-slots
+(import :std/test :tao3k/yuanxu/syntax/path-slots
         (only-in :clan/poo/object .get .call .ref/cached)
         (only-in :clan/poo/mop TypeError?)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :tao3k/yuanxu/modules/funflow/objects Job. Task.)
-        (only-in :tao3k/yuanxu/modules/funflow/func runtime-command-fields->manifest)
+        (only-in :tao3k/yuanxu/modules/funflow/job-prototypes Job. Task.)
+        (only-in :tao3k/yuanxu/modules/funflow/control-plane/runtime-command-descriptor
+                 runtime-command-fields->manifest)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export funflow-atomic-test)
 (.def Workspace

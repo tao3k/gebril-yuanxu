@@ -33,9 +33,8 @@ witness. Runtime timestamp freshness is an explicit premise, not a cached verdic
 The existing runner supports this scope with =--case-prefix TestMakeLayout
 --typecheck-scope selected=. Its receipt binds actual layout/admission consumers,
 SysML, package/dependency pins and local Lean sources, and rejects changes before
-return. The full catalogue retains all 540 outcomes (72 positive and 468 negative)
-and all 53 Lean–Quint digest bindings. Receipt ownership additionally covers all
-maintained Lean sources and the Node runner itself. The general path/work statements
+return. The full catalogue includes the positive cases and matched negative
+controls. Receipts cover the maintained Lean sources and Node runner. The general path/work statements
 live in =Admission/TestMakeLayout.lean=; installed compiler and filesystem behavior
 remain runtime correspondence obligations.
 
@@ -64,9 +63,8 @@ parent isolation and lazy branches. Weak-retention and arbitrary callback
 purity are not promoted to proven properties.
 Run =node dev/proofs/quint/qualify.cjs --case-prefix IssuedRootForwarding
 --typecheck-scope selected --receipt /tmp/issued-roots.scm= for the seven
-TLC safety/counterexample controls, including the acceptance witness. The runner
-also checks the Lean/QNT source digest; the finite result does not prove runtime
-extraction or allocation costs.
+TLC safety/counterexample controls, including the acceptance witness. Runtime extraction and allocation costs
+require independent evidence.
 
 * Persistent selected-head transaction
 
@@ -363,7 +361,7 @@ The =MetadataRoute= scoped family in [[file:../../../docs/30-39-research-foundat
 witness checks for selected metadata dispatch, callback gaps and transient
 issuance. Use =--case-prefix MetadataRoute= with the same proof runner. Its
 callback-free serial operation alphabet is a premise, not a runtime fence or
-automatic effect analysis. The source digest binds its Lean counterpart.
+automatic effect analysis.
 
 All maintained finite models here are Quint. Use Quint 0.33.0, Apalache 0.62.1
 and Java 21 or newer; the TLC backend checks the complete finite reachable state
@@ -400,8 +398,7 @@ The seventh mutant retains a fixture after delivered TERM. Termination uses
 the existing fixture/Ops owner, not another runner. Runtime signal delivery and
 OS kill-grace behavior remain separate gates; SIGKILL cannot promise cleanup.
 Its expansion counter is not a source-read cache: fresh post-effect source
-checks remain required. The existing checker catalog includes these cases and binds the Lean
-source digest together with the relevant Scheme projection/test sources. This
+checks remain required. The existing checker catalog includes these cases. Its receipt covers the Lean and Scheme projection/test sources. This
 does not replace the independent runtime gates or prove reader completeness.
 See [[file:../../../docs/10-19-design/13-module-loading/13.14-test-source-graph-model.org][model scope and Scheme correspondence]].
 The runtime 1000/10000 controls and size-independent visit bound are scoped in
@@ -418,7 +415,7 @@ The =rawSubject= mutant additionally refuses substitution of the original
 publication for the actual normalized admission subject.
 It does not model arbitrary Scheme callback purity.
 Run =--case-prefix SourcePrefix --typecheck-scope selected= through the existing
-checker. Lean's SourceClosureWork module binds this model digest and proves
+checker. Lean's SourceClosureWork module proves
 the =6N^2 + 2N= principal recurrence and revision-preservation condition.
 See [[file:../../../docs/10-19-design/12-contracts-types/12.27-aws-schema-transition-costs/source-guards/26-closed-location-prefix.org][the runtime call-chain audit and measured reads]].
 
@@ -443,19 +440,17 @@ resource bounds, source authenticity or runtime execution. Runtime Scheme tests
 and source identity receipts are independent evidence. Runtime configuration
 inheritance remains gerbil-poo's responsibility, not this operation model.
 
-The unified Lean project's =GraphOperations= module binds the exact Quint source
-digest and proves ordered-fold composition, live deletion endpoints, distinct
+The unified Lean project's =GraphOperations= module proves ordered-fold composition, live deletion endpoints, distinct
 containment paths, the one-pass receipt bound and a concrete non-fixed-point
-example. =qualify.cjs= rejects a stale binding. These are pure laws and an explicit
-counterexample, not a theorem that the Scheme implementation refines Quint.
+example. Scheme refinement remains a separate obligation.
 
 * Source windows
 
 =SourceWindows= adds one positive finite check, six matched unsafe schedules
 and a non-vacuous acceptance witness. Counterexamples distinguish byte-cache
 hits, actual contributor coverage, final receiver identity, demand and effects.
-The checker binds the model digest to =Admission/SourceWindows.lean= and binds
-the three production source-admission owners. See
+The qualification receipt covers =Admission/SourceWindows.lean= and the three
+production source-admission owners. See
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.15-source-window-model.org][32.15]] for reuse conditions and open Scheme correspondence.
 
 An owned already-prepared backend can be supplied with =QUINT_SERVER_ENDPOINT=
@@ -471,7 +466,8 @@ requirements, shared/private sources, warm-parent plan isolation and a final
 fresh source window. The nine control wrappers include eight broken protocols
 and one acceptance witness. In particular, =lateEffect= demonstrates that even
 one root check requires a stable read-to-return interval. All ten cases are
-registered in =qualify.cjs=; the Lean binding is =Admission.RootChild.quintSourceDigest=.
+registered in the Quint case catalogue. The corresponding Lean model is
+=Admission.RootChild=.
 Qualification does not establish production Scheme conformance. See
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.16-root-child-admission.org][32.16]].
 
@@ -479,8 +475,7 @@ Qualification does not establish production Scheme conformance. See
 
 =ReturnWindows= adds open/pure replay schedules, seven matched counterexamples
 and one acceptance witness. That qualification contained 40 cases; that follow-up contained 46. Exact source
-composition and deferral laws live in =Admission.ReturnWindows=, bound to the
-QNT source digest. The pure instance is an environment restriction, not proof
+composition and deferral laws live in =Admission.ReturnWindows=. The pure instance is an environment restriction, not proof
 that arbitrary MOP callbacks are pure. Actual Scheme still reads 356 files in
 the qualified Scenario; no Loader or Scheme change belongs to this model. See
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.20-remaining-read-boundaries.org][32.20]]
@@ -507,8 +502,7 @@ source certification. Controls expose late marking, payload deduplication,
 missing/skipped final checks, an effectful final checker, cross-effect byte reuse
 and parent receipt reuse. The bounded looping control has an eight-pop horizon;
 Lean proves general finite-graph/frame termination without that fixed cap.
-The source digest is bound to =Admission.IdentityDFS=; =DFSFrames= forwards that
-binding and both files are in the source receipt. See
+The source receipt covers =Admission.IdentityDFS= and =Admission.DFSFrames=. See
 [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.21-identity-dfs-and-read-boundaries.org][32.21]] for runtime correspondence and callback premises.
 
 * State-derived entry controls
@@ -517,9 +511,8 @@ ReadOnlyEntry adds a positive finite raw-state classifier, nine unsafe-inference
 controls and a non-vacuous acceptance witness. The current catalog has 66 cases.
 It distinguishes captured hook values from invocation, sealed/revision shortcuts,
 foreign currentness checkers, observer scope changes and JSON diagnostic order.
-The checker binds Admission.ReadOnlyEntry to its exact model digest. Runtime
-callback closure and stable-snapshot extraction are not inferred from finite
-verification. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.22-state-derived-read-only-entry.org][32.22]].
+Runtime callback closure and stable-snapshot extraction require evidence
+independent of finite verification. See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.22-state-derived-read-only-entry.org][32.22]].
 
 * Actual MOP snapshot qualification
 

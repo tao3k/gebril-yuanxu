@@ -7,7 +7,7 @@
 ;;; the consuming product, not to this Core owner.
 
 (import (runtime: :clan/poo/object)
-        (only-in :tao3k/yuanxu/object-family/syntax defpoo-object-family))
+        (only-in :tao3k/yuanxu/object/syntax defpoo-object-family))
 
 (export yuanxu-module-source-ref-prototype
         yuanxu-module-source-ref-construction-current?

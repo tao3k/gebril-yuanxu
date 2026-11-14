@@ -30,10 +30,10 @@
                 (def id (yuanxu-module-source-ref-value source))
                 (set! reads (cons id reads))
                 (.o identity: id features: (.o)
-                    core: (.o requires: (.o) scope-contract: ObjectScope
-                              link: (lambda (_dependencies)
-                                      (set! forced (cons id forced))
-                                      (.o identity: id revision: captured))))))))
+                    core: (.o scope-contract: ObjectScope
+                              exports: (begin
+                                         (set! forced (cons id forced))
+                                         (.o identity: id revision: captured))))))))
       (def owner (session "g1"))
       (def source (.get owner modules fleet))
       ;; Selected ordinary slots, without inheriting hidden source names.
@@ -163,7 +163,7 @@
         (lambda (root)
           (write-source (path-expand "gerbil.pkg" root) "(package: namespace-conflict)\n")
           (write-source (path-expand "init.ss" root)
-            "(yuanxu! :load-modules \"./modules\" mode: explicit rename: Lab (fleet) :fleet (child))")
+            "(yuanxu! :test-dir \"./t\" :load-modules \"./modules\" mode: explicit rename: Lab (fleet) :fleet (child))")
           (write-source (path-expand "modules/fleet/interface.ss" root) "((unforced publication")
           (write-source (path-expand "modules/fleet/child/interface.ss" root) "((unforced publication")
           (def calls 0)

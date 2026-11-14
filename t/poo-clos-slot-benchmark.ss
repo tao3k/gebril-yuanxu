@@ -6,7 +6,7 @@
 ;;; Hot bound-slot access witness; the CLOS lifecycle remains authoritative.
 
 (import (only-in :gerbil/runtime/gambit current-jiffy jiffies-per-second)
-        :tao3k/yuanxu/poo-clos/interface)
+        :clan/poo/clos)
 
 (def +iterations+ 100000)
 (def class-value

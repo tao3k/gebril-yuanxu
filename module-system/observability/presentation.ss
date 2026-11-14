@@ -11,7 +11,7 @@
         (only-in :tao3k/yuanxu/utilities/algorithms
                  yuanxu-read-datums/append-map
                  yuanxu-scheme-datum-find)
-        (only-in :tao3k/yuanxu/object-family/syntax
+        (only-in :tao3k/yuanxu/object/syntax
                  defpoo-object-family)
         :tao3k/yuanxu/utilities/final-projection-syntax)
 

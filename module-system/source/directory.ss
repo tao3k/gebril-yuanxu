@@ -5,8 +5,11 @@
 (import (runtime: :clan/poo/object)
         (only-in :gerbil/runtime/mop class-of)
         (only-in :gerbil/runtime/error Error::t)
+        (only-in :gerbil/runtime/gambit current-readtable)
+        (only-in :gerbil/runtime/syntax __*readtable*)
         (only-in :std/list/list delete-duplicates/hash any foldl length<=n?)
-        (only-in :tao3k/yuanxu/module-system/source/preparation module-source-package-prefix)
+        (only-in :tao3k/yuanxu/module-system/source/preparation
+                 module-source-package-prefix module-source-package-info)
         (only-in :tao3k/yuanxu/module-system/source/collection yuanxu-module-source-collection-optional-entrypoint)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-publication-role-imports)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
@@ -300,6 +303,27 @@
         (and (.slot? window 'profile) (.ref window 'profile)))
       (def (interface-tags file)
         (module-interface-tags file (module-source-read file)))
+      (def (observe-profile-tags! file)
+        (if (or (current-module-source-observer) (not (eq? (current-readtable) __*readtable*)))
+          (observe! interface-tags file #f)
+          (let* ((text (string-copy (module-source-read file)))
+                 (tags (module-interface-tags file text)))
+            ;; Keep the original evidence immutable. Every independent
+            ;; window reads fresh bytes. Changed bytes still take the literal
+            ;; decoder path, even for an owner outside the selected closure.
+            (set! observations
+              (cons (cons #f
+                      (lambda ()
+                        (if (or (current-module-source-observer)
+                                (not (eq? (current-readtable) __*readtable*)))
+                          (equal? tags (module-source-observe interface-tags file))
+                          ;; The reader already owns the physical path entry
+                          ;; in this window. Compare this guard's own tag evidence.
+                          (let (observed (module-source-read file))
+                            (or (string=? text observed)
+                                (equal? tags (module-interface-tags file observed)))))))
+                observations))
+            tags)))
       (def (select-profile window directory)
         (def tag (profile-tag window))
         (when tag
@@ -312,7 +336,7 @@
                          (node (snapshot child))
                          (file (path-expand "interface.ss" child))
                          (classified (and (directory-snapshot-interface? node)
-                                          (observe! interface-tags file #f))))
+                                          (observe-profile-tags! file))))
                     (if classified
                       (when (and (not (decision-row (window-key window id)))
                                  (memq tag classified))
@@ -328,13 +352,31 @@
                       (or windows (list intent-value))))))
       (def (roots-for window)
         (or (hash-get profile-roots window) '()))
+      (def (module-directory? directory node)
+        (and node (directory-snapshot-interface? node)
+             (observe! (lambda (source)
+                         (module-interface-declaration? source (module-source-read source)))
+                       (path-expand "interface.ss" directory))))
+      (def (auto-owners window)
+        (def intent (or window intent-value))
+        (if (or (not (eq? (.ref intent 'mode) 'auto)) (profile-tag intent)) '()
+          (let walk ((directory (if window (window-root window) root-path)) (prefix ""))
+            (foldr append '()
+              (map (lambda (name)
+                     (def child (path-expand name directory))
+                     (def path (string-append prefix name))
+                     (def owner (window-key window (string->symbol path)))
+                     (if (module-directory? child (snapshot child))
+                       (if (decision-row owner) '() (list owner))
+                       (walk child (string-append path "/"))))
+                   (directory-snapshot-children (snapshot directory)))))))
       (let ((profile-selected
                (foldr append '()
                  (map (lambda (window) (map (cut window-key window <>) (roots-for window)))
                       (or windows (list intent-value))))))
         ;; A category is selected across its declared windows. A dependency
         ;; window may have no matching roots; its differently tagged owners
-        ;; remain eligible through ordinary requires edges. Reject a miss only
+        ;; remain eligible through Gerbil imports. Reject a miss only
         ;; when that category has no roots in ANY participating window.
         (for-each
           (lambda (window)
@@ -466,8 +508,10 @@
       (def (declared-kernel root)
         (def own (path-directory init-path))
         (if (inside? root own) (path-normalize own)
-          (let* ((candidates (delete-duplicates/hash
-                              (list (path-expand "init.ss" root) (path-expand "../init.ss" root))))
+          (let* ((package (observe! module-source-package-info root))
+                 (candidates (delete-duplicates/hash
+                               (append (list (path-expand "init.ss" root) (path-expand "../init.ss" root))
+                                       (if package (list (path-expand "init.ss" (car package))) '()))))
                  (origins
                   (filter-map
                     (lambda (file)
@@ -482,7 +526,7 @@
                                      (map (lambda (window) (module-init-source-root window file))
                                           (.ref intent 'windows))
                                      (list (intent-root intent file))))
-                              (and (any (lambda (path) (string=? (canonical path) (canonical root))) roots)
+                              (and (any (lambda (path) (inside? root path)) roots)
                                    (path-normalize (path-directory file)))))))) candidates)))
             (when (and (pair? origins) (pair? (cdr origins)))
               (error "ambiguous declared source window origin" root origins))
@@ -491,17 +535,19 @@
         (list->hash-table
           (map (lambda (root) (cons (canonical root) (declared-kernel root)))
                (if windows (map window-root windows) (list root-path)))))
+      ;; A foreign kernel is admitted by the init that owns the declared
+      ;; directory. A bare external directory grants only its own source tree.
       (def package-kernels
-        (if qualified-owners?
-          (filter-map (lambda (window)
-                        (and (.ref window 'package)
-                             (hash-ref kernel-roots (canonical (window-root window)))))
-                      windows)
-          '()))
+        (filter-map (lambda (root)
+                      (let (kernel (hash-ref kernel-roots (canonical root)))
+                        (and (not (inside? root (path-directory init-path)))
+                             (not (equal? (canonical root) (canonical kernel)))
+                             kernel)))
+                    declared-window-roots))
       ;; A window prefix is not Module ownership. The indexed ancestor walk
       ;; above refuses actual closed boundaries; #f denotes an ordinary library.
       (def source-tree
-        (.o locate-owner: source-owner
+        (.o locate-owner: source-owner package-roots: (delete-duplicates/hash (map cdr (hash->list kernel-roots)))
             package-kernel: (lambda (file) (find (lambda (root) (inside? file root)) package-kernels))
             within-window?:
             (lambda (file) (any (lambda (root) (inside? file root)) declared-window-roots))))
@@ -524,8 +570,8 @@
                                   (if window (window-root window) root-path)))
                   (declared (and row (.ref row 'source-root)))
                   (origin (and declared (path-expand declared (path-directory init-path)))))
-             (def (publish raw-child raw-collection-root)
-               (unless (eq? (observe! module-source-type raw-child) 'directory)
+             (def (publish raw-child raw-collection-root (checked-kind? #f))
+               (unless (or checked-kind? (eq? (observe! module-source-type raw-child) 'directory))
                  (error "module source is not a directory" raw-child))
                (let* ((child (observe! path-normalize raw-child))
                       (collection-root (path-normalize raw-collection-root))
@@ -551,7 +597,11 @@
                                     (cons 'kernel-root (hash-ref kernel-roots (canonical owner-root)))
                                     ;; Mount is organization, never publication identity.
                                     (cons 'namespace-mount
-                                      (and window (.ref window 'mount)))
+                                      (if window (.ref window 'mount)
+                                        (string->symbol
+                                          (path-strip-directory
+                                            (path-strip-trailing-directory-separator owner-root)))))
+                                    (cons 'test-dir (.ref (or window intent-value) 'test-dir))
                                     (cons 'source-binding (if origin 'explicit 'directory))
                                     (cons 'source-tree source-tree)
                                     (cons 'init-source init-path) (cons 'generation generation-value)))))
@@ -571,11 +621,14 @@
                    (unless (if index (hash-key? index (car parts))
                              (member (car parts) (directory-snapshot-children node)))
                      (error "module directory not found" id directory))
-                   (let (child (path-expand (car parts) directory))
+                   (let ((child (path-expand (car parts) directory))
+                         (closed? (and (null? (cdr parts)) (closed-directory-observation?))))
                      (unless (eq? (observe! module-source-type child) 'directory)
                        (error "module path is not a directory" id child))
                      (if (pair? (cdr parts)) (walk child (cdr parts))
-                       (publish child owner-root))))))))))
+                       ;; The terminal kind was just observed and enrolled in
+                       ;; the same location frame. Keep both checks on open paths.
+                       (publish child owner-root (and closed? (closed-directory-observation?))))))))))))
       (def (locate-source id)
         (if (hash-key? sources id) (locate-source* id)
           (let* ((frame (box '()))
@@ -601,7 +654,9 @@
                                     (intent-current?)
                                     (or (not key-intact?) (key-intact?))
                                     (current-sources?)
-                                    (andmap (lambda (entry) ((cdr entry))) observations)))))
+                                    (module-source-measure-operation 'directory-current-observations
+                                      (lambda ()
+                                        (andmap (lambda (entry) ((cdr entry))) observations)))))))
       (def (tree resolve directory prefix (window #f) (branch-paths #f))
         (let* ((node (and (eq? (observe! module-source-type directory) 'directory) (snapshot directory)))
                ;; One immutable namespace generation, not another graph/cache.
@@ -647,7 +702,10 @@
                         id (.ref window 'mount) (.ref row 'window)))
                (if (and row (.ref row 'source-root)) (resolve owner)
                  (let (child-node (and (eq? (observe! module-source-type child) 'directory) (snapshot child)))
-                   (if (and child-node (directory-snapshot-interface? child-node)) (resolve owner)
+                   (if (and child-node (directory-snapshot-interface? child-node)
+                            (or row (not publication-prepares-source?)
+                                (module-directory? child child-node)))
+                     (resolve owner)
                      (tree resolve child (string-append (symbol->string id) "/") window children))))))
            keys: (map string->symbol names))))
       ;; Capture the root metadata now, never recursively enumerate every module.
@@ -676,6 +734,8 @@
                    (andmap (lambda (check) (check)) location-inputs)
                    (or (not entry) ((directory-source-current? entry))))))))
       (.o generation: generation-value module-ids: selected-values selected: selected-values
+          loader-roots: (append selected-values
+                          (foldr append '() (map auto-owners (or windows '(#f)))))
           (feature-roots)
           denied-modules: denied-values intent: scoped-intent init-source: init-path source-root: root-path
           locate: (lambda (id) (locate-source (resolve-request-root id)))

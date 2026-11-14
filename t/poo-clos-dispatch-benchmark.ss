@@ -7,7 +7,7 @@
 
 (import (only-in :clan/poo/object .o)
         (only-in :gerbil/runtime/gambit current-jiffy jiffies-per-second)
-        :tao3k/yuanxu/poo-clos/interface)
+        :clan/poo/clos)
 
 (def +iterations+ 2000)
 

@@ -91,13 +91,13 @@
     (test-case "named Profile carries its source window and literal selector"
       (def intent
         (module-init-intent
-          '((yuanxu! :load-modules "./modules" rename: Security
+          '((yuanxu! :test-dir "./t" :load-modules "./modules" rename: Security
               mode: auto profile: security)) #f))
       (def window (car (.get intent windows)))
       (check-equal? (.get window mount) 'Security)
       (check-equal? (.get window profile) 'security)
       (check-exception
-        (module-init-intent '((yuanxu! mode: auto profile: security)) #f)
+        (module-init-intent '((yuanxu! :test-dir "./t" mode: auto profile: security)) #f)
         error?))
     (test-case "category roots span windows while dependency-only windows may be empty"
       (call-with-temporary-directory "profile-windows-"
@@ -111,7 +111,7 @@
           (def (declaration core-tag)
             (write-source "consumer/init.ss"
               (string-append
-                "(yuanxu! :load-modules \"../lab\" rename: Lab mode: auto profile: deployment"
+                "(yuanxu! :test-dir \"./t\" :load-modules \"../lab\" rename: Lab mode: auto profile: deployment"
                 " :load-modules \"../core\" rename: Core mode: auto profile: " core-tag ")")))
           (declaration "deployment")
           ;; Exercise inert directory policy; real role admission is covered by
@@ -125,6 +125,14 @@
           ;; standard publication/compilation authority of a paired reader.
           (check-exception
             (.call context read-publication (.call context locate 'tofu)) error?)
+          (def generation (.get context generation))
+          (check-equal? (.call context current? generation) #t)
+          (write-source "core/flow/interface.ss" ";;; changed text, same tags\n(.def Flow tags: '(workflow))")
+          (check-equal? (.call context current? generation) #t)
+          (write-source "core/flow/interface.ss" "(.def Flow tags: '())")
+          (check-equal? (.call context current? generation) #f)
+          (write-source "core/flow/interface.ss" "(.def Flow tags: '(deployment))")
+          (check-equal? (.call context current? generation) #f)
           ;; A miss for a DIFFERENT category cannot hide behind deployment's hit.
           (declaration "missing")
           (check-exception (module-directory-context (path-expand "consumer/init.ss" root) #f) error?))))

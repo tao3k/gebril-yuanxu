@@ -3,6 +3,7 @@
 (import :std/test :clan/poo/object
         (only-in :gerbil/expander eval-module module-context? module-context-path module-context-export)
         (only-in :gerbil/expander/module __module-registry)
+        (only-in :gerbil/runtime/init __modstate __modstate-mx)
         (only-in :std/error Error? Error-message)
         (only-in :tao3k/yuanxu/t/qualification/module-scale/fixture DeclarationFixture RuntimeValueFixture)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
@@ -46,13 +47,28 @@
           (check-equal? (private-interfaces) '())
           (def build-context (car delivered))
           (check-equal? (module-context-export build-context) '())
+          ;; The expander registry and runtime import table have independent
+          ;; lifetimes. Read the latter under Gerbil's own lock.
+          (def runtime-import-state
+            (dynamic-wind
+              (lambda () (mutex-lock! __modstate-mx))
+              (lambda () (hash-get __modstate build-context))
+              (lambda () (mutex-unlock! __modstate-mx))))
+          ;; Accept either lifecycle. If Gerbil keeps an entry, it must hold
+          ;; only the void completion, never the delivered POO publication.
+          (check-equal?
+            (or (not runtime-import-state)
+                (and (eq? (car runtime-import-state) 'ready)
+                     (void? (cadr runtime-import-state)))) #t)
+          (displayln "PRIVATE-INTERFACE-RUNTIME-IMPORT-STATE "
+                     (if runtime-import-state 'ready 'absent))
           (check-equal? (void? (eval-module build-context)) #t)
           (check-equal? (.get publication identity) 'custom/example)
           (def scope
             (parameterize ((current-module-role-resolver
                             (lambda _ (error "ambient resolver must remain unused"))))
               (check-equal? (object? (.get publication core scope-contract)) #t)
-              ((.get publication core link) (.o))))
+              (.get publication core exports)))
           (check-equal? (.get scope greeting) "hello")
           (check-equal? (.get scope retained) 'upstream))))
     (test-case "private role imports are observed before their values are demanded"
@@ -80,17 +96,16 @@
             '((import :clan/poo/object)
               (def Private (.o retained: 'private)) (export Private)))
           (def publication (.call (module-publication-reader) read source))
-          (def link (.get publication core link))
-          (def scope (link (.o)))
+          (def scope (.get publication core exports))
           (check-equal? (.get scope retained) 'private)
-          (check-equal? (eq? scope (link (.o))) #t))
+          (check-equal? (eq? scope (.get publication core exports)) #t))
         roles:
         (.o objects: '((import "private.ss")
                        (def FixtureScope Private)
                        (export FixtureScope))
             interface:
             '((.def Fixture identity: 'custom/example
-                core: (.o requires: (.o) scope-contract: FixtureContract
+                core: (.o scope-contract: FixtureContract
                           exports: FixtureScope)
                 features: (.o))))))
     (test-case "delayed roles still refuse a symbolic private source"
@@ -108,7 +123,7 @@
           (def publication (.call (module-publication-reader) read source))
           (def core (.get publication core))
           (def private-keys
-            (filter (lambda (name) (not (memq name '(requires scope-contract link))))
+            (filter (lambda (name) (not (memq name '(scope-contract exports))))
               (.all-slots core)))
           (check-equal? (length private-keys) 1)
           (def roles (.ref core (car private-keys)))
@@ -120,34 +135,14 @@
       (with-publication-source
         (lambda (_root _module-root source _view)
           (def publication (.call (module-publication-reader) read source))
-          (def scope ((.get publication core link) (.o)))
+          (def scope (.get publication core exports))
           (check-equal? (.get scope selected) 'local))
         roles:
         (.o config: '((def Greeting (error "shadowed role was evaluated")) (export Greeting))
             interface:
             '((.def Fixture identity: 'custom/example
-                core: (.o requires: (.o) scope-contract: FixtureContract
+                core: (.o scope-contract: FixtureContract
                           exports: (.o Greeting: 'local selected: Greeting))
-                features: (.o))))))
-    (test-case "the link checks unused dependencies in order before entering the export body"
-      (with-publication-source
-        (lambda (_root _module-root source _view)
-          (def publication (.call (module-publication-reader) read source))
-          (def link (.get publication core link))
-          (def reads '())
-          (check-exception (link (.o Shared: (begin (set! reads (cons 'Shared reads)) (.o))
-                                      Second: (begin (set! reads (cons 'Second reads))
-                                                     (error "dependency read"))))
-            (lambda (cause)
-              (and (Error? cause) (string=? (Error-message cause) "dependency read"))))
-          (check-equal? (reverse reads) '(Shared Second)))
-        roles:
-        (.o interface:
-            '((.def Fixture identity: 'custom/example
-                core: (.o requires: (.o Shared: (.o module-id: 'custom/shared contract: FixtureContract)
-                                        Second: (.o module-id: 'custom/second contract: FixtureContract))
-                          scope-contract: FixtureContract
-                          exports: (error "export ran before dependency"))
                 features: (.o))))))
     (yuanxu-test-fixture "a selected provider Objects initializer is actually demanded"
       (fixture (.cc RuntimeValueFixture size: 2))
@@ -168,7 +163,7 @@
         '((def Scope (error "objects demanded")) (export Scope)))
       (replace-forms (module-path fixture "interface.ss")
         '((.def Module identity: 'module-0
-            core: (.o requires: (.o) scope-contract: ScopeContract
+            core: (.o scope-contract: ScopeContract
                       exports: (.o config: Config object: Scope))
             features: (.o unused: (error "unselected Feature forced")))))
       (def expansions 0)
@@ -196,7 +191,7 @@
         '((def object? 'source-owned) (def Scope object?) (export Scope)))
       (replace-forms (module-path fixture "interface.ss")
         '((.def Module identity: 'module-0
-            core: (.o requires: (.o) scope-contract: ScopeContract
+            core: (.o scope-contract: ScopeContract
                       exports: (.o object: Scope))
             features: (.o unused: (error "unselected Feature forced")))))
       (check-equal? (.get fixture modules module-0 object) 'source-owned))
@@ -213,7 +208,7 @@
         '((def Scope (error "unused Objects role was forced")) (export Scope)))
       (replace-forms (module-path fixture "interface.ss")
         '((.def Module identity: 'module-0
-            core: (.o requires: (.o) scope-contract: ScopeContract exports: Config)
+            core: (.o scope-contract: ScopeContract exports: Config)
             features: (.o))))
       (check-equal? (length (.get (.call (.get fixture exports tests) .select '(module-0)) source selected-graph module-order)) 1)
       (check-equal? (.ref/cached (.get fixture modules) 'module-0) #f)
@@ -225,7 +220,7 @@
       (replace-forms (module-path fixture "interface.ss")
         '((.def Module identity: 'module-0
             Config: (.o value: 9)
-            core: (.o requires: (.o) scope-contract: ScopeContract exports: Config)
+            core: (.o scope-contract: ScopeContract exports: Config)
             features: (.o))))
       (check-equal? (.get fixture modules module-0 value) 9))
     (yuanxu-test-fixture "the selected Graph keeps the actual authoring receipt Type dependency"

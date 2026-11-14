@@ -2,7 +2,7 @@
 ;;; Core-owned runtime build completion; never intercept Gerbil loading.
 (import (only-in :gerbil/compiler/base execute-pending-compile-jobs!)
         (only-in "./program-products.ss" program-path program-identity? projection-program-targets)
-        (only-in "./products.ss" artifact-files clean-build-artifacts! repair-build-products! require-build-products!
+        (only-in "./products.ss" artifact-files require-build-products!
                  current-build-output-directory)
         (runtime: :clan/poo/object)
         (only-in :std/string/path path-force-extension)
@@ -26,12 +26,12 @@
         (only-in :clan/poo/feedback-cache group-closed)
         (only-in :clan/poo/generalized-closure closed-raw)
         (only-in :tao3k/yuanxu/module-system/source/admission module-source-type module-source-read module-source-admit-current!))
-(export call-with-build-artifact-issuance admit-build-artifacts! invalidate-build-artifacts! clean-build-artifacts!
+(export call-with-build-artifact-issuance admit-build-artifacts! invalidate-build-artifacts!
         current-build-output-directory run-build-artifact-process
         accept-build-artifact-handoff! read-build-artifact-handoff
         build-artifact-publication-current admit-build-artifact-publication!
         build-artifact-handoff require-build-artifacts! test-build-publication test-build-projection
-        current-build-phase-times repair-build-products! require-build-products! call-with-static-compiler-inputs)
+        current-build-phase-times require-build-products! call-with-static-compiler-inputs)
 
 ;; Execution-local diagnostic totals, never approval or currentness results.
 ;; No callback runs inside a guard; disabled instrumentation allocates no table.
@@ -250,26 +250,6 @@
 (def (ordinary-object-generation? path)
   (let (extension (path-extension path))
     (or (not (string-prefix? ".o" extension)) (equal? extension ".o1"))))
-(def (publish-products files staging libdir)
-  (def prefix (string-append (path-strip-trailing-directory-separator (path-expand staging)) "/"))
-  (map (lambda (row)
-    (def source (car row))
-    (unless (string-prefix? prefix source) (error "compiler output escaped its build directory" source))
-    ;; Preserve ordinary compiler-output metadata during publication. Gerbil
-    ;; completion files are opaque outputs; only std/make interprets them.
-    (def info (file-info source #f))
-    (def data (call-with-input-file source read-all-as-u8vector))
-    (unless (equal? (hex-encode (sha256 data)) (cdr row))
-      (error "compiler output changed during publication" source))
-    (def target (path-expand (substring source (string-length prefix) (string-length source)) libdir))
-    (create-directory* (path-directory target))
-    (when (and (module-source-type target) (not (eq? (module-source-type target) 'regular)))
-      (error "compiler output target is not a regular file" target))
-    (call-with-output-file (list path: target truncate: #t permissions: (bitwise-and (file-info-mode info) #o777))
-      (lambda (port) (write-subu8vector data 0 (u8vector-length data) port)))
-    (file-last-access-and-modification-times-set! target
-      (file-info-last-access-time info) (file-info-last-modification-time info))
-    (cons target (cdr row))) files))
 (def (admit-build-artifacts! graph)
   ;; Only an explicitly selected upstream publication can recover this receiver.
   ;; Normal source-only graphs have no recovery effect. Recursive recovery is
@@ -436,32 +416,21 @@
            (lambda () (admit-build-artifacts! graph) #t))))
   (def expected (invalidate-build-artifacts! graph))
   (def programs (projection-program-targets projection))
-  (def (complete output)
-   (parameterize ((current-build-output-directory output))
+  (def identities (.get projection compiler-identities))
+  ;; An unissued cache cannot establish which outputs the native build produced.
+  ;; The caller may explicitly clean the selected output or use an empty prefix.
+  (unless (or reusable? (null? (artifact-files identities libdir #f programs)))
+    (error "build-required: unissued selected outputs; clean selected outputs" libdir))
+  (parameterize ((current-build-output-directory libdir))
     (call-with-values action
     (lambda results
       ((.get projection admit-current))
-      (def identities (.get projection compiler-identities))
-      (def produced (observed-files identities output programs))
-      ;; This adapter owns ordinary runtime gxc .o1 outputs. A later generation
-      ;; cannot be blessed just because it was already beside a fresh .o1.
-      ;; Preserve it and require an explicit clean/rebuild; never delete another
-      ;; job's output or infer producer identity from a writable record.
-      (unless (andmap (lambda (row) (ordinary-object-generation? (car row))) produced)
+      (def files (observed-files identities libdir programs))
+      (unless (andmap (lambda (row) (ordinary-object-generation? (car row))) files)
         (error "build-required: unissued runtime object generation; clean selected outputs"
-          (map car (filter (lambda (row) (not (ordinary-object-generation? (car row)))) produced))))
-      (def files (if reusable? produced (publish-products produced output libdir)))
-      (def published (observed-files identities libdir programs))
-      (unless (equal? files published)
-        (error "build-required: selected outputs outside completed build; clean selected outputs"
-               (list 'missing (filter (lambda (row) (not (assoc (car row) published))) files))
-               (list 'unissued (filter (lambda (row) (not (assoc (car row) files))) published))
-               (list 'changed
-                     (filter (lambda (row)
-                               (let (actual (assoc (car row) published))
-                                 (and actual (not (equal? (cdr row) (cdr actual)))))) files))))
+          (map car (filter (lambda (row) (not (ordinary-object-generation? (car row)))) files))))
       (when (and (issued-build? previous) (not (eq? package-current! void))
-                 (not (equal? published (issued-build-files previous))))
+                 (not (equal? files (issued-build-files previous))))
         (error "approved Core build outputs changed; require a new publication"))
       (create-directory* libdir)
       (def record (make-temporary-file-name (path-expand ".yuanxu-build-issuance-" libdir)))
@@ -482,8 +451,6 @@
         (.call source .retain-build graph)
         (admit-build-artifact-publication! graph))
       (apply values results)))))
-  (if reusable? (complete libdir)
-    (call-with-temporary-directory "core-build-output-" complete)))
 
 ;; Attach the existing issuer to an observed, nonempty runtime test spec.
 ;; Source discovery owns the values; this owner retains signing and execution.

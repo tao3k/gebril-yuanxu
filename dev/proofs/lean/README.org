@@ -44,7 +44,7 @@ subject rather than a project-wide slogan or an unrelated inheritance algorithm.
 | =Admission/= | =admission/=; source admission, concrete governance/quorum checks, capability attenuation and portable payload shape |
 | =Contribution/= | =contribution/=; contributor qualification |
 | =Ops/= | =ops/=; process arguments, environment overlay and wait status |
-| =PooClos/= | =poo-clos/= and its Gerbil/Gambit boundary; dispatch, method combination, storage and outcome erasure |
+| =PooClos/= | =gerbil-poo/clos/= and its Gerbil/Gambit boundary; dispatch, method combination, storage and outcome erasure |
 
 Domain predicates describe projected inputs and explicit external contracts. They
 are not certificates of runtime execution, signature authenticity, MOP completeness
@@ -82,10 +82,10 @@ from their computed results. None accepts the desired conclusion as a record fie
 | =control-plane/strategy.ss=, =policy.ss=, =runner-support/validation.ss= | =Modules/Funflow/Policy=: frozen metadata, strategy-before-adapter refusal, accepted task capability, frontier capability, all-or-error plan validation | =Factory.map=, =Validation.traverse= and its first-error law |
 | =admission/publication.ss:schema-observations= | =Admission/Publication=: actual node/normalization equality, diagnostics, absolute nonempty inputs, source checks jointly certify the publication; mismatches refuse | =ProofObject.withObligation= and =Certificate= over =Admission/Source= |
 | =admission/publication.ss:publish-current= | =Admission/Publication.stale_return_keeps_previous=: accepted output with changed return-time bytes cannot publish tentative state | =DeclarativeMetadata.Contract.invoke/publish= |
-| =poo-clos/method-combination.ss= | =PooClos/MethodCombination=: proper/dotted qualifier patterns, first group wins, original qualifier retained for ambiguity, required groups, ordered list/progn and Boolean and/or short circuit | =MethodCandidate.select=, =Factory.sequence/fold/bind/choose=, =Validation.traverse= |
+| =gerbil-poo/clos/method-combination.ss= | =PooClos/MethodCombination=: proper/dotted qualifier patterns, first group wins, original qualifier retained for ambiguity, required groups, ordered list/progn and Boolean and/or short circuit | =MethodCandidate.select=, =Factory.sequence/fold/bind/choose=, =Validation.traverse= |
 
 Runtime controls are =t/profile-composition-test.ss=,
-=t/admission-publication-test.ss=, =t/poo-clos-method-combination-test.ss=
+=t/admission-publication-test.ss=, =gerbil-poo/t/methods/poo-clos-method-combination-test.ss=
 and the product's =t/control-plane-test.ss=. Executable Lean controls include
 positive cases and distinct revision/node/schema/capability/qualifier refusals.
 The aggregate explicitly requires the restored semantic theorems as well as the
@@ -156,9 +156,9 @@ concrete predicates, dependent proof fields and external policy parameters remai
 distinct. This shape audit is a regression guard, not a proof of runtime refinement.
 Declaration counts are not counts of independently proved requirements.
 
-Run =just proofs-quint= for finite transition controls. The Graph Lean model binds
-the Quint source digest. Its operation result is a completed ordered pass, not a
-fixed-point claim. Runtime graph/source-projection and schema inheritance tests
+Run =just proofs-quint= for finite transition controls. The Lean Graph model
+describes the same operation as the Quint controls. Its result is a completed
+ordered pass. Runtime graph/source-projection and schema inheritance tests
 run serially through the heap-fenced =just test-file= entrypoint. Runtime receipts,
 conditional Lean laws and finite-model controls are distinct evidence.
 
@@ -208,7 +208,7 @@ complete successful observations, branch union and first-origin collector
 coverage. Computed counterexamples show that deferring a JSON check past a
 stale token, or substituting a different first origin, changes the diagnostic.
 This does not prove arbitrary MOP callbacks or cold metadata hooks pure. The
-aggregate requires these theorems; the QNT runner checks the source digest.
+aggregate requires these theorems. Quint qualification runs the finite controls.
 See [[file:../../../docs/30-39-research-foundations/32-module-assurance/32.20-remaining-read-boundaries.org][32.20]] for the runtime producer audit and unproved extraction premises.
 
 * Identity DFS and runtime traversal frames

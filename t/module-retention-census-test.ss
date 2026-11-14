@@ -1,15 +1,17 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message Error-irritants)
-        (only-in :gerbil/expander __module-registry expander-context-table
+        (only-in :gerbil/expander __module-registry expander-context-table expander-context-id
+                 current-expander-context eval-syntax
                  module-context? module-context-code module-context-e
                  module-context-import module-context-export module-context-ns module-context-path)
         (only-in :gerbil/runtime/loader list-modules)
         (only-in :gerbil/runtime/gambit unbound-global-exception?)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads slot-read-dependencies slot-read-receiver)
-        (only-in :tao3k/yuanxu/t/qualification/retention/payload report-retained-reads)
-        (only-in :tao3k/yuanxu/poo-clos/types ClosEffectiveMethod ClosInvocationFrame)
+        (only-in "./qualification/retention/payload.ss" report-retained-reads)
+        (only-in :clan/poo/clos/types ClosEffectiveMethod ClosInvocationFrame)
         (only-in :tao3k/yuanxu/t/qualification/module-scale/fixture DeclarationFixture)
+        (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-export-name)
         (only-in :tao3k/yuanxu/module-system/building/test-observation ModuleTestingProfile.)
         (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-memory-snapshot yuanxu-debug-cpu-microseconds)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
@@ -270,6 +272,7 @@
   (check-equal? (object? (hash-get lifetime 'publication)) #t)
   (hash-put! lifetime 'graph graph)
   (hash-put! lifetime 'namespace (.get fixture modules))
+  (hash-put! lifetime 'exports (.get fixture exports))
   (when earlier
     ;; Measure the OLD+NEW identity union, not two sums with duplicated language
     ;; support. Old sources have been removed: this is liveness, never admission.
@@ -288,12 +291,13 @@
   lifetime)
 (.def (CensusProfile @ ModuleTestingProfile.) emit?: #t trace-enabled?: #f)
 (def module-retention-census-test
-  (let ((earlier #f) (earlier-root #f))
+  (let ((earlier #f) (earlier-root #f) (earlier-init #f))
     (test-suite "Bounded retained runtime read attribution through real init"
       (yuanxu-test-fixture "sixteen real modules"
         profile: CensusProfile (fixture (.cc DeclarationFixture size: 16))
         ;; A path string owns no receiver/Graph; all object witnesses stay weak.
         (set! earlier-root (string-copy (.get fixture root)))
+        (set! earlier-init (path-normalize (path-expand "init.ss" earlier-root)))
         (set! earlier (census fixture 16)))
       (yuanxu-test-fixture "thirty-two real modules"
         profile: CensusProfile (fixture (.cc DeclarationFixture size: 32))
@@ -301,10 +305,21 @@
         ;; Collection here is outside the 32 cold window and is reported as a
         ;; separate diagnostic regime, not a comparable before/after speedup.
         (##gc) (##gc)
+        (check-equal? (file-exists? earlier-init) #f)
+        (def init-context (hash-get __module-registry earlier-init))
+        (check-equal? (module-context? init-context) #t)
+        (def init-id (expander-context-id init-context))
+        (def retained-exports
+          (parameterize ((current-expander-context init-context))
+            (eval-syntax (module-init-export-name init-id))))
+        (check-eq? retained-exports (hash-get earlier 'exports))
+        (check-eq? (.ref/cached retained-exports 'modules) (hash-get earlier 'namespace))
         (displayln "RETENTION-RELEASED-COHORT modules=16 graph-live="
           (and (hash-get earlier 'graph) #t) " publication-live="
           (and (hash-get earlier 'publication) #t)
           " namespace-live=" (and (hash-get earlier 'namespace) #t)
+          " init-id-alias=" (eq? init-context (hash-get __module-registry init-id))
+          " init-binding-retains-exports=" #t
           " selection-cached-graph="
           (let* ((source (hash-get earlier 'source))
                  (fields (and source (object-%instance source))))

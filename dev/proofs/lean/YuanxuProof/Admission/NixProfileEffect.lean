@@ -3,9 +3,6 @@ import YuanxuProof.Admission.SerialUse
 
 namespace YuanxuProof.Admission.NixProfileEffect
 
-def quintSourceDigest : String :=
-  "sha256:eee6ea72b7e6545a5287ba284289ec7390d12e101a390393748cf011c2d1ee1e"
-
 structure Head where
   revision : Nat
   snapshot : Nat

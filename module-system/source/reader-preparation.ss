@@ -6,7 +6,7 @@
                  object-%instance object-construction-current?)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/slot-observation without-observation)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         :tao3k/yuanxu/module-system/source/admission
         :tao3k/yuanxu/module-system/source/preparation
         :tao3k/yuanxu/module-system/source/objects
@@ -147,11 +147,11 @@
     ((.ref policy 'validate) policy owner root module-source-read)
     ;; A policy is an author-code boundary, not a source-cache window.
     ((.ref prepared 'admit-current))))
-(def (reader-prepare-public-dependency session path)
+(def (reader-prepare-public-dependency session path (owned-root #f))
   ;; The SAME preparation owns source bytes and its original public binding.
   ;; On a hit run that original checker; do not recapture a changed ambient
   ;; name as a new successful identity. Compiler association remains scoped.
-  (def key (list 'public-source path))
+  (def key (list 'public-source path owned-root))
   (def previous (hash-get (reader-session-preparations session) key))
   (when (current-module-source-observer)
     ((current-module-source-observer) 'public-preparation-requests 1))
@@ -161,14 +161,14 @@
       (reader-enroll-candidate! session previous)
       (source-preparation-value previous))
     (let* ((binding #f)
-           (input (public-dependency-input path capture: (cut reader-capture-input session <...>)
-                    bind: (lambda (value) (set! binding value)))))
+           (input (public-dependency-input path owned-root: owned-root
+                    capture: (cut reader-capture-input session <...>) bind: (lambda (value) (set! binding value)))))
       (when input
         (let (origin (reader-add-input-guard! session input path))
           (set! (source-preparation-invoke origin)
             (lambda ()
-              (unless (public-dependency-input path input #t binding: binding)
-                (error "public dependency source or runtime identity changed" path))))
+              (public-dependency-input path input #t binding: binding owned-root: owned-root
+                bind: (lambda (current) (when owned-root (set! binding current))))))
           (hash-put! (reader-session-preparations session) key origin)
           (reader-enroll-candidate! session origin)
           (set! (reader-session-public-prepared-count session) (+ (reader-session-public-prepared-count session) 1)))

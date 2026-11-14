@@ -32,7 +32,7 @@
       '("types" "config" "objects" "interface"))
     (write-source (path-expand "modules/fixture/unused/interface.ss" root) "(((cold")
     (write-source (path-expand "init.ss" root)
-      "(yuanxu! mode: explicit :fixture (backend) (unused disable: #t))")
+      "(yuanxu! :test-dir \"./t\" mode: explicit :fixture (backend) (unused disable: #t))")
     (def selection (yuanxu-load-modules (path-expand "init.ss" root)))
     (def record (.call selection .selected-record 'fixture/backend))
     (.cc workspace selection: selection record: record

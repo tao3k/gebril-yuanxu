@@ -17,7 +17,7 @@
         :tao3k/yuanxu/modules/funflow/control-plane/task
         :tao3k/yuanxu/modules/funflow/control-plane/flow-strand
         :tao3k/yuanxu/modules/funflow/control-plane/flow-declarations
-        :tao3k/yuanxu/object-family/role-syntax
+        :tao3k/yuanxu/object/role-syntax
         :tao3k/yuanxu/utilities/algorithms)
 
 (export FlowCategoryContract FlowContract FlowOf FlowOperationTypes FlowOperationsContract flow-signature admit-flow

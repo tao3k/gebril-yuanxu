@@ -5,9 +5,7 @@
         (only-in :std/error Error? Error-message)
         (only-in :gerbil/expander core-import-module module-context-path)
         (only-in "./qualification/module-publication/fixtures.ss" with-publication-source write-file)
-        (only-in :tao3k/yuanxu/modules/funflow/control-plane/task TaskContract)
-        (only-in :tao3k/yuanxu/modules/funflow/control-plane/flow FlowContract)
-        (only-in :tao3k/yuanxu/modules/funflow/scenario Scenario)
+        (only-in :tao3k/yuanxu/types/ports Port)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/source/reader module-publication-reader)
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-publication)
@@ -33,7 +31,7 @@
                     (module-source-read (path-expand role first))))
                 '("types.ss" "objects.ss" "config.ss"))
       (write-file (path-expand "interface.ss" other)
-        "(.def Module identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
+        "(.def Module identity: 'custom/other core: (.o scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
       (setup root first other)
       (def init (path-expand "init.ss" root))
       (def view (yuanxu-load-modules
@@ -73,21 +71,19 @@
                    (equal? (Error-message cause) "stale prepared Module publication"))))
           (check-equal? retargeted? #t)
           (current!))))
-    (yuanxu-test-case "Core functional definitions retain their admitted compiler context"
+    (yuanxu-test-case "Core library bindings retain their admitted compiler context"
       (with-other-source
         (lambda (root first _other)
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! source: \"./modules\" mode: explicit :custom (example))")
+            "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :custom (example))")
           (write-file (path-expand "objects.ss" first)
             (call-with-output-string
               (lambda (port)
                 (for-each (lambda (form) (write form port) (newline port))
                   '((import (only-in :clan/poo/object .o)
-                            (only-in :tao3k/yuanxu/modules/funflow/control-plane/task TaskContract)
-                            (only-in :tao3k/yuanxu/modules/funflow/control-plane/flow FlowContract)
-                            (only-in :tao3k/yuanxu/modules/funflow/scenario Scenario))
+                            (only-in :tao3k/yuanxu/types/ports Port))
                     (def FixtureScope
-                      (.o task-contract: TaskContract flow-contract: FlowContract scenario-type: Scenario))
+                      (.o port-contract: Port))
                     (export FixtureScope)))))))
         (lambda (_root _first _other view)
           (defvalues (scope times)
@@ -97,11 +93,9 @@
             (check-equal? (hash-ref times '(calls reader-candidate-entry-replay) 0) 1)
             (check-equal? (hash-ref times '(calls reader-candidate-fused-return-replay) 0) 1)
             (check-equal? (hash-ref times '(calls reader-preparation-replay) 0) 0))
-          (check-equal? (eq? (.get scope task-contract) TaskContract) #t)
-          (check-equal? (eq? (.get scope flow-contract) FlowContract) #t)
-          (check-equal? (eq? (.get scope scenario-type) Scenario) #t)
+          (check-equal? (eq? (.get scope port-contract) Port) #t)
           (check-equal? (.ref/cached (.get view modules custom) 'other) #f)
-          (def tool (core-import-module ':tao3k/yuanxu/modules/funflow/control-plane/task))
+          (def tool (core-import-module ':tao3k/yuanxu/types/ports))
           (def origin (module-context-path tool))
           ((.get view admit-current))
           (dynamic-wind
@@ -225,7 +219,7 @@
       (with-other-source
         (lambda (root _first _other)
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! source: \"./modules\" mode: explicit :custom (example) (other))"))
+            "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :custom (example) (other))"))
         (lambda (_root _first _other view)
           (def context (.get view context))
           (def generation (.get context generation))

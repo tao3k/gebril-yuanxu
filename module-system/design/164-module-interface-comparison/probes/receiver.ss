@@ -1,4 +1,4 @@
-(import :yuanxu/object-syntax/path-slots
+(import :yuanxu/syntax/path-slots
         (only-in :clan/poo/object .get))
 (.def Base
   build: (.o command: '("gerbil" "build") artifacts: '(build-log))

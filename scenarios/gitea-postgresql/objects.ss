@@ -1,7 +1,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import (only-in :clan/poo/object .get .o .cc)
+(import (only-in "postgresql/config.ss" PostgreSQLScope)
+        (only-in "gitea/config.ss" GiteaScope)
+        (only-in :clan/poo/object .get .o .cc)
         (only-in :tao3k/yuanxu/configuration/json config-defaults))
-(export application-scope)
+(export application-scope configured-application-scope)
+(def (configured-application-scope defaults)
+  (application-scope PostgreSQLScope GiteaScope defaults))
 (def (application-scope database client defaults)
   (.o Scenario: ((.get client application)
                  (config-defaults (.get defaults postgresql) (.get database config))

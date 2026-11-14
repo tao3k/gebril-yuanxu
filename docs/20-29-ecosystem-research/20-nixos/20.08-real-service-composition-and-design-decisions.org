@@ -143,7 +143,7 @@ Current checkout inspected: Core HEAD =7595bed= plus concurrent local changes on
 - [[file:../../../types.ss][types.ss]] admits runtime responsibility children. This provides a Contract
   mechanism; automatic selected-domain projection and complete resource checks
   remain separate integration work.
-- [[file:../../../object-syntax/path-slots.ss][path-slots.ss]] currently requires dotted paths to use =>.+. Ordinary
+- [[file:../../../syntax/path-slots.ss][path-slots.ss]] currently requires dotted paths to use =>.+. Ordinary
   deep path assignment in design examples is not claimed as implemented by this
   source inspection.
 

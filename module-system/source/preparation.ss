@@ -4,12 +4,13 @@
 ;;; Prepare compiler input from selected local sources; never import or run them.
 (import (only-in :tao3k/yuanxu/module-system/building/products
                  build-output-directory current-build-source-directory current-build-compiler-options
-                 invalidate-build-products! artifact-files static-product-path
+                 artifact-files static-product-path
                  call-with-selected-output-lock selected-output-source-directory)
         (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path)
         (only-in :clan/poo/object .o .ref .ref/cached .slot? object? object-protocol
                  object-%instance object-%precedence-list object-construction-current?)
         (only-in :clan/poo/slot-observation without-observation)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-deferred-role-exports)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-publication-role-imports module-interface-form? module-role-file)
@@ -17,7 +18,7 @@
         (only-in :tao3k/yuanxu/module-system/source/declaration include-module-body)
         (only-in :tao3k/yuanxu/module-system/source/config-prelude)
         (only-in :tao3k/yuanxu/module-system/source/module-prelude)
-        (only-in :std/io/tempfile call-with-temporary-directory)
+        (only-in :std/io/tempfile call-with-temporary-directory make-temporary-file-name)
         (only-in :gerbil/runtime/gambit current-readtable)
         (only-in :gerbil/runtime/syntax __*readtable*)
         (only-in :gerbil/expander current-expander-module-import expander-context-id syntax-e
@@ -266,12 +267,27 @@
                                           style-policy: (policy yuanxu-default-module-style-policy)
                                           admit-context: (context-current! void)
                                           capture: (capture #f))
-  (unless (and (yuanxu-module-source-ref? source-value)
-               (eq? (yuanxu-module-source-ref-kind source-value) 'local))
+  (unless (module-source-measure-operation 'source-ref-preparation
+            (lambda ()
+              (and (yuanxu-module-source-ref? source-value)
+                   (eq? (yuanxu-module-source-ref-kind source-value) 'local))))
     (error "publication preparation requires a selected local SourceRef" source-value))
-  (let* ((owner (source-metadata source-value 'module-id))
-         (declared-owner (or (source-metadata source-value 'declaration-id) owner))
-         (root (or (source-metadata source-value 'module-root) (source-metadata source-value 'module-tree-root)))
+  (let* ((closed? (and (not (current-module-source-observer))
+                       (owned-read-function-scope?)
+                       (yuanxu-module-source-ref-construction-current?)
+                       (not (object-protocol source-value))
+                       (object-%instance source-value)
+                       (without-observation
+                         (lambda () (pair? (.ref/cached source-value 'metadata))))))
+         (metadata (and closed? (yuanxu-module-source-ref-metadata source-value)))
+         (field (lambda (key)
+                  (if closed?
+                    (let (entry (assq key metadata)) (and entry (cdr entry)))
+                    (source-metadata source-value key))))
+         (owner (field 'module-id))
+         (declaration (field 'declaration-id))
+         (declared-owner (or declaration owner))
+         (root (or (field 'module-root) (field 'module-tree-root)))
          (path (yuanxu-module-source-ref-value source-value))
          (texts (make-hash-table)))
     (unless (and (symbol? owner) (string? root) (string? path)
@@ -391,6 +407,30 @@
             role-sources: (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles)
             build-source: (let (file (path-expand "build.ss" root))
                             (and (hash-key? texts file) file))
+            build-role-kind:
+            (let (text (hash-get texts (path-expand "build.ss" root)))
+              (and text
+                   (let (forms (call-with-input-string text read-all))
+                     (cond
+                      ((ormap (lambda (form) (and (pair? form) (eq? (car form) 'defbuild-script))) forms)
+                       'package-script)
+                      ((ormap (lambda (form)
+                                (match form
+                                  (['.def 'Build . slots]
+                                   (let loop ((slots slots))
+                                     (match slots
+                                       (['defbuild-script: . _] #t)
+                                       (['defbuild-script . _] #t)
+                                       ([['defbuild-script . _] . _] #t)
+                                       ([(? keyword?) _ . rest] (loop rest))
+                                       ([_ . rest] (loop rest))
+                                       (else #f))))
+                                  ;; POO owns inheritance and validates the effective
+                                  ;; slot after resolving this adjacent role.
+                                  (['.def ['Build '@ _ . _] . _] #t)
+                                  (else #f))) forms)
+                       'make-parameters)
+                      (else #f)))))
             namespace: (caddr compiler-info) prelude: (car compiler-info)
             admit-current: current!
             deferred-roles: deferred-roles
@@ -746,10 +786,13 @@
   (create-directory* view)
   ;; The view must not retain a previous selection's source fallback. Reuse
   ;; only our generated frames; unrelated/user files and symlinks are refused.
-  (def wanted
+  (def targets
     (map (lambda (entry)
-           (path-expand
-             (string-append (build-target-name (.ref entry 'compiler-identity) "") ".ss") view)) entries))
+           (cons (path-expand
+                   (string-append (build-target-name (.ref entry 'compiler-identity) "") ".ss") view)
+                 entry)) entries))
+  (def wanted (make-hash-table))
+  (for-each (lambda (row) (hash-put! wanted (car row) #t)) targets)
   (def (prune directory)
     (for-each
       (lambda (name)
@@ -762,24 +805,24 @@
                           (lambda (in) (let (line (read-line in))
                             (and (string? line) (string-prefix? ";; yuanxu-input " line))))))
              (error "unowned source in selected compiler view" path))
-           (unless (member (path-normalize path) wanted) (delete-file path)))
+           (unless (hash-key? wanted (path-normalize path)) (delete-file path)))
           (else (error "non-regular source-view entry" path))))
       (directory-files directory)))
   (prune view)
   ;; Enroll aliases in the existing extent-owned input association before any
   ;; guard/callback runs. Nested compiler extents restore their own association.
   (for-each
-    (lambda (entry)
+    (lambda (row)
       ;; view is canonical and build-target-name admits only relative identity
       ;; components. Its child directories do not exist until materialization.
-      (def target (path-expand
-                    (string-append (build-target-name (.ref entry 'compiler-identity) "") ".ss") view))
+      (def target (car row))
+      (def entry (cdr row))
       (def input (.ref entry 'input))
       (def previous (compiler-source-ref (compiler-source-inputs) target))
       (when (and previous (not (eq? previous input)))
         (error "compiler input alias collides with selected source" target))
       (hash-put! (compiler-source-inputs) target
-        (hash-ref (compiler-source-inputs) (path-normalize (.ref entry 'path))))) entries)
+        (hash-ref (compiler-source-inputs) (path-normalize (.ref entry 'path))))) targets)
   (prepare-compiler-view-entries! entries roles source-reads libdir view)
   (def (compile)
     (parameterize ((current-build-source-directory view))
@@ -829,12 +872,7 @@
       (cond
         (bootstrap-prelude
          (when previous
-           (call-with-module-source-callback
-             (lambda ()
-               ;; A former compiled-route descriptor must not authorize the
-               ;; product that the source bootstrap is about to replace.
-               (invalidate-build-products! (list identity) libdir)
-               (delete-file target)))))
+           (call-with-module-source-callback (lambda () (delete-file target)))))
         ((or (not preserve-unrecorded?) previous
              (not (module-source-type (static-product-path identity libdir))))
          (let ()
@@ -869,11 +907,15 @@
                       (path-strip-trailing-directory-separator (path-directory name)) out)
                     (newline out))))))
           (unless (equal? previous content)
-            ;; A crash after invalidation cannot reuse the previous native marker.
+            ;; Make compares the generated source input with its own outputs.
             (call-with-module-source-callback
               (lambda ()
-                (invalidate-build-products! (list identity) libdir)
-                (create-directory* (path-directory target))
-                (call-with-output-file (list path: target truncate: #t) (lambda (out) (display content out)))))))))
+                (def temporary (make-temporary-file-name target))
+                (unwind-protect
+                  (begin
+                    (call-with-output-file (list path: temporary truncate: #t)
+                      (lambda (out) (display content out)))
+                    (rename-file temporary target #t))
+                  (when (file-exists? temporary) (delete-file temporary)))))))))
       (module-source-measure-operation 'compiler-view-after
         (lambda () ((.ref input 'admit-current))))) batch))))

@@ -7,7 +7,7 @@
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/error Error? Error-message)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence
+        (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence
                  yuanxu-predicate-contract yuanxu-contract-admit
                  yuanxu-validation-evidence yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
@@ -51,7 +51,7 @@
                         denied-modules: '() init-source: #f))
   (def selected
     (select-module-graph graph-context '(app/web)
-      (lambda (_id) (.o core: (.o requires: (.o)) features: (.o))) current!))
+      (lambda (id) (.o identity: id core: (.o) features: (.o))) current!))
   (def build
     (module-build-graph selected
       (lambda (id)
@@ -120,7 +120,7 @@
   (def module-publication
     (refine-publication
       (.o identity: 'app/web features: (.o)
-        core: (.o requires: (.o)
+        core: (.o
                 admissions: (.o Scenario: (.o contract-path: '(types Application)
                                              export-path: '(value)))))))
   (def selected

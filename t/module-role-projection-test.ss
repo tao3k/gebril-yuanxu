@@ -33,7 +33,7 @@
       (write-source (path-expand "config.ss" root)
         "(.def Config mode: 'check) (export Config)\n")
       (write-source (path-expand "interface.ss" root)
-        "(.def Published identity: 'fixture core: (.o requires: (.o) scope-contract: ScopeContract exports: (.o answer: (value-of Value) origin: (.get Value origin) config: Config)) features: (.o))\n")
+        "(.def Published identity: 'fixture core: (.o scope-contract: ScopeContract exports: (.o answer: (value-of Value) origin: (.get Value origin) config: Config)) features: (.o))\n")
       (test root prefix))))
 (def module-role-projection-test
   (test-suite "One role inventory for declaration and compiler"
@@ -67,7 +67,7 @@
             ;; source-only half consumes the existing guarded source reader;
             ;; the next Case qualifies those frames through actual std/make.
             (def published ((.get (module-publication-reader) read) source))
-            (def effective ((.get published core link) (.o)))
+            (def effective (.get published core exports))
             (check-equal? (.get published identity) 'fixture)
             (check-equal? (.get effective answer) 42)
             (check-equal? (path-normalize (.get effective origin))

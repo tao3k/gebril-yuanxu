@@ -159,7 +159,7 @@ and the complete CompositionContract are available. The existing user-root
 source-role admission policy still applies.
 
 #+begin_src scheme
-(import :yuanxu/object-syntax/path-slots
+(import :yuanxu/syntax/path-slots
         :yuanxu/profile-composition/selection-syntax
         (only-in :clan/poo/object .get)
         (only-in :agentic-ai-lab/modules/funflow/runtime-scope Funflow))

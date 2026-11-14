@@ -2,8 +2,6 @@
 import YuanxuProof.Admission.CoreBuildHandoff
 namespace YuanxuProof.Admission.CoreStoreRecovery
 
-def quintSourceDigest : String := "sha256:105352d90dcb17f0ed6465dca8af52a6552eaf260782cb8cdaae7c785f97ba92"
-
 -- The selected path comes from release policy, independently of the candidate.
 -- registered/nar are results of the real Nix database/content checks. Lean does
 -- not prove Nix or authenticate a mutable caller-supplied selection policy.

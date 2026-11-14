@@ -4,8 +4,6 @@ import YuanxuProof.Admission.IssuedRead
 namespace YuanxuProof.Admission.IssuerProjection
 open IssuedRead
 
-def sequenceSourceDigest : String := "sha256:5d1c944e7cd87562ba0ab5500fc97e2a6fcb2f96e8d1b63c399bef2e7c68990f"
-
 -- The producer may change private storage, never the signed ordered sequence.
 def dependencySnapshot (dependencies : List Nat) : Array Nat := dependencies.toArray
 def dependencyMatches (current : List Nat) (saved : Array Nat) : Bool :=
@@ -23,8 +21,6 @@ theorem dependency_occurrences_not_deduplicated :
 
 theorem dependency_order_not_canonicalized :
     dependencyMatches [1, 1, 2] (dependencySnapshot [1, 2, 1]) = false := by decide
-
-def quintSourceDigest : String := "sha256:7be762a016d4d7e5a05925d6f589a98e50c9f057fbfc2c06e5a6a80a92c00fbd"
 
 -- Pointer handles are an injective projection of live eq? identities. Neither
 -- a public birth flag nor a successful runtime decision constructs this store.

@@ -9,7 +9,7 @@
         (only-in :tao3k/yuanxu/module-system/building/test-observation ModuleTestingProfile.)
         (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress
                  execution-progress-status)
-        (only-in :tao3k/yuanxu/poo-clos/objects poo-clos-generic-function poo-clos-method
+        (only-in :clan/poo/clos/objects poo-clos-generic-function poo-clos-method
                  poo-clos-any-specializer make-effective-method make-invocation-frame)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  current-module-process-trace-budget)

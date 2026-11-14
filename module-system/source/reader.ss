@@ -3,13 +3,12 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Assemble the public reader over one generation-local source session.
 (import (only-in :clan/poo/object .o .ref object-construction-current?)
-        (only-in :tao3k/yuanxu/object-family/read-projection current-owned-read-open-guard
+        (only-in :clan/poo/read-projection current-owned-read-open-guard
                  call-with-owned-source-reads owned-read-function-scope?)
         (only-in :tao3k/yuanxu/module-system/source/directory
                  directory-candidate-guard? directory-candidate-guard-invoke)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-measure-replay)
-        (only-in :tao3k/yuanxu/module-system/source/publication module-publication-recorded-dependencies
-                 module-publication-contract-current?)
+        (only-in :tao3k/yuanxu/module-system/source/publication module-publication-contract-current?)
         :tao3k/yuanxu/module-system/source/admission
         :tao3k/yuanxu/module-system/source/objects
         :tao3k/yuanxu/module-system/source/reader-session
@@ -44,11 +43,7 @@
       (lambda (prefix)
         (call-with-publication-reads
           (lambda ()
-            (def source #f)
-            (def publication
-              (reader-read-publication session #f
-                (lambda () (set! source (prefix)) source)))
-            (values source publication))))
+            (reader-read-publication session #f prefix values))))
       ;; Same preparation index as ordinary reads. Discovery is inert; the
       ;; producer below executes runtime roles and actual admission on demand.
       discover:
@@ -63,7 +58,7 @@
           (if directory-location? (directory-candidate-guard-invoke location) location))
         (def tools (list->hash-table (reader-session-interpreter-observations session)))
         (def scope (make-candidate-support '() tools (source-observation-rows tools)
-                      #f epoch-current location-current!))
+                      #f epoch-current location-current! directory-location?))
         (with-catch
           (lambda (failure) (set! (reader-session-refused? session) #t) (raise failure))
           (lambda ()
@@ -118,7 +113,7 @@
                       (when (current-module-source-observer)
                         ((current-module-source-observer) 'publication-discovered 1))
                       (reader-read-publication session source #f
-                        (lambda (source value)
+                        (lambda (source value owners)
                           (require-publication-policy! policy-current?)
                           (unless (module-publication-contract-current?) (reader-open-boundary! session))
                           (def fused-return? #f)
@@ -142,11 +137,6 @@
                               (unless fused-return? (check-admitted!))
                               (list source checked evidence))
                             (lambda (results admission-current! roots)
-                              (def ids #f)
-                              (def (project-dependencies!)
-                                (set! ids
-                                  (module-publication-recorded-dependencies (cadar results) roots)))
-                              (unless fused-return? (project-dependencies!))
                               ;; Aggregate projection keeps the original segments.
                               ;; The closed return and its guard share one ordered
                               ;; spine. Observed candidates already replay the two
@@ -175,8 +165,7 @@
                                             (call-with-module-source-fresh-reads
                                               (lambda ()
                                                 (unless entered?
-                                                  (check-admitted!)
-                                                  (project-dependencies!))
+                                                  (check-admitted!))
                                                 (when (or (not entered?) completed?) (guard))))
                                             (raise cause))
                                           (lambda ()
@@ -190,7 +179,6 @@
                                                     (set! entered? #t)
                                                     (tail!)
                                                     (check-admitted! #f)
-                                                    (project-dependencies!)
                                                     (entry!)
                                                     (set! completed? #t)))))))
                                         (tail!))))
@@ -199,7 +187,9 @@
                               ;; issued roots for the linker's POO topology
                               ;; slot. No successful check or purity flag.
                               (list (append (car results)
-                                      (list ids guard entry! tail! root-segments)))))) prepared))
+                                      (list owners guard entry! tail! root-segments
+                                            (and fused-return?
+                                                 (not (candidate-support-open? scope))))))))) prepared))
                     )))))))
       admit-current: (cut reader-full-current! session <...>)
       read-only-current?: (cut reader-source-state-current? session <...>)
@@ -218,6 +208,10 @@
           ;; inert preparation was cached. Both views share this one guard.
           (reader-derived-input session prepared source
             (hash-ref (reader-session-dependencies session) (path-normalize (yuanxu-module-source-ref-value source))))))
+      import-owners:
+      (lambda (source)
+        (hash-ref (reader-session-dependencies session)
+                  (cons 'import-owners (path-normalize (yuanxu-module-source-ref-value source)))))
       inputs: (lambda (source)
                 (parameterize ((current-module-source-phase 'publication-inputs)) (reader-current! session))
                 (hash-ref (reader-session-dependencies session) (path-normalize (yuanxu-module-source-ref-value source))))))

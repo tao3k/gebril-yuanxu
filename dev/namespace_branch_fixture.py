@@ -23,7 +23,7 @@ def main() -> None:
         (leaf / "interface.ss").write_text("((publication must remain unread\n")
         clauses.append(f":{group} ({name})")
     (args.root / "init.ss").write_text(
-        '(yuanxu! :load-modules "./modules" mode: explicit rename: Lab '
+        '(yuanxu! :test-dir "./t" :load-modules "./modules" mode: explicit rename: Lab '
         + " ".join(clauses)
         + ")\n"
     )

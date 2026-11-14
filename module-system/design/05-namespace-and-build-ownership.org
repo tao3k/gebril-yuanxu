@@ -14,7 +14,7 @@
 | Language implementation | root prelude.ss |
 | Public function prefix | yuanxu- |
 | Object/Contract prefix where qualification is needed | Yuanxu |
-| Type fact projections | :yuanxu/object-types/facts |
+| Type fact projections | :yuanxu/types/facts |
 
 The physical core/ submodule checkout does not define a compiler package.
 The product Agentic AI Lab retains its own product namespace. Yuanxu imports no

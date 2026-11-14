@@ -4,8 +4,7 @@
 
 ;;; Boundary: resolves feature-profile selections into deterministic feature sets.
 ;;; Invariant: dependency closure cannot introduce an undeclared feature identity.
-(import (only-in :std/list/list fold-right map filter-map)
-        (runtime: :clan/poo/object)
+(import (runtime: :clan/poo/object)
         (prefix-in :clan/poo/generalized-graph graph.)
         (prefix-in :clan/poo/strong-components scc.)
         (only-in :clan/poo/dependency-analysis Computation.)
@@ -36,7 +35,7 @@
   (values index (reverse keys) (reverse diagnostics)))
 
 (def (missing-dependency-diagnostics selections index)
-  (fold-right
+  (foldr
    (lambda (selection diagnostics)
      (let* ((descriptor (selection-descriptor selection))
             (feature-id (selection-id selection)))
@@ -52,7 +51,7 @@
    selections))
 
 (def (conflict-diagnostics selections index)
-  (fold-right
+  (foldr
    (lambda (selection diagnostics)
      (let* ((descriptor (selection-descriptor selection))
             (feature-id (selection-id selection)))

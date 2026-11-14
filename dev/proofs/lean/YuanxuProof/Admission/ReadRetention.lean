@@ -7,9 +7,6 @@ import LeanPoo.Functional.ContractConsequence
 namespace YuanxuProof.Admission.ReadRetention
 open IssuedRootForwarding
 
-def quintSourceDigest : String :=
-  "sha256:4243cdbfc443b7ccf707180e4215d45d9b51a66396016c07c77c78428da04c09"
-
 -- Nat denotes registry record identity, NOT receiver identity or field spelling.
 def retain (visited : List Nat) : List Nat := visited.eraseDups
 

@@ -45,7 +45,7 @@
           (def init (path-expand "init.ss" directory))
           (call-with-output-file init
             (lambda (out)
-              (write `(yuanxu! mode: explicit source: ,(path-expand "modules" core-root)
+              (write `(yuanxu! :test-dir "./t" mode: explicit source: ,(path-expand "modules" core-root)
                         (funflow)) out)))
           (def view (yuanxu-load-modules init))
           (check-equal? (.get view selected-graph module-order) '(funflow))

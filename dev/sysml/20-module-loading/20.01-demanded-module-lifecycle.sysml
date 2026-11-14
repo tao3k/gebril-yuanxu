@@ -9,7 +9,10 @@ package YuanxuModuleLoading {
                directory snapshot. A hit still checks the live path type.
                Full currentness still observes the directory listing.
                A large selection source compares exact decoded text through
-               EOF with a bounded buffer inside one observation window. */
+               EOF with a bounded buffer inside one observation window.
+               A guard and ordinary reader can share the observed text in
+               that window. Each guard compares its own expected text.
+               Effects require a fresh physical observation. */
     }
     part def SelectedDeclarations {
         attribute selectedCount : Integer;
@@ -17,6 +20,20 @@ package YuanxuModuleLoading {
         doc /* Runtime interface metadata: identity, requirements, feature
                decisions, role locations and source association. Dependency
                closure is not a list of linked business scopes. */
+    }
+    requirement def IndexedOwnerEligibility {
+        doc /* Apply denial before selection, and consult policy only on a
+               selection miss. Indexed membership may replace the list search
+               when both symbol sequences are the live payloads of the same
+               observation window. A matching receiver revision alone does not
+               establish that a separately mutable sequence is unchanged. */
+    }
+    requirement def ProfileClassificationRevision {
+        doc /* Preserve candidate directory order. Reclassify changed inputs
+               only when an authenticated change set covers every differing
+               classification input. Decoder policy is part of that input.
+               Unknown revisions require complete Profile currentness. A tag
+               match does not approve the selected owner's source bytes. */
     }
     part def PublicationPreflight {
         ref part declaration : SelectedDeclarations;
@@ -199,6 +216,9 @@ package YuanxuModuleLoading {
         doc /* Derived observations of the production algorithm, not policy
                flags or a second cache. Lean SourceClosureWork.Frames owns the
                recursive-frame/worklist representation proof and frame bound.
+               Its descent law preserves pending order while the active
+               sibling cursor stays in a loop argument. Only a nonempty
+               sibling continuation needs a frame when descending.
                IncrementalRoles owns affected-owner correspondence.
                IndexedWork instruments the existing HashSet worklist. A
                completed walk charges each root/edge occurrence one probe
@@ -274,6 +294,12 @@ package YuanxuModuleLoading {
                automatic Loader enrollment or a cached admission verdict.
                Lean IncrementalRoles owns registration/affected correspondence;
                SourceWindows owns byte-sharing/independent-check equivalence.
+               Other observations cannot certify an omitted effect window.
+               An edit may be visible only there and restored before return.
+               The withdrawn scratch experiment required exclusive access,
+               a physical file open, comparison of only the overwritten
+               prefix, and decoding through EOF. The v0.1.0 snapshot path
+               has separate runtime correspondence obligations.
                Quint owns stale source, omitted requirements, parent receiver
                and effect traces, not elapsed-time or GC arithmetic.
                Native runtime timings and retained-memory observations qualify

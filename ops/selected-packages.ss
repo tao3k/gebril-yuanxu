@@ -5,7 +5,7 @@
 ;;; It does not compile Module sources or generate a defbuild-script.
 (import :clan/poo/object
         (only-in :clan/poo/slot-observation %slot-read-active?)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/module-system/source/build unique-build-inputs
                  module-build-package-inputs-current! module-build-package-source-check
                  module-build-package-source-procedure)

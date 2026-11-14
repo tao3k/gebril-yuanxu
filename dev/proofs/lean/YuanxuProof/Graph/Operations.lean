@@ -6,7 +6,6 @@ Scheme refinement or resource bounds. The finite Quint program and runtime tests
 remain independent evidence. LeanPoo owns POO composition separately. -/
 namespace YuanxuProof.Graph.Operations
 
-def quintSourceDigest : String := "sha256:4cef3a2a0e39d308b5af97b48767f68b058e04a4bb418bdb33890318bc431a2a"
 def quintInvariantNames : List String :=
   ["OrderedPayload", "PathIdentity", "StructuralClosure", "InsertThenTarget", "HonestReceipt"]
 

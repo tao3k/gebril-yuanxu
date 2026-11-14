@@ -4,7 +4,7 @@
 (import :std/test :clan/poo/object
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in "../init.ss" tao3k/yuanxu.init.exports )
+        (only-in "../init.ss" tao3k/yuanxu.init.exports Modules Scenarios)
         (rename-in (only-in "../init.ss" tao3k/yuanxu.init.exports) (tao3k/yuanxu.init.exports ModuleNamespace))
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/building/test-projection module-test-projection module-test-file-source)
@@ -30,7 +30,7 @@
   (when (string-contains (.get source value) "/poison/")
     (error "unselected publication reader called"))
   (.o identity: 'json-schema features: (.o)
-      core: (.o requires: (.o) scope-contract: FixtureContract link: (lambda (_deps) (.o)))))
+      core: (.o scope-contract: FixtureContract exports: (.o))))
 (def (test-session source)
   (module-test-projection (yuanxu-load-modules source read-publication: fixture-reader)))
 (def module-testing-test
@@ -45,12 +45,14 @@
       (check-equal? (.ref/cached (.get tao3k/yuanxu.init.exports tests) 'selected-graph) #f))
     (test-case "namespace reflection returns real keys without demanding leaf values"
       (def scenarios (.get tao3k/yuanxu.init.exports Scenarios))
+      (check-equal? (eq? Scenarios scenarios) #t)
       (check-equal? (.all-slots/sort scenarios) '(applications services))
       (check-equal? (.all-slots/sort (.get scenarios services)) '(gitea postgresql))
       (check-equal? (.all-slots/sort (.get scenarios applications)) '(gitea-postgresql))
       (check-equal? (.ref/cached (.get scenarios applications) 'gitea-postgresql) #f)
       (check-equal? (.ref/cached (.get scenarios services) 'postgresql) #f)
       (def modules (.get tao3k/yuanxu.init.exports Modules))
+      (check-equal? (eq? Modules modules) #t)
       (check-equal? (eq? modules (.get tao3k/yuanxu.init.exports Modules)) #t)
       (check-equal? (eq? modules (.get ModuleNamespace Modules)) #t)
       (check-equal? (let ((init-modules-getter 'caller-binding))
@@ -78,7 +80,13 @@
         (.get (.call (.get tao3k/yuanxu.init.exports tests) .select
                 '(services/postgresql services/gitea applications/gitea-postgresql)) spec))
       (check-equal? (map path-strip-directory scenarios) '("config-test.ss"))
-      (check-equal? (.get tao3k/yuanxu.init.exports tests spec) (append json flow scenarios))
+      (def tests (.get tao3k/yuanxu.init.exports tests))
+      (check-equal? (.get tests spec)
+                    (append json flow scenarios
+                            (.get tests integration spec)
+                            (.get tests qualification spec)))
+      (check-equal? (.slot? tests 'std-tests) #f)
+      (check-equal? (.slot? tests '.run) #f)
       (check-equal? (eq? json (.get (.call (.get tao3k/yuanxu.init.exports tests) .select '(json-schema)) spec)) #t)
       (def selected (.call (.get tao3k/yuanxu.init.exports tests) .select '(json-schema)))
       (check-equal? (.slot? selected '.run) #f)
@@ -135,7 +143,7 @@
       (def file (path-expand "tests/atomic-test.ss" module-root))
       (write-forms file '((import :std/test)))
       (def init (path-expand "init.ss" workspace))
-      (write-forms init '((yuanxu! mode: explicit source: "./modules" (json-schema))))
+      (write-forms init '((yuanxu! :test-dir "./t" mode: explicit source: "./modules" (json-schema))))
       (def view (yuanxu-load-modules init read-publication: fixture-reader))
       ;; A bounded package-effect probe over the actual selection/Graph. Reading
       ;; before the write would hide this change under an incorrectly wide cache.
@@ -157,7 +165,7 @@
       (write-forms (path-expand "tests/atomic-test.ss" poison) '((error "unselected test loaded")))
       ;; The real JsonSchema module is selected by its admitted source mapping.
       (def declaration
-        `(yuanxu! mode: explicit source: "./modules"
+        `(yuanxu! :test-dir "./t" mode: explicit source: "./modules"
                     (json-schema @ ,(path-expand "modules/json-schema" root)) (poison disable: #t)))
       (def init (path-expand "init.ss" workspace))
       (write-forms init (list declaration))
@@ -167,7 +175,7 @@
       (check-exception (module-test-projection view '(poison)) error?)
       ((.get session admit-current))
       ;; A disabled owner is not silently accepted when explicitly selected.
-      (def changed `(yuanxu! mode: explicit source: "./modules" (poison)))
+      (def changed `(yuanxu! :test-dir "./t" mode: explicit source: "./modules" (poison)))
       (write-forms init (list changed))
       (check-exception ((.get session admit-current)) error?)
       (check-exception (test-session init) error?))
@@ -188,7 +196,7 @@
       (create-directory (path-directory integration))
       (write-forms integration '((error "unselected integration must not evaluate")))
       (def init (path-expand "init.ss" workspace))
-      (def declaration '(yuanxu! mode: explicit source: "./modules" (json-schema)))
+      (def declaration '(yuanxu! :test-dir "./t" mode: explicit source: "./modules" (json-schema)))
       (write-forms init (list declaration))
       (def view (yuanxu-load-modules init read-publication: fixture-reader))
       (def session (module-test-projection view))

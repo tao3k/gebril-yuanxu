@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Authenticate source, metadata and policy at reader operation boundaries.
-(import (only-in :tao3k/yuanxu/object-family/read-projection current-owned-read-open-guard)
+(import (only-in :clan/poo/read-projection current-owned-read-open-guard owned-read-function-scope?)
         :tao3k/yuanxu/module-system/source/admission
         :tao3k/yuanxu/module-system/source/reader-session
         :tao3k/yuanxu/module-system/source/reader-support
@@ -25,9 +25,13 @@
   ;; byte dependency. Revalidate the captured native bindings on EVERY
   ;; boundary; this is not a remembered successful admission.
   (reader-check-tool-contexts! session)
-  (module-source-admit-current! observations
-                                "compiler tool source changed; use a fresh reader")
-  (for-each (lambda (guard) (module-source-observe (source-preparation-invoke guard))) observed-guards))
+  (module-source-measure-operation 'reader-tool-source-current
+    (lambda ()
+      (module-source-admit-current! observations
+                                    "compiler tool source changed; use a fresh reader")))
+  (module-source-measure-operation 'reader-source-guards
+    (lambda ()
+      (for-each (lambda (guard) (module-source-observe (source-preparation-invoke guard))) observed-guards))))
 (def (reader-check-current/closed! session inputs _guard-count _source-count)
   ;; record-source-observations! only adds paths or verifies an equal
   ;; existing revision. With its private owner identity and cardinality,
@@ -86,7 +90,7 @@
                ((if local? (candidate-support-tool-rows scope) (reader-session-tool-rows session))))
              (module-source-observe (reader-session-check-current/closed session)
                (if local? (candidate-support-tool-rows scope) (reader-session-tool-rows session))
-               (length selected-guards)
+               (if local? (length selected-guards) (reader-session-guard-count session))
                (hash-length tools))))))))
   ;; Attribute the caller without changing the cache key or retaining a
   ;; result across its boundary. Brackets also close on a refused check.
@@ -100,7 +104,18 @@
           (lambda () (observer (list 'publication-guard-end origin) 1)))
         (module-source-measure-operation 'reader-current
           (lambda ()
-            (module-source-measure-operation (list 'reader-current origin) check!))))
+            (module-source-measure-operation (list 'reader-current origin)
+              (lambda ()
+                (let (candidate ((reader-session-candidate session)))
+                  (if (and candidate (not (candidate-support-open? candidate))
+                           (candidate-support-directory-location? candidate)
+                           (owned-read-function-scope?) (object-construction-current?)
+                           (reader-fixed-candidate-guards? candidate))
+                    ;; Directory and prepared-input checks observe the same
+                    ;; bytes in this closed checkpoint. The caller still ends
+                    ;; the window before expansion, initialization or admission.
+                    (call-with-module-source-read-cache check!)
+                    (check!))))))))
       ;; Open observers (including one which removes itself), public checks
       ;; and open candidate callbacks may alter native metadata. No verdict
       ;; crosses their return. A closed candidate's fixed source checks have
@@ -110,6 +125,9 @@
 (def (reader-full-current! session)
   (parameterize (((reader-session-candidate session) #f) (current-owned-read-open-guard #f)) (reader-current! session)))
 (def (reader-open-boundary! session (reason (current-module-source-phase)))
+  (module-source-measure-operation
+    (list 'reader-open-boundary (if (pair? reason) (car reason) reason))
+    void)
   (when ((reader-session-candidate session)) ((candidate-support-metadata-current ((reader-session-candidate session)))))
   (when (and ((reader-session-candidate session)) (not (candidate-support-open? ((reader-session-candidate session))))
              (current-module-source-observer))

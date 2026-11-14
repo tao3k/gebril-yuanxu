@@ -4,7 +4,7 @@
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/number IntegerRange)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-classification-evidence)
         (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract. source-diagnose-at call-with-source-slot-reads)
         (only-in :tao3k/yuanxu/configuration/slot-origin field-slot-origins/value admit-field-sources!)
         (only-in :tao3k/yuanxu/module-system/source/admission
@@ -114,6 +114,25 @@
       (check-exception (outer-current)
         (lambda (failure) (and (Error? failure)
           (string=? (Error-message failure) "first batch source changed"))))
+      (write-source batch-path "{}")
+      (def extra-path (path-expand "replay-append.json" (.get fixture root)))
+      (write-source extra-path "{}")
+      (call-with-collected-module-sources
+        (lambda (replay!)
+          (module-source-admit-current! batch)
+          (def appended? #f)
+          (parameterize ((current-module-source-observer
+                           (lambda (key _amount)
+                             (when (and (eq? key 'source-comparisons) (not appended?))
+                               (set! appended? #t)
+                               (module-source-admit-current! (list (cons extra-path "{}"))
+                                 "enrolled during replay")
+                               (write-source extra-path "changed")))))
+            (replay!))
+          (check-equal? appended? #t)
+          (check-exception (replay!)
+            (lambda (failure) (and (Error? failure)
+              (equal? (Error-message failure) "enrolled during replay"))))))
       ;; Missing files remain ordinary absence. Malformed queries must retain
       ;; their runtime error, including inside the pure source-read window.
       (check-equal? (module-source-type (path-expand "missing.ss" (.get fixture root))) #f)

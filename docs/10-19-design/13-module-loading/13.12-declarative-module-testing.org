@@ -51,7 +51,7 @@ observations are enabled:
 (.call Observed .run)
 #+end_src
 
-This configuration uses the existing =:yuanxu/object-syntax/path-slots= authoring
+This configuration uses the existing =:yuanxu/syntax/path-slots= authoring
 bindings. The assignment replaces only the =emit?= leaf; its ancestors retain
 their inherited slots. It lowers to ordinary POO, without a wrapper:
 
@@ -127,9 +127,16 @@ alone does not establish that transition or a performance measurement.
 
 =t/aws-context-publication-test.ss= selects
 =init.Scenarios.aws.tests.qualification= once. Core mechanism qualification lives
-in =t/Scenarios/aws/=, not in the AWS author's test directory. The existing
-=module-test-projection= discovers =t/<publication identity>/=
-relative to the init directory, only on explicit qualification demand. It
+in =t/yanxu/scenarios/aws/=, not in the AWS author's test directory. The existing
+=module-test-projection= discovers
+=<test-dir>/yanxu/<mount>/<module-path>/*-test.ss= only on explicit qualification
+demand. Each loader requires a literal =:test-dir= relative to the declaring
+file. Use =:test-dir "./t"= for the standard =t/= directory. An init-wide
+declaration supplies the directory for loaders without a local value.
+An auto loader discovers module owners from their Interface declarations.
+Rows in an auto loader may select features, disable a module, or bind an
+explicit source path.
+Without =rename:=, the mount segment is the loader directory's name. Discovery
 observes all immediate Scheme sources, executes only =*-test.ss=, and binds
 directory/helper/test snapshots to the same selection guard. No caller builds
 a file list, combines guards or defines a replacement source object.

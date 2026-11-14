@@ -45,7 +45,7 @@
     (test-case "captured source resolution does not delegate to a same-name replacement"
       (with-publication-source
         (lambda (_root _module-root source _view)
-          (def target ':tao3k/yuanxu/object-types/contracts)
+          (def target ':tao3k/yuanxu/types/contracts)
           (def canonical (core-import-module target))
           (def forged
             (make-module-context (expander-context-id canonical)

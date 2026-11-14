@@ -18,20 +18,16 @@ full domain-admission wiring remains future integration.
 The [[file:164-funflow-cicd-user-authoring-design.org][complete configuration design]] defines FunflowModule., full Check defaults,
 the lexically bound Pipeline and downstream path-slot refinements. This companion
 specifies the proposed Contract and Generic wiring instead of leaving that
-connection as a responsibility table. The Core declaration APIs below now have
-local source-runtime and source-compilation evidence. The concrete Funflow
-Loader/admission bridge functions remain proposed, so the complete product
-snippet is not yet an executable integration. The runtime receiver probe is
-separate evidence.
+connection as a responsibility table. Gerbil POO now owns the CLOS declaration
+APIs below. The Funflow Loader/admission bridge and complete integration remain
+proposals. The runtime receiver probe covers the receiver behavior alone.
 The governing rules are [[file:44-current-project-programming-style/02-poo-dispatch-and-extension.org][Style 02]], [[file:44-current-project-programming-style/03-functional-kernel-and-runtime-projection.org][Style 03]] and [[file:44-current-project-programming-style/05-macro-phase-and-lowering.org][Style 05]].
 
 Bootstrap/source-role owners supply canonical language/Core bindings internally;
 Profile/Scenario authors continue to use the bounded Module scope. The CLOS
-declaration bindings below come from Core's canonical facade; define-type and runtime
-slot/Contract generics use their canonical MOP/Core bindings. Do not confuse
-Core CLOS .defgeneric with the MOP slot .defgeneric that routes through
-a descriptor's .admit/.classify/.obligations slot. No import plumbing is imposed
-on downstream users.
+declaration bindings below come from =:clan/poo/clos=. The one-receiver
+generics for =.admit=, =.classify= and =.obligations= use =:clan/poo/mop=.
+These imports belong to the integration owner.
 
 * Publication families and independently extensible resolver axis
 
@@ -70,17 +66,17 @@ construction below is an expansion reference only, not a competing authoring API
 
 | Declaration item | Existing kernel | Declaration-layer state |
 |------------------+-----------------+-------------------------|
-| (argument (prototype expression)) | runtime prototype specializer and C4 dispatch already exist | parser IR and lowering implemented in the current Core working tree; focused validation recorded separately from integration |
+| (argument (prototype expression)) | runtime prototype specializer and C4 dispatch | Gerbil POO syntax lowers to the runtime prototype specializer |
 | (protocol expression) on .defgeneric | generic-function protocol and bundle identity admission already exist | implemented grammar/IR/lowering; lexical protocol identity preserved, existing default retained when omitted |
 | .defmethod forms inside .defmethod-bundle | checked method objects and explicit bundle composition already exist | implemented hygienic deferred context; methods remain inert until explicit composition, standalone declarations still register immediately |
 
 This is an extension of existing declarations, not a new DSL. The runtime
-clan/poo/mop slot .defgeneric remains the one-receiver protocol; Core's CLOS
-.declarations own genuine multi-argument dispatch. Keep their canonical lexical
+clan/poo/mop slot .defgeneric remains the one-receiver protocol. Gerbil POO
+CLOS declarations own multi-argument dispatch. Keep their canonical lexical
 bindings explicit in implementation owners; do not overload class/prototype
 identity by guessing from variable names or object shape.
 
-** Implemented declarations: local validation boundary
+** Historical declaration validation before the upstream move
 
 The Core working tree implements all three declaration changes. Prototype
 annotations reuse runtime C4 applicability. Generic protocol expressions are
@@ -142,7 +138,7 @@ outputs remained under /tmp/agenticailab-core-prototype-specializer.
 
 ** Target complete Generic and deferred method bundle
 
-The three declaration features below are implemented Core syntax. The Module
+The three declaration features below use Gerbil POO syntax. The Module
 publication families and named source/Loader/admission functions are still
 product design; supplying their names does not make that integration complete.
 
@@ -191,7 +187,7 @@ product design; supplying their names does not make that integration complete.
 
 ;; Explicit runtime composition; no registration while declaring the bundle.
 (poo-clos-compose-method-bundle
-  resolve-owner-export$poo-clos-generic
+  (.generic-object resolve-owner-export)
   ModuleOwnerLoaderMethods)
 
 ;; Same facade consumed by FunflowModule.'s receiver-aware runtime slots.

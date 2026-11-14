@@ -379,7 +379,7 @@ Use the JsonSchema-only bootstrap fixture and retain its ordinary library
 roots. Capture the complete Make list from =build.ss spec=. In the bounded
 fixture, 38 selected rows and six retained rows yield 42 distinct targets.
 The overlaps are =module-system/selection/init-syntax= and
-=object-types/contracts=. The selected projection checks and merges these
+=types/contracts=. The selected projection checks and merges these
 before Gerbil receives the list.
 
 In a disposable copy, compare the original entry, the existing build-script

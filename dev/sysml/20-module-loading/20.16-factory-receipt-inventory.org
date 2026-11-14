@@ -34,7 +34,7 @@ prefix is not a claim that the displayed suffix begins at a GC root.
 
 * Production change
 
-=object-family/read-projection.ss:owned-read-fields-present?= reuses the
+=object/read-projection.ss:owned-read-fields-present?= reuses the
 existing call-local factory ownership and the producer's =.all-slots= query.
 =module-system/authoring/admission.ss= enrolls the actual newly constructed
 receipt through the existing derived-receiver path. No kind name or contributor

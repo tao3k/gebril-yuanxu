@@ -27,7 +27,11 @@
           (display (string-append "example/" name) port)
           (display "\n(import :gerbil/core)\n(export (import: :gerbil/core))\n" port)))
       (parameterize ((current-expander-context (make-top-context)))
-        (proc root package identity)))))
+        (def previous (load-path))
+        (dynamic-wind
+          void
+          (lambda () (proc root package identity))
+          (lambda () (set-load-path! previous)))))))
 (def package-owned-prelude-test
   (test-suite "Package-owned language registration"
     (test-case "product prelude retains standard source and target identity"
@@ -47,7 +51,7 @@
           (register-module-build-source! root package)
           (call-with-output-file (path-expand "init.ss" root)
             (lambda (port)
-              (display "(import :tao3k/yuanxu/module-system/selection/init-syntax)\n(yuanxu! source: \"./modules\" mode: explicit (example))\n" port)))
+              (display "(import :tao3k/yuanxu/module-system/selection/init-syntax)\n(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit (example))\n" port)))
           (write-datum (path-expand "consumer.ss" root) '(def value 42))
           (def module-root (path-expand "modules/example" root))
           (create-directory* module-root)
@@ -58,9 +62,9 @@
             '(("objects.ss" . "(export)\n")
               ("config.ss" . "(export)\n")
               ("types.ss" . "(import :clan/poo/object (only-in :clan/poo/type Record))\n(def Scope (.cc (Record) identity: 'test/scope))\n(export Scope)\n")
-              ("build.ss" . "(import :clan/poo/object)\n(def Build '(\"facade\"))\n(export Build)\n")
+              ("build.ss" . "(import :clan/poo/object)\n(.def Build defbuild-script: (.o spec: '(\"facade\")))\n(export Build)\n")
               ("facade.ss" . "(import \"../../consumer.ss\") (export)\n")
-              ("interface.ss" . "(.def Example identity: 'example features: (.o) core: (.o requires: (.o) scope-contract: Scope exports: (.o) projections: (list Build)))\n")))
+              ("interface.ss" . "(.def Example identity: 'example features: (.o) core: (.o scope-contract: Scope exports: (.o)))\n")))
           (def projection
             (yuanxu-project-source-spec (yuanxu-load-modules (path-expand "modules" root))
                                        '() root (path-expand "init.ss" root)))

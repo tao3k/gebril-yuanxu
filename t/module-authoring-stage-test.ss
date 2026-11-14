@@ -12,7 +12,7 @@
         (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :tao3k/yuanxu/module-system/types ModuleAuthoringProfileContract)
         (only-in :tao3k/yuanxu/module-system/authoring/roles yuanxu-default-module-authoring-profile)
-        (only-in :tao3k/yuanxu/object-family/read-projection call-with-owned-read-projection
+        (only-in :clan/poo/read-projection call-with-owned-read-projection
                  current-owned-read-open-guard)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export module-authoring-stage-test)
@@ -83,7 +83,7 @@
           (with-other-source
             (lambda (root _first _other)
               (write-file (path-expand "init.ss" root)
-                "(yuanxu! mode: explicit :custom (example))"))
+                "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))"))
             (lambda (_root _first _other view)
               (def graph (.get view selected-graph))
               (check-equal? (.get graph status) 'ready)

@@ -30,7 +30,7 @@
       (.o interface:
         `((import (only-in ,(.get library path) ExternalValue))
           (.def Fixture identity: 'custom/example
-            core: (.o requires: (.o) scope-contract: FixtureContract
+            core: (.o scope-contract: FixtureContract
                       exports: (.o external: ExternalValue))
             features: (.o)))))
     (finally (.call PublicLibraryFixture .release library))))
@@ -68,7 +68,7 @@
                        (def Config #f) (def Greeting FixtureScope) (export Config Greeting))
             interface:
             '((.def Fixture identity: 'custom/example
-                core: (.o requires: (.o) scope-contract: FixtureContract
+                core: (.o scope-contract: FixtureContract
                           exports: (.o left: FixtureScope right: Greeting))
                 features: (.o))))))
     (yuanxu-test-case "new source epochs do not reuse stale role values"
@@ -103,7 +103,7 @@
         roles:
         (.o interface:
           '((.def Fixture identity: 'custom/example
-              core: (.o requires: (.o) scope-contract: FixtureContract
+              core: (.o scope-contract: FixtureContract
                         exports: (.o role-value: FixtureScope greeting: Greeting))
               features: (.o))))))
     (yuanxu-test-case "changed public name refuses before use and exact restoration admits"

@@ -35,6 +35,7 @@ import YuanxuProof.Contribution.Qualification
 import YuanxuProof.Admission.Federation
 import YuanxuProof.Admission.Source
 import YuanxuProof.Admission.SourceWindows
+import YuanxuProof.Admission.PreparedModuleIdentity
 import YuanxuProof.Admission.RootChild
 import YuanxuProof.Admission.ReturnWindows
 import YuanxuProof.Admission.BoundaryComposition

@@ -5,7 +5,7 @@
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-observation without-observation)
         (only-in :clan/poo/read-route require-read-route!)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
         (only-in :tao3k/yuanxu/module-system/source/admission module-source-type module-source-admit-current! call-with-module-source-read-cache
                  current-module-source-phase current-module-source-observer module-source-object-policy

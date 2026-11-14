@@ -13,9 +13,12 @@ module GraphSnapshotModel {
     ticket: 0, captured: 0, result: 0, success: false, oldIndexLive: true,
     published: false, accepted: false, staleAccepted: false,
     failedReplacement: false, retiredAccepted: false, invalid: Set()} }
-  action begin = all { s.pc == 0,
-    s' = s.with("pc", 1).with("ticket", 1).with("captured", s.head)
+  // The producer captured snapshot 0 before returning from its external work.
+  action begin = all { s.pc == 0, s.captured == s.head,
+    s' = s.with("pc", 1).with("ticket", 1)
       .with("invalid", if (BUG == "interval") Set(1,2) else oldImpact) }
+  action refuseLateStage = all { s.pc == 0, s.captured != s.head,
+    s' = s.with("pc", 3) }
   action prepare = {
     nondet success = Set(true,false).oneOf()
     all { s.pc == 1,
@@ -30,8 +33,8 @@ module GraphSnapshotModel {
     all { s.pc == 2, s.ticket == 2, s.result == 1,
       s' = s.with("result", 2).with("success", success) }
   }
-  // A competing request publishes while this request is outside the head lock.
-  action rival = all { s.pc == 2, s.head == 0,
+  // A competing request can publish before staging or during admission.
+  action rival = all { (s.pc == 0 or s.pc == 2), s.head == 0,
     s' = s.with("head", 1).with("adjacency", 1).with("ranks", 1).with("index", 1)
       .with("oldIndexLive", false).with("published", true) }
   action install = {
@@ -53,14 +56,15 @@ module GraphSnapshotModel {
     s' = s.with("retiredAccepted", BUG == "retired" or s.oldIndexLive) }
   // Reader can observe a head at any stage; staged tables never become its head.
   action read = { s' = s }
-  action step = any {begin, prepare, extend, finishFresh, rival, install, oldRequest, read}
+  action step = any {begin, refuseLateStage, prepare, extend, finishFresh, rival, install, oldRequest, read}
   val ConsistentHead = s.head == s.adjacency and s.head == s.ranks and s.head == s.index
   val ExactTicket = not(s.staleAccepted)
   val OldIndexLifetime = s.published or s.oldIndexLive
   val FailedKeepsHead = not(s.failedReplacement)
   val RetiredRefused = not(s.retiredAccepted)
-  val FullOldImpact = s.pc == 0 or oldImpact.subseteq(s.invalid)
+  val FullOldImpact = s.ticket == 0 or oldImpact.subseteq(s.invalid)
+  val BoundStage = s.ticket == 0 or s.captured == 0
   val RejectAll = not(s.accepted)
-  val safety = ConsistentHead and ExactTicket and OldIndexLifetime and FailedKeepsHead and RetiredRefused and FullOldImpact
+  val safety = ConsistentHead and ExactTicket and OldIndexLifetime and FailedKeepsHead and RetiredRefused and FullOldImpact and BoundStage
 }
 module GraphSnapshot { import GraphSnapshotModel(BUG = "none").* }

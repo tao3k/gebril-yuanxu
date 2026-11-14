@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Real role sources and init; assertions run in the owning std/test Case.
-(import "../module-init/fixture.ss" "./workloads.ss" (except-in :clan/poo/object .def .o) :tao3k/yuanxu/object-syntax/path-slots :std/test
+(import "../module-init/fixture.ss" "./workloads.ss" (except-in :clan/poo/object .def .o) :tao3k/yuanxu/syntax/path-slots :std/test
         (only-in :std/source this-source-file)
         (only-in :tao3k/yuanxu/ops/progress execution-progress!)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
@@ -15,11 +15,11 @@
         SparseBusinessEvalFixture SparseBusinessAttributionFixture
         declaration-scale-case declaration-scale-profile)
 (def (declaration-scale-profile count (performance-gate? #t))
-  ;; Capacity Cases have time to finish under the hosted runner's GC load.
-  ;; The outer process budget also covers importing and reporting.
+  ;; The dense capacity Cases use a fixed termination budget. The optional
+  ;; performance run keeps the same workload and the 180-second target.
   (def selected (yuanxu-selected-testing-case-profile))
   (let (profile (.cc selected max-duration-milliseconds:
-                  (if performance-gate? 180000 720000)))
+                  (if performance-gate? 180000 700000)))
     (if (= count 10000)
       (.cc profile heap-limit-bytes: 4294967296 live-growth-limit-bytes: 4294967296)
       profile)))
@@ -33,7 +33,6 @@
       (displayln "declaration-stage end=" name " seconds=" (- (real-time) started))
       (force-output))))
 (def (write-forms path forms)
-  (create-directory* (path-directory path))
   (call-with-output-file path
     (lambda (port) (for-each (lambda (form) (write form port) (newline port)) forms))))
 (.def DeclarationFixture
@@ -41,7 +40,6 @@
   runtime-values?: #f
   poison-unselected?: #f
   profile-selection?: #f
-  sparse-selection?: #f
   open-role-payloads?: #f
   .verify: verify-declaration-scale
   .acquire:
@@ -67,18 +65,17 @@
         (write-fixture-source (path-expand "gerbil.pkg" fixture-root)
           (list (list 'package: (string->symbol (symbol->string (gensym 'declaration-scale-))))))
         (write-fixture-source (path-expand "init.ss" fixture-root)
-          (cond (profile-selection?
+          (if profile-selection?
                  '((import :tao3k/yuanxu/module-system/selection/init-syntax)
-                   (yuanxu! source: "./modules" mode: auto profile: security)))
-                (sparse-selection?
-                 '((import :tao3k/yuanxu/module-system/selection/init-syntax)
-                   (yuanxu! source: "./modules" mode: auto (module-1))))
-                (else
+                   (yuanxu! :test-dir "./t" source: "./modules" mode: auto profile: security))
                  `((import :tao3k/yuanxu/module-system/selection/init-syntax)
-                   (yuanxu! source: "./modules" mode: explicit ,@(map list ids))))))
+                   (yuanxu! :test-dir "./t" source: "./modules" mode: explicit ,@(map list ids)))))
+        (def modules-root (path-expand "modules" fixture-root))
+        (create-directory modules-root)
         (for-each
           (lambda (id)
-            (def directory (path-expand (symbol->string id) (path-expand "modules" fixture-root)))
+            (def directory (path-expand (symbol->string id) modules-root))
+            (create-directory directory)
             (write-fixture-source (path-expand "types.ss" directory)
               '((import (only-in :clan/poo/mop Type.)
                         (only-in :clan/poo/object object?))
@@ -109,13 +106,14 @@
                                  '(.o port: 5432))))
                 '((def Config 'configured) (export Config))))
             (write-fixture-source (path-expand "interface.ss" directory)
-              `((.def Module identity: ',id
+              `(,@(if (eq? id 'module-0) '()
+                    '((import (rename-in (only-in "../module-0/types.ss" ScopeContract)
+                                         (ScopeContract ProviderScopeContract)))))
+                (.def Module identity: ',id
                   ,@(if profile-selection?
                         (list 'tags: (list 'quote (if (eq? id 'module-1) '(security audited) '(other))))
                         '())
-                  core: (.o requires: ,(if (eq? id 'module-0) '(.o)
-                                           '(.o Shared: (.o module-id: 'module-0 contract: ScopeContract)))
-                            scope-contract: ScopeContract
+                  core: (.o scope-contract: ScopeContract
                             exports: ,(payload
                                         (if runtime-values?
                                           '(.o (:: @ Scope.) config: Config)
@@ -137,8 +135,11 @@
             modules: (declaration-stage 'module-namespace (lambda () (.get exports modules)))))))
   .release:
   (lambda (fixture)
-    (clear-temporary-file! (.get fixture root))
-    (check-equal? (file-exists? (.get fixture root)) #f)))
+    (def root (.get fixture root))
+    (declaration-stage 'fixture-release
+      (lambda ()
+        (clear-temporary-file! root)
+        (check-equal? (file-exists? root) #f)))))
 
 (.def (RuntimeValueFixture @ DeclarationFixture)
   runtime-values?: #t
@@ -159,17 +160,22 @@
   poison-unselected?: #t
   .verify: verify-business-eval-once)
 (.def (SparseBusinessEvalFixture @ BusinessEvalOnceFixture)
-  sparse-selection?: #t
+  profile-selection?: #t
   .verify: verify-sparse-business-eval)
 (.def (SparseBusinessAttributionFixture @ SparseBusinessEvalFixture)
   .verify: verify-sparse-business-attribution)
 
 ;; Internal test declaration: no runner, execution policy or module list is copied.
-(defrules declaration-scale-case ()
+(defrules declaration-scale-case (capacity-diagnostics)
   ((_ description count)
    (declaration-scale-case description count DeclarationFixture))
   ((_ description count fixture-profile)
    (declaration-scale-case description count fixture-profile #t))
+  ((_ description count fixture-profile capacity-diagnostics)
+   (cond-expand
+     (yuanxu-module-test-performance-gate
+      (declaration-scale-case description count fixture-profile #t))
+     (else (declaration-scale-case description count fixture-profile #f))))
   ((_ description count fixture-profile performance-gate?)
    (yuanxu-test-fixture description profile: (declaration-scale-profile count performance-gate?)
      (fixture (.cc fixture-profile size: count))
