@@ -192,8 +192,11 @@
                       (hash-ref times (list 'cpu-system stage) 0.))
                    (hash-ref times (list 'read-attempts stage) 0)))
            '(selected-owner-closure reader-preparation-start reader-wrapper-expansion
-             reader-interface-start reader-admission-start reader-current source-init-current
-             metadata-replay selected-core-projection selected-topological-resolution))
+             reader-interface-start reader-admission-start reader-value-admission
+             reader-admission-evidence reader-current reader-native-identity
+             reader-tool-source-current reader-source-guards source-init-current
+             metadata-replay metadata-checkpoints selected-core-projection
+             selected-topological-resolution))
       (hash->list times)))
   (when (eq? phase 'runtime-graph-start)
     (yuanxu-write-observation-line!

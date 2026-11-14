@@ -157,7 +157,7 @@
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
                            reader-admission-start reader-value-admission reader-admission-evidence scope-factory
                            reader-current reader-native-identity reader-tool-source-current reader-source-guards
-                           metadata-replay observed-metadata-replay publication-guard-sweep
+                           metadata-replay metadata-checkpoints observed-metadata-replay publication-guard-sweep
                            reader-candidate-fused-return-replay
                            metadata-index metadata-root-merge metadata-cache-miss-receivers
                            source-init-current source-authoring-profile-checkpoint

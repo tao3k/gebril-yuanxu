@@ -420,6 +420,14 @@ package YuanxuSelectedPackageBuilds {
                native table row and still reads the Context identity and path
                live. Independent point queries authenticate table membership. */
     }
+    requirement def TerminalDirectoryObservation {
+        doc /* The closed directory walk enrolls its terminal path-kind check
+               before handing the leaf to publication. The handoff shares the
+               just-observed kind. Open observers and explicit source bindings
+               retain the original check, and independent currentness rechecks
+               the enrolled path. Lean ImportCorrespondence
+               closed_terminal_kind_handoff specifies the closed cut. */
+    }
     requirement def CandidateReplaySites {
         doc /* Attribute declaration-before, declaration-inputs, role-entry,
                role-return, declaration-after and candidate-admitted

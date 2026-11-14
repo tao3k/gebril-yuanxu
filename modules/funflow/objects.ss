@@ -12,7 +12,7 @@
                  flow-arr flow-then flow-fanout flow-map flow-bind
                  flow-first flow-second conditional-flow try-flow
                  return-flow cached-pure-flow)
-        (only-in "store.ss" put-dir-flow get-dir-flow store-flow)
+        (only-in "store-flow.ss" put-dir-flow get-dir-flow store-flow)
         (only-in "job.ss" job-graph run-job)
         "config-prototypes.ss" "graph-projection.ss"
         (only-in "scenario.ss" Scenario))

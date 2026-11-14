@@ -996,6 +996,20 @@ This is a live-heap reading. Peak RSS and attributable allocations need
 separate measurements. Sparse attribution measured directory, admission and
 scope/value phases at 1.86, 3.17 and 7.77 seconds in a separate demand sequence.
 
+The macOS stage run at =5b2444f= measured 521.93 seconds wall and
+251.29 seconds CPU for the dense graph. Inclusive reader admission took
+160.65 seconds wall and 73.50 seconds CPU, metadata replay 94.64 and 54.83,
+and Init source checks 31.59 and 17.86. Topological resolution took 0.58
+seconds wall and 0.32 seconds CPU. These stages overlap. The Init guard
+processed 9,731,534,060 characters and issued replay visited 58,692,026
+records. Normal dense Cases enforce 180 seconds under 4 GiB. The existing
+650-second capacity profile is available only with explicit stage accounting.
+
+=closed_terminal_kind_handoff= covers the terminal directory kind already
+observed and enrolled by the path walk. The closed publication handoff uses
+that observation. Explicit bindings and open paths keep their kind checks,
+and later currentness still checks the enrolled path.
+
 A local macOS diagnostic with the =24bdc84= Scheme build and pinned POO
 completed the dense declaration Case under its 650-second capacity profile
 and 4 GiB heap fence. The graph phase took 541.98 s wall and 266.22 s CPU,

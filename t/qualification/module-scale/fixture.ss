@@ -15,8 +15,8 @@
         SparseBusinessEvalFixture SparseBusinessAttributionFixture
         declaration-scale-case declaration-scale-profile)
 (def (declaration-scale-profile count (performance-gate? #t))
-  ;; Capacity Cases have time to finish under the hosted runner's GC load.
-  ;; The outer process budget also covers importing and reporting.
+  ;; Full runs enforce the performance gate. Dense stage diagnostics may
+  ;; continue under the existing capacity budget to attribute overruns.
   (def selected (yuanxu-selected-testing-case-profile))
   (let (profile (.cc selected max-duration-milliseconds:
                   (if performance-gate? 180000 650000)))
@@ -161,11 +161,16 @@
   .verify: verify-sparse-business-attribution)
 
 ;; Internal test declaration: no runner, execution policy or module list is copied.
-(defrules declaration-scale-case ()
+(defrules declaration-scale-case (capacity-diagnostics)
   ((_ description count)
    (declaration-scale-case description count DeclarationFixture))
   ((_ description count fixture-profile)
    (declaration-scale-case description count fixture-profile #t))
+  ((_ description count fixture-profile capacity-diagnostics)
+   (cond-expand
+     (yuanxu-module-test-stage-accounting
+      (declaration-scale-case description count fixture-profile #f))
+     (else (declaration-scale-case description count fixture-profile #t))))
   ((_ description count fixture-profile performance-gate?)
    (yuanxu-test-fixture description profile: (declaration-scale-profile count performance-gate?)
      (fixture (.cc fixture-profile size: count))
