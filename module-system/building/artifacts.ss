@@ -421,6 +421,9 @@
   ;; The caller may explicitly clean the selected output or use an empty prefix.
   (unless (or reusable? (null? (artifact-files identities libdir #f programs)))
     (error "build-required: unissued selected outputs; clean selected outputs" libdir))
+  ;; The input scope canonicalizes the output fallback before Make starts.
+  ;; Establish the selected directory before entering that scope.
+  (create-directory* libdir)
   (parameterize ((current-build-output-directory libdir))
     (call-with-values action
     (lambda results
@@ -432,7 +435,6 @@
       (when (and (issued-build? previous) (not (eq? package-current! void))
                  (not (equal? files (issued-build-files previous))))
         (error "approved Core build outputs changed; require a new publication"))
-      (create-directory* libdir)
       (def record (make-temporary-file-name (path-expand ".yuanxu-build-issuance-" libdir)))
       (call-with-output-file (list path: record truncate: #t)
         (lambda (port)
