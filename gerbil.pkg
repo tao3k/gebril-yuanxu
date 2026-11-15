@@ -6,5 +6,5 @@
 (package: tao3k/yuanxu
  prelude: :tao3k/yuanxu/prelude
  depend:
- ;; Graph, protected reads and CLOS from Gerbil-POO.
- ("github.com/tao3k/gerbil-poo@7f5535c459ca5b6c879cdd9c2635258d6880a840"))
+ ;; Graph, protected reads and the unified MOP from Gerbil-POO.
+ ("github.com/tao3k/gerbil-poo@1144274d471131ac47a2d3fe75204a8163cb0500"))
