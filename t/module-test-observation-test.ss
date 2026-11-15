@@ -4,13 +4,13 @@
         (only-in :std/list/list iota)
         (only-in :std/source this-source-file)
         (only-in :gerbil/runtime/loader list-modules)
-        (only-in :clan/poo/mop call-with-slot-read-observer)
+        (only-in :clan/poo/mop call-with-slot-read-observer
+                 poo-clos-generic-function poo-clos-method poo-clos-any-specializer)
         (only-in :clan/poo/slot-observation slot-read-key slot-read-receiver)
         (only-in :tao3k/yuanxu/module-system/building/test-observation ModuleTestingProfile.)
         (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress
                  execution-progress-status)
-        (only-in :clan/poo/clos/objects poo-clos-generic-function poo-clos-method
-                 poo-clos-any-specializer make-effective-method make-invocation-frame)
+        (only-in :clan/poo/clos/objects make-effective-method make-invocation-frame)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  current-module-process-trace-budget)
         (only-in :tao3k/yuanxu/testing

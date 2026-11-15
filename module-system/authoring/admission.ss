@@ -10,7 +10,10 @@
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!
                  slot-read-receiver slot-read-value without-observation)
-        (only-in :clan/poo/mop Type. define-type element? validate)
+        (only-in :clan/poo/mop Type. define-type element? validate
+                 poo-clos-generic-protocol poo-clos-compose-method-bundle
+                 poo-clos-compute-applicable-methods
+                 .defgeneric .defmethod .generic-object .defmethod-bundle)
         (only-in :clan/poo/type List)
         (only-in :std/list/list any delete-duplicates/hash filter-map find map-in-order)
         (only-in :tao3k/yuanxu/utilities/algorithms
@@ -24,18 +27,10 @@
         (only-in :tao3k/yuanxu/module-system/observability/presentation
                  yuanxu-poo-slot-authoring-datum-bindings
                  yuanxu-poo-slot-authoring-self-reference?)
-        ;; Role admission needs dispatch and immutable method declarations, not
-        ;; the aggregate class evolution/reflection/load-form publication.
-        (only-in :clan/poo/clos/objects
-                 poo-clos-generic-protocol
-                 poo-clos-compose-method-bundle
-                 clos-call-carrier-policy-guard)
+        (only-in :clan/poo/clos/objects clos-call-carrier-policy-guard)
         (only-in :clan/poo/read-projection call-with-owned-read-projection
                  owned-read-function-scope? owned-read-method! owned-read-derived!
                  owned-read-fields-present? make-owned-method-check call-with-owned-read-method-checks)
-        (only-in :clan/poo/clos/generic-syntax .defgeneric .defmethod .generic-object)
-        (only-in :clan/poo/clos/dispatch poo-clos-compute-applicable-methods)
-        (only-in :clan/poo/clos/method-bundle-syntax .defmethod-bundle)
         (only-in :tao3k/yuanxu/module-system/source/observations
                  module-source-object-policy current-module-source-observer
                  module-source-measure-operation)
@@ -728,8 +723,8 @@
        (zero? (object-revision ModuleAuthoringAdmission))
        (plain-dispatch-argument? interface)
        (plain-dispatch-argument? role)
-       (object-%instance interface)
-       (object-%instance role)
+       (object-instantiated? interface)
+       (object-instantiated? role)
        ;; Do not run a new owner callback while deciding whether to use the
        ;; stock result. Source/role validation already demanded these fields.
        (without-observation

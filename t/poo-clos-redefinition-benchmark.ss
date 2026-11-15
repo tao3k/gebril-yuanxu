@@ -6,7 +6,9 @@
 ;;; Dependent C4 projection and commit witness for real slot-layout changes.
 
 (import (only-in :gerbil/runtime/gambit current-jiffy jiffies-per-second)
-        :clan/poo/clos)
+        (only-in :clan/poo/mop poo-clos-class poo-clos-class-effective-slots
+                 poo-clos-class-generation poo-clos-direct-slot-definition
+                 poo-clos-redefine-class))
 
 (def +dependent-depth+ 16)
 (def +slots-per-class+ 16)

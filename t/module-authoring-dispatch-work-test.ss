@@ -29,11 +29,9 @@
                  yuanxu-module-authoring-source-admit
                  yuanxu-module-authoring-admission-accepted?)
         (only-in :tao3k/yuanxu/module-system/authoring/roles ConfigSourceRole.)
-        (only-in :clan/poo/clos/types
-                 ClosGenericFunction ClosEffectiveMethod ClosInvocationFrame ClosMethod)
-        (only-in :clan/poo/clos/objects %prepare-effective-method)
-        (only-in :clan/poo/clos/dispatch
-                 poo-clos-call poo-clos-compute-effective-method))
+        (only-in :clan/poo/mop ClosGenericFunction ClosEffectiveMethod ClosInvocationFrame ClosMethod
+                 poo-clos-call poo-clos-compute-effective-method)
+        (only-in :clan/poo/clos/objects %prepare-effective-method))
 (export module-authoring-dispatch-work-test)
 
 ;; Count runtime policy-slot deliveries, including replay. This deliberately

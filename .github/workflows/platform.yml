@@ -57,7 +57,7 @@ jobs:
         run: |
           matrix=$(just test-ci-groups)
           test -n "$matrix"
-          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          printf 'matrix=%s\n' "$matrix" >> "$GITHUB_OUTPUT"
       - name: Archive the package build
         run: tar -czf "$RUNNER_TEMP/package.tar.gz" .gerbil
       - uses: actions/upload-artifact@v7

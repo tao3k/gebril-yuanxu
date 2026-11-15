@@ -3,10 +3,11 @@
 ;;; Test-local collection adapter. Real MOP, source guards, selected/build graph,
 ;;; delayed CLOS bundle, Core .admit and checked publisher. No Loader call.
 (import (only-in :std/error Error? Error-message) :std/test :std/list/list :clan/poo/object
-        (only-in :clan/poo/mop define-type)
+        (only-in :clan/poo/mop define-type .defgeneric .defmethod .defmethod-bundle
+                 poo-clos-call poo-clos-compose-method-bundles poo-clos-generic-function
+                 poo-clos-generic-protocol)
         (only-in :std/io/tempfile make-temporary-file-name)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        :clan/poo/clos
         (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence)
         (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
         (only-in :tao3k/yuanxu/module-system/source/selection select-module-graph)

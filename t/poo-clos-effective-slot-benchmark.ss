@@ -7,7 +7,8 @@
 
 (import (only-in :clan/poo/object .ref)
         (only-in :gerbil/runtime/gambit current-jiffy jiffies-per-second)
-        :clan/poo/clos)
+        (only-in :clan/poo/mop poo-clos-class poo-clos-class-effective-slots
+                 poo-clos-direct-slot-definition poo-clos-standard-object-class))
 
 (def +ancestors+ 8)
 (def +slots-per-class+ 48)

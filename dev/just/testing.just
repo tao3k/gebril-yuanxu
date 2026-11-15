@@ -77,8 +77,8 @@ test-profile path:
 # Real AWS Schema packages, child Context admission and publication; no deployment.
 
 # Bounded, opt-in CLOS dispatch profiling outside the unit-test harness.
-benchmark-dispatch:
-    env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi t/poo-clos-dispatch-benchmark.ss
+benchmark-dispatch workload="dispatch":
+    env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi t/poo-clos-dispatch-benchmark.ss {{ quote(workload) }}
 
 benchmark-slot:
     env -u SDKROOT timeout --foreground --signal=TERM --kill-after=5s 120s gerbil {{ gerbil_test_runtime_options }} env gxi t/poo-clos-slot-benchmark.ss
@@ -115,7 +115,7 @@ test-selected-modules:
     export GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}"
     {{ gerbil_compiler_environment }} timeout --signal=TERM --kill-after=5s 300s gxi {{ gerbil_test_runtime_options }} dev/build-published-modules.ss
     files=()
-    selected=$(gxi {{ gerbil_test_runtime_options }} -e '(import (only-in "./dev/ci-inventory.ss" main))' -e '(main "--published")')
+    selected=$(gxi {{ gerbil_test_runtime_options }} dev/build-published-modules.ss tests)
     test -n "$selected"
     while IFS= read -r file; do files+=("$file"); done <<< "$selected"
     test "${#files[@]}" -gt 0

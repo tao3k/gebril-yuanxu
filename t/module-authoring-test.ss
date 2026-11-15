@@ -3,7 +3,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :clan/poo/type Record)
         (only-in :clan/poo/object .o .ref .cc .mix .put! .get)
-        (only-in :clan/poo/mop element? make-instance)
+        (only-in :clan/poo/mop element? make-instance poo-clos-call
+                 poo-clos-generic-protocol poo-clos-generic-function
+                 poo-clos-compose-method-bundle poo-clos-add-method poo-clos-remove-method)
         (prefix-in (only-in :clan/poo/testing/property check-property make-specification) property.)
         (prefix-in (only-in :clan/poo/testing/property/generator generator-integer) generator.)
         (only-in :clan/poo/testing/property/test require-passed)
@@ -20,10 +22,6 @@
         :tao3k/yuanxu/module-system/authoring/admission
         (only-in :tao3k/yuanxu/module-system/authoring/roles ModuleAuthoringExecutor.
                  yuanxu-default-module-authoring-profile)
-        (only-in :clan/poo/clos/objects
-                 poo-clos-generic-protocol poo-clos-generic-function
-                 poo-clos-compose-method-bundle poo-clos-add-method poo-clos-remove-method)
-        (only-in :clan/poo/clos/dispatch poo-clos-call)
         :tao3k/yuanxu/module-system/authoring/import-policy
         :tao3k/yuanxu/module-system/authoring/projection)
 (export module-authoring-test)
