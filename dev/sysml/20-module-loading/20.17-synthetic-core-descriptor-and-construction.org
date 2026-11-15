@@ -227,3 +227,58 @@ References (fixed revision):
 - [[https://github.com/tao3k/gerbil-poo/blob/ec5ab0a8f18210a3a66eb7d2e6b01d4fd763ef94/slot-layout.ss][Shared shape and receiver-local access cache]]
 - [[https://github.com/tao3k/gerbil-poo/blob/ec5ab0a8f18210a3a66eb7d2e6b01d4fd763ef94/io.ss][module-action implementation]]
 - [[https://github.com/tao3k/gerbil-poo/blob/ec5ab0a8f18210a3a66eb7d2e6b01d4fd763ef94/examples/representation-service.ss][Composed deferred runtime entries]]
+
+* Restored Core-row acceptance and Graph attribution
+
+The restored Core-row candidate was qualified in the permanent =poo-flow/core=
+checkout with Gerbil =2591dcd=, Gambit =dcd677c= and POO =dc7c407=. The second
+10,000-module runtime-selection Case completed naturally: 578.73 s process wall
+and 344.17 s process CPU. The original 700 s Case budget, 60 s idle watchdog and
+4 GiB Gambit heap fence remained enabled. Peak process RSS was 5,180,342,272
+bytes (4.82 GiB); the heap fence does not promise a 4 GiB RSS ceiling.
+
+The first graph's overlapping diagnostic spans included owner closure
+460.65 s wall / 284.21 s CPU, declaration value admission 148.05 / 83.56 s,
+and metadata replay 126.42 / 76.15 s. Core-row projection took 38.79 / 32.81 ms.
+POO scheduling including capture took 787.55 / 369.26 ms. These nested spans
+must not be added together. Independent currentness took 18.18 / 10.34 s.
+Publication and source-admission suites passed; all four build-input mutations
+were rejected for their expected reasons, with positive controls before/after
+and unchanged production source. Lean's full package build passed.
+
+A separate 10,000-node star-graph attribution on the same POO revision used
+interleaved original/phased/phased/original runs with identical declared order
+and dependency rows. It is diagnostic evidence, not a replacement capacity gate.
+Program-read capture consumed 186.02--211.20 ms CPU, including 63.85--73.22 ms
+GC CPU. Scheduling plus inverse-index construction consumed 3.04--3.09 ms CPU.
+The complete original operation consumed 176.93--213.65 ms CPU. The phased
+measurements introduce boundaries and collection differences; subtracting them
+from the originals would not establish an optimization gain. They locate the
+producer of the cost: per-computation read capture, rather than graph traversal.
+
+No private POO graph kernel is called from production Core. An upstream change
+to eliminate transport capture would need its own visible-read and effect-boundary
+contract; graph-input equivalence alone does not justify that change. The
+current Core-row projection preserves the public POO scheduler and its reads.
+
+The subsequent =ebed6799= capacity logs, with the public POO =c2ddc379= pin
+and host Gerbil =1cfb032= / Gambit =ea114fc=, also completed both Cases with the
+same configured fences: runtime selection 304.31 s wall / 224.25 s CPU and
+full declaration 220.41 s wall / 207.70 s CPU. Runtime selection's first graph
+was 262.60 s wall / 201.74 s CPU; independent currentness was 4.89 / 4.78 s.
+These are different toolchain/host runs, not a controlled speedup comparison.
+Their whole-process accounting does not isolate POO scheduling.
+
+On the matched CI Gerbil =2591dcd= / Gambit =dcd677c= cohort rebuilt against
+=c2ddc379=, the selected-graph, publication, module-window and source-admission
+suites passed. An earlier publication attempt failed its unchanged 60 s idle
+watchdog while loading =admission= / =artifacts= native units; sampling showed
+=dyld -> fcntl=, not graph traversal. That failure remains retained separately.
+Rebuilding the intervening reader-wrapper ownership fix and its tests yielded
+a passing publication run; this does not establish that macOS native loading
+costs have been eliminated.
+
+After that rebuild, the required build-input mutation gate also completed
+naturally: four expected rejections, all mutation compiler preparations succeeded,
+positive order/admission controls passed before and after, and production source
+remained unchanged. A compiler failure or timeout was not counted as rejection.
