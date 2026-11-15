@@ -7,4 +7,4 @@
  prelude: :tao3k/yuanxu/prelude
  depend:
  ;; Graph, protected reads and the unified MOP from Gerbil-POO.
- ("github.com/tao3k/gerbil-poo@6e8ac91719908ed9deef4b5cd8864c3027d258af"))
+ ("github.com/tao3k/gerbil-poo@c2ddc3790764b31dc5a415c2805a465228df858e"))
