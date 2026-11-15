@@ -161,7 +161,7 @@
                            build-main build-specification build-dispatch std-make build-current
                            directory-context profile-interface-scan directory-current-observations link-current
                            reader-bootstrap reader-preparation-start reader-interface-start
-                           selected-owner-closure selected-core-projection selected-topological-resolution
+                           selected-owner-closure selected-core-projection selected-topological-resolution selected-core-rows selected-poo-schedule
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
                            reader-admission-start reader-value-admission reader-admission-evidence scope-factory
                            publication-shape-record publication-shape-core
@@ -184,7 +184,7 @@
                            source-direction source-import-policy source-parse)))
               (and (current-module-source-operation-accounting?)
                  (memq name '(metadata-replay selection-current selected-graph reader-current source-read
-                        selected-owner-closure selected-core-projection selected-topological-resolution
+                        selected-owner-closure selected-core-projection selected-topological-resolution selected-core-rows selected-poo-schedule
                         build-projection build-current std-make
                         build-product-repair build-product-require))))
           (measure-source-accounting times name action)

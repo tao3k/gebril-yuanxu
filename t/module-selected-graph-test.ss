@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :std/test test-suite check-equal? check-exception)
-        (only-in :std/error Error? Error-message)
+        (only-in :std/error Error? Error-message Error-irritants)
         (only-in :std/list/list find)
         (only-in :std/source this-source-file)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax
@@ -58,11 +58,12 @@
   (with-catch (lambda (exception)
                 (call-with-output-string (lambda (port) (display-exception exception port))))
               (lambda () (thunk) "unexpected success")))
-(def (core-sample (select select-module-graph))
+(def (core-sample (select select-module-graph) cycle?: (cycle? #f))
   (def declarations
     (.o app/web: (publication 'app/web (.o Schema: (requirement 'core/schema))
                     (.o unused: (error "unselected Feature forced")))
-        core/schema: (publication 'core/schema (.o) (.o))))
+        core/schema: (publication 'core/schema
+                       (if cycle? (.o Web: (requirement 'app/web)) (.o)) (.o))))
   (def c (context declarations '((yuanxu! :test-dir "./t" mode: explicit :core (schema) :app (web)))))
   (%call-with-recorded-slot-reads
     (lambda () (select c '(app/web) (cut .ref declarations <>) void
@@ -79,6 +80,15 @@
                  (andmap (cut memq <> names) '(feature-id owner-module-id requires)))
         (hash-put! seen receiver #t))) reads)
   (hash-length seen))
+(def (select-with-owner-record context roots read-publication current! imported-owners)
+  (select-module-graph context roots read-publication current! imported-owners
+    owner-record: (lambda (id) (values (read-publication id) (imported-owners id)))))
+(def (any-core-feature-read? reads)
+  (and (find (lambda (read)
+               (and (eq? (slot-read-key read) 'feature-id)
+                    (eq? (slot-read-value read) 'app/web/:core)))
+             reads)
+       #t))
 (def module-selected-graph-test
   (test-suite "One selected Graph for init, mandatory Core and optional Features"
     (yuanxu-test-case "closed Core selection reuses defaults without temporary Feature specs"
@@ -97,6 +107,26 @@
         (.o feature-id: 'app/web/:core owner-module-id: 'app/web requires: '(core/schema/:core))))
       (for-each (lambda (name) (check-equal? (.ref descriptor name) (.ref expected name)))
                 (.all-slots expected)))
+    (yuanxu-test-case "admitted Core rows preserve order without synthetic Feature payloads"
+      (defvalues (graph reads) (core-sample select-with-owner-record))
+      (check-equal? (.get graph module-order) '(core/schema app/web))
+      (check-equal? (.get graph feature-order) '())
+      (check-equal? (any-core-feature-read? reads) #f)
+      (call-with-slot-read-observer (lambda (_read) (void))
+        (lambda ()
+          (defvalues (observed observed-reads) (core-sample select-with-owner-record))
+          (check-equal? (.get observed module-order) (.get graph module-order))
+          (check-equal? (any-core-feature-read? observed-reads) #t)))
+      (def (cycle-diagnostics select)
+        (with-catch
+          (lambda (cause)
+            (unless (Error? cause) (raise cause))
+            (cons (Error-message cause) (Error-irritants cause)))
+          (lambda () (core-sample select cycle?: #t) #f)))
+      (def direct (cycle-diagnostics select-with-owner-record))
+      (check-equal? (car direct) "selected Graph rejected")
+      (check-equal? (caar (cadddr direct)) '(code . dependency-cycle))
+      (check-equal? direct (cycle-diagnostics select-module-graph)))
     (yuanxu-test-case "completed topology reports progress before final currentness"
       (def now 0)
       (def checks 0)
@@ -107,7 +137,7 @@
           (check-exception
             (core-sample
               (lambda (context roots read-publication _current! imported-owners)
-                (select-module-graph context roots read-publication
+                (select-with-owner-record context roots read-publication
                   (lambda ()
                     (set! checks (+ checks 1))
                     (case checks

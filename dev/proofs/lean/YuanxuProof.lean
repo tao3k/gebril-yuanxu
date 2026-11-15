@@ -16,6 +16,7 @@ import YuanxuProof.ModuleSystem.Building.SourceView
 import YuanxuProof.ModuleSystem.Building.InterfaceRoots
 import YuanxuProof.ModuleSystem.Workflow
 import YuanxuProof.ModuleSystem.Selection.FeatureScopes
+import YuanxuProof.ModuleSystem.Selection.CoreRows
 import YuanxuProof.ModuleSystem.Graph.ImportCorrespondence
 import YuanxuProof.ModuleSystem.Graph.TestAdmission
 import YuanxuProof.ModuleSystem.Graph.SourceClosureWork
@@ -618,6 +619,8 @@ run_cmd do
       `YuanxuProof.ModuleSystem.Selection.FeatureScopes.dependency_order_preserved,
       `YuanxuProof.ModuleSystem.Selection.FeatureScopes.every_selected_obligation,
       `YuanxuProof.ModuleSystem.Selection.FeatureScopes.conflicting_contributions_refuse,
+      `YuanxuProof.ModuleSystem.Selection.CoreRows.schedule_and_scc_agree,
+      `YuanxuProof.ModuleSystem.Selection.CoreRows.refused_after_progress,
       `YuanxuProof.ModuleSystem.Workflow.cached_checks_remain_current,
       `YuanxuProof.ModuleSystem.Workflow.Revision.revision_requires_discharge,
       `YuanxuProof.ModuleSystem.Workflow.Revision.stale_cannot_be_certified,

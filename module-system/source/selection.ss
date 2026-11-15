@@ -9,9 +9,9 @@
         (only-in :tao3k/yuanxu/ops/progress current-execution-progress execution-progress!)
         (only-in :tao3k/yuanxu/module-system/graph/funs module-closure)
         (only-in :tao3k/yuanxu/module-system/source/observations
-                 call-with-module-source-callback module-source-measure-operation)
+                 call-with-module-source-callback module-source-measure-operation current-module-source-observer)
         (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor feature-selection feature-profile)
-        (only-in :tao3k/yuanxu/module-system/feature/resolver resolve-feature-profile)
+        (only-in :tao3k/yuanxu/module-system/feature/resolver resolve-feature-profile schedule-core-rows)
         (only-in :tao3k/yuanxu/module-system/feature/feature-manifest feature-manifest-bundle)
         (only-in :tao3k/yuanxu/module-system/feature/composition feature-composition-plan))
 (export select-module-graph module-feature-declaration)
@@ -38,12 +38,12 @@
                               (.all-slots core-feature-prototype)))
                   unique-roots?: #t)))
       reads)))
+(def (core-feature-template-current?)
+  (and core-feature-prototype (owned-read-function-scope?) (runtime-construction-current?)
+       (with-catch (lambda (_changed-template) #f)
+         (lambda () (reobserve-slot-reads! core-feature-reads) #t))))
 (def (core-feature-descriptor id owner required)
-  (def closed?
-    (and core-feature-prototype (owned-read-function-scope?) (runtime-construction-current?)
-         (with-catch (lambda (_changed-template) #f)
-           (lambda () (reobserve-slot-reads! core-feature-reads) #t))))
-  (if closed?
+  (if (core-feature-template-current?)
     (.cc core-feature-prototype feature-id: id owner-module-id: owner
       requires: (map values required))
     ;; Unknown observers/initializers keep the original specification reads
@@ -143,6 +143,9 @@
     (for-each (lambda (row) (hash-put! decision-index (.ref row 'identity) row)) decision-values)
     (def (row-for id)
       (and (hash-key? decision-index id) (hash-ref decision-index id)))
+    (def (register-core! key id owners)
+      (hash-put! nodes key (.o kind: 'module-core identity: id owner: id
+                              publication: (publication-for id) imports: owners)))
     (def (feature-interface owner id name)
       (and (.slot? context 'collect-entrypoint)
            ((.ref context 'collect-entrypoint)
@@ -193,16 +196,30 @@
                 'optional-requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'optional-requires))
                 'conflicts (map (cut feature-key owner-id <>) (.ref descriptor-value 'conflicts))))
             descriptor-value)))
-    (let* ((core-selections
+    (let* ((core-only?
+            ;; Decision flags have already been demanded. Inspect the prepared
+            ;; values without running an author getter to qualify the shortcut.
+            (and read-owner-record (not (current-module-source-observer))
+                 (core-feature-template-current?)
+                 (with-catch (lambda (_changed-route) #f)
+                   (lambda ()
+                     (andmap (lambda (row)
+                               (null? (object-cached-value
+                                        (object-cached-value row 'selection) 'selection-flags)))
+                             decision-values)))))
+           (core-selections
             (module-source-measure-operation 'selected-core-projection
              (lambda () (map (lambda (id)
                    (let* ((key (core-node-id id))
                           (owners (hash-ref imports id))
-                          (required (map core-node-id owners))
-                          (descriptor-value (core-feature-descriptor key id required)))
-                     (hash-put! nodes key (.o kind: 'module-core identity: id owner: id
-                                             publication: (publication-for id) imports: owners))
-                     (feature-selection descriptor-value))) modules))))
+                          (required (map core-node-id owners)))
+                     (if core-only?
+                       (begin
+                         (register-core! key id owners)
+                         (cons key required))
+                       (let (descriptor-value (core-feature-descriptor key id required))
+                         (register-core! key id owners)
+                         (feature-selection descriptor-value))))) modules))))
            (feature-selections
             (foldr append '()
              (map
@@ -234,11 +251,19 @@
               ;; Independent Features follow init declaration order, not DFS or
               ;; publication slot enumeration order. Dependencies still win.
               ;; The closure populated publications for each visited Module.
-              (filter (lambda (id) (hash-key? publications id))
-                      (map (cut .ref <> 'identity) decision-values)))))
+              (if core-only? '()
+                (filter (lambda (id) (hash-key? publications id))
+                        (map (cut .ref <> 'identity) decision-values))))))
            (resolution (module-source-measure-operation 'selected-topological-resolution
-                         (lambda () (resolve-feature-profile
-                           (feature-profile 'module-selection (append core-selections feature-selections))))))
+                         (lambda ()
+                           (if core-only?
+                             (let-values (((order cycle-diagnostics)
+                                           (module-source-measure-operation 'selected-core-rows
+                                             (lambda () (schedule-core-rows core-selections)))))
+                               (.o status: (if (null? cycle-diagnostics) 'ready 'rejected)
+                                   feature-ids: order diagnostics: cycle-diagnostics))
+                             (resolve-feature-profile
+                               (feature-profile 'module-selection (append core-selections feature-selections)))))))
            (diagnostics (.ref resolution 'diagnostics)))
       (unless (eq? (.ref resolution 'status) 'ready)
         (error "selected Graph rejected" origin (.ref context 'generation)

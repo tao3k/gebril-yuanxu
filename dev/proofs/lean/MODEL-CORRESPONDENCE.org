@@ -35,6 +35,14 @@ not assert callback purity, MOP write interception or extraction completeness.
 Those runtime obligations and the reused QNT owners are allocated in
 [[file:../../sysml/20-module-loading/20.35-feature-scope-composition.org][20.35 Feature Scope Composition]].
 
+[[file:YuanxuProof/ModuleSystem/Selection/CoreRows.lean][Selection/CoreRows]] corresponds to the Core-only projection in
+=module-system/source/selection.ss= and the shared scheduler in
+=module-system/feature/resolver.ss=. The admitted closure supplies unique Core
+IDs and includes all required owners. Ordered vertices and dependency rows
+agree with the synthetic Feature projection, including SCC inputs on cycles.
+Scheme qualifies this projection with POO constructor, observer and template
+guards. The source check after progress delivery remains independent.
+
 The demand-materialization refinement is reviewed in
 [[file:../../sysml/20-module-loading/20.14-partial-method-table-refinement.org][20.14]].
 =ModuleSystem/Loading/DemandMaterialization.lean= reuses locked LeanPoo

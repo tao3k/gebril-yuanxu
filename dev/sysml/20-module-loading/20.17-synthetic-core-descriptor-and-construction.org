@@ -2,6 +2,29 @@
 #+language: en
 #+filetags: :modules:retention:construction:assurance:
 
+* Admitted Core-only Graph projection
+
+When the paired source reader has admitted the complete owner closure and init
+has no Feature flags, selection can pass its Core rows directly to POO Graph.
+The rows retain closure order, hidden Core IDs and required-owner order. The
+same scheduler and SCC diagnostic builder serve both projection paths. Real
+Feature selections and open observers retain their existing descriptor path.
+This removes per-owner Feature descriptor, selection and option carriers from
+the qualified Core-only operation.
+
+=AdmittedCoreGraphProjection= in [[file:20.04-payload-ownership.sysml][20.04]] owns the boundary.
+=Selection/CoreRows.lean= proves identical scheduler inputs for a closed graph,
+including cyclic graphs, and independent rejection after a changed progress
+callback. Runtime controls compare actual diagnostics, dependency order, public
+observer delivery and post-progress currentness. Constructor and original
+template authentication remain runtime obligations.
+
+The =selected-poo-schedule= span includes POO's program-read capture and index
+construction as well as ordering. Its clock must be reported with CPU and GC;
+it does not by itself measure the topological traversal. The two full-directory
+Cases retain 700 seconds, 60 seconds idle and 4 GiB. Detailed diagnostic spans
+overlap, so their times must not be summed as disjoint work.
+
 * Next measured strong path
 
 The 9,131-record baseline is further classified by each anonymous receiver's

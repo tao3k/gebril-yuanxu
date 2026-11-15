@@ -37,6 +37,7 @@
   (check-equal? (length (.get graph module-order)) count)
   (check-equal? (car (.get graph module-order)) 'module-0)
   (check-equal? (calls 'candidate-read) count)
+  (check-equal? (calls 'selected-core-rows) 1)
   (check-equal? (calls 'publication-read) 0)
   (check-equal? (calls 'reader-candidate-fused-return-replay) count)
   (check-equal? (calls 'reader-wrapper-expansion) count)
@@ -197,6 +198,8 @@
                    (hash-ref times stage 0.)
                    (+ (hash-ref times (list 'cpu-user stage) 0.)
                       (hash-ref times (list 'cpu-system stage) 0.))
+                   (+ (hash-ref times (list 'gc-user stage) 0.)
+                      (hash-ref times (list 'gc-system stage) 0.))
                    (hash-ref times (list 'read-attempts stage) 0)
                    (hash-ref times (list 'visits stage) 0)))
            '(selected-owner-closure reader-preparation-start reader-wrapper-expansion
@@ -214,11 +217,11 @@
              (reader-candidate-replay-site role-return)
              reader-candidate-entry-replay reader-candidate-return-replay reader-candidate-fused-return-replay
              metadata-replay metadata-checkpoints selected-core-projection
-             selected-topological-resolution))
+             selected-topological-resolution selected-core-rows selected-poo-schedule))
       (hash->list times)))
   (when graph-summary?
     (yuanxu-write-observation-line!
-      "declaration-stage-work columns=stage,calls,wall,cpu,read-attempts,replay-visits total-replay-visits=%s init-characters=%s"
+      "declaration-stage-work columns=stage,calls,wall,cpu,gc-cpu,read-attempts,replay-visits total-replay-visits=%s init-characters=%s"
       (hash-ref times '(visits metadata-replay) 0)
       (hash-ref times '(characters source-init-current) 0)))
   (if failed? (raise cause) (cons value times)))

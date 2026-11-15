@@ -1,5 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 package YuanxuPayloadOwnership {
+    requirement def AdmittedCoreGraphProjection {
+        doc /* A paired admitted owner closure with no Feature flags may pass
+               its ordered Core dependency rows directly to POO Graph. The
+               closure has unique IDs and includes every required owner.
+               Keep the same vertex and dependency order, Graph scheduler and
+               SCC cycle diagnostics. Qualify constructor identity, template
+               support and observer compatibility before omitting synthetic
+               Feature carriers. Open observers and selected Features retain
+               their ordinary evaluation. Source currentness after progress
+               delivery remains independent. Selection.CoreRows proves input
+               equivalence and post-progress refusal. Scheme selected-graph
+               controls establish runtime qualification and diagnostics. */
+    }
     requirement def NamedValueScopeAdmission {
         doc /* Module publication, scope and dependency declarations use named
                Types. Do not retain the predicate-contract wrapper or a
