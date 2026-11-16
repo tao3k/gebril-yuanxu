@@ -169,6 +169,29 @@
                 (lambda (failure)
                   (and (Error? failure)
                        (equal? (Error-message failure) "duplicate declared module source owner")))))))))
+    (yuanxu-test-case "foreign source windows count each physical init only once"
+      (with-sources
+       (lambda (root)
+         (def owner-init (path-expand "init.ss" root))
+         (def modules (path-normalize (path-expand "modules" root)))
+         (def consumer (path-expand "consumer/init.ss" root))
+         (write-source (path-expand "gerbil.pkg" root) "(package: source-window-owner)")
+         (write-source owner-init
+           "(yuanxu! :load-modules \"./modules\" mode: explicit :test-dir \"./t\" :core (schema))")
+         (write-source consumer
+           (call-with-output-string
+             (lambda (port)
+               (write `(yuanxu! :load-modules ,modules mode: explicit :test-dir "./t" :core (schema)) port))))
+         (def view (yuanxu-load-modules consumer read-publication: (fixture-reader void)))
+         (check-equal? (yuanxu-module-source-ref? ((.get view context locate) 'core/schema)) #t)
+         (write-source (path-expand "init.ss" modules)
+           (call-with-output-string
+             (lambda (port)
+               (write `(yuanxu! :load-modules ,modules mode: explicit :test-dir "./t" :core (schema)) port))))
+         (check-exception (yuanxu-load-modules consumer read-publication: (fixture-reader void))
+           (lambda (failure)
+             (and (Error? failure)
+                  (equal? (Error-message failure) "ambiguous declared source window origin")))))))
     (yuanxu-test-case "wide directory names retain exact misses and live path checks"
       (with-sources
        (lambda (root)

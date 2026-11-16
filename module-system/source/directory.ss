@@ -512,7 +512,7 @@
                  (candidates (delete-duplicates/hash
                                (append (list (path-expand "init.ss" root) (path-expand "../init.ss" root))
                                        (if package (list (path-expand "init.ss" (car package))) '()))))
-                 (origins
+                 (candidate-origins
                   (filter-map
                     (lambda (file)
                       (and (eq? (observe! module-source-type file) 'regular)
@@ -527,7 +527,9 @@
                                           (.ref intent 'windows))
                                      (list (intent-root intent file))))
                               (and (any (lambda (path) (inside? root path)) roots)
-                                   (path-normalize (path-directory file)))))))) candidates)))
+                                   (path-normalize (path-directory file)))))))) candidates))
+                 ;; Parent and package lookups may reach the same physical init.
+                 (origins (delete-duplicates/hash candidate-origins)))
             (when (and (pair? origins) (pair? (cdr origins)))
               (error "ambiguous declared source window origin" root origins))
             (if (pair? origins) (car origins) (path-normalize root)))))
