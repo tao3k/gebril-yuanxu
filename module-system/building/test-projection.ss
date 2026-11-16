@@ -8,7 +8,119 @@
         (only-in :tao3k/yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-name? module-source-admit-current!
                  call-with-module-source-read-cache))
-(export module-test-projection module-test-file-source module-owner-test-projection)
+(export module-test-projection module-test-file-source module-owner-test-projection
+        admit-module-test-layout!)
+
+;; Core owns the same directory calculation for projection and package layout
+;; admission. The full audit is explicit so a narrow test demand stays narrow.
+(def (qualification-location context owner metadata)
+  (def init (and (.slot? context 'init-source) (.ref context 'init-source)))
+  (def declared (assq 'test-dir metadata))
+  (unless (and (string? init) declared (string? (cdr declared)))
+    (error "qualification discovery requires an explicit :test-dir" init))
+  (def mount (assq 'namespace-mount metadata))
+  (def declaration (assq 'declaration-id metadata))
+  (def parts
+    (string-split
+      (string-append (if (and mount (cdr mount))
+                       (string-append (symbol->string (cdr mount)) "/") "")
+                     (symbol->string (if declaration (cdr declaration) owner))) #\/))
+  (unless (andmap module-source-name? parts)
+    (error "invalid qualification owner identity" owner))
+  (values (path-directory init) (string-split (cdr declared) #\/) parts))
+
+;; Compare the complete Loader publication with the filesystem before handing
+;; files to Gerbil. Independent suites and fixtures have separate entrypoints.
+(def (admit-module-test-layout! context published
+                                independent-directories: (independent '())
+                                require-owner-tests?: (required? #f))
+  (def roots (make-hash-table))
+  (def directories (make-hash-table))
+  (def owners (make-hash-table))
+  (def (real-or-absent! path)
+    (unless (memq (module-source-type path) '(#f directory))
+      (error "qualification ancestor must be a real directory" path)))
+  (def (descend base parts note!)
+    (let loop ((parent base) (remaining parts))
+      (if (null? remaining) parent
+        (let (path (path-expand (car remaining) parent))
+          (real-or-absent! path)
+          (note! path)
+          (loop path (cdr remaining))))))
+  (def (test-tree base test-parts)
+    (def root (descend base test-parts void))
+    (def tree (path-expand "yanxu" root))
+    (real-or-absent! tree)
+    (hash-put! roots root tree)
+    tree)
+  ;; The declaration still owns a test tree when every Module is disabled
+  ;; or an auto window is empty. Orphan suites must not disappear there.
+  (def intent (.ref context 'intent))
+  (def init (.ref context 'init-source))
+  (for-each
+    (lambda (window)
+      (test-tree (path-directory init) (string-split (.ref window 'test-dir) #\/)))
+    (if (.slot? intent 'windows) (.ref intent 'windows) (list intent)))
+  (for-each
+    (lambda (owner)
+      (def metadata
+        (yuanxu-module-source-ref-metadata ((.ref context 'locate) owner)))
+      (let-values (((base test-parts owner-parts) (qualification-location context owner metadata)))
+        (def tree (test-tree base test-parts))
+        (def directory
+          (descend tree owner-parts (lambda (path) (hash-put! directories path #t))))
+        (when (hash-key? owners directory)
+          (error "two Loader owners share a test directory" directory))
+        (hash-put! owners directory owner)))
+    (.ref context 'loader-roots))
+  (def found '())
+  (def (suite-name? name) (string-suffix? "-test.ss" name))
+  (def (outside! path)
+    (when (suite-name? path)
+      (error "module test is outside the Loader test tree" path))
+    (when (eq? (module-source-type path) 'directory)
+      (for-each (lambda (name) (outside! (path-expand name path))) (directory-files path))))
+  (def (scan! directory tree)
+    (for-each
+      (lambda (name)
+        (def path (path-expand name directory))
+        (case (module-source-type path)
+          ((directory)
+           (unless (hash-key? directories path)
+             (error "no Loader owner for test directory" path))
+           (scan! path tree))
+          ((regular)
+           (unless (and (equal? directory tree) (equal? name "interface.ss"))
+             (unless (and (hash-key? owners directory) (suite-name? name))
+               (error "test file is outside its Loader owner or has an invalid name" path))
+             (set! found (cons path found))))
+          (else (error "Loader test tree requires regular suites and real directories" path))))
+      (test-directory-files directory)))
+  (hash-for-each
+    (lambda (root tree)
+      (for-each
+        (lambda (name)
+          (unless (or (equal? name "yanxu") (member name independent))
+            (outside! (path-expand name root))))
+        (test-directory-files root))
+      (scan! tree tree))
+    roots)
+  (when required?
+    (let (populated (make-hash-table))
+      (for-each
+        (lambda (file)
+          (hash-put! populated (path-strip-trailing-directory-separator (path-directory file)) #t))
+        found)
+      (hash-for-each
+        (lambda (directory owner)
+          (unless (hash-key? populated directory)
+            (error "Loader owner has no published tests" owner directory)))
+        owners)))
+  (unless (equal? (list-sort string<? found) (list-sort string<? published))
+    (error "Loader test publication does not match the test tree"
+           (filter (lambda (file) (not (member file published))) found)
+           (filter (lambda (file) (not (member file found))) published)))
+  published)
 
 ;; Explicit runtime qualification files use the same observation authority as
 ;; module suites. Callers supply files, never a separately maintained guard.
@@ -92,18 +204,12 @@
       (set! parents (cons (cons directory kind) parents))))
   ;; Qualification belongs to the init owner, never to a module implementation.
   ;; Observe ancestor kinds without enumerating sibling owners or Core suites.
-  (def (owner-qualification-root metadata)
-    (and (eq? suite 'qualification)
-         (let (init (and (.slot? context 'init-source) (.ref context 'init-source)))
-           (unless (string? init) (error "qualification discovery requires an init source"))
-           (def declared (assq 'test-dir metadata))
-           (unless (and declared (string? (cdr declared)))
-             (error "qualification discovery requires an explicit :test-dir" init))
-           (def directory (cdr declared))
-           (let walk ((parent (path-directory init)) (parts (append (string-split directory #\/) '("yanxu"))))
-             (let (child (path-expand (car parts) parent))
-               (observe-parent! child)
-               (if (null? (cdr parts)) child (walk child (cdr parts))))))))
+  (def (qualification-directory owner metadata)
+    (let-values (((base test-parts owner-parts) (qualification-location context owner metadata)))
+      (let walk ((parent base) (parts (append test-parts '("yanxu") owner-parts)))
+        (let (child (path-expand (car parts) parent))
+          (if (null? (cdr parts)) child
+            (begin (observe-parent! child) (walk child (cdr parts))))))))
   (def (observe-directory! directory)
     (def kind (module-source-type directory))
     (def names (test-directory-files directory))
@@ -113,28 +219,11 @@
    (lambda (owner)
      (let* ((source ((.ref context 'locate) owner))
             (metadata (yuanxu-module-source-ref-metadata source))
-            (qualification-root (owner-qualification-root metadata))
-            (mount (assq 'namespace-mount metadata))
-            (declaration (assq 'declaration-id metadata))
-            (qualification-name
-              (string-append
-                (if (and mount (cdr mount))
-                  (string-append (symbol->string (cdr mount)) "/") "")
-                (symbol->string (if declaration (cdr declaration) owner))))
             (root (or (assq 'module-root metadata) (assq 'module-tree-root metadata))))
        (unless root (error "module tests require an admitted local module root" owner))
-       (when qualification-root
-         (let (parts (string-split qualification-name #\/))
-           (unless (andmap module-source-name? parts)
-             (error "invalid qualification owner identity" owner))
-           (let loop ((directory qualification-root) (remaining parts))
-             (when (pair? (cdr remaining))
-               (let (parent (path-expand (car remaining) directory))
-                 (observe-parent! parent)
-                 (loop parent (cdr remaining)))))))
-       (let* ((base (if qualification-root
-                     (path-expand qualification-name qualification-root)
-                     (path-expand "tests" (cdr root))))
+       (let* ((base (if (eq? suite 'qualification)
+                      (qualification-directory owner metadata)
+                      (path-expand "tests" (cdr root))))
               (directory (if (eq? suite 'integration) (path-expand "integration" base) base))
               (_parent (when (eq? suite 'integration) (observe-directory! base)))
               (names (observe-directory! directory)))

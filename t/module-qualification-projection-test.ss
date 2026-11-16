@@ -1,9 +1,12 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Init-owned qualification discovery uses the existing selected test source.
 (import :std/test :clan/poo/object
+        (only-in :std/error Error? Error-message)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :tao3k/yuanxu/module-system/building/test-projection module-test-projection)
+        (only-in :tao3k/yuanxu/module-system/source/directory module-directory-context)
+        (only-in :tao3k/yuanxu/module-system/building/test-projection
+                 module-test-projection admit-module-test-layout!)
         (only-in :clan/poo/mop Type.)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export module-qualification-projection-test)
@@ -34,6 +37,44 @@
 
 (def module-qualification-projection-test
   (test-suite "Init-owned qualification source projection"
+    (yuanxu-test-fixture "complete layout refuses misplaced suites, unknown owners and omissions"
+      (root Workspace)
+      (def init (path-expand "init.ss" root))
+      (write-source init
+        "(yuanxu! :load-modules \"./modules\" mode: explicit rename: Test :test-dir \"./t\" (json-schema))\n")
+      (write-source (path-expand "modules/json-schema/interface.ss" root)
+        "(.def Published identity: 'json-schema)\n")
+      (def suite (path-expand "t/yanxu/Test/json-schema/value-test.ss" root))
+      (write-source suite "(error \"layout checks must not import a test\")\n")
+      (def (admit published)
+        (def context (module-directory-context init
+                       (lambda (_) (error "layout checks must not load a publication"))
+                       publication-prepares-source?: #t))
+        (admit-module-test-layout! context published require-owner-tests?: #t))
+      (def (refusal-as expected)
+        (lambda (failure) (and (Error? failure) (equal? (Error-message failure) expected))))
+      (check-equal? (admit (list suite)) (list suite))
+      (check-exception (admit '()) (refusal-as "Loader test publication does not match the test tree"))
+      (def misplaced (path-expand "t/modules/json-schema/value-test.ss" root))
+      (write-source misplaced "")
+      (check-exception (admit (list suite)) (refusal-as "module test is outside the Loader test tree"))
+      (delete-file misplaced)
+      (write-source (path-expand "t/yanxu/Test/undeclared/value-test.ss" root) "")
+      (check-exception (admit (list suite)) (refusal-as "no Loader owner for test directory")))
+    (yuanxu-test-fixture "an empty Loader still owns its declared test directory"
+      (root Workspace)
+      (def init (path-expand "init.ss" root))
+      (write-source init
+        "(yuanxu! :load-modules \"./modules\" mode: auto :test-dir \"./t\")\n")
+      (create-directory (path-expand "modules" root))
+      (write-source (path-expand "t/unassigned-test.ss" root) "")
+      (def context (module-directory-context init
+                     (lambda (_) (error "empty Loader must not read a publication"))
+                     publication-prepares-source?: #t))
+      (check-exception (admit-module-test-layout! context '())
+        (lambda (failure)
+          (and (Error? failure)
+               (equal? (Error-message failure) "module test is outside the Loader test tree")))))
     (yuanxu-test-fixture "multi-owner guards isolate changes and preserve requested order"
       (root Workspace)
       (for-each

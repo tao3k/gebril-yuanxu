@@ -56,6 +56,15 @@ directory contributes no tests. Gerbil runs =*-test.ss= files in the
 qualification directory and may import other Scheme files there as helpers.
 Module-owned tests live in the selected source owner's =tests/= directory.
 
+Packages that enforce the complete qualification layout call
+=admit-module-test-layout!= with the Loader context and its complete published
+qualification file list before passing that list to =gerbil test=. This audit
+rejects unknown owners, suites outside their declared directories, and files
+missing from or duplicated in the publication. Independently run test and
+fixture directories must be named by the package. The managed tree contains
+regular =*-test.ss= files and may have one shared =interface.ss= at its root.
+Narrow qualification queries do not enumerate unrelated owners.
+
 * Closed role values
 
 The deferred value projection uses runtime exports. The runtime expander resolves
