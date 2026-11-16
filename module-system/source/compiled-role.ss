@@ -5,15 +5,26 @@ prelude: :gerbil/core
 (import (only-in :clan/poo/object object<-alist)
         (only-in :clan/poo/slot-observation without-observation)
         (only-in :gerbil/runtime/loader load-module)
+        (only-in :tao3k/yuanxu/module-system/source/observations module-source-measure-operation)
         (for-syntax :gerbil/expander
                     (only-in :gerbil/compiler compile-module)
                     (only-in :gerbil/compiler/base module-id->path-string)))
 (export compiled-role-values bind-program-interfaces bind-deferred-interfaces deferred-interface-values)
 
+(def (program-linked-unit? name)
+  ;; Darwin's Gerbil compiler can give a dynamically loaded unit the same
+  ;; Gambit registration name as its static counterpart. Only descriptors
+  ;; from the executable's original program table establish static ownership.
+  (let (entry (##lookup-registered-module name))
+    (and entry
+         (let ((descriptor (vector-ref entry 2))
+               (program (vector-ref ##program-descr 0)))
+           (let loop ((index 0))
+             (and (< index (vector-length program))
+                  (or (eq? descriptor (vector-ref program index))
+                      (loop (+ index 1)))))))))
+
 (begin-syntax
-  ;; The compiler facade loads its driver; this native driver operation is
-  ;; resolved only while expanding code, never by a deployed Module scope.
-  (def find-runtime-module-deps (eval 'gxc#find-runtime-module-deps))
   ;; The compiler's public Module ID encoding owns the static unit basename.
   ;; Dynamic Gerbil objects have different generation-local unit names.
   (def (compiled-unit-name context)
@@ -168,14 +179,12 @@ prelude: :gerbil/core
               (or (not (string? namespace))
                   (ormap (lambda (row)
                            (string-prefix? (string-append namespace "#")
-                             (symbol->string (cdr row)))) rows)))
-            (dependencies (map compiled-unit-name (find-runtime-module-deps context))))
+                             (symbol->string (cdr row)))) rows))))
        (with-syntax ((owner (symbol->string (expander-context-id context)))
                      (creator (compiled-unit-name
                                 (core-context-top (current-expander-context) module-context?)))
                      (unit (compiled-unit-name context))
                      (owns-export? owns-export?)
-                     ((dependency-unit ...) dependencies)
                      (((public . identifier) ...) rows))
          ;; A registered static creator is the actual linked-program boundary,
          ;; not a caller flag or a failed file lookup. Native demand activates
@@ -187,19 +196,16 @@ prelude: :gerbil/core
              ;; publication value and subsequent contract reads in its scope.
              (without-observation
                (lambda ()
-                 (if (##lookup-registered-module 'creator)
+                 (if (program-linked-unit? 'creator)
                    (begin
-                     (when (and owns-export? (not (##lookup-registered-module 'unit)))
+                     (when (and owns-export? (not (program-linked-unit? 'unit)))
                        (error "compiled Module role is absent from program" owner))
-                     ;; Static bodies omit the dynamic wrapper's dependency loads.
-                     ;; Gambit owns once-only initialization. Empty reexport
-                     ;; facades have no descriptor or body to run.
-                     (for-each
-                       (lambda (dependency)
-                         (when (##lookup-registered-module dependency)
-                           (##load-module dependency)))
-                       '(dependency-unit ... unit)))
-                   (load-module owner))))
+                     ;; Linking proves availability, not activation. The host's
+                     ;; native module loader owns dependency order and once-only
+                     ;; initialization; do not execute the compiler link closure.
+                     (load-module owner))
+                   (module-source-measure-operation (cons 'compiled-role-load owner)
+                     (lambda () (load-module owner))))))
              (object<-alist
                (list
                  (cons 'public

@@ -40,6 +40,10 @@
   (module-entry-action 'tao3k/yuanxu/module-system/building/build-projection
     "tao3k/yuanxu/module-system/building/artifacts"
     'tao3k/yuanxu/module-system/building/artifacts#run-build-artifact-process))
+(def project-compiled-program
+  (module-entry-action 'tao3k/yuanxu/module-system/building/build-projection
+    "tao3k/yuanxu/module-system/building/program"
+    'tao3k/yuanxu/module-system/building/program#yuanxu-project-compiled-program))
 (def (collect-build-entries selected kept retained library-source?)
   (def sources (make-hash-table-eq))
   (def libraries-seen (make-hash-table-eq))
@@ -344,6 +348,26 @@
         (append (if (.slot? graph 'link-contexts) (.ref graph 'link-contexts) '())
                 (reverse retained-contexts))
         identities))
+    (def with-compiler-inputs
+        (lambda (receiver action (refuse-input-context #f) (record-selected-view? #f))
+          ;; Reject derived specs before a graph's state callback can run.
+          (require-spec-identity! (.ref receiver 'spec))
+          (def source-state (compiler-source-state))
+          (def (compile-inputs)
+            (with-admitted-spec receiver
+              (lambda ()
+                (call-with-module-compiler-inputs compiler-input-entries action unified?: foreign?
+                      recorded-entries:
+                      (append
+                        (filter (lambda (entry) (eq? (.ref entry 'kind) 'init-publication)) entries)
+                        (if (and record-selected-view? (not foreign?) (equal? package-prefix "tao3k/yuanxu"))
+                          module-entries '()))
+                      source-reads: (.ref graph '.with-compiler-source-reads)
+                      source-import: (.ref graph '.with-compiler-source-import)
+                      source-state: source-state source-owner: graph
+                      refuse-input-context: refuse-input-context))))
+          (if foreign? (compile-inputs)
+            (call-with-selected-output-lock (build-output-directory) compile-inputs))) )
     (call-with-build-stage 'projection-current current!)
     (.o (:: projection) selected-graph: (.ref graph 'selected-graph) build-graph: graph
         compiler-identities: identities
@@ -388,25 +412,18 @@
         ;; Ordinary package Make and issued compilation share role lowering,
         ;; not authority. A package build does not mint publication approval.
         .with-compiler-inputs:
-        (lambda (action (refuse-input-context #f) (record-selected-view? #f))
-          ;; Reject derived specs before a graph's state callback can run.
-          (require-spec-identity! (.ref projection 'spec))
-          (def source-state (compiler-source-state))
-          (def (compile-inputs)
-            (with-admitted-spec projection
-              (lambda ()
-                (call-with-module-compiler-inputs compiler-input-entries action unified?: foreign?
-                      recorded-entries:
-                      (append
-                        (filter (lambda (entry) (eq? (.ref entry 'kind) 'init-publication)) entries)
-                        (if (and record-selected-view? (not foreign?) (equal? package-prefix "tao3k/yuanxu"))
-                          module-entries '()))
-                      source-reads: (.ref graph '.with-compiler-source-reads)
-                      source-import: (.ref graph '.with-compiler-source-import)
-                      source-state: source-state source-owner: graph
-                      refuse-input-context: refuse-input-context))))
-          (if foreign? (compile-inputs)
-            (call-with-selected-output-lock (build-output-directory) compile-inputs)))
+        (lambda (action (refuse #f) (record-view? #f))
+          (with-compiler-inputs projection action refuse record-view?))
+        .project-program:
+        (lambda (entry directory (options '()))
+          (unless (and (symbol? entry) (memq entry identities))
+            (error "program entry is not selected by std-make-spec" entry))
+          (with-compiler-inputs projection
+            (lambda ()
+              (project-compiled-program
+                (list entry directory
+                  (map (lambda (id) (string->symbol (string-append ":" (symbol->string id)))) identities)
+                  gsc-options: options)))))
         .with-clean-outputs:
         (lambda (action)
           (require-spec-identity! (.ref projection 'spec))
