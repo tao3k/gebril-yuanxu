@@ -198,7 +198,7 @@
   (def (current!)
     (for-each (lambda (input) ((.get input admit-current))) inputs))
   (if (null? inputs) (action)
-    (call-with-temporary-directory "core-native-static-"
+    (call-with-temporary-directory "core-program-inputs-"
       (lambda (directory)
         (current!)
         (def target (path-expand "static" directory))

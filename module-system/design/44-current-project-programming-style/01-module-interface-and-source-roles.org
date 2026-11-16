@@ -68,6 +68,17 @@ of its business values. Optional Features and the Build role retain their
 existing selection/phase boundaries. A test compares compiler events to native
 entry-rooted dependency observations; it must not maintain another role list.
 
+An ordinary native Gerbil facade may define pure export-binding or POO
+selection functions alongside its exports. Its filename does not turn those
+definitions into a managed Module. Source classification applies the managed
+declaration grammar when a top-level Module =.def= is present; native libraries
+otherwise admit native binding/function declarations and import/export forms.
+Standalone effect forms and computed declaration wrappers remain rejected at
+this named Interface boundary. This declaration-shape rule is not a proof of
+initializer purity; Gerbil owns the admitted declarations' internal grammar. The ownerless-facade
+case in =t/module-windows-test.ss= checks this distinction together with source
+currentness and the existing unselected/disabled boundary controls.
+
 * Scope value contracts are Types
 
 The source publisher's =core.scope-contract= and each dependency's =contract=

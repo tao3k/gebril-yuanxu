@@ -5,7 +5,7 @@
         %deliver-slot-read slot-read-dependencies slot-read-receiver make-slot-read)
         (only-in :clan/poo/read-projection call-with-owned-read-projection
                  owned-read-value! owned-read-derived!)
-        (only-in :clan/poo/clos/objects clos-call-carrier-policy-guard)
+        (only-in :clan/poo/mop clos-call-carrier-policy-guard)
         (only-in :clan/poo/mop ClosInvocationFrame)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export issued-root-forwarding-test)

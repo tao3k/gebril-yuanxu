@@ -3,12 +3,12 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 prelude: :gerbil/core
 (import (only-in :gerbil/expander core-import-module core-bind-root-syntax!
-                 expander-context-id core-resolve-library-module-path
+                 expander-context-id core-resolve-library-module-path syntax-e
                  core-bound-module-prelude? syntax-local-e module-context?
                  module-source-path prelude-context-path core-read-module/sexp
-                 core-library-package-plist core-library-package-path-prefix)
-        (only-in :std/list/list delete-duplicates/hash))
-(export package-prelude-identity register-module-build-source! module-build-source-path
+                 core-library-package-plist)
+        (only-in :std/list/list delete-duplicates/hash find))
+(export package-library-prefix package-prelude-identity register-module-build-source! module-build-source-path module-build-library-source-path module-build-import-identity module-build-resolve-library
         call-with-build-input-path call-with-build-source-fallbacks package-build-script-path)
 
 ;; The init-owned source projection chooses its compiler inputs. std/make owns
@@ -68,6 +68,16 @@ prelude: :gerbil/core
       ;; result reusable. Restore first, then refuse on every kind of exit.
       (unless unchanged? (refuse)))))
 
+;; Gerbil accepts string and symbol package names in source headers. The
+;; installed path-prefix helper assumes a symbol even on unchecked builds.
+(def (package-library-prefix directory)
+  (let (name (pgetq package: (core-library-package-plist directory)))
+    (cond
+     ((not name) #f)
+     ((symbol? name) (string-append (symbol->string name) "/"))
+     ((string? name) (string-append name "/"))
+     (else (error "invalid Gerbil package name" directory name)))))
+
 (def (package-prelude-identity root)
   ;; Gerbil owns package/header resolution. Only the root's actual prelude file
   ;; may publish an identity outside its library prefix, matching gerbil.pkg.
@@ -111,22 +121,64 @@ prelude: :gerbil/core
 ;; from the public language name or from a compiled artifact's filename.
 (def yuanxu-language-file "prelude.ss")
 
-(def (resolve-build-library library directory)
-  (let (previous (load-path))
-    (dynamic-wind
-      (lambda () (set-load-path! (list directory)))
-      (lambda ()
-        (with-catch
-          (lambda (exception)
-            (if (syntax-error? exception) #f (raise exception)))
-          (lambda () (core-resolve-library-module-path library))))
-      (lambda () (set-load-path! previous)))))
+;; This projects a candidate within one declared source owner. Gerbil's
+;; symbolic resolver still owns runtime selection and the header below must
+;; confirm the candidate's identity. Do not replace the process-wide search
+;; path: parallel Make workers use it while expanding their own imports.
+(def (owned-build-library-path identity directory)
+  (def name (symbol->string identity))
+  (def prefix (package-library-prefix directory))
+  (and (or (not prefix) (string-prefix? prefix name))
+    (let ()
+      (def relative
+        (if prefix (substring name (string-length prefix) (string-length name)) name))
+      (def path (path-expand relative directory))
+      (def extension (path-extension path))
+      (def base (path-strip-extension path))
+      (find file-exists?
+        (cons (string-append base ".ssi")
+              (if (string-empty? extension)
+                (map (cut string-append path <>) '(".ss" ".sld" ".scm"))
+                (list path)))))))
+
+;; A symbolic dependency request resolves exactly once through Gerbil. Check
+;; the resolved SSI header in that same observation; re-resolving a path just
+;; returned by the compiler can observe another Make worker's input window.
+(def (module-build-resolve-library identity)
+  (def library (string->symbol (string-append ":" (symbol->string identity))))
+  (def path (core-resolve-library-module-path library))
+  (when (equal? (path-extension path) ".ssi")
+    (let-values (((_prelude actual _namespace _body) (core-read-module/sexp path)))
+      (unless (eq? identity actual)
+        (error "compiled import identity differs from requested library" path identity actual))))
+  path)
+
+;; Gerbil can resolve a symbolic import to an SSI path before invoking the
+;; import hook. Read its inert header, not the initializer, and authenticate
+;; that header against the runtime's own library resolver before source lookup.
+(def (module-build-import-identity path)
+  (def request (syntax-e path))
+  (cond
+   ((symbol? request)
+    (let (text (symbol->string request))
+      (and (> (string-length text) 1) (char=? (string-ref text 0) #\:)
+           (string->symbol (substring text 1 (string-length text))))))
+   ((and (string? request) (string=? (path-extension request) ".ssi"))
+    (let-values (((_prelude identity _namespace _body) (core-read-module/sexp request)))
+      (def library (string->symbol (string-append ":" (symbol->string identity))))
+      (unless (equal? (path-normalize (path-expand request))
+                      (path-normalize (path-expand (core-resolve-library-module-path library))))
+        (error "compiled import identity differs from runtime package resolution" request identity))
+      identity))
+   (else #f)))
 
 (def (module-build-source-path context package-root)
+  (module-build-library-source-path (expander-context-id context) package-root))
+
+(def (module-build-library-source-path identity package-root)
   ;; Package/build internals own source resolution, never configuration users
   ;; or dependency traversal. Consume runtime bindings and package resolution;
   ;; a public language name does not prescribe its source filename.
-  (def identity (expander-context-id context))
   (def library (and (symbol? identity)
                    (string->symbol (string-append ":" (symbol->string identity)))))
   (def root (string-append (path-strip-trailing-directory-separator (path-normalize package-root)) "/"))
@@ -148,9 +200,7 @@ prelude: :gerbil/core
        (else
         ;; Resolve within the declared package even when the runtime context
         ;; came from the output library. Foreign prefixes have no candidate.
-        (let (prefix (core-library-package-path-prefix package-root))
-          (and (or (not prefix) (string-prefix? prefix (symbol->string identity)))
-               (resolve-build-library library package-root)))))))
+        (owned-build-library-path identity package-root)))))
   (and (owned-source? source)
     (let-values (((_prelude actual _namespace _body) (core-read-module/sexp source)))
       (unless (eq? identity actual)

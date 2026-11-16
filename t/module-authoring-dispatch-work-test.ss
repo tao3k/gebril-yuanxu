@@ -6,7 +6,7 @@
         :std/test
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/object .o .get .ref .cc .put! compute-precedence-list! object-protocol-set!
-                 object-%instance object-%precedence-list replay-slot-reads!)
+                 object-cached-value object-%precedence-list replay-slot-reads!)
         (only-in :clan/poo/mop with-inheritance-hooks)
         (only-in :clan/poo/object .ref/inline)
         (only-in :clan/poo/object .putslot! $constant-slot-spec)
@@ -30,8 +30,7 @@
                  yuanxu-module-authoring-admission-accepted?)
         (only-in :tao3k/yuanxu/module-system/authoring/roles ConfigSourceRole.)
         (only-in :clan/poo/mop ClosGenericFunction ClosEffectiveMethod ClosInvocationFrame ClosMethod
-                 clos-call clos-compute-effective-method)
-        (only-in :clan/poo/clos/objects %prepare-effective-method))
+                 clos-call clos-compute-effective-method))
 (export module-authoring-dispatch-work-test)
 
 ;; Count runtime policy-slot deliveries, including replay. This deliberately
@@ -90,9 +89,7 @@
       ;; This inspects original read owners, without creating or merging tokens.
       (check-equal?
         (length (filter (lambda (owner)
-                          (let (fields (object-%instance owner))
-                            (and fields
-                              (eq? (hash-get fields 'kind) 'yuanxu.module-authoring.admission))))
+                          (eq? (object-cached-value owner 'kind) 'yuanxu.module-authoring.admission))
                         (hash-keys owners)))
         1)
       (check-equal? (yuanxu-module-authoring-admission-accepted? result) #f)
@@ -244,23 +241,19 @@
             executor role interface '(def value 1))))
       (check-equal? checks 2)
       (check-equal? calls 1))
-    (yuanxu-test-case "a prepared constructor produces a fresh checked carrier on each demand"
+    (yuanxu-test-case "public effective-method preparation returns a fresh checked carrier on each demand"
       (def interface (yuanxu-module-interface "fresh-carrier" (Record) '()))
       (def arguments
         (list (.get interface authoring executor)
           (yuanxu-module-authoring-role interface 'objects)
           interface '(def value 1)))
-      (def effective
+      (def (prepare)
         (apply clos-compute-effective-method ModuleAuthoringAnalysisGeneric arguments))
-      (def prepare
-        (%prepare-effective-method ModuleAuthoringAnalysisGeneric arguments
-          (.get effective around) (.get effective before)
-          (.get effective primary) (.get effective after)))
       (def first (prepare))
       (.put! first 'arguments #f)
       (def second (prepare))
       (check-equal? (eq? first second) #f)
-      (check-equal? (eq? (.get second arguments) arguments) #t))
+      (check-equal? (equal? (.get second arguments) arguments) #t))
     (yuanxu-test-case "public effective-method callback may invalidate the checked default"
       (def interface (yuanxu-module-interface "callback-probe" (Record) '()))
       (def calls 0)
@@ -391,8 +384,7 @@
       (check-equal?
         (ormap (lambda (read)
                (let (owner (slot-read-receiver read))
-                 (and (object-%instance owner)
-                      (eq? (hash-get (object-%instance owner) 'kind) 'yuanxu.module-authoring.admission))))
+                 (eq? (object-cached-value owner 'kind) 'yuanxu.module-authoring.admission)))
              reads)
         #f)
       (check-equal?

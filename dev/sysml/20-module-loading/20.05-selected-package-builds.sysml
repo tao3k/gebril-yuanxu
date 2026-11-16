@@ -207,7 +207,7 @@ package YuanxuSelectedPackageBuilds {
                SelectedPackages.package_target_exact, package_partition_complete
                and package_partition_disjoint establish the ownership partition;
                they do not prove Scheme's package-prefix/path correspondence.
-               BuildSpecContract checks shape and exact native-spec composition.
+               BuildSpecContract checks shape and exact make-spec composition.
                The existing init consumer binds identity and source currentness;
                a caller-supplied origin tag cannot replace that association.
                No new temporal transitions or cache protocol are introduced. */
@@ -260,7 +260,7 @@ package YuanxuSelectedPackageBuilds {
                must establish those observations, including macro phases and
                custom Prelude behavior. No implicit selection or compile effect. */
     }
-    requirement def NativeHandoff {
+    requirement def GerbilBuildHandoff {
         doc /* The existing prepared-source adapter feeds one native std/make
                target graph for selected cross-package files. Stable wrappers
                are generated data, not a cached admission. Original observations
@@ -311,7 +311,7 @@ package YuanxuSelectedPackageBuilds {
                is not POO's inheritance super. Quantitative efficiency and any
                new view refinement still require separate formal/native gates. */
     }
-    requirement def NativePOONamespaceExpression {
+    requirement def POONamespaceExpression {
         doc /* 13.35 refinement: branches are ordinary indexed POO objects,
                leaves are original admitted objects. Use native slot composition,
                Type/ObjectContract boundaries, prototype maps and existing table
@@ -373,7 +373,7 @@ package YuanxuSelectedPackageBuilds {
                source observers retain original delivery/order. A topology hit
                is never a currentness verdict or cross-boundary approval. */
     }
-    requirement def NativeSessionMetadataTopology {
+    requirement def GerbilSessionMetadataTopology {
         doc /* Main metric: one cold business .get in a thousand-name namespace,
                including complete declaration admission, reached scopes and the
                returned business value. 180 seconds is an exception watchdog,
@@ -812,7 +812,7 @@ package YuanxuSelectedPackageBuilds {
                prelude identity; those observations do not select Modules. */
     }
 
-    requirement def NativePackageAdmissionBinding {
+    requirement def GerbilPackageAdmissionBinding {
         doc /* Qualify native Gerbil package checkout identity, version
                and currentness as facts of the existing owned source declaration.
                Package code and package management own package structure and

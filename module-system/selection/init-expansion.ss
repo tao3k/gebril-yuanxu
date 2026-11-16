@@ -74,7 +74,7 @@
           (compiled-program (or program #'#f))
           (compiled-selection? (if program #'#t #'#f))
           (source-origin (or origin #'(this-source-file ctx)))
-          (native-unit
+          (program-unit
             (datum->syntax (syntax ctx)
               (string->symbol
                 (string-join (string-split (module-id->path-string (expander-context-id owner)) #\/) "__"))))
@@ -89,7 +89,7 @@
                (yuanxu-init-build
                  source-origin
                  '(yuanxu! option value init-clause ...)
-                 compiled-program 'native-unit compiled-selection?))
+                 compiled-program 'program-unit compiled-selection?))
              (def exports-value (.+ exports-base (.o mount-slot ...)))
              (defsyntax exports-binding
                (identifier-rules ()

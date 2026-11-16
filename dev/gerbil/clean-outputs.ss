@@ -7,7 +7,7 @@
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-name? module-source-type))
 (export clean-selected-outputs! main)
 
-(def (clean-selected-outputs! identities library (native-clean void))
+(def (clean-selected-outputs! identities library (gerbil-clean void))
   (def root (path-strip-trailing-directory-separator (path-expand library)))
   (def (check-parent! directory)
     (def parent (path-strip-trailing-directory-separator directory))
@@ -33,7 +33,7 @@
       (unless (eq? (module-source-type path) 'regular)
         (error "selected compiler output is not a regular file" path)))
     files)
-  (native-clean)
+  (gerbil-clean)
   (for-each (lambda (path)
               (when (file-exists? path)
                 (displayln "... remove " path)

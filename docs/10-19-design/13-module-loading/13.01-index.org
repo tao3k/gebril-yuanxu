@@ -23,7 +23,7 @@
   configuration to Interface and lazy application access to init.exports/.get,
   removing direct-import and private-role-inventory alternatives.
 
-- [[file:13.31-native-prelude-staging-and-source-view.org][Native Prelude staging and source view]] refines canonical syntax ownership,
+- [[file:13.31-gerbil-prelude-staging-and-source-view.org][Native Prelude staging and source view]] refines canonical syntax ownership,
   emitted compiler edges, physical output collisions and incremental descriptor
   ordering, separating native probes from downstream acceptance.
 

@@ -31,7 +31,7 @@
 (def (capture-object value)
   (make-object-view value (object-revision value)
     (list (object-%slots value) (object-%defaults value) (object-%reads value)
-          (object-%layout value) (object-%instance value) (object-%slot-funs value)
+          (runtime.slot-ref value '%layout) (runtime.slot-ref value '%instance) (object-%slot-funs value)
           (object-%all-slots value) (object-%protocol value) (object-%overrides value)
           (object-%declarations value))
     (map values (object-supers value)) (copy-list (object-%precedence-list value))
@@ -41,7 +41,7 @@
   (def receiver (slot-read-receiver read))
   (unless (object? receiver) (error "invalid runtime receiver"))
   (def key (slot-read-key read))
-  (def instance (object-%instance receiver))
+  (def instance (runtime.slot-ref receiver '%instance))
   (def table (object-%reads receiver))
   (make-read-view read (runtime.slot-ref read 'current?)
     ;; Public inspectors copy the store and structural payloads. Qualification

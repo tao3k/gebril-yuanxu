@@ -10,7 +10,7 @@
                  prelude-context-path __module-registry
                  module-import? module-import-source module-export? module-export-context
                  import-set? import-set-source)
-        (only-in "./source-package.ss" module-build-source-path package-prelude-identity))
+        (only-in "./source-package.ss" module-build-source-path module-build-library-source-path module-build-import-identity package-prelude-identity))
 (export yuanxu-bootstrap-spec for-each-build-module build-module-dependencies
         yuanxu-bootstrap-contexts yuanxu-reader-contexts
         package-library-spec package-library-spec/source-context
@@ -73,7 +73,17 @@
   (library-spec root package entries admit-context excluded identity))
 
 (def (package-library-spec/source-context root package entries admit-context source-context)
-  (library-spec root package entries admit-context '() source-context))
+  (def importer (current-expander-module-import))
+  ;; Resolve this package before expansion can execute an obsolete native
+  ;; initializer. The normal resolver authenticates the source header; the
+  ;; caller's admission and import hook remain active.
+  (parameterize
+      ((current-expander-module-import
+        (lambda (path (reload? #f))
+          (def identity (module-build-import-identity path))
+          (def source (and identity (module-build-library-source-path identity root)))
+          (importer (or source path) reload?))))
+    (library-spec root package entries admit-context '() source-context)))
 
 (def (library-spec root package entries admit-context excluded source-context)
   (def prefix (string-append (symbol->string package) "/"))

@@ -350,7 +350,7 @@
       ((.ref context-value 'current?) generation-value))
     (def (prepared-input-state input)
       (or (and input-metadata-state (input-metadata-state input))
-          (and (object? input) (object-%instance input) (object-%precedence-list input)
+          (and (object? input) (object-instantiated? input) (object-%precedence-list input)
                (not (object-protocol input))
           (let* ((id (.ref/cached input 'identity (lambda () #f)))
                  (entry (and (symbol? id) (hash-get prepared id))))

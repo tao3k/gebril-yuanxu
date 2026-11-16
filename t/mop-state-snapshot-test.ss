@@ -1,5 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :clan/poo/object
+(import (prefix-in (only-in :gerbil/runtime/mop slot-ref) poo-fixture.)
+        :std/test :clan/poo/object
         (only-in :clan/poo/mop call-with-slot-read-observer slot-read-key make-slot-read replay-slot-reads!)
         (only-in :clan/poo/meta-prototype bootstrap-protocol)
         (only-in :std/error Error? Error-message)
@@ -53,8 +54,8 @@
     (.def Root payload: first)
     (def roots (recorded (cut .get Root payload)))
     (def snapshot (capture-state roots))
-    ;; Deliberate raw-cache fault injection, not a supported user assignment.
-    (hash-put! (object-%instance Root) 'payload second)
+    ;; Exercise the supported write boundary with an equal but distinct value.
+    (.put! Root 'payload second)
     (fails-with "MOP snapshot changed" (cut state-current! snapshot))
     (set! completed (+ completed 1)))
   (yuanxu-test-case "bootstrap remains current after clear but cold hook is exposed"
@@ -111,7 +112,7 @@
     (.def Root port: 5432)
     (check-equal? (.get Root port) 5432)
     (def calls 0)
-    (def foreign (make-slot-read Root 'port (object-revision Root) (object-%instance Root)
+    (def foreign (make-slot-read Root 'port (object-revision Root) (poo-fixture.slot-ref Root '%instance)
       5432 '() (lambda (_read) (set! calls (+ calls 1)) #t)))
     (def snapshot (capture-state (list foreign)))
     (check-equal? (eq? (read-view-checker (car (state-reads snapshot))) object-read-current?) #f)

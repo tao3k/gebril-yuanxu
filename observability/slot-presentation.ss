@@ -55,7 +55,7 @@
       (error "unlabeled POO prototype" prototype))
     entry))
 
-(def (yuanxu-slot-declaration-steps subject slot index)
+(def (yuanxu-slot-declaration-steps precedence slot index)
   (let (reversed '())
     (for-each
      (lambda (prototype)
@@ -68,7 +68,7 @@
                              source-path: (.ref source 'source-path)
                              source-line: (.ref source 'source-line))
                          reversed))))))
-     (object-%precedence-list subject))
+     precedence)
     (reverse reversed)))
 
 ;;; The declaration lineage is not a claim that every ancestor contributed to
@@ -79,13 +79,14 @@
                (.slot? subject slot-name))
     (error "cannot present missing POO slot" slot-name))
   (let* ((source-index (yuanxu-prototype-source-index registry))
+         (precedence (compute-precedence-list! subject))
          (precedence-value
           (map (lambda (prototype)
                  (yuanxu-prototype-source source-index prototype))
-               (object-%precedence-list subject)))
+               precedence))
          (declarations-value
           (yuanxu-slot-declaration-steps
-           subject slot-name source-index))
+           precedence slot-name source-index))
          (resolved-value (.ref subject slot-name))
          (source-labels
           (map (lambda (entry) (.ref entry 'label)) declarations-value))

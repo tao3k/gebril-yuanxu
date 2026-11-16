@@ -2,7 +2,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Flow edges use ordinary runtime Function descriptors, not signature labels.
 (import :clan/poo/object
-        (only-in :clan/poo/mop Type Type. Function Function. Fun Any Bool validate element? raise-type-error)
+        (only-in :clan/poo/mop Type Type. Function Function. Fun Any Bool validate element?
+                 prototype-instance? raise-type-error)
         (only-in :clan/poo/type String Symbol List Pair Null Unit Sum OrFalse Record Exactly Union)
         (only-in :clan/poo/number Number Integer)
         (only-in :clan/poo/types/relation subtype-expression? capture-type-catalog type-refusal? type-refusal-kind type-work)
@@ -20,7 +21,7 @@
   (.cc Type. sexp: 'FunflowOperationSignature
     '.element?
     (lambda (value)
-      (and (object? value) (memq Function. (compute-precedence-list! value))
+      (and (prototype-instance? Function. value)
            (= (length (.get value inputs)) 1) (= (length (.get value outputs)) 1)
            (null? (.get value optional)) (null? (.get value keywords))
            (not (.get value rest))

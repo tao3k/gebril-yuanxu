@@ -8,7 +8,8 @@
                  call-with-selected-output-lock selected-output-source-directory)
         (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path)
         (only-in :clan/poo/object .o .ref .ref/cached .slot? object? object-protocol
-                 object-%instance object-%precedence-list object-construction-current?)
+                 object-instantiated? object-%precedence-list object-construction-current?
+                 require-object-instance-route!)
         (only-in :clan/poo/slot-observation without-observation)
         (only-in :clan/poo/read-projection owned-read-function-scope?)
         (only-in :clan/poo/read-route require-read-route!)
@@ -18,6 +19,7 @@
         (only-in :tao3k/yuanxu/module-system/source/declaration include-module-body)
         (only-in :tao3k/yuanxu/module-system/source/config-prelude)
         (only-in :tao3k/yuanxu/module-system/source/module-prelude)
+        (only-in :std/list/list find)
         (only-in :std/io/tempfile call-with-temporary-directory make-temporary-file-name)
         (only-in :gerbil/runtime/gambit current-readtable)
         (only-in :gerbil/runtime/syntax __*readtable*)
@@ -66,9 +68,9 @@
           (def input (and row (compiler-input-value row)))
           (or (not input)
               (and (object? input) (object-%precedence-list input)
-                   (not (object-protocol input)) (object-%instance input)
+                   (not (object-protocol input)) (object-instantiated? input)
                    (begin
-                     (require-read-route! 'compiler-source #f (object-%instance input))
+                     (require-object-instance-route! input 'compiler-source)
                      (let ((actual (.ref/cached input 'admit-current (lambda () #f)))
                            (identity (.ref/cached input 'compiler-identity (lambda () #f))))
                        (and (symbol? identity)
@@ -81,9 +83,9 @@
   (and checker (object-construction-current?)
     (let (metadata (module-source-object-policy (list value)))
       (lambda ()
-        (and (metadata) (object-%instance value) (object-%precedence-list value)
+        (and (metadata) (object-instantiated? value) (object-%precedence-list value)
              (begin
-               (require-read-route! 'compiler-source #f (object-%instance value))
+               (require-object-instance-route! value 'compiler-source)
                (eq? checker (.ref/cached value 'admit-current (lambda () #f))))
              (ready?))))))
 (def (compiler-frame-paths entries)
@@ -276,7 +278,7 @@
                        (owned-read-function-scope?)
                        (yuanxu-module-source-ref-construction-current?)
                        (not (object-protocol source-value))
-                       (object-%instance source-value)
+                       (object-instantiated? source-value)
                        (without-observation
                          (lambda () (pair? (.ref/cached source-value 'metadata))))))
          (metadata (and closed? (yuanxu-module-source-ref-metadata source-value)))
@@ -527,11 +529,17 @@
             (call-with-module-source-callback context-current!)
             (check-source!)
             (call-with-module-source-callback context-current!))))
+      ;; The same immutable Gerbil package snapshot owns source provenance.
+      ;; Retain its first positive ancestor instead of asking later callers
+      ;; to reconstruct ownership from a changing compiler-input extent.
+      (def owner-entry (find package-source-text packages))
+      (def source-package-root
+        (and owner-entry (path-directory (package-source-path owner-entry))))
       (def path source-path)
       (def compiler-identity id)
       (def construction-intact? (object-construction-current?))
       (def value
-        (.o bind-these: #f path compiler-identity admit-current
+        (.o bind-these: #f path compiler-identity admit-current package-root: source-package-root
           source-inputs: (cons (cons source-path text) (package-source-inputs packages))
           compiler-forms:
           (append (cond

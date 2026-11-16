@@ -40,7 +40,7 @@
   (defvalues (tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts)
     (module-import-provenance))
   (make-reader-session (cons '() 0) dependencies #f 0
-    (make-hash-table-eq) kernel-contexts kernel-inputs 0 (gensym 'reader-native-imports)
+    (make-hash-table-eq) kernel-contexts kernel-inputs 0 (gensym 'reader-compiled-imports)
     kernel-owners kernel-data kernel-initializers
     preparations 0 0 candidate
     tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts

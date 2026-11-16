@@ -176,7 +176,7 @@ effects. The Scheme admission path still calls the native reader at the
 original boundary.
 
 A temporary, stage-only Scheme probe reused the existing
-=reader-native-identity= label. That label already measures compiler-tool
+=reader-gerbil-identity= label. That label already measures compiler-tool
 Context checks, so its totals combine two operations.
 The 1,000-owner =module-runtime-attribution= Case passed under the
 180-second / 4 GiB guard in 52.309 s at a sampled process-tree footprint
@@ -190,7 +190,7 @@ admission. These inclusive spans can overlap.
 A second run used the independent =reader-admission-native-reread= label.
 It passed the same Case under the same guard in 94.986 s, with a sampled
 process-tree footprint of 1,300,004,864 bytes. That label did not occur.
-The 6,004 calls stayed under =reader-native-identity= and all belong to
+The 6,004 calls stayed under =reader-gerbil-identity= and all belong to
 compiler-tool Context checks. The fixture uses a single-root Context.
 The second Interface parse applies only to source references carrying
 =declaration-id= from a root-qualified window. It therefore cannot explain

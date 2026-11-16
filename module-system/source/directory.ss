@@ -166,15 +166,15 @@
         (let (window (row-window row)) (if window (window-root window) root-path)))
       ;; The existing indexes carry full native owner keys across mounted
       ;; roots. A single-root Context already supplies its implicit root.
-      (def native-prefixes (make-hash-table-eq))
+      (def library-prefixes (make-hash-table-eq))
       (when qualified-owners?
         (for-each (lambda (window)
-                    (hash-put! native-prefixes window
+                    (hash-put! library-prefixes window
                       (observe! module-source-package-prefix (window-root window)))) windows))
       (when qualified-owners?
         (let (owners (make-hash-table))
           (for-each (lambda (window)
-                      (def prefix (hash-ref native-prefixes window))
+                      (def prefix (hash-ref library-prefixes window))
                       (when (hash-get owners prefix)
                         (error "native root identity has multiple source owners" prefix))
                       (hash-put! owners prefix (window-root window))) windows)))
@@ -183,7 +183,7 @@
       (def (owner-key window name (row #f))
         (if (not qualified-owners?) name
           (let ((declared (and row (.ref row 'source-root)))
-                (prefix (hash-ref native-prefixes window)))
+                (prefix (hash-ref library-prefixes window)))
             (if declared
               (string->symbol
                 (string-append
@@ -263,18 +263,18 @@
                     (error "metadata reference requires a root-qualified reader" key))
                   (and (pair? matches) (car matches)))
               (let ((matches (filter (lambda (window)
-                                       (and (string-prefix? (hash-ref native-prefixes window) text)
+                                       (and (string-prefix? (hash-ref library-prefixes window) text)
                                             (string-suffix? "/interface" text))) windows)))
                 (and (pair? matches)
                      (car (list-sort (lambda (left right)
-                                       (> (string-length (hash-ref native-prefixes left))
-                                          (string-length (hash-ref native-prefixes right)))) matches)))))))))
+                                       (> (string-length (hash-ref library-prefixes left))
+                                          (string-length (hash-ref library-prefixes right)))) matches)))))))))
       (def (key-name key)
         (if (not qualified-owners?) key
           (let ((row (decision-row key)) (window (key-window key)))
             (if row (row-name row)
               (if window
-                (let ((text (symbol->string key)) (prefix (hash-ref native-prefixes window)))
+                (let ((text (symbol->string key)) (prefix (hash-ref library-prefixes window)))
                   (string->symbol (substring text (string-length prefix) (- (string-length text) 10))))
                 (error "module identity is outside declared native roots" key))))))
       (def (resolve-request-root key)

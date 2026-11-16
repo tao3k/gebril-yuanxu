@@ -8,9 +8,9 @@
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :gerbil/expander current-expander-context make-top-context
                  current-expander-module-import eval-syntax eval-module expander-context-id module-context-path
-                 core-library-package-path-prefix module-context-code module-context?
+                 module-context-code module-context?
                  current-expander-compile current-expander-eval expander-context-table syntax-e
-                 core-read-module/sexp core-resolve-module-path __module-registry)
+                 core-read-module/sexp core-resolve-module-path core-import-module __module-registry)
         (only-in :clan/poo/mop validate)
         (only-in :tao3k/yuanxu/module-system/building/program-products DefbuildScriptContract)
         (only-in :clan/poo/read-route require-read-route!)
@@ -28,7 +28,7 @@
         :tao3k/yuanxu/module-system/source/objects
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :tao3k/yuanxu/module-system/building/source-package
-                 module-build-source-path call-with-build-source-fallbacks))
+                 package-library-prefix module-build-source-path module-build-library-source-path module-build-import-identity call-with-build-source-fallbacks))
 (import :tao3k/yuanxu/module-system/source/reader-support
         :tao3k/yuanxu/module-system/source/reader-evaluation
         :tao3k/yuanxu/module-system/source/import-provenance
@@ -119,8 +119,8 @@
            (if feature-inputs
              (filter (lambda (input) (not (hash-key? feature-inputs (.ref input 'path)))) input-values)
              input-values)))
-       (defvalues (compile evaluate)
-         (reader-evaluation-observers artifacts completed
+       (def with-reader-evaluation
+         (make-reader-evaluation-scope artifacts completed
            (lambda (context action)
              (call-with-collected-module-sources
                (lambda (sources-current!)
@@ -165,6 +165,13 @@
                (for-each (lambda (form) (write form port) (newline port)) forms)))
            (register-reader-wrapper! artifacts target path)
            (hash-put! wrappers path target) target))
+       (def (import-wrapper target reload?)
+         (unless (hash-key? artifacts (path-normalize target))
+           (error "reader cannot import an unregistered wrapper" target))
+         ;; Only the entry has private-path authority. Its dependency imports stay
+         ;; with this reader, including nested readers invoked during initialization.
+         (parameterize ((current-expander-module-import publication-import))
+           (core-import-module target reload?)))
        (def (record-owner! owner)
          (when (and owner (not reading-feature?))
            (let (identity (.ref owner 'identity))
@@ -264,7 +271,7 @@
                           ;; A linked Gerbil can be nested in a consumer's
                           ;; .data tree. Filesystem containment does not
                           ;; transfer its runtime compiler package ownership.
-                          (let (prefix (core-library-package-path-prefix kernel-root))
+                          (let (prefix (package-library-prefix kernel-root))
                             (and prefix
                                  (string-prefix? prefix
                                    (symbol->string (.ref input 'compiler-identity))))))
@@ -363,7 +370,7 @@
                             ((current-module-source-observer)
                               (list 'compiler-source-import-start path) 1))
                           (let (context (module-source-measure-operation 'reader-role-import
-                                           (lambda () (gerbil-import target reload?))))
+                                           (lambda () (import-wrapper target reload?))))
                             (when (current-module-source-observer)
                               ((current-module-source-observer)
                                 (list 'compiler-source-import-end path
@@ -452,10 +459,9 @@
                   (when (and source-tree
                              (or (not (equal? kernel kernel-root))
                                  ((.ref source-tree 'within-window?) path)))
-                    (let (owned-root (and (equal? kernel kernel-root) kernel))
-                      (unless (reader-prepare-public-dependency session path owned-root)
-                        (public-dependency-input path #f #t owned-root: owned-root)
-                        (error "public source identity changed" path))))
+                    (unless (reader-prepare-public-dependency session path)
+                      (public-dependency-input path #f #t)
+                      (error "public source identity changed" path)))
                   (shared-context original-path kernel reload?)))
             (else
              ;; Public dependencies may expand a relative source import
@@ -531,7 +537,7 @@
        (def (resolve-build!)
          (with-module-sources resolve-build/in-context!))
        (def build-role (and (eq? role-kind 'make-parameters) (.o value: (resolve-build!))))
-       (def (native-spec)
+       (def (make-spec)
          (case role-kind
            ((package-script) (reject-package-script!))
            ((make-parameters)
@@ -545,18 +551,23 @@
            (error "Build is available only in the Module build-publication phase"))
          (.ref role 'value))
        (def deferred-roles (.ref prepared 'deferred-roles))
-       (def (publication-import path (reload? #f))
-         (let* ((context (import-request path reload?))
-                (origin (module-context-path context)))
-           (when (and (string? origin) (string=? (path-extension origin) ".ssi"))
+       (def (admit-compiled-context! context)
+         (def origin (module-context-path context))
+         (and (string? origin) (string=? (path-extension origin) ".ssi")
+           (begin
              (unless (runtime-context? context)
                (hash-put! runtime-imports context
                  (cons (expander-context-id context) (string-copy origin)))
                (let (current! (lambda () (runtime-context? context)))
                  (reader-session-add-guard! session
                    (make-source-preparation #f #f #f #f current! #f #f))
-                 (reader-enroll-candidate! session current!))))
-           context))
+                 (reader-enroll-candidate! session current!)))
+             (runtime-context? context))))
+       (def compiled-import (reader-compiled-import-observer admit-compiled-context!))
+       (def (publication-import path (reload? #f))
+         (def context (import-request path reload?))
+         (admit-compiled-context! context)
+         context)
        (def (import-request path reload?)
          ;; Native import arguments may carry syntax/source locations. Resolve
          ;; file requests before importing: expansion can execute initializers.
@@ -565,11 +576,31 @@
            (and (string? requested)
                 (module-source-measure-operation 'reader-source-resolution
                   (lambda () (path-normalize (core-resolve-module-path path))))))
+         ;; Resolve only declared, selected owners before importing native
+         ;; metadata. Loading an old .ssi first can run its initializer before
+         ;; the selected source receives its currentness/identity checks.
+         (def requested-identity (module-build-import-identity path))
+         (def selected-source
+           (and source-tree requested-identity
+                (not (hash-key? (reader-session-tool-contexts session) requested-identity))
+                (let loop ((roots (.ref source-tree 'package-roots)))
+                  (and (pair? roots)
+                       (or (let (source (module-build-library-source-path requested-identity (car roots)))
+                             (and source ((.ref source-tree 'locate-owner) source) source))
+                           (loop (cdr roots)))))))
          (cond
+          (selected-source
+           (module-source-measure-operation 'reader-source-import
+             (lambda () (source-context selected-source reload?))))
           ((and resolved (hash-key? artifacts resolved))
            (module-source-measure-operation 'reader-wrapper-expansion
              (lambda ()
-               (def context (gerbil-import path reload?))
+               ;; This exact wrapper belongs to this reader. Delegating its
+               ;; path to a parent reader incorrectly applies the parent's
+               ;; package confinement to a child publication. Keep our import
+               ;; interceptor active for its dependencies, while Gerbil expands
+               ;; only the registered entry itself.
+               (def context (import-wrapper resolved reload?))
                (when (equal? resolved interface-wrapper) (set! interface-context context))
                context)))
           ((and resolved (string=? (path-extension resolved) ".ss"))
@@ -589,9 +620,9 @@
                            (and (string? requested)
                                 (hash-get (reader-session-tool-paths session) (path-normalize requested))))
                  (reader-open-boundary! session (list 'uncatalogued-import path id)))))
-           (let* ((context (module-source-measure-operation 'reader-native-import
+           (let* ((context (module-source-measure-operation 'reader-compiled-import
                              (lambda () (parameterize ((current-expander-module-import gerbil-import))
-                               (gerbil-import path reload?)))))
+                               (compiled-import path reload?)))))
                   (identity (expander-context-id context))
                   (artifact-path (module-context-path context))
                   ;; Captured tools already carry their exact runtime
@@ -620,11 +651,10 @@
               ((hash-key? (reader-session-tool-contexts session) identity) (tool-context context reload?))
               (owner
                (record-owner! owner)
-               (if (or owned-path
-                       (member selected-path
-                         (map (lambda (name) (path-expand name (.ref owner 'root)))
-                              '("config.ss" "objects.ss" "func.ss" "types.ss"))))
-                 (source-context selected-path reload?) context))
+               ;; Selection owns helpers as well as role files. Installed
+               ;; native metadata may locate them, but cannot replace the
+               ;; selected source value with a stale compiled initializer.
+               (source-context selected-path reload?))
               (else
                (let (source
                      (and owned-path
@@ -647,29 +677,29 @@
          (dynamic-wind
            (lambda () (when created? (create-directory directory)))
            (lambda ()
-             (parameterize ((current-expander-context (make-top-context))
-                            (current-expander-compile compile)
-                            (current-expander-eval evaluate)
-                            (current-configuration-input-observer record-data!)
-                            (current-expander-module-import publication-import))
-               ;; Use the SAME confined context and source-input registry as
-               ;; eager publication. Symbol imports must not create a second
-               ;; public copy of an already admitted private role or kernel.
-               (def context (source-context path #f))
-               ;; The runtime context owns its initializer promise. Reuse it
-               ;; after wrapper cleanup without resolving a deleted file.
-               (eval-module context)
-               (hash-put! (reader-session-kernel-data session) context
-                 (filter (lambda (input)
-                           (and (.slot? input 'kind) (eq? (.ref input 'kind) 'data))) input-values))
-               (def value
-                 (parameterize ((current-expander-context context))
-                   (module-role-values names)))
-               (when role?
-                 (hash-put! (reader-session-dependencies session) interface-path (publication-inputs)))
-               (reader-current! session 'role-return)
-               (release-reader-expansions! completed)
-               value))
+             (with-reader-evaluation
+               (lambda ()
+                 (parameterize ((current-expander-context (make-top-context))
+                                (current-configuration-input-observer record-data!)
+                                (current-expander-module-import publication-import))
+                   ;; Use the SAME confined context and source-input registry as
+                   ;; eager publication. Symbol imports must not create a second
+                   ;; public copy of an already admitted private role or kernel.
+                   (def context (source-context path #f))
+                   ;; The runtime context owns its initializer promise. Reuse it
+                   ;; after wrapper cleanup without resolving a deleted file.
+                   (eval-module context)
+                   (hash-put! (reader-session-kernel-data session) context
+                     (filter (lambda (input)
+                               (and (.slot? input 'kind) (eq? (.ref input 'kind) 'data))) input-values))
+                   (def value
+                     (parameterize ((current-expander-context context))
+                       (module-role-values names)))
+                   (when role?
+                     (hash-put! (reader-session-dependencies session) interface-path (publication-inputs)))
+                   (reader-current! session 'role-return)
+                   (release-reader-expansions! completed)
+                   value))))
            (lambda () (when created? (remove-reader-tree directory)))))
        (def (with-module-sources action)
          ;; Gerbil resolves symbolic imports before the reader's import hook.
@@ -714,85 +744,85 @@
                              (write-wrapper interface-path
                                (reader-body (.ref prepared 'reader-forms))
                                (.ref prepared 'compiler-identity)))))
-            (parameterize
-                ((current-configuration-input-observer record-data!)
-                 (current-expander-compile compile)
-                 (current-expander-eval evaluate)
-                 (current-expander-context (make-top-context))
-                 (current-module-build-resolver
-                   (if build-role (lambda () (module-build-role-spec build-role)) resolve-build!))
-                 (current-module-feature-reader resolve-feature)
-                 (current-module-role-resolver resolve-role)
-                 (current-expander-module-import
-                  publication-import))
-              ;; Native import expansion records the complete confined
-              ;; private closure without evaluating its runtime role values.
-              ;; Public-only delayed roles retain their existing cold path.
-              (for-each (lambda (path) (source-context path #f))
-                        (.ref prepared 'deferred-import-sources))
-              (set! interface-wrapper (path-normalize wrapper))
-              (observe-reader-work 'reader-interface-start 'reader-interface-end
-                (lambda () (eval-syntax `(import ,wrapper))))
-              (let (value (if delivered (wrapper-delivery-value delivered)
-                              (eval-syntax (.ref prepared 'binding))))
-                (set! delivered #f)
-                (parameterize ((current-module-source-phase 'declaration-after)) (reader-current! session))
-                (def publication
-                  (if role-kind
-                    (.+ value (.o __std-make-spec:
-                                 (begin
-                                   (unless (current-module-build-phase?)
-                                     (error "Module Make spec is available only in the build phase"))
-                                   (native-spec))))
-                    value))
-                (def owners (reverse owner-order))
-                (hash-put! (reader-session-dependencies session) (cons 'import-owners interface-path) owners)
-                (def result (if consume (consume source-value publication owners) publication))
-                ;; A deferred Build resolver shares this outer interpreter
-                ;; frame. Do not retain the completed candidate's support
-                ;; tables and producer continuation through that resolver.
-                (set! consume #f)
-                (set! (reader-session-evaluated-interface-bindings session)
-                  (+ (reader-session-evaluated-interface-bindings session) (release-reader-expansions! completed)))
-                (when (current-module-source-observer)
-                  ;; Geometric, cache-free attribution of actual Gerbil roots.
-                  ;; Inspect only existing tables/code pointers; do not walk
-                  ;; binding values, force promises or clear compiler state.
-                  (let (count (reader-session-publication-prepared-count session))
-                    (when (and (> count 0) (= (bitwise-and count (- count 1)) 0))
-                      (let ((bindings 0) (bodies 0))
-                        (hash-for-each
-                          (lambda (_path context)
-                            (set! bindings (+ bindings (hash-length (expander-context-table context))))
-                            (when (module-context-code context) (set! bodies (+ bodies 1))))
-                          (reader-session-kernel-contexts session))
-                        ((current-module-source-observer)
-                          (list 'reader-binding-roots
-                            (cons 'publications count)
-                            (cons 'private-bindings bindings)
-                            (cons 'evaluated-interface-bindings (reader-session-evaluated-interface-bindings session))
-                            (cons 'private-code-bodies bodies)) 1))))
-                  ;; Counts describe this reader's actual retention roots;
-                  ;; observers never receive the context/syntax objects.
-                  ((current-module-source-observer)
-                    (list 'reader-retention
-                      (cons 'tools (hash-length (reader-session-compiler-contexts session)))
-                      (cons 'private-contexts (hash-length (reader-session-kernel-contexts session)))
-                      (cons 'transfer-initializers (hash-length (reader-session-kernel-initializers session)))
-                      ;; No per-root transitive topology copies are retained.
-                      (cons 'dependency-closures 0)
-                      (cons 'dependency-contexts 0)
-                      (cons 'prepared-publications (reader-session-publication-prepared-count session))
-                      (cons 'prepared-public-dependencies (reader-session-public-prepared-count session))
-                      (cons 'source-objects (reader-session-kernel-source-count session))
-                      (cons 'source-guards (reader-session-guard-count session))) 1)
-                  ((current-module-source-observer)
-                    (list 'publication-end interface-path) 1))
-                ;; Include the already prepared roles as well as private
-                ;; dependencies. Build projection must not allocate a second
-                ;; header/guard object for the very same observed source.
-                (hash-put! (reader-session-dependencies session) interface-path (publication-inputs))
-                result))))
+            (with-reader-evaluation
+              (lambda ()
+                (parameterize
+                    ((current-configuration-input-observer record-data!)
+                     (current-expander-context (make-top-context))
+                     (current-module-build-resolver
+                       (if build-role (lambda () (module-build-role-spec build-role)) resolve-build!))
+                     (current-module-feature-reader resolve-feature)
+                     (current-module-role-resolver resolve-role)
+                     (current-expander-module-import
+                      publication-import))
+                  ;; Native import expansion records the complete confined
+                  ;; private closure without evaluating its runtime role values.
+                  ;; Public-only delayed roles retain their existing cold path.
+                  (for-each (lambda (path) (source-context path #f))
+                            (.ref prepared 'deferred-import-sources))
+                  (set! interface-wrapper (path-normalize wrapper))
+                  (observe-reader-work 'reader-interface-start 'reader-interface-end
+                    (lambda () (eval-syntax `(import ,wrapper))))
+                  (let (value (if delivered (wrapper-delivery-value delivered)
+                                  (eval-syntax (.ref prepared 'binding))))
+                    (set! delivered #f)
+                    (parameterize ((current-module-source-phase 'declaration-after)) (reader-current! session))
+                    (def publication
+                      (if role-kind
+                        (.+ value (.o __std-make-spec:
+                                     (begin
+                                       (unless (current-module-build-phase?)
+                                         (error "Module Make spec is available only in the build phase"))
+                                       (make-spec))))
+                        value))
+                    (def owners (reverse owner-order))
+                    (hash-put! (reader-session-dependencies session) (cons 'import-owners interface-path) owners)
+                    (def result (if consume (consume source-value publication owners) publication))
+                    ;; A deferred Build resolver shares this outer interpreter
+                    ;; frame. Do not retain the completed candidate's support
+                    ;; tables and producer continuation through that resolver.
+                    (set! consume #f)
+                    (set! (reader-session-evaluated-interface-bindings session)
+                      (+ (reader-session-evaluated-interface-bindings session) (release-reader-expansions! completed)))
+                    (when (current-module-source-observer)
+                      ;; Geometric, cache-free attribution of actual Gerbil roots.
+                      ;; Inspect only existing tables/code pointers; do not walk
+                      ;; binding values, force promises or clear compiler state.
+                      (let (count (reader-session-publication-prepared-count session))
+                        (when (and (> count 0) (= (bitwise-and count (- count 1)) 0))
+                          (let ((bindings 0) (bodies 0))
+                            (hash-for-each
+                              (lambda (_path context)
+                                (set! bindings (+ bindings (hash-length (expander-context-table context))))
+                                (when (module-context-code context) (set! bodies (+ bodies 1))))
+                              (reader-session-kernel-contexts session))
+                            ((current-module-source-observer)
+                              (list 'reader-binding-roots
+                                (cons 'publications count)
+                                (cons 'private-bindings bindings)
+                                (cons 'evaluated-interface-bindings (reader-session-evaluated-interface-bindings session))
+                                (cons 'private-code-bodies bodies)) 1))))
+                      ;; Counts describe this reader's actual retention roots;
+                      ;; observers never receive the context/syntax objects.
+                      ((current-module-source-observer)
+                        (list 'reader-retention
+                          (cons 'tools (hash-length (reader-session-compiler-contexts session)))
+                          (cons 'private-contexts (hash-length (reader-session-kernel-contexts session)))
+                          (cons 'transfer-initializers (hash-length (reader-session-kernel-initializers session)))
+                          ;; No per-root transitive topology copies are retained.
+                          (cons 'dependency-closures 0)
+                          (cons 'dependency-contexts 0)
+                          (cons 'prepared-publications (reader-session-publication-prepared-count session))
+                          (cons 'prepared-public-dependencies (reader-session-public-prepared-count session))
+                          (cons 'source-objects (reader-session-kernel-source-count session))
+                          (cons 'source-guards (reader-session-guard-count session))) 1)
+                      ((current-module-source-observer)
+                        (list 'publication-end interface-path) 1))
+                    ;; Include the already prepared roles as well as private
+                    ;; dependencies. Build projection must not allocate a second
+                    ;; header/guard object for the very same observed source.
+                    (hash-put! (reader-session-dependencies session) interface-path (publication-inputs))
+                    result))))))
         (lambda ()
           ;; Gerbil indexes the temporary Interface by both path and ID.
           ;; Native delivery already returned the value for a closed wrapper.

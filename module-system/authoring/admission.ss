@@ -10,9 +10,9 @@
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!
                  slot-read-receiver slot-read-value without-observation)
-        (only-in :clan/poo/mop Type. define-type element? validate
+        (only-in :clan/poo/mop Type. define-type element? validate prototype-instance?
                  clos-generic-protocol clos-compose-method-bundle
-                 clos-compute-applicable-methods
+                 clos-compute-applicable-methods clos-call-carrier-policy-guard
                  .defgeneric .defmethod .generic-object .defmethod-bundle)
         (only-in :clan/poo/type List)
         (only-in :std/list/list any delete-duplicates/hash filter-map find map-in-order)
@@ -27,7 +27,6 @@
         (only-in :tao3k/yuanxu/module-system/observability/presentation
                  yuanxu-poo-slot-authoring-datum-bindings
                  yuanxu-poo-slot-authoring-self-reference?)
-        (only-in :clan/poo/clos/objects clos-call-carrier-policy-guard)
         (only-in :clan/poo/read-projection call-with-owned-read-projection
                  owned-read-function-scope? owned-read-method! owned-read-derived!
                  owned-read-fields-present? make-owned-method-check call-with-owned-read-method-checks)
@@ -502,8 +501,8 @@
   ;; axes. Only the role's native C4 position distinguishes their specificity.
   ;; Walking C4, rather than profile declaration order, retains multiple-parent
   ;; precedence. Unknown axes/method state still use the public Generic below.
-  (and (memq ModuleAuthoringExecutor. (object-%precedence-list executor))
-       (memq yuanxu-module-interface-prototype (object-%precedence-list interface))
+  (and (prototype-instance? ModuleAuthoringExecutor. executor)
+       (prototype-instance? yuanxu-module-interface-prototype interface)
        (any (lambda (parent)
               (let (profile (assq parent default-function-profiles))
                 (and profile (cdr profile))))

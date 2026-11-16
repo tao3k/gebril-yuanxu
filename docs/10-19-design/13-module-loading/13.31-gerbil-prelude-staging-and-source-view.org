@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 # SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-#+title: 13.31 Native Prelude Staging and Source View Correspondence
+#+title: 13.31 Gerbil Prelude Staging and Source View Correspondence
 #+language: en
 #+date: [2026-11-03]
 #+property: STATUS refinement-research-production-unimplemented

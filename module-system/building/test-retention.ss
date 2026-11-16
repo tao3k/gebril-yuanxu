@@ -1,6 +1,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Explicit trace only; ordinary module tests do not initialize retention probes.
 (import (runtime: :clan/poo/object)
+        (rename-in (only-in :clan/poo/object slot-read-native-instance-values object-native-instance-keys)
+                   (slot-read-native-instance-values slot-read-instance-storage-values)
+                   (object-native-instance-keys object-instance-storage-keys))
         (only-in :clan/poo/prototype-map prototype-map-length)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-key slot-read-receiver slot-read-instance slot-read-value slot-read-dependencies)
@@ -85,8 +88,7 @@
   (def next-snapshot 1)
   (def source-observer (current-module-source-observer))
   (def (cached-prototype descriptor)
-    (def fields (object-%instance descriptor))
-    (and fields (hash-get fields 'proto)))
+    (object-cached-value descriptor 'proto))
   (def (cached-clos-kind receiver)
     (def order (object-%precedence-list receiver))
     (def effective (cached-prototype ClosEffectiveMethod))
@@ -98,8 +100,7 @@
   (def (cached-receiver-kind receiver)
     ;; Diagnostic attribution only. Read an ALREADY allocated runtime instance;
     ;; never instantiate it, invoke a getter/MOP hook or grant admission.
-    (def instance (and (object? receiver) (object-%instance receiver)))
-    (def kind (and instance (hash-get instance 'kind)))
+    (def kind (object-cached-value receiver 'kind))
     (if (memq kind '(yuanxu.type.classification-evidence
                      yuanxu.contract.validation-evidence
                      yuanxu.module-authoring.admission
@@ -129,35 +130,32 @@
     (def authoring-datums (make-hash-table-eq))
     (hash-for-each
       (lambda (value kind)
-        (def instance (object-%instance value))
-        (when instance
+        (def ready? (object-instantiated? value))
+        (when ready?
           (case kind
             ((poo-clos/effective-method) (set! effective (+ effective 1)))
             ((poo-clos/invocation-frame) (set! frames (+ frames 1))))
-          (let (args (hash-get instance 'arguments))
+          (let (args (object-cached-value value 'arguments))
             (when (list? args)
               (set! arguments (+ arguments (length args)))
               (hash-put! argument-lists args #t)
               (observe-arguments args)
               (when (eq? kind 'poo-clos/invocation-frame)
-                (let* ((effective (hash-get instance 'effective-method))
-                       (fields (and (object? effective) (object-%instance effective))))
-                  (if (and fields (eq? args (hash-get fields 'arguments)))
+                (let* ((effective (object-cached-value value 'effective-method))
+                       (other-args (object-cached-value effective 'arguments)))
+                  (if (eq? args other-args)
                     (set! shared-frame-arguments (+ 1 shared-frame-arguments))
                     (set! separate-frame-arguments (+ 1 separate-frame-arguments)))))
               (let* ((effective (if (eq? kind 'poo-clos/effective-method) value
-                                 (hash-get instance 'effective-method)))
-                     (fields (and (object? effective) (object-%instance effective)))
-                     (generic (and fields (hash-get fields 'generic)))
-                     (metadata (and (object? generic) (object-%instance generic))))
-                (when (and metadata
-                           (eq? (hash-get metadata 'identity) 'module-authoring-analyze)
+                                 (object-cached-value value 'effective-method)))
+                     (generic (object-cached-value effective 'generic)))
+                (when (and (eq? (object-cached-value generic 'identity) 'module-authoring-analyze)
                            (= (length args) 4))
                   (hash-put! authoring-interfaces (caddr args) #t)
                   (hash-put! authoring-datums (cadddr args) #t)))))
-        (when (and instance (procedure? (hash-get instance 'next)))
+        (when (and ready? (procedure? (object-cached-value value 'next)))
           (set! continuations (+ continuations 1))
-          (let (next (hash-get instance 'next))
+          (let (next (object-cached-value value 'next))
             (when (and (##closure? next) (not (hash-key? next-closures next)))
               (hash-put! next-closures next #t)
               ;; Shallow cells, not transitive bytes. Do not inspect or execute
@@ -181,13 +179,12 @@
         (report-reader-roots)
         (set! next-snapshot (* 2 next-snapshot))))
     (when source-observer (source-observer key amount)))
-  (def (cached-contract-label instance)
+  (def (cached-contract-label receiver)
     ;; Attribute receipts through already cached actual Contract references.
     ;; Closed scalar labels only: no getter, binding, descriptor or candidate
     ;; escapes. A missing cache entry is unknown, never guessed from a name.
-    (def contract (hash-get instance 'admission-contract))
-    (def fields (and (object? contract) (object-%instance contract)))
-    (def identity (and fields (hash-get fields 'identity)))
+    (def contract (object-cached-value receiver 'admission-contract))
+    (def identity (object-cached-value contract 'identity))
     (if (memq identity '(semantic-symbol semantic-symbol-list semantic-object
                          semantic-boolean module-source-role module-authoring-profile))
       identity 'other-contract))
@@ -233,7 +230,7 @@
                   (walk tail))))))))
     ;; Exact retained reference routes, not an estimated transitive byte size.
     ;; Inspect only runtime raw tables; never dispatch an unknown HashTable API.
-    (def instances (make-hash-table-eq))
+    (def instances (make-hash-table-eqv))
     (def tables (make-hash-table-eq))
     (def cells (make-hash-table-eq))
     (def callbacks (make-hash-table-eq))
@@ -398,21 +395,22 @@
                 (observe-shallow captured #t)))
             (fields (1- index))))))
     (def (observe-instance read)
-      (def instance (slot-read-instance read))
-      (when instance
-        (unless (eq? instance (object-%instance (slot-read-receiver read)))
+      ;; Inspect the retained store through POO's scalar identity and dimensions.
+      (defvalues (identity entries capacity current?) (slot-read-instance-info read))
+      (when identity
+        (unless current?
           (set! stale-instances (+ 1 stale-instances)))
-        (unless (hash-key? instances instance)
-          (hash-put! instances instance #t)
-          (let (raw (backing-table instance))
-            (if raw
-              (begin
-                (observe-shallow instance #f)
-                (raw-table-for-each raw
-                  (lambda (_key value)
-                    (observe-shallow value #f)
-                    (observe-callback value))))
-              (set! unknown-instances (+ 1 unknown-instances)))))))
+        (unless (hash-key? instances identity)
+          (hash-put! instances identity #t)
+          (if entries
+            (begin
+              (set! table-entries (+ table-entries entries))
+              (set! table-cells (+ table-cells capacity))
+              (for-each (lambda (value)
+                          (observe-shallow value #f)
+                          (observe-callback value))
+                        (slot-read-instance-storage-values read)))
+            (set! unknown-instances (+ 1 unknown-instances))))))
     (def (observe-receiver-metadata receiver)
       ;; These are raw struct fields, not public computed getters. Count only
       ;; already assembled metadata; do not prepare a receiver to inspect it.
@@ -423,8 +421,8 @@
       (observe-pairs (object-%all-slots receiver))
       (let* ((cached (object-%slot-funs receiver))
              (table (and cached (backing-table cached)))
-             (values-table (and table (backing-table (object-%instance receiver))))
-             (value-keys (and values-table (make-hash-table-eq)))
+             (materialized (and table (object-instance-storage-keys receiver)))
+             (value-keys (and materialized (make-hash-table-eq)))
              (precedence (object-%precedence-list receiver))
              (has-protocol (and (pair? precedence) (ormap object-%protocol precedence)))
              (has-declarations (and (pair? precedence)
@@ -437,13 +435,12 @@
             (+ metadata-backing-cells (vector-length (&raw-table-table table))))
           ;; Enumerate raw keys rather than dispatching ref/hash callbacks on
           ;; a receiver-owned table. This diagnostic never forces a slot.
-          (when values-table
-            (raw-table-for-each values-table
-              (lambda (key _) (hash-put! value-keys key #t))))
+          (when materialized
+            (for-each (lambda (key) (hash-put! value-keys key #t)) materialized))
           (raw-table-for-each table
             (lambda (key fun)
               (cond
-                ((not values-table) (set! unknown-entries (1+ unknown-entries)))
+                ((not materialized) (set! unknown-entries (1+ unknown-entries)))
                 ((hash-key? value-keys key)
                  (set! warm-entries (1+ warm-entries))
                  (when (##closure? fun) (hash-put! warm-thunks fun #t)))
@@ -608,7 +605,8 @@
       (yuanxu-write-observation-line!
         "slot-retained-payload instances=%s noncurrent-instance-records=%s unknown-instances=%s backing-tables=%s entries=%s backing-cells=%s list-cells=%s object-targets=%s known-receiver-targets=%s callbacks=%s callback-cells=%s callback-receiver-targets=%s opaque-closure-captures=%s strings=%s characters=%s vectors=%s vector-cells=%s"
         (hash-length instances) stale-instances unknown-instances
-        (hash-length tables) table-entries table-cells (hash-length cells)
+        (+ (hash-length tables) (- (hash-length instances) unknown-instances))
+        table-entries table-cells (hash-length cells)
         (hash-length direct-objects) known-targets (hash-length callbacks) callback-cells callback-targets
         opaque-closure-captures (hash-length strings) string-characters
         (hash-length vectors) vector-cells)))
@@ -642,13 +640,13 @@
                 (hash-put! receivers receiver kind)
                 (vector-set! kind-row 2 (+ (vector-ref kind-row 2) 1))
                 (when (eq? kind 'yuanxu.contract.validation-evidence)
-                  (let* ((instance (object-%instance receiver))
-                         (label (cached-contract-label instance)))
+                  (let ((context (object-cached-value receiver 'context absent-value))
+                        (label (cached-contract-label receiver)))
                     (hash-update! contracts label (cut + <> 1) 0)
                     (cond
-                     ((not (hash-key? instance 'context))
+                     ((eq? context absent-value)
                       (set! context-unknown (+ context-unknown 1)))
-                     ((not (hash-get instance 'context))
+                     ((not context)
                       (set! context-free (+ context-free 1)))))))
               (def slot-key (slot-read-key dependency))
               (def label

@@ -661,7 +661,7 @@
                  (lambda ()
                    (make (.get projection spec) srcdir: root
                      libdir: (or (current-build-output-directory) lib) optimize: #f)))))
-           (yuanxu-test-checkpoint 'native-compilation-complete)
+           (yuanxu-test-checkpoint 'gerbil-compilation-complete)
            (def previous-path (load-path))
            (dynamic-wind
             (lambda () (set-load-path! (cons lib previous-path)))

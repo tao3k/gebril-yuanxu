@@ -4,7 +4,6 @@
 ;;; Explicit build-tool evaluation of an observed role, not a Module Loader.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-observation without-observation)
-        (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/read-projection owned-read-function-scope?)
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
         (only-in :tao3k/yuanxu/module-system/source/admission module-source-type module-source-admit-current! call-with-module-source-read-cache
@@ -55,10 +54,10 @@
                    (cons (cons check
                            (and policy state
                                 (lambda ()
-                                  (and (policy) (state) (object-%instance view)
+                                  (and (policy) (state) (object-instantiated? view)
                                        (object-%precedence-list view)
                                        (begin
-                                         (require-read-route! 'configuration-role #f (object-%instance view))
+                                         (require-object-instance-route! view 'configuration-role)
                                          (eq? admit! (.ref/cached view 'admit-current
                                                                (lambda () #f))))))))
                          source-checks))

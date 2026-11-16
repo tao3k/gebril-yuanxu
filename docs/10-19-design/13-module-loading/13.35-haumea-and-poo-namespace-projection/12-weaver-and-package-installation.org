@@ -63,7 +63,7 @@ second runtime or a compatibility entry.
 
 =module-windows-test.ss= exercises two native roots with an =engine= leaf,
 separate scope values, repeated-read identity, explicit cross-root requirements,
-missing-local refusal, duplicate native-root refusal and forged owner metadata.
+missing-local refusal, duplicate compiled-root refusal and forged owner metadata.
 Its existing unvisited-sibling and mutation controls remain active. No
 =weaver-governance= rename is required or retained.
 

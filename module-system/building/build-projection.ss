@@ -123,9 +123,6 @@
                (filter (lambda (entry) (eq? (.ref entry 'kind) 'publication)) graph-entries)))
          (init-source
           (and (.slot? view 'context) (.ref (.ref view 'context) 'init-source)))
-         (output-prefix
-          (string-append (path-strip-trailing-directory-separator
-                           (path-normalize (path-expand (build-output-directory)))) "/"))
          (installed-libraries (make-hash-table-eq))
          (installed-library?
           (lambda (entry)
@@ -135,19 +132,8 @@
               (with-catch (lambda (failure) (if (syntax-error? failure) #f (raise failure)))
                 (lambda () (core-resolve-library-module-path name))))
             (and (string? resolved) (string=? (path-extension resolved) ".ssi")
-                 (not (string-prefix? output-prefix resolved))
                  (begin (hash-put! installed-libraries id #t) #t))))
-         (module-source?
-          (lambda (entry)
-            (def path (.ref entry 'path))
-            (or (null? module-roots) (equal? path init-source)
-                (package-prelude-entry? entry)
-                (ormap (lambda (directory) (string-prefix? directory path)) module-roots)
-                ;; Gerbil resolves package libraries imported by foreign roles.
-                ;; Products in this consumer's output still need their source
-                ;; targets for hot builds and clean.
-                (and (not (local-entry? entry)) (not (installed-library? entry))))))
-         (native-target-index
+         (make-target-index
           (and (.slot? graph 'std-make-targets)
             (let (index (make-hash-table))
               (for-each
@@ -155,6 +141,20 @@
                   (hash-put! index (car row) (cons (cdr row) (hash-ref index (car row) '()))))
                 (.ref graph 'std-make-targets))
               index)))
+         (module-source?
+          (lambda (entry)
+            (def path (.ref entry 'path))
+            (or (null? module-roots) (equal? path init-source)
+                (package-prelude-entry? entry)
+                ;; A reached public library is a product when the selected
+                ;; Graph's native import closure already declares its target.
+                ;; Root facades may live outside individual Module directories.
+                (and (local-entry? entry) make-target-index (hash-key? make-target-index path))
+                (ormap (lambda (directory) (string-prefix? directory path)) module-roots)
+                ;; Selected Module roots above retain their source products.
+                ;; Other foreign libraries remain prerequisites even when pkg
+                ;; dependencies share this consumer's Gerbil output directory.
+                (and (not (local-entry? entry)) (not (installed-library? entry))))))
          ;; Native imports and the retained package closure own the targets.
          ;; Lower a reached yuanxu! declaration below; do not manufacture a
          ;; target merely because this selection was obtained from init.
@@ -224,9 +224,9 @@
          ((values module-entries library-entries)
           (collect-build-entries selected-entries kept retained
             (lambda (entry)
-              (or (not native-target-index)
+              (or (not make-target-index)
                   (ormap (lambda (target) (or (string? target) (eq? (car target) gxc:)))
-                         (hash-ref native-target-index (.ref entry 'path) '()))))))
+                         (hash-ref make-target-index (.ref entry 'path) '()))))))
          (target-entries (append module-entries (map car library-entries)))
          (entries
            (let (seen (make-hash-table-eq))
@@ -244,7 +244,7 @@
                            (not (hash-key? installed-libraries id))
                            (begin (hash-put! seen id #t) #t)))
                     (append graph-entries kept))))
-         (native-init-entries
+         (compiled-init-entries
           (filter (lambda (entry) (eq? (.ref entry 'kind) 'init-publication)) entries))
          (foreign? (ormap (lambda (entry) (not (local-entry? entry))) entries))
          (observed (unique-build-inputs
@@ -264,13 +264,13 @@
                    (unless (or foreign?
                                (equal? (path-normalize expected) (path-normalize (.ref entry 'path))))
                      (error "source target does not match repository path" name (.ref entry 'path)))
-                   (if native-target-index
+                   (if make-target-index
                      (map
                        (lambda (row)
                          (def target row)
                          (if (string? target) name
                            `(,(car target) ,name ,@(cddr target))))
-                       (reverse (hash-ref native-target-index (.ref entry 'path) '())))
+                       (reverse (hash-ref make-target-index (.ref entry 'path) '())))
                      (list `(gxc: ,name ,@(.ref entry 'options)))))) module-entries)))
          ;; Keep the package's original native targets/options. The only
          ;; overlap removal is an already checked identical selected target.
@@ -384,7 +384,7 @@
         .prepare-compiler-contexts:
         (lambda ()
           (require-spec-identity! (.ref projection 'spec))
-          (if (null? native-init-entries)
+          (if (null? compiled-init-entries)
             (current!)
             (with-admitted-spec projection
               (lambda ()

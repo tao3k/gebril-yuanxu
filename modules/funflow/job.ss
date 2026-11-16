@@ -4,9 +4,9 @@
 (import :clan/poo/object
         (only-in :std/list/list delete-duplicates/hash)
         (only-in :tao3k/yuanxu/graph/types-core yuanxu-graph yuanxu-graph-node yuanxu-graph-edge)
-        (only-in :tao3k/yuanxu/graph/algorithms yuanxu-graph-topological-order/acyclic)
-        (only-in :tao3k/yuanxu/ops/func validate-script)
-        (only-in :tao3k/yuanxu/ops/types ProcessResultContract)
+        (only-in :clan/poo/dependency-analysis Computation.)
+        (prefix-in :clan/poo/generalized-graph schedule.)
+        (only-in :tao3k/yuanxu/ops/types ProcessScriptContract ProcessResultContract)
         (only-in "control-plane/signatures.ss" Fun Function Record String Symbol List validate)
         (only-in "control-plane/runtime-protocol.ss" AdapterResult)
         (only-in "control-plane/flow.ss" flow-compose)
@@ -40,7 +40,7 @@
 (def (task-run task) (validate TaskRun (.get task .run)))
 (def (admit-task tasks name)
   (unless (.slot? tasks name) (error "Funflow dependency has no task" name))
-  (def task (validate-script (.ref tasks name)))
+  (def task (validate ProcessScriptContract (.ref tasks name)))
   (unless (and (.get task check-status) (symbol-set? (.get task needs)))
     (error "Funflow task requires a checked Ops action and distinct dependencies" name))
   ;; Preflight the callback without freezing a receiver-dependent .run slot.
@@ -50,19 +50,29 @@
 (def (job-graph job)
   (let* ((tasks (.get job tasks)) (roots (.get job selected))
          (cleanup-names (.get job finalizers))
-         (visited (make-hash-table-eq)) (names '()) (edges '()))
+         (visited (make-hash-table-eq)) (edges '())
+         (incoming (make-hash-table-eq)) (outgoing (make-hash-table-eq))
+         (codes '()))
     (unless (and (symbol-set? roots) (symbol-set? cleanup-names))
       (error "Funflow targets and finalizers must be distinct symbol lists"))
-    (def (visit name)
-      (unless (hash-key? visited name)
-        (hash-put! visited name #t)
-        (let (task (admit-task tasks name))
-          (for-each (lambda (dependency)
-                      (visit dependency)
-                      (set! edges (cons (yuanxu-graph-edge dependency name) edges)))
-                    (.get task needs))
-          (set! names (cons name names)))))
-    (for-each visit roots)
+    (def (visit name names)
+      (if (hash-key? visited name)
+        names
+        (begin
+          (hash-put! visited name #t)
+          (let (needs (.get (admit-task tasks name) needs))
+            (hash-put! incoming name needs)
+            (when (pair? needs)
+              (set! codes (cons (cons name (.cc Computation. reads: needs)) codes)))
+            (cons name
+              (foldl (lambda (dependency prior)
+                       (let (next (visit dependency prior))
+                         (set! edges (cons (yuanxu-graph-edge dependency name) edges))
+                         (hash-put! outgoing dependency
+                           (cons name (hash-ref outgoing dependency '())))
+                         next))
+                     names needs))))))
+    (def keys (reverse (foldl visit '() roots)))
     ;; Finalizers are exceptional-exit edges, not successful dependency edges.
     ;; Their trigger must be in the selected closure and they cannot spawn a
     ;; second unselected dependency closure while handling failure.
@@ -72,11 +82,42 @@
           (unless (and (not (hash-key? visited name)) (null? (.get task needs))
                        (symbol? trigger) (hash-key? visited trigger))
             (error "invalid Funflow finalizer trigger" name trigger)))) cleanup-names)
-    (let* ((graph-value (yuanxu-graph (.get job name)
-                         (map yuanxu-graph-node (reverse names)) (reverse edges)))
-           (order-value (yuanxu-graph-topological-order/acyclic graph-value)))
-      (unless order-value (error "Funflow task dependency cycle" roots))
-      (.o graph: graph-value order: order-value finalizers: cleanup-names))))
+    (def scheduled
+      (with-catch
+        (lambda (cause)
+          (if (and (schedule.failure? cause) (eq? (schedule.failure-kind cause) 'cycle))
+            (error "Funflow task dependency cycle" roots)
+            (raise cause)))
+        (lambda () (schedule.schedule-owned keys codes))))
+    (def ranks (make-hash-table-eq))
+    (for-each
+      (lambda (key)
+        (hash-put! ranks key
+          (foldl (lambda (dep rank) (max rank (+ 1 (hash-ref ranks dep))))
+                 0 (hash-ref incoming key))))
+      (schedule.schedule-order scheduled))
+    ;; The POO schedule validates the dependencies. Within each executable
+    ;; wave, preserve the public FIFO order in which jobs become ready.
+    (def roots-in-order (filter (lambda (key) (zero? (hash-ref ranks key))) keys))
+    (def seen (make-hash-table-eq))
+    (def order-value
+      (let loop ((wave roots-in-order) (rank 0) (ordered '()))
+        (if (null? wave)
+          (reverse ordered)
+          (let (next
+                (foldl
+                  (lambda (key pending)
+                    (foldl
+                      (lambda (target rest)
+                        (if (and (= (hash-ref ranks target) (+ rank 1))
+                                 (not (hash-key? seen target)))
+                          (begin (hash-put! seen target #t) (cons target rest))
+                          rest))
+                      pending (hash-ref outgoing key '())))
+                  '() (reverse wave)))
+            (loop next (+ rank 1) (foldl cons ordered wave))))))
+    (.o graph: (yuanxu-graph (.get job name) (map yuanxu-graph-node keys) (reverse edges))
+        order: order-value finalizers: cleanup-names)))
 
 (def (job-results-type job)
   (apply Record

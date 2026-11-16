@@ -11,7 +11,7 @@
         reader-current! reader-full-current! reader-open-boundary! reader-fixed-candidate-guards?)
 
 (def (reader-check-tool-contexts! session)
-  (module-source-measure-operation 'reader-native-identity
+  (module-source-measure-operation 'reader-gerbil-identity
    (lambda ()
     (hash-for-each
       (lambda (context origin)

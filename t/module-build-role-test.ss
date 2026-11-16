@@ -1088,7 +1088,7 @@
                 (lambda ()
                   (make (.get projection spec) srcdir: root
                     libdir: (or (current-build-output-directory) lib) optimize: #f)))))
-          (yuanxu-test-checkpoint 'native-compilation-complete)
+          (yuanxu-test-checkpoint 'gerbil-compilation-complete)
           (check-equal? (file-exists? marker) #f)
           (def publication (.call selection prepare-publication 'app/example))
           (def id (symbol->string (.get publication compiler-identity)))

@@ -59,7 +59,7 @@ The broad runtime unit batch cannot substitute its longer aggregate deadline.
 
 Managed Module consumers use the owning =init.exports= namespace and ordinary
 POO =.get= demand. =modules/<name>/interface.ss= is the Module System's loading
-configuration, not a second native-import application API. Ordinary library
+configuration, not a second compiled-import application API. Ordinary library
 facades remain native Gerbil imports, including built-ins such as Ops. Backend
 compiler imports and explicit authoring inspection do not replace scope linking.
 Module roles use relative imports for their own owners. Cross-domain implementations import a

@@ -42,7 +42,7 @@
   .element?: (lambda (value)
                (and (object? value) (.slot? value '.restore-build)
                     (procedure? (.ref value '.restore-build)))))
-;; Pure native-spec shape and composition. Source/publication authentication
+;; Pure make-spec shape and composition. Source/publication authentication
 ;; remains in the enclosing init-owned boundary, never in a claimed origin tag.
 (def BuildSpecContract
   (.cc ObjectContract. identity: 'module/build-spec
@@ -127,10 +127,10 @@
          (lambda ()
            (without-observation
              (lambda ()
-               (and (object? graph) (object-%instance graph) (object-%precedence-list graph)
+               (and (object? graph) (object-instantiated? graph) (object-%precedence-list graph)
                     (not (object-protocol graph))
                     (begin
-                      (require-read-route! 'admission-context #f (object-%instance graph))
+                      (require-object-instance-route! graph 'admission-context)
                       (let (value (.ref/cached graph '%admission-frame (lambda () #f)))
                         (and (build-context-frame? value)
                              (eq? graph (build-context-frame-owner value))
@@ -172,10 +172,10 @@
            (lambda ()
              (without-observation
                (lambda ()
-                 (and (object? result) (object-%instance result)
+                 (and (object? result) (object-instantiated? result)
                       (object-%precedence-list result) (not (object-protocol result))
                       (begin
-                        (require-read-route! 'package-sources #f (object-%instance result))
+                        (require-object-instance-route! result 'package-sources)
                         (let ((check (.ref/cached result '%package-source-check (lambda () #f)))
                               (invoke (.ref/cached result 'sources-current (lambda () #f)))
                               (frame (current-build-context-frame graph)))
@@ -195,9 +195,9 @@
   (let ((entry-values '()) (by-path (make-hash-table)) (by-id (make-hash-table-eq))
         (prepared (make-hash-table)) (checks '()) (check-inputs '()) (other '())
         (asset-values '()) (asset-paths (make-hash-table))
-        (native-targets (make-hash-table))
+        (make-targets (make-hash-table))
         (make-inputs '()) (borrowed-contexts '())
-        (native-binaries (make-hash-table))
+        (executable-targets (make-hash-table))
         (library-sources (make-hash-table))
         (package-values '()) (package-demands '()) (library-demands '()) (package-refused? #f)
         (package-ids (make-hash-table-eq))
@@ -238,7 +238,7 @@
       (let* ((path (if (eq? kind 'publication)
                       (.ref (.ref input 'source) 'value) (.ref input 'path)))
              (compiler-identity (.ref input 'compiler-identity))
-             (target (hash-get native-targets path))
+             (target (hash-get make-targets path))
              (options (if (and (pair? target) (eq? (car target) gxc:)) (cddr target) '())))
         (when library? (hash-put! library-sources path #t))
         (cond
@@ -313,7 +313,7 @@
           (def input (prepare-source path))
           (unless (string-prefix? prefix (symbol->string (.ref input 'compiler-identity)))
             (error "public library entry belongs to another runtime package" path))
-          (when (hash-get native-targets path)
+          (when (hash-get make-targets path)
             (add-source! path owner contributor input (not (equal? path program-source)))))
         entries)
       (def (admit-context context)
@@ -400,17 +400,17 @@
                         (spec (resolve-make-target-inputs spec
                                 (car (module-source-package-info (path-directory (.ref publication 'path))))
                                 (lambda (input) (set! make-inputs (cons input make-inputs))))))
-                   (cond ((hash-get native-targets path)
+                   (cond ((hash-get make-targets path)
                           => (lambda (previous)
                                (if (equal? previous spec)
                                  (error "duplicate Module Make target" owner contributor-value spec)
                                  (error "conflicting Module Make targets" previous spec)))))
                    (when program?
                      (let* ((binary (pgetq bin: options (path-strip-directory name)))
-                            (old (hash-get native-binaries binary)))
+                            (old (hash-get executable-targets binary)))
                        (when old (error "programs share one binary output" binary old path))
-                       (hash-put! native-binaries binary path)))
-                   (hash-put! native-targets path spec)
+                       (hash-put! executable-targets binary path)))
+                   (hash-put! make-targets path spec)
                    ;; Traverse actual imports after explicit selected options
                    ;; are known, using the existing native source graph walker.
                    (set! library-demands
@@ -505,7 +505,7 @@
                     (and source-window graph-policy entry-policy
                          (eq? importer core-import-module) (string? target)
                          (object-construction-current?) (graph-policy) (entry-policy)
-                         (object? entry) (object-%instance entry) (object-%precedence-list entry)
+                         (object? entry) (object-instantiated? entry) (object-%precedence-list entry)
                          (not (object-protocol entry))
                          (let (path (.ref/cached entry 'path (lambda () #f)))
                            (and (string? path) (eq? entry (hash-get by-path path))
@@ -543,10 +543,10 @@
         (with-catch (lambda (_unsupported) #f)
          (lambda () (without-observation
           (lambda ()
-            (and (object? entry) (object-%instance entry) (object-%precedence-list entry)
+            (and (object? entry) (object-instantiated? entry) (object-%precedence-list entry)
                  (not (object-protocol entry))
                  (begin
-                   (require-read-route! 'compiler-entry #f (object-%instance entry))
+                   (require-object-instance-route! entry 'compiler-entry)
                    (let (path (.ref/cached entry 'path (lambda () #f)))
                      (and (string? path) (eq? entry (hash-get by-path path)))))))))))
       (def (run segment)
@@ -610,7 +610,7 @@
                     (admit-request!)))))
             (loop (cdr requests) (+ position 1))))
         (current! 'build-admit-after))
-      (def (native-checks (midpoint-ready? #f))
+      (def (gerbil-checks (midpoint-ready? #f))
         (and support (eq? graph owned-graph) graph-policy (graph-policy)
              (object-construction-current?) (owned-read-function-scope?)
              (not (or (current-module-source-observer) (%slot-read-active?)))
@@ -622,10 +622,10 @@
                      ;; discover whether its closed half can be used.
                      (let/cc unavailable
                        (def (cached receiver key)
-                         (unless (and (object? receiver) (object-%instance receiver)
+                         (unless (and (object? receiver) (object-instantiated? receiver)
                                       (object-%precedence-list receiver) (not (object-protocol receiver)))
                            (unavailable #f))
-                         (require-read-route! 'configuration-request #f (object-%instance receiver))
+                         (require-object-instance-route! receiver 'configuration-request)
                          (.ref/cached receiver key (lambda () (unavailable #f))))
                        (when midpoint-ready? (midpoint-ready? cached unavailable))
                        (def requests (cached graph 'external-packages))
@@ -637,15 +637,15 @@
                                            context (cached request 'admit-current))
                                          (unavailable #f)))
                                    requests))))))))))
-      (def native (native-checks midpoint-ready?))
+      (def configuration-checks (gerbil-checks midpoint-ready?))
       (def (check-request! check!)
-        (module-source-measure-operation 'native-configuration-request
+        (module-source-measure-operation 'gerbil-configuration-request
           (lambda ()
             (parameterize ((current-module-source-phase 'build-admit-before)) (check!))
-            (for-each (lambda (admit!) (admit!)) native)
+            (for-each (lambda (admit!) (admit!)) configuration-checks)
             (parameterize ((current-module-source-phase 'build-admit-after)) (check!)))))
       (def (fallback!) (if fallback (fallback) (ordinary!)))
-      (if native
+      (if configuration-checks
         (call-with-linked-prepared-guards support selected-value check-inputs checks bound-input-state
           (lambda (check!)
             (check-request! check!)
@@ -711,7 +711,7 @@
           (filter-map
             (lambda (entry)
               (def path (.ref entry 'path))
-              (def target (hash-get native-targets path))
+              (def target (hash-get make-targets path))
               (cond
                (target
                 (when (and (pair? target) (eq? (car target) exe:)

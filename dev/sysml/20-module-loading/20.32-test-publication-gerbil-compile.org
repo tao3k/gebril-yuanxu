@@ -1,4 +1,4 @@
-#+title: 20.32 Test Publication through Native Make and Harness
+#+title: 20.32 Test Publication through Gerbil Make and Harness
 #+language: en
 #+filetags: :testing:make:publication:currentness:
 

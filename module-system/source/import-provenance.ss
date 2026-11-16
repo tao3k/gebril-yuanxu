@@ -3,8 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Record the origin of Gerbil import contexts and authenticate their source support.
 ;;; Gerbil owns module resolution and loading. std/make owns compilation.
-(import (only-in :gerbil/expander core-resolve-library-module-path core-library-package-path-prefix
-                 expander-context-id module-context-path module-context? __module-registry)
+(import (only-in :gerbil/expander expander-context-id module-context-path module-context? __module-registry)
         (only-in :clan/poo/object .ref)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/slot-observation without-observation)
@@ -14,7 +13,9 @@
         :tao3k/yuanxu/module-system/source/admission
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module
                  yuanxu-reader-contexts call-with-build-stage)
-        (only-in :tao3k/yuanxu/module-system/building/source-package module-build-source-path))
+        (only-in :tao3k/yuanxu/module-system/building/source-package package-library-prefix
+                 module-build-source-path
+                 module-build-library-source-path module-build-resolve-library))
 (export public-dependency-input admit-compiler-inputs!
         compiler-tool-inputs compiler-tool-input record-source-observations!
         compiler-context-origin-current? captured-import-context? module-import-provenance)
@@ -22,8 +23,7 @@
 ;; One canonical-library check for publication and configuration readers. This
 ;; prepares observations, never imports, expands or initializes the dependency.
 (def (public-dependency-input path (prepared #f) (report-refusal? #f)
-                              capture: (capture #f) binding: (binding #f) bind: (bind void)
-                              owned-root: (owned-root #f))
+                              capture: (capture #f) binding: (binding #f) bind: (bind void))
   ;; Eligibility probes may return #f. A previously enrolled dependency must
   ;; retain its actual refusal cause; do not replace a stale-source error with
   ;; an ambiguous runtime-identity message. No check is repeated for reporting.
@@ -37,6 +37,7 @@
                       (begin ((.ref prepared 'admit-current)) prepared)
                       (yuanxu-prepare-module-tool-source path void capture: capture)))))
          (identity (and input (.ref input 'compiler-identity)))
+         (package-root (and input (.ref input 'package-root)))
          (selected (and input (module-compiler-source-input path)))
          ;; Gerbil resolves the actual public binding. Namespace spelling is
          ;; neither source ownership nor permission to reuse a compiler context.
@@ -46,9 +47,7 @@
           (if selected? path
             (and external?
               (with-catch (lambda (cause) (refuse 'runtime-resolution cause))
-                (lambda ()
-                  (core-resolve-library-module-path
-                    (string->symbol (string-append ":" (symbol->string identity))))))))))
+                (lambda () (module-build-resolve-library identity)))))))
     ;; Bind the context Gerbil actually imported. A path that resolves to the
     ;; authored source already has a source observation and needs no binding.
     (def imported
@@ -61,7 +60,7 @@
                (vector context identity (string-copy (module-context-path context)))))))
     (def observed
       (or (and binding (vector-ref binding 0) binding)
-          (and owned-root imported)
+          (and package-root imported)
           binding
           (and (string? resolved) (equal? (path-normalize resolved) (path-normalize path))
                (vector #f identity (string-copy path)))
@@ -77,21 +76,40 @@
                           (eq? (vector-ref observed 0)
                                (or (hash-get __module-registry (vector-ref observed 2))
                                    (hash-get __module-registry (path-normalize (vector-ref observed 2)))))))))))
+    (def source-only? (not (and observed (vector-ref observed 0))))
+    (def source-path
+      (and (not selected?) binding-current? package-root (string? resolved)
+        (equal? (path-extension resolved) ".ssi")
+        (if source-only?
+          ;; A source publication need not load its compiled prerequisite.
+          ;; Authenticate the inert SSI header through Gerbil's resolver and
+          ;; the prepared source owner; never run an initializer to admit it.
+          (and (string=? (path-extension resolved) ".ssi")
+               (or (not observed)
+                   (equal? (path-normalize (vector-ref observed 2)) (path-normalize resolved)))
+               (module-build-library-source-path identity package-root))
+          (and (equal? (path-normalize resolved) (path-normalize (vector-ref observed 2)))
+               (module-build-source-path (vector-ref observed 0) package-root)))))
     (if (and binding-current? (string? resolved)
              (or selected?
                  (and (equal? (path-normalize resolved) (path-normalize path))
-                      (or owned-root
+                      (or package-root
                           (equal? (path-normalize path)
                                   (path-normalize (if observed (vector-ref observed 2) path)))))
-                 ;; Same-package source may already have a compiled Gerbil context.
+                 ;; An ordinary library may belong to a prerequisite package. Its
+                 ;; declared package root authenticates the exact source owner;
+                 ;; foreign bindings remain fixed instead of following replacements.
                  ;; Retain that exact binding and validate the declared source owner.
-                 (and owned-root observed (vector-ref observed 0)
-                      (equal? (path-normalize resolved)
-                              (path-normalize (vector-ref observed 2)))
-                      (let (source (module-build-source-path (vector-ref observed 0) owned-root))
-                        (and source (equal? (path-normalize source) (path-normalize path)))))))
-      (begin (bind observed) input)
-      (refuse 'expected-identity identity 'resolved-path resolved))))
+                 (and source-path
+                      (equal? (path-normalize source-path) (path-normalize path)))))
+      (begin
+        (bind (if (and source-path source-only?)
+                (vector #f identity (string-copy resolved)) observed))
+        input)
+      (refuse 'expected-identity identity 'resolved-path resolved
+              'package-root package-root 'source-path source-path
+              'binding-current? binding-current?
+              'binding-path (and observed (vector-ref observed 2))))))
 ;; Check the demanded Gerbil dependency subgraph, not every selected role on each
 ;; import edge. Complete role/asset guards still bracket expansion/evaluation.
 (def (admit-compiler-inputs! context inputs-for (visit (lambda (_input) (void))))
@@ -200,7 +218,7 @@
     (if source-root
       ;; Build source is a separate owner demand. Installed execution does not
       ;; acquire authority over its checkout by projecting an SSI back to SS.
-      (let ((prefix (core-library-package-path-prefix source-root))
+      (let ((prefix (package-library-prefix source-root))
             (root-prefix (string-append
                            (path-strip-trailing-directory-separator (path-normalize source-root)) "/")))
         (filter-map

@@ -340,11 +340,11 @@
     (when declaration
       (unless (eq? (yuanxu-module-source-ref-kind source) 'local)
         (error "root-qualified publication requires a local native source" expected-id))
-      (let-values (((_prelude native-id _namespace _body)
-                     (module-source-measure-operation 'source-native-owner-read
+      (let-values (((_prelude source-id _namespace _body)
+                     (module-source-measure-operation 'source-gerbil-owner-read
                        (lambda () (core-read-module/sexp (yuanxu-module-source-ref-value source))))))
-        (unless (eq? expected-id native-id)
-          (error "root-qualified publication differs from native source identity" expected-id native-id))))
+        (unless (eq? expected-id source-id)
+          (error "root-qualified publication differs from native source identity" expected-id source-id))))
     (unless (and (or (not declaration) owner)
                  (eq? (if declaration (cdr declaration) expected-id) (.ref checked 'identity))
                  (or (not owner) (eq? expected-id (cdr owner))))

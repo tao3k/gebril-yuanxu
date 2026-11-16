@@ -3,8 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Maintain exact source preparations and transfer admitted role contexts.
 (import (only-in :clan/poo/object .cc .ref .ref/cached object?
-                 object-%instance object-construction-current?)
-        (only-in :clan/poo/read-route require-read-route!)
+                 object-instantiated? object-construction-current?
+                 require-object-instance-route!)
         (only-in :clan/poo/slot-observation without-observation)
         (only-in :clan/poo/read-projection owned-read-function-scope?)
         :tao3k/yuanxu/module-system/source/admission
@@ -48,9 +48,9 @@
     (or (hash-get (reader-session-input-origins session) input)
         (let (path
                (or known-path
-                   (and (object-%instance input)
+                   (and (object-instantiated? input)
                      (begin
-                       (require-read-route! 'source-preparation #f (object-%instance input))
+                       (require-object-instance-route! input 'source-preparation)
                        (.ref/cached input 'path (lambda () #f))))))
           (and (string? path)
             (or (let (origin (hash-get (reader-session-preparations session) (list 'derived (path-normalize path))))
@@ -147,11 +147,11 @@
     ((.ref policy 'validate) policy owner root module-source-read)
     ;; A policy is an author-code boundary, not a source-cache window.
     ((.ref prepared 'admit-current))))
-(def (reader-prepare-public-dependency session path (owned-root #f))
+(def (reader-prepare-public-dependency session path)
   ;; The SAME preparation owns source bytes and its original public binding.
   ;; On a hit run that original checker; do not recapture a changed ambient
   ;; name as a new successful identity. Compiler association remains scoped.
-  (def key (list 'public-source path owned-root))
+  (def key (list 'public-source path))
   (def previous (hash-get (reader-session-preparations session) key))
   (when (current-module-source-observer)
     ((current-module-source-observer) 'public-preparation-requests 1))
@@ -161,14 +161,14 @@
       (reader-enroll-candidate! session previous)
       (source-preparation-value previous))
     (let* ((binding #f)
-           (input (public-dependency-input path owned-root: owned-root
+           (input (public-dependency-input path
                     capture: (cut reader-capture-input session <...>) bind: (lambda (value) (set! binding value)))))
       (when input
         (let (origin (reader-add-input-guard! session input path))
           (set! (source-preparation-invoke origin)
             (lambda ()
-              (public-dependency-input path input #t binding: binding owned-root: owned-root
-                bind: (lambda (current) (when owned-root (set! binding current))))))
+              (public-dependency-input path input #t binding: binding
+                bind: (lambda (current) (set! binding current)))))
           (hash-put! (reader-session-preparations session) key origin)
           (reader-enroll-candidate! session origin)
           (set! (reader-session-public-prepared-count session) (+ (reader-session-public-prepared-count session) 1)))

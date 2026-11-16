@@ -17,6 +17,7 @@
                  element?
                  TypeError?
                  validate
+                 prototype-instance?
                  raise-type-error)
         (only-in :clan/poo/object-contract checked-action)
         (only-in :clan/poo/type Record Symbol List)
@@ -291,8 +292,8 @@
       ([_where value (? list? _failures)]
        ;; Runtime rebinding derives the checked root from the supplied root.
        ;; A nested validator's child must never replace that root in evidence.
-       (if (and (object? candidate) (object? value)
-                (memq candidate (compute-precedence-list! value))) value candidate))
+       (if (and (object? candidate) (prototype-instance? candidate value))
+         value candidate))
       (else candidate)))
   (def issues
     (match details
@@ -478,9 +479,7 @@
 
 ;;; Domain declarations inherit this runtime prototype-aware responsibility contract.
 (def (yuanxu-prototype-classify identity proto candidate context)
-  (let (accepted?
-        (and (object? candidate)
-             (if (memq proto (compute-precedence-list! candidate)) #t #f)))
+  (let (accepted? (prototype-instance? proto candidate))
     (yuanxu-classification-evidence
      identity candidate accepted?
      (if accepted? '()

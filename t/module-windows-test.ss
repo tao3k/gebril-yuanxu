@@ -2,6 +2,8 @@
 (import "./qualification/module-init/fixture.ss" :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :std/source this-source-file)
+        (only-in :std/make make)
+        (only-in :std/misc/process run-process)
         (only-in :std/list/list any)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :gerbil/expander current-expander-context make-top-context eval-syntax core-read-module/sexp)
@@ -9,7 +11,9 @@
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/module-system/source/init module-init-intent)
+        (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer admit-module-publication!)
+        (only-in :tao3k/yuanxu/module-system/source/import-provenance public-dependency-input)
         (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-source-ref
                  yuanxu-module-source-ref-value yuanxu-module-source-ref-metadata)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules module-namespace-project))
@@ -32,8 +36,9 @@
 (def (fixture-owner root path)
   (let-values (((_prelude identity _namespace _body)
                  (core-read-module/sexp (path-expand path root)))) identity))
-(def (fixture! root (package (string->symbol (symbol->string (gensym 'windows-)))))
-  (write-forms (path-expand "gerbil.pkg" root) `((package: ,package)))
+(def (fixture! root (package (string->symbol (symbol->string (gensym 'windows-)))) (prelude #f))
+  (write-forms (path-expand "gerbil.pkg" root)
+    (list (append (list package: package) (if prelude (list prelude: prelude) '()))))
   (for-each
     (lambda (row)
       (def directory (path-expand (car row) root))
@@ -262,38 +267,200 @@
       (declare! #t denied-root)
       (def denied (load! denied-root))
       (check-exception (.get (.call (.get denied tests) .select '(release)) spec) error?))
+    (yuanxu-test-fixture "native init imports preserve nested publication wrapper ownership"
+      (root Workspace)
+      (def package (string->symbol (symbol->string (gensym 'dependency-))))
+      (def dependency (path-expand (symbol->string package) root))
+      (def consumer (path-expand "consumer" root))
+      (fixture! dependency package)
+      (fixture! consumer)
+      (def compiled-root (path-expand "compiled" root))
+      (def compiled-source-root (path-expand "src" compiled-root))
+      (def compiled-library (path-expand "lib" compiled-root))
+      (def compiled-package (gensym 'compiled-declaration-))
+      (def compiled-import
+        (string->symbol (string-append ":" (symbol->string compiled-package) "/helper")))
+      (write-forms (path-expand "gerbil.pkg" compiled-source-root)
+        `((package: ,compiled-package prelude: :gerbil/core)))
+      (write-forms (path-expand "helper.ss" compiled-source-root)
+        '((import (only-in :clan/poo/mop .defgeneric .defmethod))
+          (export HelperZero)
+          (.defgeneric fixture-child-init (value))
+          (.defmethod (fixture-child-init (value (eql 'a))) 'a)
+          (.defmethod (fixture-child-init (value (eql 'b))) 'b)
+          (.defmethod (fixture-child-init (value (eql 'c))) 'c)
+          (.defmethod (fixture-child-init (value (eql 'd))) 'd)
+          (def HelperZero 0)))
+      (run-process (list "just" "compile-package-tool" compiled-root "helper")
+                   stdout-redirection: #f)
+      (def library (path-expand "lib" root))
+      (def compiled-source (path-expand "modules/engine/compiled-helper.ss" dependency))
+      (def compiled-name
+        (string->symbol (string-append ":" (symbol->string package) "/modules/engine/compiled-helper")))
+      ;; A real installed helper deliberately predates its selected source.
+      ;; Source publication must use 42 while retaining the original guards.
+      (write-forms compiled-source
+        '((export compiled-value)
+          (def compiled-value (error "stale native initializer must not execute"))))
+      (def compiler-paths (load-path))
+      (dynamic-wind
+        void
+        (lambda ()
+          (parameterize ((current-directory dependency)
+                         (current-expander-context (make-top-context)))
+            (make '("modules/engine/compiled-helper") srcdir: dependency libdir: library)))
+        (lambda () (set-load-path! compiler-paths)))
+      (write-forms compiled-source '((export compiled-value) (def compiled-value 42)))
+      (write-forms (path-expand "modules/engine/helper.ss" dependency)
+        `((import (only-in ,(path-expand
+                             (string-append (symbol->string package)
+                                            "/modules/engine/compiled-helper.ssi") library)
+                          compiled-value)
+                  (rename-in (only-in ,compiled-name compiled-value) (compiled-value named-value))
+                  (only-in ,compiled-import HelperZero))
+          (export dependency-value)
+          (def dependency-value
+            (if (= compiled-value named-value)
+              (list (+ compiled-value HelperZero))
+              (error "symbol and resolved SSI imports disagree")))))
+      (write-forms (path-expand "modules/engine/objects.ss" dependency)
+        '((import :clan/poo/object (only-in "helper.ss" dependency-value))
+          (def ScopeValue (.o value: dependency-value)) (export ScopeValue)))
+
+      (def exports-name (string->symbol (string-append (symbol->string package) ".init.exports")))
+      (def module-name (string->symbol (string-append ":" (symbol->string package) "/init")))
+      (write-forms (path-expand "modules/engine/types.ss" consumer)
+        `((import :clan/poo/object (only-in :clan/poo/mop Type.)
+                  (only-in ,module-name ,exports-name))
+          (def Scope (.cc Type. identity: 'scope .element?: object?))
+          (def Imported (.get ,exports-name Modules engine))
+          (export Scope Imported)))
+      (write-forms (path-expand "modules/engine/interface.ss" consumer)
+        '((.def Published identity: 'engine
+            core: (.o scope-contract: Scope exports: (.o dependency: Imported)) features: (.o))))
+      (def saved (load-path))
+      (dynamic-wind
+        (lambda () (add-load-path! root) (add-load-path! library) (add-load-path! compiled-library))
+        (lambda ()
+          (def view (yuanxu-load-modules (path-expand "init.ss" consumer)))
+          ;; Build before any business read: a warm scope can hide native init leakage.
+          (def projection (yuanxu-project-source-spec view '() consumer (path-expand "build.ss" consumer)))
+          (check-equal? (pair? (.get projection spec)) #t)
+          (check-equal? (.get view modules Modules engine dependency value) '(42))
+          (def graph (.get view build-graph))
+          (call-with-output-file
+            (list path: (path-expand "modules/engine/helper.ss" dependency) append: #t)
+            (cut display "\n;; dependency source changed\n" <>))
+          (check-exception ((.get graph admit-current)) error?))
+        (lambda () (set-load-path! saved))))
+    (yuanxu-test-fixture "compiled prerequisite libraries retain canonical source guards"
+      (root Workspace)
+      (def dependency (path-expand "prerequisite" root))
+      (def package (string->symbol (symbol->string (gensym 'prerequisite-))))
+      (fixture! dependency package)
+      (def unrelated (path-expand "unrelated" root))
+      (fixture! unrelated)
+      (def source (path-expand "runtime/primitive.ss" dependency))
+      (write-forms source '((export PrimitiveZero) (def PrimitiveZero 0)))
+      (def deferred (path-expand "runtime/deferred.ss" dependency))
+      (write-forms deferred
+        '((export DeferredZero)
+          (def DeferredZero (error "prerequisite initializer must not run during admission"))))
+      (def library (path-expand "lib" root))
+      (def saved (load-path))
+      (dynamic-wind
+        void
+        (lambda ()
+          (parameterize ((current-directory dependency)
+                         (current-expander-context (make-top-context)))
+            (make '("runtime/primitive" "runtime/deferred") srcdir: dependency libdir: library)
+            (add-load-path! library)
+            (def deferred-binding #f)
+            (def deferred-input
+              (public-dependency-input deferred #f #t
+                bind: (lambda (value) (set! deferred-binding value))))
+            (check-equal? (and deferred-input #t) #t)
+            (check-equal? (vector-ref deferred-binding 0) #f)
+            (check-equal? (path-extension (vector-ref deferred-binding 2)) ".ssi")
+            (check-equal?
+              (and (public-dependency-input deferred deferred-input #t binding: deferred-binding) #t)
+              #t)
+            ;; Once captured, a source-only binding cannot follow another SSI.
+            (check-equal?
+              (public-dependency-input deferred deferred-input
+                binding: (vector #f (vector-ref deferred-binding 1)
+                           (string-append (vector-ref deferred-binding 2) ".substituted")))
+              #f)
+
+            (eval-syntax `(import ,(string->symbol
+                (string-append ":" (symbol->string package) "/runtime/primitive"))))
+            (def binding #f)
+            (def input (public-dependency-input source #f #t
+                         bind: (lambda (value) (set! binding value))))
+            (check-equal? (and input #t) #t)
+            (check-equal? (and binding (vector-ref binding 0) #t) #t)
+            ;; The prepared package snapshot owns the source root; another
+            ;; root must not turn the same installed identity into its source.
+            (check-equal? (public-dependency-input source (.o (:: @ input) package-root: unrelated)) #f)
+            (call-with-output-file (list path: source append: #t)
+              (cut display "\n;; prerequisite source changed\n" <>))
+            (check-exception
+              (public-dependency-input source input #t binding: binding)
+              error?)))
+        (lambda () (set-load-path! saved))))
     (yuanxu-test-fixture "ownerless libraries cross windows without becoming Module owners"
       (root Workspace)
-      (fixture! root)
+      (def package (string->symbol (symbol->string (gensym 'compiled-facade-))))
+      (fixture! root package ':tao3k/yuanxu/prelude)
       (write-forms (path-expand "modules/library/shared.ss" root)
         '((import :clan/poo/object) (def Shared (.o value: 42)) (export Shared)))
       ;; Standard library facades do not acquire Module ownership merely from
       ;; this conventional filename. Their bytes still belong to currentness.
       (write-forms (path-expand "modules/library/nested/value.ss" root)
         '((export nested) (def nested 42)))
+      (write-forms (path-expand "modules/library/funs.ss" root)
+        '((import (only-in :clan/poo/object .get))
+          (def (selected-value object) (.get object value)) (export selected-value)))
       (write-forms (path-expand "modules/library/interface.ss" root)
-        '((import "shared.ss" "nested/value.ss")
-          (export (import: "shared.ss" "nested/value.ss"))))
-      (def library (path-normalize (path-expand "modules/library/shared.ss" root)))
+        '((import "funs.ss" "shared.ss" "nested/value.ss")
+          (export (import: "funs.ss" "shared.ss" "nested/value.ss"))))
+      (def library (path-normalize (path-expand "modules/library/interface.ss" root)))
       (for-each
         (lambda (directory)
           (write-forms (path-expand "types.ss" (path-expand directory root))
             `((import :clan/poo/object (only-in :clan/poo/mop Type.)
-                      (only-in ,library Shared))
+                      (rename-in (only-in ,library Shared selected-value) (selected-value selected-reader)))
               (def Scope (.cc Type. identity: 'scope .element?: object?))
-              (export Scope Shared)))
+              (export Scope Shared selected-reader)))
           (write-forms (path-expand "interface.ss" (path-expand directory root))
             `((.def Published identity: ',(if (string-prefix? "modules/" directory) 'engine 'release)
                 core: (.o scope-contract: Scope
-                          exports: (.o shared: Shared)) features: (.o)))))
+                          exports: (.o shared: Shared selected-value: selected-reader)) features: (.o)))))
         '("modules/engine" "scenarios/release"))
       (def saved (load-path))
       (dynamic-wind
         (lambda () (add-load-path! root))
         (lambda ()
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
+          ;; Reached facades outside Module directories are declared native
+          ;; products, rather than compiler-only inputs missing at package use.
+          (def projection
+            (yuanxu-project-source-spec view '() root (path-expand "build.ss" root)))
+          (check-equal?
+            (and (member "modules/library/interface"
+                   (map (lambda (row) (if (string? row) row (cadr row)))
+                        (.get projection spec))) #t) #t)
+          (def output (path-expand "lib" root))
+          (with-compiler-progress
+            (lambda ()
+              (.call projection .compile output
+                (lambda () (make (.get projection spec) srcdir: root libdir: output)))))
+          (parameterize ((current-expander-context (make-top-context)))
+            (eval-syntax `(import ,(path-expand (string-append (symbol->string (fixture-owner root "modules/library/interface.ss")) ".ssi") output)))
+            (check-equal? ((eval-syntax 'selected-value) (eval-syntax 'Shared)) 42))
           (def engine (.get view modules Modules engine shared))
           (check-equal? (.get engine value) 42)
+          (check-equal? (.call (.get view modules Modules engine) selected-value engine) 42)
           (check-equal? (eq? engine (.get view modules Scenarios release shared)) #t)
           (def graph (.get view build-graph))
           (check-equal? (length (filter (lambda (entry) (equal? (.get entry path) library))

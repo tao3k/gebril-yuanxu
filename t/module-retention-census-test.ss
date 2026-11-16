@@ -193,8 +193,8 @@
       ;; authentication. This walk never invokes a checker or grants acceptance.
       (displayln "RETENTION-ISSUED modules=" size " phase=" label " records=" (hash-length identities))
       (let ((owners (make-hash-table-eq))
-            (effective (hash-get (object-%instance ClosEffectiveMethod) 'proto))
-            (frame (hash-get (object-%instance ClosInvocationFrame) 'proto)))
+            (effective (object-cached-value ClosEffectiveMethod 'proto))
+            (frame (object-cached-value ClosInvocationFrame 'proto)))
         (check-equal? (and (object? effective) (object? frame)) #t)
         (hash-for-each
           (lambda (read _)
@@ -206,10 +206,9 @@
         (displayln "RETENTION-CARRIERS modules=" size " phase=" label " instances=" (hash-length owners))
         (check-equal? (hash-length owners) 0))
       (hash-for-each (lambda (read _)
-        (let* ((receiver (slot-read-receiver read))
-               (fields (object-%instance receiver)))
-          (when (and fields (hash-key? fields 'core)
-                     (eq? (hash-get fields 'identity) 'module-0))
+        (let (receiver (slot-read-receiver read))
+          (when (and (not (eq? (object-cached-value receiver 'core absent-value) absent-value))
+                     (eq? (object-cached-value receiver 'identity) 'module-0))
             (hash-put! lifetime 'publication receiver)))) identities)
       (report-retained-reads (list size label) identities))
     result)
@@ -321,10 +320,8 @@
           " init-id-alias=" (eq? init-context (hash-get __module-registry init-id))
           " init-binding-retains-exports=" #t
           " selection-cached-graph="
-          (let* ((source (hash-get earlier 'source))
-                 (fields (and source (object-%instance source))))
-            (and fields (hash-get earlier 'graph)
-              (eq? (hash-get earlier 'graph) (hash-get fields 'selected-graph)))))
+          (let ((source (hash-get earlier 'source)) (graph (hash-get earlier 'graph)))
+            (and graph (eq? graph (object-cached-value source 'selected-graph)))))
         ;; Runtime import liveness does not approve deleted source. Refusing the
         ;; old entry must not poison the next independent entry's admission.
         (check-exception ((.get (hash-get earlier 'graph) admit-current))

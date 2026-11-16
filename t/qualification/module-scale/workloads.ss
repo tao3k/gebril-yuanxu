@@ -204,11 +204,11 @@
                    (hash-ref times (list 'visits stage) 0)))
            '(selected-owner-closure reader-preparation-start reader-wrapper-expansion
              source-authoring source-authoring-profile source-authoring-role source-authoring-role-checkpoint
-             source-role-open source-ref-preparation source-ref-admission source-native-owner-read
+             source-role-open source-ref-preparation source-ref-admission source-gerbil-owner-read
              reader-interface-start reader-admission-start reader-value-admission
              publication-shape-record publication-shape-core
              scope-shape-type scope-shape-record scope-shape-protocol
-             reader-admission-evidence reader-current reader-native-identity
+             reader-admission-evidence reader-current reader-gerbil-identity
              reader-tool-source-current reader-source-guards source-init-current
              (reader-candidate-replay-site declaration-before)
              (reader-candidate-replay-site declaration-inputs)

@@ -3,7 +3,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Observe Gerbil evaluation and release completed interpreter bodies.
 (import (only-in :gerbil/expander current-expander-compile current-expander-eval
-                 current-expander-context current-expander-phi module-context?
+                 current-expander-context current-expander-phi current-expander-module-import core-import-module
+                 __module-registry expander-context-id module-context?
                  module-context-code module-context-path expander-context-table
                  module-context-import)
         (only-in :gerbil/runtime __compile-top __compile-top-source)
@@ -15,7 +16,7 @@
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  module-source-measure-operation module-source-type)
         (only-in :gerbil/runtime/loader list-modules))
-(export register-reader-wrapper! reader-evaluation-observers observe-reader-work release-reader-expansions!
+(export register-reader-wrapper! make-reader-evaluation-scope reader-compiled-import-observer observe-reader-work release-reader-expansions!
         remove-reader-tree reader-body)
 
 (def (register-reader-wrapper! owned path origin)
@@ -26,7 +27,53 @@
   (hash-put! owned canonical origin)
   (unless (equal? path canonical) (hash-put! owned path origin)))
 
-(def (reader-evaluation-observers owned completed
+;; Call-local provenance for the exact adapters installed by this owner. This
+;; is neither a callable registry nor a retained validation result. A nested
+;; reader can delegate to its parent without treating our adapter as user code.
+(defstruct reader-evaluation-owner (compile evaluate standard?) final: #t)
+(def current-reader-evaluation-owner (make-parameter #f))
+(def (standard-gerbil-evaluation?)
+  (let ((compile (current-expander-compile)) (evaluate (current-expander-eval))
+        (owner (current-reader-evaluation-owner)))
+    (or (and (or (eq? compile __compile-top) (eq? compile __compile-top-source))
+             (eq? evaluate ##eval))
+        (and owner (reader-evaluation-owner-standard? owner)
+             (eq? compile (reader-evaluation-owner-compile owner))
+             (eq? evaluate (reader-evaluation-owner-evaluate owner))))))
+
+;; A real core import can initialize transitive native libraries while reading
+;; their .ssi declarations, before its caller receives an import descriptor.
+;; Keep those initialization reads separate from live publication dependencies.
+;; Failed imports, source imports and open callbacks retain their complete trace.
+(def (reader-compiled-import-observer admit-compiled!)
+  (def importer (current-expander-module-import))
+  (lambda (path (reload? #f))
+    (if (not (and (eq? importer core-import-module) (standard-gerbil-evaluation?)
+                  (not (current-module-source-observer)) (owned-read-function-scope?)))
+      (importer path reload?)
+      (let ()
+        (def failed? #f)
+        (def failure #f)
+        (defvalues (results reads)
+          (%call-with-recorded-slot-reads
+            (lambda ()
+              (with-catch (lambda (cause) (set! failed? #t) (set! failure cause) '())
+                (lambda () (call-with-values (lambda () (importer path reload?)) list))))))
+        (when failed? (%record-slot-reads! reads) (raise failure))
+        (def admitted?
+          (with-catch (lambda (cause) (%record-slot-reads! reads) (raise cause))
+            (lambda ()
+              (and (= (length results) 1)
+                   (let* ((context (car results))
+                          (origin (and (module-context? context) (module-context-path context))))
+                     (and (string? origin) (string=? (path-extension origin) ".ssi")
+                          (eq? context (or (hash-get __module-registry origin)
+                                           (hash-get __module-registry (path-normalize origin))))
+                          (admit-compiled! context)))))))
+        (unless admitted? (%record-slot-reads! reads))
+        (apply values results)))))
+
+(def (make-reader-evaluation-scope owned completed
                                   (initialize (lambda (_context action) (action)))
                                   (runtime-context? (lambda (_context) #f))
                                   (retained-origin (lambda (_context) #f)))
@@ -34,6 +81,7 @@
   ;; phi-zero module body with its compiled program, then observe successful
   ;; evaluation of that same program. Macro-phase or partial evaluation alone
   ;; grants no release capability. Delegate all Gerbil results without alteration.
+  (def standard? (standard-gerbil-evaluation?))
   (def gerbil-compile (current-expander-compile))
   (def gerbil-eval (current-expander-eval))
   (def pending (make-hash-table-eq))
@@ -49,8 +97,7 @@
       (and (zero? (import-set-phi entry)) (runtime-context? (import-set-source entry))))
      (else #f)))
   (def (import-parts program)
-    (and (or (eq? gerbil-compile __compile-top) (eq? gerbil-compile __compile-top-source))
-         (eq? gerbil-eval ##eval)
+    (and standard?
       (let* ((wrapped? (and (pair? program) (eq? (car program) __noexpand:)))
              (body (code (if wrapped? (cdr program) program))))
         (def (wrap expression) (if wrapped? (cons __noexpand: expression) expression))
@@ -108,7 +155,7 @@
     (if (not (and verbosity (>= verbosity 4))) (evaluate-program program parts)
       (let (before (list->hash-table (map (lambda (row) (cons (car row) #t)) (list-modules))))
         (begin0 (evaluate-program program parts)
-          (write (list 'READER-NATIVE-LOAD label
+          (write (list 'READER-COMPILED-LOAD label
                    (filter (lambda (row) (not (hash-key? before (car row)))) (list-modules))))
           (newline) (force-output)))))
   (def (body-event stage context)
@@ -175,7 +222,11 @@
             (hash-put! completed (car entry) (cadr entry))
             (body-event 'reader-body-evaluated (car entry)))
           (apply values results)))))
-  (values compile evaluate))
+  (def owner (make-reader-evaluation-owner compile evaluate standard?))
+  (lambda (action)
+    (parameterize ((current-expander-compile compile) (current-expander-eval evaluate)
+                   (current-reader-evaluation-owner owner))
+      (action))))
 
 ;; Closed event labels extend the existing test observer, not an execution
 ;; wrapper or a profiler-owned object graph. Preserve all values and failures.

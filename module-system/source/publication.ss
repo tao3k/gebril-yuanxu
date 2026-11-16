@@ -89,9 +89,8 @@
                '(eligible? namespace publication-preparation))
        (if (and (owned-read-function-scope?)
                 (object-%precedence-list value) (not (object-protocol value))
-                (object-%instance value)
-                (hash-key? (object-%instance value) 'module-ids)
-                (hash-key? (object-%instance value) 'selected))
+                (not (eq? absent-value (object-cached-value value 'module-ids absent-value)))
+                (not (eq? absent-value (object-cached-value value 'selected absent-value))))
          ;; These fields were actually validated above and remain warm. Native
          ;; reads below still issue/deliver their original dependency records.
          ;; The known observer/precheck route cannot call a user hook on this

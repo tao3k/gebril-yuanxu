@@ -28,6 +28,13 @@
     (yuanxu-test-case "Graph projection is inert and orders the selected dependency closure"
       (check-equal? (.get Deployment graph order) '(init validate deploy))
       (check-equal? (.ref/cached (.get Deployment tasks) 'unused) #f))
+    (yuanxu-test-case "ready tasks retain FIFO order across independent branches"
+      (.def (Parallel @ Deployment)
+        tasks: =>.+
+        (.o audit: (.o (:: @ Task.) command: '("printf" "audit"))
+            report: (.o (:: @ Task.) needs: '(audit) command: '("printf" "report")))
+        selected: '(deploy report))
+      (check-equal? (.get Parallel graph order) '(init audit validate report deploy)))
     (yuanxu-test-case "parent Graph cached before child refinement uses final tasks"
       (def parent (.get Deployment graph))
       (.def (Release @ Deployment) tasks.deploy: =>.+ (.o command: '("printf" "release")))

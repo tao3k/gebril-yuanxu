@@ -86,7 +86,7 @@
   ;; hook or read observer. Cold/mutated objects, overridden methods, different
   ;; guards and instrumented reads retain the ordinary checked call. This probe
   ;; must not execute anything between the caller's guard and the continuation.
-  (and (object? receiver) (object-%instance receiver)
+  (and (object? receiver) (object-instantiated? receiver)
        (not (%slot-read-active?)) (not (object-protocol receiver))
        (let ((operation (.ref/cached receiver '%source-operation (lambda () #f)))
              (invoke (.ref/cached receiver 'admit-current (lambda () #f))))
@@ -134,10 +134,10 @@
             (if (or (and (pair? name) (eq? (car name) 'reader-current))
                     (memq name '(build-main build-selected-graph std-make reader-bootstrap
                             reader-current reader-interface-start reader-preparation-start
-                            reader-admission-start reader-native-import reader-role-import
+                            reader-admission-start reader-compiled-import reader-role-import
                             reader-tool-inputs reader-private-closure reader-compile-start
                             reader-eval-start metadata-replay source-init-current
-                            source-native-owner-read source-role-open
+                            source-gerbil-owner-read source-role-open
                             compiler-input-lookup compiler-role-inventory
                             compiler-import-before compiler-import-after
                             compiler-view-before compiler-view-after)))
@@ -154,7 +154,7 @@
 (def (measure-source-operation times name action)
   (if (if (eq? (current-module-source-operation-accounting?) 'stages)
               (or (and (pair? name)
-                       (memq (car name) '(link-current scope-current
+                       (memq (car name) '(link-current scope-current compiled-role-load
                                          reader-initialization reader-initializer-body
                                          reader-candidate-replay-site)))
                   (memq name '(reader-initialization reader-initializer-body
@@ -164,22 +164,23 @@
                            selected-owner-closure selected-core-projection selected-topological-resolution selected-core-rows selected-poo-schedule
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
                            reader-admission-start reader-value-admission reader-admission-evidence scope-factory
+                           publication-read publication-admission scope-admission
                            publication-shape-record publication-shape-core
                            scope-shape-type scope-shape-record scope-shape-protocol
-                           reader-current reader-native-identity reader-tool-source-current reader-source-guards
+                           reader-current reader-gerbil-identity reader-tool-source-current reader-source-guards
                            metadata-replay metadata-checkpoints observed-metadata-replay publication-guard-sweep
                            reader-candidate-entry-replay reader-candidate-return-replay reader-candidate-fused-return-replay
                            metadata-index metadata-root-merge metadata-cache-miss-receivers
                            source-init-current source-authoring-profile-checkpoint
                            reader-tool-inputs reader-private-closure reader-private-prepare
-                           reader-native-import reader-role-import reader-source-resolution reader-source-import
+                           reader-compiled-import reader-role-import reader-source-resolution reader-source-import
                            reader-tool-context
                            reader-compile-start reader-eval-start
                            reader-expander-compile reader-expander-eval
                            reader-expander-phase-compile reader-expander-phase-eval
                            source-authoring source-authoring-profile source-authoring-role
                            source-authoring-role-checkpoint
-                           source-ref-preparation source-ref-admission source-native-owner-read
+                           source-ref-preparation source-ref-admission source-gerbil-owner-read
                            source-role-open
                            source-direction source-import-policy source-parse)))
               (and (current-module-source-operation-accounting?)

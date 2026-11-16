@@ -88,9 +88,9 @@
           (def receipt
             (find-issued-read (list profile)
               (lambda (read)
-                (let (slots (object-%instance (slot-read-receiver read)))
-                  (and slots (eq? (slot-read-key read) 'accepted?)
-                       (eq? (hash-get slots 'kind) 'yuanxu.contract.validation-evidence))))))
+                (let (kind (object-cached-value (slot-read-receiver read) 'kind))
+                  (and (eq? (slot-read-key read) 'accepted?)
+                       (eq? kind 'yuanxu.contract.validation-evidence))))))
           (check-equal? (if receipt #t #f) #t)
           ;; Change only the issued token's route, leaving the receiver
           ;; revision and every external role unchanged.

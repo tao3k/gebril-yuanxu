@@ -28,9 +28,7 @@
     (and (not (hash-key? seen read))
          (begin
            (hash-put! seen read #t)
-           (let* ((receiver (slot-read-receiver read))
-                  (instance (and (object? receiver) (object-%instance receiver)))
-                  (kind (and instance (hash-get instance 'kind))))
+           (let (kind (object-cached-value (slot-read-receiver read) 'kind))
              (or (memq kind '(yuanxu.type.classification-evidence
                               yuanxu.contract.validation-evidence))
                  (ormap visit (slot-read-dependencies read)))))))

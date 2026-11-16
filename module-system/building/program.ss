@@ -4,7 +4,7 @@ prelude: :gerbil/core
 (import :gerbil/compiler
         :gerbil/expander
         (only-in :std/list/list delete-duplicates/hash append-map)
-                (only-in :std/encoding/json write-json))
+        (only-in :std/encoding/json write-json))
 (import (only-in "program-activation.ss" program-activation-form))
 (export yuanxu-project-compiled-program)
 

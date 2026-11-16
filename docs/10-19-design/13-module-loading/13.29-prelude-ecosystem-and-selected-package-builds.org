@@ -37,7 +37,7 @@ The first formal-reference implementation is tracked separately in
 [[file:13.30-selected-package-build-refinement.org][13.30]], with SysML allocation, Lean laws and explicit native bridge gates.
 Its pure verification does not change the native status stated here.
 
-[[file:13.31-native-prelude-staging-and-source-view.org][13.31]] further refines native declaration staging, physical-output collisions
+[[file:13.31-gerbil-prelude-staging-and-source-view.org][13.31]] further refines native declaration staging, physical-output collisions
 and incremental input/product association; stable wrapper timestamps alone
 are not sufficient for its reuse contract.
 

@@ -5,12 +5,12 @@
         (only-in :std/source this-source-file)
         (only-in :gerbil/runtime/loader list-modules)
         (only-in :clan/poo/mop call-with-slot-read-observer
-                 clos-generic-function clos-method clos-any-specializer)
+                 clos-generic-function clos-method clos-any-specializer clos-add-method
+                 clos-call)
         (only-in :clan/poo/slot-observation slot-read-key slot-read-receiver)
         (only-in :tao3k/yuanxu/module-system/building/test-observation ModuleTestingProfile.)
         (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress
                  execution-progress-status)
-        (only-in :clan/poo/clos/objects make-effective-method make-invocation-frame)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  current-module-process-trace-budget)
         (only-in :tao3k/yuanxu/testing
@@ -163,13 +163,12 @@
             (parameterize ((current-output-port port))
               (.call Observed .run Observed "carrier prototype census"
                 (lambda ()
-                  (def generic (clos-generic-function 'observed-carrier 1))
-                  (def method
-                    (clos-method 'observed-method (list (clos-any-specializer))
-                      (lambda (_frame _value) 'done)))
-                  (def args '(payload))
-                  (def effective (make-effective-method generic args '() '() (list method) '()))
-                  (set! frame (make-invocation-frame effective args #f 'primary method))
+                  (def generic
+                    (clos-add-method (clos-generic-function 'observed-carrier 1)
+                      (clos-method 'observed-method (list (clos-any-specializer))
+                        (lambda (active _value) (set! frame active) 'done))))
+                  (check-equal? (clos-call generic 'payload) 'done)
+                  (def effective (.get frame effective-method))
                   (check-equal? (.ref/cached effective 'kind) #f)
                   (check-equal? (.ref/cached frame 'kind) #f)))))))
       (check-equal? (and (string-contains output

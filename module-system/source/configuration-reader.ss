@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Evaluate Build and configuration bindings with their existing source guards.
 (import (only-in :std/io/tempfile make-temporary-file-name)
+        (only-in :tao3k/yuanxu/module-system/building/source-package module-build-import-identity)
         (only-in :gerbil/expander current-expander-context make-top-context
                  current-expander-module-import current-expander-compile
                  current-expander-eval eval-syntax syntax-e)
@@ -29,7 +30,7 @@
          (wrappers (make-hash-table)) (artifact-paths (make-hash-table-eq))
          (owned (make-hash-table)) (completed (make-hash-table-eq))
          (gerbil-import (current-expander-module-import)))
-    (defvalues (compile evaluate) (reader-evaluation-observers owned completed))
+    (def with-reader-evaluation (make-reader-evaluation-scope owned completed))
     ;; An admitted outer reader already owns this exact Gerbil catalogue/index.
     ;; Share its structural maps, not a source-currentness or admission result.
     ;; Standalone role readers still acquire their own runtime compiler closure.
@@ -85,76 +86,73 @@
        (for-each write-input! inputs))
      (lambda ()
        (let (result
-             (parameterize
-                 ((current-expander-context (make-top-context))
-                  (current-expander-compile compile)
-                  (current-expander-eval evaluate)
-                  (current-expander-module-import
-                   (lambda (path (reload? #f))
-                     (let* ((requested (syntax-e path))
-                            (text (and (symbol? requested) (symbol->string requested)))
-                            (runtime-id (and text (> (string-length text) 1)
-                                            (char=? (string-ref text 0) #\:)
-                                            (string->symbol (substring text 1 (string-length text)))))
-                            (source (or (and (string? requested) (path-normalize requested))
-                                        (and runtime-id (hash-get artifact-paths runtime-id))))
-                            (target (and source (hash-get wrappers source))))
-                       (when (and init-source source (equal? source init-source))
-                         (error "Build cannot import its owner init" source))
-                       (cond
-                         ((pair? target)
-                          (when reload? (error "shared publication context reload requires a fresh reader"))
-                          ((.ref (car target) 'admit-current))
-                          (cdr target))
-                         (target (gerbil-import target reload?))
-                         ;; Keep this interceptor active while expanding our own
-                         ;; generated entry. Otherwise its relative role imports
-                         ;; escape to the runtime original-path registry, and a
-                         ;; fresh source epoch can silently reuse an old value.
-                         ((and (string? path) (string-prefix? directory path))
-                          (gerbil-import path reload?))
-                         ((and (string? path) (hash-get tool-paths (path-normalize path)))
-                          => (lambda (context)
-                               (when reload? (error "compiler tool reload requires a fresh configuration context"))
-                               (unless (captured-import-context? compiler-contexts context)
-                                 (error "compiler tool context changed during configuration"))
-                               (parameterize ((current-module-source-phase 'configuration-import))
-                                 (admit-compiler-inputs! context tool-dependencies))
-                               context))
-                         ((and shared-contexts shared-inputs (string? path)
-                               (not (string-prefix?
-                                      (path-directory (path-normalize (.ref prepared 'path)))
-                                      (path-normalize path)))
-                               (hash-get shared-contexts (path-normalize path)))
-                          => (lambda (context)
-                               (when reload? (error "shared publication context reload requires a fresh reader"))
-                               (let (input (hash-get shared-inputs context))
-                                 (unless input (error "shared publication context has no guarded source" path))
-                                 ;; Build-only imports may use another selected
-                                 ;; module's existing dependency context. Enroll
-                                 ;; its exact observed closure, never scan a dir.
-                                 (for-each-build-module context
-                                   (lambda (child)
-                                     (let (source (hash-get shared-inputs child))
-                                       (when (and source (not (memq source inputs)))
-                                         (set! inputs (cons source inputs))))))
-                                 ((.ref input 'admit-current))
-                                 (hash-put! wrappers (path-normalize path) (cons input context))
-                                 context)))
-                         ((and (string? path) (string=? (path-extension path) ".ss")
-                               (not (string-prefix? directory path)))
-                          (let (input (public-dependency-input path))
-                            (unless input
-                              (error "configuration import requires an admitted role or prebuilt library" path))
-                            (when reload? (error "public dependency reload requires a fresh environment"))
-                            (set! inputs (cons input inputs))
-                            ((.ref input 'admit-current))
-                            (parameterize ((current-expander-module-import gerbil-import))
-                              (gerbil-import path #f))))
-                         (else (parameterize ((current-expander-module-import gerbil-import))
-                                 (gerbil-import path reload?))))))))
-               (eval-syntax `(import ,(hash-ref wrappers (path-normalize (.ref prepared 'path)))))
-               (eval-syntax binding)))
+             (with-reader-evaluation
+               (lambda ()
+                 (parameterize
+                     ((current-expander-context (make-top-context))
+                      (current-expander-module-import
+                       (lambda (path (reload? #f))
+                         (let* ((requested (syntax-e path))
+                                (runtime-id (module-build-import-identity path))
+                                (source (or (and runtime-id (hash-get artifact-paths runtime-id))
+                                            (and (string? requested) (path-normalize requested))))
+                                (target (and source (hash-get wrappers source))))
+                           (when (and init-source source (equal? source init-source))
+                             (error "Build cannot import its owner init" source))
+                           (cond
+                             ((pair? target)
+                              (when reload? (error "shared publication context reload requires a fresh reader"))
+                              ((.ref (car target) 'admit-current))
+                              (cdr target))
+                             (target (gerbil-import target reload?))
+                             ;; Keep this interceptor active while expanding our own
+                             ;; generated entry. Otherwise its relative role imports
+                             ;; escape to the runtime original-path registry, and a
+                             ;; fresh source epoch can silently reuse an old value.
+                             ((and (string? path) (string-prefix? directory path))
+                              (gerbil-import path reload?))
+                             ((and (string? path) (hash-get tool-paths (path-normalize path)))
+                              => (lambda (context)
+                                   (when reload? (error "compiler tool reload requires a fresh configuration context"))
+                                   (unless (captured-import-context? compiler-contexts context)
+                                     (error "compiler tool context changed during configuration"))
+                                   (parameterize ((current-module-source-phase 'configuration-import))
+                                     (admit-compiler-inputs! context tool-dependencies))
+                                   context))
+                             ((and shared-contexts shared-inputs (string? path)
+                                   (not (string-prefix?
+                                          (path-directory (path-normalize (.ref prepared 'path)))
+                                          (path-normalize path)))
+                                   (hash-get shared-contexts (path-normalize path)))
+                              => (lambda (context)
+                                   (when reload? (error "shared publication context reload requires a fresh reader"))
+                                   (let (input (hash-get shared-inputs context))
+                                     (unless input (error "shared publication context has no guarded source" path))
+                                     ;; Build-only imports may use another selected
+                                     ;; module's existing dependency context. Enroll
+                                     ;; its exact observed closure, never scan a dir.
+                                     (for-each-build-module context
+                                       (lambda (child)
+                                         (let (source (hash-get shared-inputs child))
+                                           (when (and source (not (memq source inputs)))
+                                             (set! inputs (cons source inputs))))))
+                                     ((.ref input 'admit-current))
+                                     (hash-put! wrappers (path-normalize path) (cons input context))
+                                     context)))
+                             ((and (string? path) (string=? (path-extension path) ".ss")
+                                   (not (string-prefix? directory path)))
+                              (let (input (public-dependency-input path))
+                                (unless input
+                                  (error "configuration import requires an admitted role or prebuilt library" path))
+                                (when reload? (error "public dependency reload requires a fresh environment"))
+                                (set! inputs (cons input inputs))
+                                ((.ref input 'admit-current))
+                                (parameterize ((current-expander-module-import gerbil-import))
+                                  (gerbil-import path #f))))
+                             (else (parameterize ((current-expander-module-import gerbil-import))
+                                     (gerbil-import path reload?))))))))
+                   (eval-syntax `(import ,(hash-ref wrappers (path-normalize (.ref prepared 'path)))))
+                   (eval-syntax binding)))))
          ;; A returned closure can use these imports later. Hand its actual
          ;; source support back to the enclosing Graph/role owner; checking it
          ;; only during evaluation would lose deferred Build-only dependencies.
