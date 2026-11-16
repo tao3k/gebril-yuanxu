@@ -57,6 +57,26 @@
       (check-equal? (transfer) #f)
       (check-equal? installed '())
       (check-equal? refused '((context-conflict dependency))))
+    (yuanxu-test-case "a source guard invalidating a native context refuses the entire transfer"
+      (def native-current? #t)
+      (def installed '())
+      (check-equal?
+        (transfer-role-context 'root
+          (lambda (root visit) (visit 'native) (visit root))
+          (lambda (child)
+            (if (eq? child 'native)
+              (values #f #f '() #f)
+              (values (.o path: child admit-current: void) 'owner '()
+                      (lambda () (set! native-current? #f)))))
+          (lambda (_path) 'owner)
+          (lambda (child) (and (eq? child 'native) native-current?))
+          (lambda (_path _child) #t)
+          (lambda (child _input _owner _assets _guard)
+            (set! installed (cons child installed)))
+          void
+          (lambda () native-current?))
+        #f)
+      (check-equal? installed '()))
     (yuanxu-test-case "explicit POO input refinement leaves the provider intact"
       (def schema (.o name: "baseline"))
       (def refined (.cc schema name: "consumer"))

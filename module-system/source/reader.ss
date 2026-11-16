@@ -36,7 +36,8 @@
             (reader-session-kernel-owners session)
             (reader-session-kernel-data session)
             (reader-session-kernel-initializers session)
-            (reader-session-compiler-contexts session))))
+            (reader-session-compiler-contexts session)
+            (reader-session-native-contexts session))))
       read: (lambda (source) (call-with-publication-reads (cut reader-read-publication session source)))
       ;; Internal paired-directory continuation, not an author callback API.
       read-located:

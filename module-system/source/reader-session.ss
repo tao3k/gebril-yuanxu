@@ -2,10 +2,13 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; One reader's source associations and generation-local counters.
-(import (only-in :tao3k/yuanxu/module-system/source/import-provenance module-import-provenance)
+(import (only-in :tao3k/yuanxu/module-system/source/import-provenance module-import-provenance
+                 registered-native-context-origin captured-import-context?)
+        (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :tao3k/yuanxu/module-system/source/reader-support source-observation-rows))
 (export (struct-out reader-session) (struct-out candidate-support) new-reader-session
-        reader-session-guards reader-session-guard-count reader-session-add-guard!)
+        reader-session-guards reader-session-guard-count reader-session-add-guard!
+        reader-session-admit-native-context!)
 
 ;; One unpublished operation's support, released after its recording frame.
 (defstruct candidate-support (guards tools tool-rows open? epoch-current metadata-current directory-location?) final: #t)
@@ -14,7 +17,7 @@
   (guard-support dependencies refused? evaluated-interface-bindings
    input-origins kernel-contexts kernel-inputs kernel-source-count kernel-progress-key kernel-owners kernel-data
    kernel-initializers preparations public-prepared-count publication-prepared-count
-   candidate tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts
+   candidate tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts native-contexts
    interpreter-observations tool-rows previous-context check-current check-current/closed open-boundary)
   final: #t)
 
@@ -43,5 +46,21 @@
     (make-hash-table-eq) kernel-contexts kernel-inputs 0 (gensym 'reader-compiled-imports)
     kernel-owners kernel-data kernel-initializers
     preparations 0 0 candidate
-    tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts
+    tool-contexts tool-paths tool-dependencies tool-observations compiler-contexts (make-hash-table-eq)
     (hash->list tool-observations) (source-observation-rows tool-observations) previous-context #f #f #f))
+
+;; Compiled imports retain their native Gerbil dependency closure. Keep exact
+;; observed origins separate from the bootstrap compiler capability catalog.
+(def (reader-session-admit-native-context! session context)
+  (def origins (reader-session-native-contexts session))
+  (def tools (reader-session-compiler-contexts session))
+  (def (known? child)
+    (or (hash-key? origins child) (captured-import-context? tools child)))
+  (unless (known? context)
+    (for-each-build-module context
+      (lambda (child)
+        (unless (known? child)
+          (let (origin (registered-native-context-origin child))
+            (when origin (hash-put! origins child (cons origin #f))))))
+      (make-hash-table-eq)
+      (lambda (child) (not (known? child))))))

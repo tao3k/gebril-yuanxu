@@ -18,7 +18,8 @@
                  module-build-library-source-path module-build-resolve-library))
 (export public-dependency-input admit-compiler-inputs!
         compiler-tool-inputs compiler-tool-input record-source-observations!
-        compiler-context-origin-current? captured-import-context? module-import-provenance)
+        compiler-context-origin-current? captured-import-context?
+        registered-native-context-origin registered-native-context-current? module-import-provenance)
 
 ;; One canonical-library check for publication and configuration readers. This
 ;; prepares observations, never imports, expands or initializes the dependency.
@@ -162,6 +163,18 @@
 (def (compiler-context-origin-current? context origin)
   (and origin (eq? (car origin) (expander-context-id context))
        (equal? (cdr origin) (module-context-path context))))
+(def (registered-native-context-current? context origin)
+  (and (compiler-context-origin-current? context origin)
+       (begin
+         (require-read-route! 'compiler-module-cache __module-registry #f)
+         (eq? context (or (hash-get __module-registry (cdr origin))
+                          (hash-get __module-registry (path-normalize (cdr origin))))))))
+(def (registered-native-context-origin context)
+  (and (module-context? context)
+       (let (path (module-context-path context))
+         (and (string? path) (string=? (path-extension path) ".ssi")
+              (let (origin (cons (expander-context-id context) (string-copy path)))
+                (and (registered-native-context-current? context origin) origin))))))
 (def (captured-import-context? contexts context)
   ;; Point queries authenticate the actual captured instance before reading it.
   (compiler-context-origin-current? context (hash-get contexts context)))

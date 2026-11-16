@@ -198,17 +198,30 @@
 ;; Capture only the existing native Context associations. Capturing the
 ;; session would also keep earlier sessions, preparation origins and the old
 ;; reader's publication guards alive across every refresh.
-(def (reader-role-transfer contexts inputs owners data initializers compiler-contexts)
-  (lambda (path owner-at available? install! tool?)
-    (transfer-role-context (hash-get contexts path)
+(def (reader-role-transfer contexts inputs owners data initializers compiler-contexts native-contexts)
+  (lambda (path owner-at available? install! tool? install-native!)
+    (def native-rows '())
+    (def context (transfer-role-context (hash-get contexts path)
       (cut reader-for-each-kernel-context compiler-contexts <...>)
       (lambda (child)
         (values (hash-get inputs child)
                 (hash-get owners child)
                 (or (hash-get data child) '())
                 (hash-get initializers child)))
-      owner-at tool? available? install!
+      owner-at
+      (lambda (child)
+        (or (tool? child)
+            (let* ((row (hash-get native-contexts child))
+                   (origin (and row (car row))))
+              (and (registered-native-context-current? child origin)
+                   (begin (set! native-rows (cons (cons child origin) native-rows)) #t)))))
+      available? install!
       (lambda (reason)
         (when (current-module-source-observer)
           ((current-module-source-observer)
-            (list 'reader-context-not-transferred path reason) 1))))))
+            (list 'reader-context-not-transferred path reason) 1)))
+      (lambda ()
+        (andmap (lambda (row) (registered-native-context-current? (car row) (cdr row)))
+                native-rows))))
+    (when context (for-each (lambda (row) (install-native! (car row) (cdr row))) native-rows))
+    context))

@@ -359,7 +359,19 @@
                            (reader-enroll-candidate! session initialization-current!))
                          (lambda (child)
                            (and (captured-import-context? (reader-session-compiler-contexts session) child)
-                                (begin (tool-context child #f) #t)))))))
+                                (begin (tool-context child #f) #t)))
+                         (lambda (child origin)
+                           (def origins (reader-session-native-contexts session))
+                           (def prior (hash-get origins child))
+                           (def retained! (and prior (cdr prior)))
+                           (def (check!)
+                             (unless (registered-native-context-current? child origin)
+                               (error "transferred runtime context changed" (car origin) (cdr origin))))
+                           (unless retained!
+                             (hash-put! origins child (cons origin check!))
+                             (reader-session-add-guard! session
+                               (make-source-preparation #f #f #f #f check! #f #f)))
+                           (reader-enroll-candidate! session (or retained! check!)))))))
                 (context
                  (or retained
                      (let (target (source-wrapper original-path owner-root))
@@ -555,6 +567,7 @@
          (def origin (module-context-path context))
          (and (string? origin) (string=? (path-extension origin) ".ssi")
            (begin
+             (reader-session-admit-native-context! session context)
              (unless (runtime-context? context)
                (hash-put! runtime-imports context
                  (cons (expander-context-id context) (string-copy origin)))
