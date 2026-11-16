@@ -25,7 +25,7 @@
         (string-append "(package: " prefix
           " prelude: :gerbil/core)\n"))
       (write-source (path-expand "types.ss" root)
-        "(import (only-in :clan/poo/mop Type.)) (def ScopeContract (.cc Type. identity: 'role/scope .element?: object?)) (export ScopeContract)\n")
+        "(import (only-in :clan/poo/type Type.)) (def ScopeContract (.cc Type. identity: 'role/scope .element?: object?)) (export ScopeContract)\n")
       (write-source (path-expand "objects.ss" root)
         "(import (only-in :std/source this-source-file)) (.def Value answer: 42 origin: (this-source-file)) (export Value)\n")
       (write-source (path-expand "func.ss" root)

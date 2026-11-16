@@ -5,7 +5,7 @@
 
 ;;; Core owns the semantic Module value; a product supplies its authoring Profile.
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :tao3k/yuanxu/module-system/schema/relations
                  SemanticImports.
                  yuanxu-empty-imports yuanxu-empty-capabilities

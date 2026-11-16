@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/mop Type. NoApplicableMethod?)
+        (only-in :clan/poo/type Type.)
+        (only-in :clan/poo/mop NoApplicableMethod?)
         (only-in :clan/poo/object-contract ObjectContract. diagnose)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :tao3k/yuanxu/module-system/source/directory module-directory-context)

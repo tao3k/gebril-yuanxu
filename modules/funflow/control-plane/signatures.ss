@@ -2,9 +2,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Flow edges use ordinary runtime Function descriptors, not signature labels.
 (import :clan/poo/object
-        (only-in :clan/poo/mop Type Type. Function Function. Fun Any Bool validate element?
-                 prototype-instance? raise-type-error)
-        (only-in :clan/poo/type String Symbol List Pair Null Unit Sum OrFalse Record Exactly Union)
+        (only-in :clan/poo/type Type Type. Function Function. Fun Any Bool validate element?
+                 raise-type-error String Symbol List Pair Null Unit Sum OrFalse Record Exactly
+                 Union)
+        (only-in :clan/poo/mop prototype-instance?)
         (only-in :clan/poo/number Number Integer)
         (only-in :clan/poo/types/relation subtype-expression? capture-type-catalog type-refusal? type-refusal-kind type-work)
         (only-in :clan/poo/optional-validation catalog-type? catalog-descriptor)

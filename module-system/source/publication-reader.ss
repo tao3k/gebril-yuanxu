@@ -11,7 +11,7 @@
                  module-context-code module-context?
                  current-expander-compile current-expander-eval expander-context-table syntax-e
                  core-read-module/sexp core-resolve-module-path core-import-module __module-registry)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :tao3k/yuanxu/module-system/building/program-products DefbuildScriptContract)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/object .o .+ .ref .slot? object?)

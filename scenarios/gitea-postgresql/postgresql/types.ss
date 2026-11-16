@@ -2,9 +2,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :clan/poo/object o?/slots .o .cc)
         (only-in :clan/poo/object-contract ObjectContract.)
-        (only-in :clan/poo/mop define-type Type.)
+        (only-in :clan/poo/type define-type Type. List)
         (only-in :tao3k/yuanxu/types/ports Port valid-port?)
-        (only-in :clan/poo/type List)
         (only-in :tao3k/yuanxu/types/contracts YuanxuContract.))
 (export Port PostgreSQLValueContract PostgreSQLConfigContract PostgreSQLScopeContract valid-port?)
 (def PostgreSQLValueContract

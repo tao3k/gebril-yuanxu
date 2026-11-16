@@ -7,8 +7,7 @@
 ;;; Invariant: schemas are ordinary POO values; alists exist only as receipts.
 
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop Type Type. validate)
-        (only-in :clan/poo/type Record))
+        (only-in :clan/poo/type Type Type. validate Record))
 
 (export yuanxu-contract-value-type
         yuanxu-contract-slot

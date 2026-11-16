@@ -15,7 +15,7 @@
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress
                  execution-progress-idle-milliseconds)
-        (only-in :clan/poo/mop Type.)
+        (only-in :clan/poo/type Type.)
         :tao3k/yuanxu/module-system/feature/model
         :tao3k/yuanxu/module-system/source/init
         :tao3k/yuanxu/module-system/source/objects

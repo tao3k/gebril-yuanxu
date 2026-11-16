@@ -8,7 +8,7 @@
 
 (import (only-in :clan/poo/object .o .ref)
         (only-in :std/list/list fold)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :clan/poo/number IntegerRange UInt))
 
 (export scenario-multiplicity

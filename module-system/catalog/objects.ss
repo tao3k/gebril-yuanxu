@@ -7,7 +7,7 @@
 ;;; observes SourceRef identity only; it never loads or activates a source.
 
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :std/list/list find)
         "types.ss"
         :tao3k/yuanxu/module-system/source/objects)

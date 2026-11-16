@@ -22,7 +22,7 @@
 (def (shell root id configuration consumer?)
   (let (owner (path-expand (string-append "modules/" id) root))
     (write-source (path-expand "types.ss" owner)
-      "(import :clan/poo/object (only-in :clan/poo/mop Type.)) (def Scope (.cc Type. identity: 'scope .element?: object?)) (export Scope)")
+      "(import :clan/poo/object (only-in :clan/poo/type Type.)) (def Scope (.cc Type. identity: 'scope .element?: object?)) (export Scope)")
     (write-source (path-expand "objects.ss" owner)
       "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
     (write-source (path-expand "config.ss" owner) configuration)

@@ -3,8 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Catalog fields describe existing values; validation must not load a source.
-(import (only-in :clan/poo/mop define-type)
-        (only-in :clan/poo/type Record List Symbol)
+(import (only-in :clan/poo/type define-type Record List Symbol)
         (only-in :tao3k/yuanxu/module-system/source/types ModuleSourceBinding))
 (export ModuleSourceBinding ModuleCatalog)
 

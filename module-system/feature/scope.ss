@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Selected Feature refinements and dependency edges share the same scope write fence.
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop Type. define-type element? validate)
+        (only-in :clan/poo/type Type. define-type element? validate)
         (only-in :tao3k/yuanxu/module-system/source/publication
                  ModuleFeatureRefinementContract admit-module-value!))
 (export refine-module-scope compose-module-features module-feature-scope-contract)

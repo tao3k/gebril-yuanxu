@@ -2,7 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Production producer/publication/Context; small selected-publication inputs.
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/mop validate element?)
+        (only-in :clan/poo/type validate element?)
         (only-in :std/io/tempfile make-temporary-file-name)
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :tao3k/yuanxu/types/contracts yuanxu-contract-admit)

@@ -74,7 +74,7 @@
         (lambda (name)
           (def directory (string-append "modules/" name "/"))
           (put root (string-append directory "types.ss")
-            "(import :clan/poo/object (only-in :clan/poo/mop Type.)) (def Scope (.cc Type. identity: 'oracle/scope .element?: object?)) (export Scope)")
+            "(import :clan/poo/object (only-in :clan/poo/type Type.)) (def Scope (.cc Type. identity: 'oracle/scope .element?: object?)) (export Scope)")
           (put root (string-append directory "objects.ss")
             "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
           (put root (string-append directory "config.ss")
@@ -262,7 +262,7 @@
           (put root "init.ss"
             "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" :load-modules \"./modules\" rename: modules mode: explicit (example) :load-modules \"./empty\" rename: Empty mode: explicit)\n")
           (put root "modules/example/types.ss"
-            "(import :clan/poo/object (only-in :clan/poo/mop Type.)) (def Scope (.cc Type. identity: 'program/scope .element?: object?)) (export Scope)")
+            "(import :clan/poo/object (only-in :clan/poo/type Type.)) (def Scope (.cc Type. identity: 'program/scope .element?: object?)) (export Scope)")
           (put root "modules/example/objects.ss"
             "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
           (put root "modules/example/config.ss"

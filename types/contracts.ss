@@ -8,19 +8,10 @@
 ;;; this module owns only evidence-bearing Yuanxu classification/contracts.
 
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop
-                 .defgeneric
-                 define-type
-                 Type
-                 Type.
-                 Slot instance Bool Object
-                 element?
-                 TypeError?
-                 validate
-                 prototype-instance?
-                 raise-type-error)
+        (only-in :clan/poo/type define-type Type Type. Bool Object element? TypeError? validate
+                 raise-type-error Record Symbol List)
+        (only-in :clan/poo/mop .defgeneric Slot instance prototype-instance?)
         (only-in :clan/poo/object-contract checked-action)
-        (only-in :clan/poo/type Record Symbol List)
         (only-in :std/error Error-irritants)
         (only-in :std/list/list every)
         (only-in :clan/poo/read-projection

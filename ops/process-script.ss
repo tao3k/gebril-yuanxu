@@ -3,8 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Process execution does not import package selection or the build Graph.
 (import :clan/poo/object "./config.ss"
-        (only-in :clan/poo/mop Function validate)
-        (only-in :clan/poo/type String)
+        (only-in :clan/poo/type Function validate String)
         (only-in "./types.ss" ProcessResultContract)
         (for-template "./func.ss")
         (only-in :tao3k/yuanxu/module-system/source/compiled-role

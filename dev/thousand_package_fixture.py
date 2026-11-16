@@ -27,7 +27,7 @@ def generate(root: Path, profile: bool = False) -> None:
           + " ".join(f"(module-{n})" for n in range(1000)) + ")\n")
     for number in range(1000):
         owner = producer / "modules" / f"module-{number}"
-        write(owner / "types.ss", """(import (only-in :clan/poo/mop Type.)
+        write(owner / "types.ss", """(import (only-in :clan/poo/type Type.)
   (only-in :clan/poo/object object?))
 (def ScopeContract (.cc Type. identity: 'thousand/scope .element?: object?))
 (export ScopeContract)

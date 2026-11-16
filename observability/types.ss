@@ -9,7 +9,7 @@
 
 (import (runtime: :gerbil/core) (only-in :gerbil/core make-object)
         (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop define-type element? validate)
+        (only-in :clan/poo/type define-type element? validate)
         (only-in :tao3k/yuanxu/types/contracts
                  YuanxuContract.
                  YuanxuObjectContract.

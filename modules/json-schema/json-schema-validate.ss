@@ -9,7 +9,7 @@
 
 (import (only-in :tao3k/yuanxu/object/syntax defpoo-object-family))
 (import (only-in :clan/poo/object object?)
-        (only-in :clan/poo/mop element?)
+        (only-in :clan/poo/type element?)
         (only-in :tao3k/yuanxu/module-system/schema/slot-contracts
                  yuanxu-contract-slot-name
                  yuanxu-contract-slot-required?

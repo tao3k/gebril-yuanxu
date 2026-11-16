@@ -9,7 +9,7 @@
         (only-in :tao3k/yuanxu/module-system/source/observations
                  module-source-text-guard module-source-read module-source-type
                  call-with-module-source-read-cache call-with-module-source-operation-measurement)
-        (only-in :clan/poo/mop Type.)
+        (only-in :clan/poo/type Type.)
         :tao3k/yuanxu/module-system/feature/model
         :tao3k/yuanxu/module-system/source/objects
         :tao3k/yuanxu/module-system/source/init

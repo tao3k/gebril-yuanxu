@@ -1,6 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
-        (only-in :clan/poo/mop define-type Object)
+        (only-in :clan/poo/type define-type Object)
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :tao3k/yuanxu/types/ports Port)
         (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.))

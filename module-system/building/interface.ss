@@ -170,8 +170,9 @@
   (def (with-input-context output action)
     (when input-context-refused?
       (error "build input context was refused; use a fresh init context"))
-    (call-with-build-input-path output action refuse-input-context!
-      source-roots: (list (path-directory init-file))))
+    ;; Admit the projected source explicitly. Keep the installed libraries
+    ;; ahead of source when resolving runtime bindings during preparation.
+    (call-with-build-input-path output action refuse-input-context!))
   ;; A consumer may add its native entry targets to the same source epoch
   ;; used by the namespace and test projections.
   (def (prepare-build (retained '()))

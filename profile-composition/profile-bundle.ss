@@ -8,7 +8,7 @@
 ;;; neither discovers packages nor executes Runtime behavior.
 
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop Type. define-type element? validate)
+        (only-in :clan/poo/type Type. define-type element? validate)
         (only-in :std/error deferror-class)
         (only-in :std/list/list append-map delete-duplicates/hash every filter-map)
         (only-in :tao3k/yuanxu/module-system/types

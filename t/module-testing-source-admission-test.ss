@@ -25,7 +25,7 @@
     (string-append "(package: " (symbol->string (gensym 'source-admission-)) ")"))
   (def directory (path-expand "modules/example" root))
   (write-source (path-expand "types.ss" directory)
-    "(import (only-in :clan/poo/mop Type.) (only-in :clan/poo/object object?)) (def ScopeContract (.cc Type. identity: 'fixture .element?: object?)) (export ScopeContract)")
+    "(import (only-in :clan/poo/type Type.) (only-in :clan/poo/object object?)) (def ScopeContract (.cc Type. identity: 'fixture .element?: object?)) (export ScopeContract)")
   (write-source (path-expand "private/helper.ss" directory)
     "(def greeting \"hello\") (export greeting)")
   (write-source (path-expand "objects.ss" directory)

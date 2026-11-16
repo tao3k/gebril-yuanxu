@@ -15,13 +15,8 @@
                  .slot?
                  compute-precedence-list!
                  object?)
-        (only-in :clan/poo/mop
-                 .defgeneric
-                 define-type
-                 Type
-                 Type.
-                 element?
-                 raise-type-error)
+        (only-in :clan/poo/type define-type Type Type. element? raise-type-error)
+        (only-in :clan/poo/mop .defgeneric)
         (only-in :std/list/list every)
 )
 

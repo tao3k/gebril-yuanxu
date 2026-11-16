@@ -7,7 +7,7 @@
         (only-in :clan/poo/object .o .ref .call .cc object-slots object-%slot-funs
                  $constant-slot-spec? object-protocol-set!)
         (only-in :tao3k/yuanxu/types/ports Port valid-port?)
-        (only-in :clan/poo/mop define-type element?)
+        (only-in :clan/poo/type define-type element?)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer)
         (only-in :tao3k/yuanxu/ops/progress execution-progress!)
         (only-in :tao3k/yuanxu/observability/memory

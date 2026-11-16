@@ -77,7 +77,7 @@
             (def directory (path-expand (symbol->string id) modules-root))
             (create-directory directory)
             (write-fixture-source (path-expand "types.ss" directory)
-              '((import (only-in :clan/poo/mop Type.)
+              '((import (only-in :clan/poo/type Type.)
                         (only-in :clan/poo/object object?))
                 (def ScopeContract
                   (.cc Type. identity: 'scale/scope .element?: object?))

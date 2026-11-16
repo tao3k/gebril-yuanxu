@@ -22,8 +22,7 @@
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/read-projection owned-read-function-scope?)
         (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop define-type Type.)
-        (only-in :clan/poo/type List)
+        (only-in :clan/poo/type define-type Type. List)
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :tao3k/yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? module-source-admit-current! call-with-module-source-read-cache module-source-observe module-source-object-policy current-module-source-phase current-module-source-observer module-source-measure-operation call-with-module-source-callback)
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source

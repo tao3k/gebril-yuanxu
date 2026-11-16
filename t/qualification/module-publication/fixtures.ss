@@ -29,7 +29,7 @@
 
 (def publication-roles
   (.o
-    types: '((import (only-in :clan/poo/mop Type.)
+    types: '((import (only-in :clan/poo/type Type.)
                      (only-in :clan/poo/object object?))
              (def FixtureContract
                (.cc Type. identity: 'fixture .element?: object?))

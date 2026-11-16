@@ -6,7 +6,7 @@ prelude: :gerbil/core
 
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .cc .get .ref .slot? .call .put!)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/source/admission call-with-module-source-operation-measurement)
@@ -19,8 +19,7 @@ prelude: :gerbil/core
 (def (scope-roles root)
   (.o
     types:
-    '((import (only-in :clan/poo/mop Bool)
-              (only-in :clan/poo/type Record Exactly True)
+    '((import (only-in :clan/poo/type Record Exactly True Bool)
               (only-in :clan/poo/number Integer))
       (def FixtureContract (.cc (Record port: [Integer] memory: [Bool]) identity: 'feature/base))
       (def MemoryContract (.cc (Record memory: [True]) identity: 'feature/memory))

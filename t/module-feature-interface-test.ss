@@ -189,7 +189,7 @@
         (lambda (root module-root)
           (def other (path-expand "../other/interface.ss" module-root))
           (write-file (path-expand "../other/types.ss" module-root)
-            "(import (only-in :clan/poo/mop Type.) (only-in :clan/poo/object object?))
+            "(import (only-in :clan/poo/type Type.) (only-in :clan/poo/object object?))
              (def ScopeContract (.cc Type. identity: 'other/scope .element?: object?))
              (export ScopeContract)")
           (write-file (path-expand "../other/objects.ss" module-root)

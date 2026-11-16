@@ -14,7 +14,7 @@
                  current-build-output-directory)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/source/build retained-build-entries BuildSpecContract)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :tao3k/yuanxu/module-system/source/admission module-source-read call-with-module-source-callback
                  call-with-module-source-operation-measurement)
         (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec))

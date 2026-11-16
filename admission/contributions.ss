@@ -2,7 +2,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Selected Core routes -> source-bound rows, guarded at runtime admission.
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop .defgeneric validate)
+        (only-in :clan/poo/type validate)
+        (only-in :clan/poo/mop .defgeneric)
         (only-in :std/list/list every append-map)
         (only-in :tao3k/yuanxu/module-system/source/publication ContributionRouteContract)
         (only-in :tao3k/yuanxu/types/contracts yuanxu-context-contract-obligations)

@@ -1,10 +1,9 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import (only-in :clan/poo/type Record)
+(import (only-in :clan/poo/type Record element?)
         (only-in :clan/poo/object .o .ref .cc .mix .put! .get)
-        (only-in :clan/poo/mop element? make-instance clos-call
-                 clos-generic-protocol clos-generic-function
+        (only-in :clan/poo/mop make-instance clos-call clos-generic-protocol clos-generic-function
                  clos-compose-method-bundle clos-add-method clos-remove-method)
         (prefix-in (only-in :clan/poo/testing/property check-property make-specification) property.)
         (prefix-in (only-in :clan/poo/testing/property/generator generator-integer) generator.)

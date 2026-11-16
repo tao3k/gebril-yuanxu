@@ -8,7 +8,7 @@
         (rename-in (only-in "../init.ss" tao3k/yuanxu.init.exports) (tao3k/yuanxu.init.exports ModuleNamespace))
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/building/test-projection module-test-projection module-test-file-source)
-        (only-in :clan/poo/mop Type.)
+        (only-in :clan/poo/type Type.)
         (only-in :tao3k/yuanxu/module-system/source/admission module-source-read)
         (only-in :tao3k/yuanxu/observability/testing-fixture
                  with-yuanxu-fixture yuanxu-test-fixture)

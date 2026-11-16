@@ -7,7 +7,7 @@
         (only-in :tao3k/yuanxu/module-system/source/directory module-directory-context)
         (only-in :tao3k/yuanxu/module-system/building/test-projection
                  module-test-projection admit-module-test-layout!)
-        (only-in :clan/poo/mop Type.)
+        (only-in :clan/poo/type Type.)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export module-qualification-projection-test)
 

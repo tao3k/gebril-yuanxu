@@ -21,7 +21,7 @@
       '((import :tao3k/yuanxu/module-system/selection/init-syntax)
         (yuanxu! :test-dir "./t" mode: explicit source: "./modules" (example))))
     (forms root "modules/example/types.ss"
-      '((import :clan/poo/object (only-in :clan/poo/mop Type.))
+      '((import :clan/poo/object (only-in :clan/poo/type Type.))
         (def Scope (.cc Type. identity: 'test/scope .element?: object?))
         (export Scope)))
     (forms root "modules/example/config.ss" '((def Config (.o enabled: #t))))

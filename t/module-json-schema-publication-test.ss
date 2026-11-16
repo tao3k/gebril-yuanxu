@@ -1,7 +1,7 @@
 ;;; -*- Gerbil -*-
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import (only-in :clan/poo/mop TypeError? validate)
+(import (only-in :clan/poo/type TypeError? validate)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get .ref .call .cc .o .+)

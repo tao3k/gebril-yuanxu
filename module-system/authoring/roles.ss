@@ -5,7 +5,7 @@
 
 ;;; Boundary: construct values from prototypes owned by explicit Type declarations.
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         :tao3k/yuanxu/module-system/schema/relations
         :tao3k/yuanxu/module-system/types
         (only-in :tao3k/yuanxu/module-system/objects

@@ -25,7 +25,7 @@
    (lambda (entry)
      (let ((directory (path-expand (car entry) root)) (id (cdr entry)))
        (write-source (path-expand "types.ss" directory)
-         "(import (only-in :clan/poo/mop Type.) :clan/poo/object) (def Scope (.cc Type. identity: 'scope .element?: object?)) (export Scope)")
+         "(import (only-in :clan/poo/type Type.) :clan/poo/object) (def Scope (.cc Type. identity: 'scope .element?: object?)) (export Scope)")
        (write-source (path-expand "objects.ss" directory)
          "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
        (write-source (path-expand "config.ss" directory) "(def Config (.o))")

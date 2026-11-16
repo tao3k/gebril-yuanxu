@@ -10,12 +10,11 @@
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!
                  slot-read-receiver slot-read-value without-observation)
-        (only-in :clan/poo/mop Type. define-type element? validate prototype-instance?
-                 object-precedence-ready? object-find-in-precedence
-                 clos-generic-protocol clos-compose-method-bundle
-                 clos-compute-applicable-methods clos-call-carrier-policy-guard
-                 .defgeneric .defmethod .generic-object .defmethod-bundle)
-        (only-in :clan/poo/type List)
+        (only-in :clan/poo/type Type. define-type element? validate List)
+        (only-in :clan/poo/mop prototype-instance? object-precedence-ready?
+                 object-find-in-precedence clos-generic-protocol clos-compose-method-bundle
+                 clos-compute-applicable-methods clos-call-carrier-policy-guard .defgeneric
+                 .defmethod .generic-object .defmethod-bundle)
         (only-in :std/list/list any delete-duplicates/hash filter-map find map-in-order)
         (only-in :tao3k/yuanxu/utilities/algorithms
                  yuanxu-read-datums/append-map

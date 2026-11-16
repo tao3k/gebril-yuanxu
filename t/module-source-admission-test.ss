@@ -6,8 +6,7 @@
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .cc .get .ref .put! object? replay-slot-reads!
                  call-with-current-slot-reads)
-        (only-in :clan/poo/mop Type. Bool)
-        (only-in :clan/poo/type Enum Record Tuple)
+        (only-in :clan/poo/type Type. Bool Enum Record Tuple)
         (only-in :clan/poo/testing/type check-property report-diagnostics)
         (prefix-in :clan/poo/testing/property/test pbt.)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer

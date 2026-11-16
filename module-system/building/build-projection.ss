@@ -20,7 +20,7 @@
         (only-in :tao3k/yuanxu/module-system/source/build unique-build-inputs module-test-source-spec retained-build-entries BuildSpecContract)
         (only-in :tao3k/yuanxu/module-system/building/program-products resolve-make-target-inputs)
         (only-in :tao3k/yuanxu/module-system/source/static-inputs module-static-compiler-inputs)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :tao3k/yuanxu/module-system/source/preparation build-target-name yuanxu-prepare-module-retained-source yuanxu-prepare-module-build-source
                  call-with-module-compiler-inputs call-with-module-compiler-input-bindings)
         (only-in :tao3k/yuanxu/module-system/source/admission module-source-type

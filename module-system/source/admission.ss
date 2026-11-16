@@ -2,10 +2,9 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Shared source-role and publication admission. No expansion or activation.
-(import (only-in :clan/poo/type Record)
+(import (only-in :clan/poo/type Record Type element? validate)
         (only-in :gerbil/expander core-read-module/sexp)
         (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop Type element? validate)
         (only-in :clan/poo/slot-observation
                  call-with-slot-read-observer slot-read-receiver slot-read-key without-observation)
         (only-in :clan/poo/read-projection owned-read-function-scope?)

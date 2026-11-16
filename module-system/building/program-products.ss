@@ -4,8 +4,7 @@
 (import (only-in :clan/poo/object .o .get .slot? .all-slots object?)
         (only-in :std/list/list find filter-map delete-duplicates/hash)
         (only-in :std/string/path path-absolute?)
-        (only-in :clan/poo/mop Type. define-type element?)
-        (only-in :clan/poo/type List)
+        (only-in :clan/poo/type Type. define-type element? List)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-name? module-source-type module-source-read))
 (export make-target? resolve-make-target-inputs StdMakeRowContract DefbuildScriptContract make-target-kind make-target-spec program-targets
         program-path program-identity? projection-program-targets)

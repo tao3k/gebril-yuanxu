@@ -5,7 +5,8 @@
 
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .get .cc)
-        (only-in :clan/poo/mop make-instance validate TypeError?)
+        (only-in :clan/poo/type validate TypeError?)
+        (only-in :clan/poo/mop make-instance)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         :tao3k/yuanxu/module-system/source/objects
         :tao3k/yuanxu/module-system/loader/objects)

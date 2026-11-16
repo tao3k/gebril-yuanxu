@@ -2,7 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Platform-owned admission context over existing selected/build Graph guards.
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop define-type Type element?)
+        (only-in :clan/poo/type define-type Type element?)
         (only-in :tao3k/yuanxu/module-system/source/build unique-build-inputs module-build-admit-context!)
         (only-in :tao3k/yuanxu/module-system/building/artifacts admit-build-artifacts!
           admit-build-artifact-publication! build-artifact-publication-current)

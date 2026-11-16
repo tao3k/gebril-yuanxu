@@ -6,8 +6,8 @@
 (import (only-in :std/test check-equal? check-exception test-suite)
         (only-in :std/error Error?)
         (only-in :clan/poo/object .o .def .ref .cc object?)
-        (only-in :clan/poo/type Record String)
-        (only-in :clan/poo/mop Bool make-instance element? TypeError?)
+        (only-in :clan/poo/type Record String Bool element? TypeError?)
+        (only-in :clan/poo/mop make-instance)
         :tao3k/yuanxu/observability/testing-case
         (only-in :tao3k/yuanxu/module-system/config yuanxu-module-interface-schema-index)
         :tao3k/yuanxu/module-system/projection/option-objects

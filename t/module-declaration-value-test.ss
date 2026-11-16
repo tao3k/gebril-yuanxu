@@ -8,9 +8,8 @@
         (rename-in (only-in :tao3k/yuanxu/module-system/source/declaration .def) (.def publication-definition))
         (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :clan/poo/object object?)
-        (only-in :clan/poo/mop Type. Function TypeError?)
+        (only-in :clan/poo/type Type. Function TypeError? Record)
         (only-in :clan/poo/number Integer)
-        (only-in :clan/poo/type Record)
         (only-in :tao3k/yuanxu/module-system/source/publication ModulePublicationContract)
         (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-generated-source yuanxu-module-source-ref-value
                  yuanxu-module-source-ref-prototype yuanxu-module-source-ref-construction-current?)

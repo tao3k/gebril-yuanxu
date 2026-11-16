@@ -11,7 +11,7 @@
                  %call-with-recorded-slot-reads)
         (only-in :clan/poo/object .o .ref .get .call .put! .all-slots object<-fun object? object-slots $constant-slot-spec?)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :clan/poo/mop Type.)
+        (only-in :clan/poo/type Type.)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer module-source-admit-current!)
         (only-in :tao3k/yuanxu/module-system/source/publication module-scope-context?)
         (only-in :tao3k/yuanxu/module-system/source/role-context transfer-role-context)

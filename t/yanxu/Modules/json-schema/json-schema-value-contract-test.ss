@@ -1,8 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/mop element? validate Bool)
-        (only-in :clan/poo/type String)
+        (only-in :clan/poo/type element? validate Bool String)
         :clan/poo/object-contract
         :tao3k/yuanxu/modules/json-schema/contracts)
 (export json-schema-value-contract-test)

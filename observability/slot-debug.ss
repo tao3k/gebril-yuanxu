@@ -8,7 +8,7 @@
 
 (import (runtime: :gerbil/core) (only-in :gerbil/core make-object)
         (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :clan/poo/support/debug traced-function)
         (only-in :clan/poo/debug DDT)
         (only-in :std/error deferror-class)

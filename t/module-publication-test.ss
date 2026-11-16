@@ -13,7 +13,7 @@
                  source-location-path? source-location-path)
         (only-in :clan/poo/object .def .o .get .ref .put! .slot? .call object?
                  replay-slot-reads! object-read-issued?)
-        (only-in :clan/poo/mop Type.)
+        (only-in :clan/poo/type Type.)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
                  slot-read-key slot-read-dependencies)
         (only-in :gerbil/expander eval-syntax datum->syntax current-expander-context make-top-context
