@@ -104,7 +104,7 @@
                                   (only-in "./init.ss" ,(string->symbol (string-append package-name ".init.exports")))) out))
           (def spec-expression
             (if generated?
-              `(append (.get ,(string->symbol (string-append package-name ".init.exports")) std-make-spec) '("rootlib"))
+              `(.get ,(string->symbol (string-append package-name ".init.exports")) std-make-spec)
               `(quote ,expected)))
           (pretty-print
             `(defbuild-script
