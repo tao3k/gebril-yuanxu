@@ -8,9 +8,9 @@
 
 (import (only-in :clan/poo/object .o .get)
         (only-in :gerbil/runtime/gambit current-jiffy jiffies-per-second)
-        (only-in :clan/poo/mop poo-clos-add-method poo-clos-call
-                 poo-clos-compute-applicable-methods poo-clos-generic-function
-                 poo-clos-method poo-clos-prototype-specializer)
+        (only-in :clan/poo/mop clos-add-method clos-call
+                 clos-compute-applicable-methods clos-generic-function
+                 clos-method clos-prototype-specializer)
         (only-in :clan/poo/read-projection call-with-owned-source-reads)
         (only-in :clan/poo/type Record)
         (only-in :tao3k/yuanxu/module-system/source/interface
@@ -25,17 +25,17 @@
   (let* ((target (.o))
          (argument (.o (:: @ target))))
     (let loop ((index 0)
-               (generic (poo-clos-generic-function 'dispatch-benchmark 1)))
+               (generic (clos-generic-function 'dispatch-benchmark 1)))
       (if (= index method-count)
         (values generic argument)
         (let ((prototype (if (= index (- method-count 1)) target (.o))))
           (loop (+ index 1)
-                (poo-clos-add-method
+                (clos-add-method
                  generic
-                 (poo-clos-method
+                 (clos-method
                   (string->symbol
                    (string-append "method-" (number->string index)))
-                  (list (poo-clos-prototype-specializer prototype))
+                  (list (clos-prototype-specializer prototype))
                   (lambda (_frame _argument) index)))))))))
 
 (def (measure label thunk expected)
@@ -63,16 +63,16 @@
   (display "iterations=") (display +iterations+) (newline)
   (let-values (((generic argument) (make-case 1)))
     (measure "single-call"
-             (lambda () (poo-clos-call generic argument)) 0)
+             (lambda () (clos-call generic argument)) 0)
     (measure "single-applicable"
              (lambda ()
-               (length (poo-clos-compute-applicable-methods generic argument))) 1))
+               (length (clos-compute-applicable-methods generic argument))) 1))
   (let-values (((generic argument) (make-case 64)))
     (measure "wide-call"
-             (lambda () (poo-clos-call generic argument)) 63)
+             (lambda () (clos-call generic argument)) 63)
     (measure "wide-applicable"
              (lambda ()
-               (length (poo-clos-compute-applicable-methods generic argument))) 1)))
+               (length (clos-compute-applicable-methods generic argument))) 1)))
 
 (def (run-admission-sample action count)
   (##gc)
@@ -120,7 +120,7 @@
     (andmap (lambda (datum)
               (call-with-module-authoring-read-scope
                 (lambda ()
-                  (null? (poo-clos-call ModuleAuthoringAnalysisGeneric executor role interface datum)))))
+                  (null? (clos-call ModuleAuthoringAnalysisGeneric executor role interface datum)))))
             datums))
   (unless (and (stock) (generic)) (error "source role benchmark setup rejected"))
   (display "schema=core.poo-clos-source-role.v1\n")

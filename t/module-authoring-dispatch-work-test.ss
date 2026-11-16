@@ -30,7 +30,7 @@
                  yuanxu-module-authoring-admission-accepted?)
         (only-in :tao3k/yuanxu/module-system/authoring/roles ConfigSourceRole.)
         (only-in :clan/poo/mop ClosGenericFunction ClosEffectiveMethod ClosInvocationFrame ClosMethod
-                 poo-clos-call poo-clos-compute-effective-method)
+                 clos-call clos-compute-effective-method)
         (only-in :clan/poo/clos/objects %prepare-effective-method))
 (export module-authoring-dispatch-work-test)
 
@@ -234,13 +234,13 @@
           (set! checks (+ 1 checks))))
       (call-with-slot-read-observer observe
         (lambda ()
-          (poo-clos-compute-effective-method ModuleAuthoringAnalysisGeneric
+          (clos-compute-effective-method ModuleAuthoringAnalysisGeneric
             executor role interface '(def value 1))))
       (check-equal? checks 1)
       (set! checks 0)
       (call-with-slot-read-observer observe
         (lambda ()
-          (poo-clos-compute-effective-method open-generic
+          (clos-compute-effective-method open-generic
             executor role interface '(def value 1))))
       (check-equal? checks 2)
       (check-equal? calls 1))
@@ -251,7 +251,7 @@
           (yuanxu-module-authoring-role interface 'objects)
           interface '(def value 1)))
       (def effective
-        (apply poo-clos-compute-effective-method ModuleAuthoringAnalysisGeneric arguments))
+        (apply clos-compute-effective-method ModuleAuthoringAnalysisGeneric arguments))
       (def prepare
         (%prepare-effective-method ModuleAuthoringAnalysisGeneric arguments
           (.get effective around) (.get effective before)
@@ -280,7 +280,7 @@
         (.cc ModuleAuthoringAnalysisGeneric protocol: protocol
           methods: (.get ModuleAuthoringAnalysisGeneric methods)))
       (check-exception
-        (poo-clos-call generic (.get interface authoring executor)
+        (clos-call generic (.get interface authoring executor)
           (yuanxu-module-authoring-role interface 'objects)
           interface '(def value 1))
         (lambda (failure)

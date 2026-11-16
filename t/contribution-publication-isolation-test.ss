@@ -4,8 +4,8 @@
 ;;; delayed CLOS bundle, Core .admit and checked publisher. No Loader call.
 (import (only-in :std/error Error? Error-message) :std/test :std/list/list :clan/poo/object
         (only-in :clan/poo/mop define-type .defgeneric .defmethod .defmethod-bundle
-                 poo-clos-call poo-clos-compose-method-bundles poo-clos-generic-function
-                 poo-clos-generic-protocol)
+                 clos-call clos-compose-method-bundles clos-generic-function
+                 clos-generic-protocol)
         (only-in :std/io/tempfile make-temporary-file-name)
         (prefix-in :clan/poo/declarative-metadata metadata.)
         (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence)
@@ -36,7 +36,7 @@
 
 (.def PortRequirement.)
 (define-type (PortAdmission. @ YuanxuContract.))
-(def RequirementProtocol (poo-clos-generic-protocol 'isolation/port-requirement))
+(def RequirementProtocol (clos-generic-protocol 'isolation/port-requirement))
 (.defgeneric project-port (admission payload origin) (protocol RequirementProtocol))
 (def (dispatcher)
   (.defmethod-bundle Methods RequirementProtocol
@@ -46,8 +46,8 @@
       (unless (and (exact-integer? port) (<= 1 port 65535))
         (error "invalid policy port" port))
       (list (.cc (.o) value: port origin: origin))))
-  (poo-clos-compose-method-bundles
-    (poo-clos-generic-function 'project-port 3 protocol: RequirementProtocol)
+  (clos-compose-method-bundles
+    (clos-generic-function 'project-port 3 protocol: RequirementProtocol)
     (list Methods)))
 
 (.def (Parent @ [] config)
@@ -158,7 +158,7 @@
         (batch-current!)
         (def constraints
           (append-map
-            (lambda (row) (poo-clos-call dispatch @ (.get row payload) (.get row origin))) rows))
+            (lambda (row) (clos-call dispatch @ (.get row payload) (.get row origin))) rows))
         (def actual (.get candidate config postgresql settings port))
         (def issues
           (if (every (lambda (row) (= actual (.get row value))) constraints) '()

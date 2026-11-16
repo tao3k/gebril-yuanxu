@@ -3,9 +3,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :clan/poo/type Record)
         (only-in :clan/poo/object .o .ref .cc .mix .put! .get)
-        (only-in :clan/poo/mop element? make-instance poo-clos-call
-                 poo-clos-generic-protocol poo-clos-generic-function
-                 poo-clos-compose-method-bundle poo-clos-add-method poo-clos-remove-method)
+        (only-in :clan/poo/mop element? make-instance clos-call
+                 clos-generic-protocol clos-generic-function
+                 clos-compose-method-bundle clos-add-method clos-remove-method)
         (prefix-in (only-in :clan/poo/testing/property check-property make-specification) property.)
         (prefix-in (only-in :clan/poo/testing/property/generator generator-integer) generator.)
         (only-in :clan/poo/testing/property/test require-passed)
@@ -74,13 +74,13 @@
         (.o (:: @ (yuanxu-module-authoring-role interface 'objects))))
       (def config-role
         (.o (:: @ (yuanxu-module-authoring-role interface 'config))))
-      (check-equal? (poo-clos-call generic executor ordinary-role interface '(stage build)) '())
-      (check-equal? (pair? (poo-clos-call generic executor config-role interface '(stage build))) #t)
+      (check-equal? (clos-call generic executor ordinary-role interface '(stage build)) '())
+      (check-equal? (pair? (clos-call generic executor config-role interface '(stage build))) #t)
       ;; Different protocol objects sharing a label never authorize composition.
       (check-exception
-        (poo-clos-compose-method-bundle
-          (poo-clos-generic-function 'wrong-owner 4
-            protocol: (poo-clos-generic-protocol 'module-system/authoring-analysis))
+        (clos-compose-method-bundle
+          (clos-generic-function 'wrong-owner 4
+            protocol: (clos-generic-protocol 'module-system/authoring-analysis))
           ModuleAuthoringCoreMethods)
         (lambda (failure)
           (eq? (.ref failure 'code) 'method-bundle-protocol-mismatch))))
@@ -113,7 +113,7 @@
                   (lambda (datum)
                     (check-equal?
                       (rows (yuanxu-module-authoring-analyze-datum interface name datum))
-                      (rows (poo-clos-call ModuleAuthoringAnalysisGeneric executor role interface datum))))
+                      (rows (clos-call ModuleAuthoringAnalysisGeneric executor role interface datum))))
                   '((def Value 1) (stage build) (.o add-profile: #t))))
               '(objects config))
             #t)
@@ -169,11 +169,11 @@
           'qualifier 'around
           'body (lambda (_frame . _arguments) (list #f))))
       (dynamic-wind
-        (cut poo-clos-add-method ModuleAuthoringAnalysisGeneric malformed)
+        (cut clos-add-method ModuleAuthoringAnalysisGeneric malformed)
         (lambda ()
           (check-exception
             (yuanxu-module-authoring-admit-datums interface 'objects '((def First 1))) error?))
-        (cut poo-clos-remove-method ModuleAuthoringAnalysisGeneric malformed))
+        (cut clos-remove-method ModuleAuthoringAnalysisGeneric malformed))
       ;; A contributed qualifier must run for every datum. The batch path must
       ;; retain full invocation after runtime Generic metadata changes, rather
       ;; than treat the original declarations as an acceptance cache.
@@ -184,14 +184,14 @@
           'qualifier 'before
           'body (lambda (_frame . _arguments) (set! calls (1+ calls)) #t)))
       (dynamic-wind
-        (cut poo-clos-add-method ModuleAuthoringAnalysisGeneric before)
+        (cut clos-add-method ModuleAuthoringAnalysisGeneric before)
         (lambda ()
           (def augmented
             (yuanxu-module-authoring-admit-datums interface 'objects
               (call-with-input-string text read-all)))
           (check-equal? calls 3)
           (check-equal? (codes augmented) (codes from-port)))
-        (cut poo-clos-remove-method ModuleAuthoringAnalysisGeneric before)))
+        (cut clos-remove-method ModuleAuthoringAnalysisGeneric before)))
     (yuanxu-test-case "single admission retains the actually dispatched role"
       (def interface (yuanxu-module-interface "role-rebinding" (Record) '()))
       (def profile (.get interface authoring))
@@ -202,12 +202,12 @@
           'identity 'test/rebind-role 'qualifier 'before
           'body (lambda (_frame . _arguments) (.put! profile 'objects replacement))))
       (dynamic-wind
-        (cut poo-clos-add-method ModuleAuthoringAnalysisGeneric before)
+        (cut clos-add-method ModuleAuthoringAnalysisGeneric before)
         (lambda ()
           (def result (yuanxu-module-authoring-admit-datum interface 'objects '(def Value 1)))
           (check-equal? (.get result role) (.get original identity))
           (check-equal? (eq? (.get profile objects) replacement) #t))
-        (cut poo-clos-remove-method ModuleAuthoringAnalysisGeneric before)))
+        (cut clos-remove-method ModuleAuthoringAnalysisGeneric before)))
     (yuanxu-test-case "runtime Interface and final role admission"
       (let (interface (yuanxu-module-interface "example" (Record) '()))
         (check-equal? (yuanxu-module-interface? interface) #t)

@@ -7,8 +7,8 @@
 
 (import (only-in :clan/poo/object .ref)
         (only-in :gerbil/runtime/gambit current-jiffy jiffies-per-second)
-        (only-in :clan/poo/mop poo-clos-class poo-clos-class-effective-slots
-                 poo-clos-direct-slot-definition poo-clos-standard-object-class))
+        (only-in :clan/poo/mop clos-class clos-class-effective-slots
+                 clos-direct-slot-definition clos-standard-object-class))
 
 (def +ancestors+ 8)
 (def +slots-per-class+ 48)
@@ -23,32 +23,32 @@
     (if (= index +slots-per-class+)
       (reverse result)
       (loop (+ index 1)
-            (cons (poo-clos-direct-slot-definition (slot-name owner index))
+            (cons (clos-direct-slot-definition (slot-name owner index))
                   result)))))
 
 (def (make-ancestor-chain)
-  (let loop ((owner 0) (parent poo-clos-standard-object-class))
+  (let loop ((owner 0) (parent clos-standard-object-class))
     (if (= owner +ancestors+)
       parent
       (loop (+ owner 1)
-            (poo-clos-class
+            (clos-class
              (string->symbol
               (string-append "effective-slot-ancestor-" (number->string owner)))
              direct-superclasses: (list parent)
              direct-slots: (direct-slots owner))))))
 
 (def (make-leaf parent index)
-  (poo-clos-class
+  (clos-class
    (string->symbol
     (string-append "effective-slot-leaf-" (number->string index)))
    direct-superclasses: (list parent)
-   direct-slots: (list (poo-clos-direct-slot-definition (slot-name 0 0)))))
+   direct-slots: (list (clos-direct-slot-definition (slot-name 0 0)))))
 
 (def parent (make-ancestor-chain))
 (def expected (+ (* +ancestors+ +slots-per-class+) 0))
 
 (def (check-leaf leaf)
-  (let (slots (poo-clos-class-effective-slots leaf))
+  (let (slots (clos-class-effective-slots leaf))
     (unless (= (length slots) expected)
       (error "effective slot count drift" (length slots) expected))
     (unless (eq? (.ref (car slots) 'identity) (slot-name 0 0))

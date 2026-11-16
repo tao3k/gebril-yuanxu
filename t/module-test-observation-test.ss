@@ -5,7 +5,7 @@
         (only-in :std/source this-source-file)
         (only-in :gerbil/runtime/loader list-modules)
         (only-in :clan/poo/mop call-with-slot-read-observer
-                 poo-clos-generic-function poo-clos-method poo-clos-any-specializer)
+                 clos-generic-function clos-method clos-any-specializer)
         (only-in :clan/poo/slot-observation slot-read-key slot-read-receiver)
         (only-in :tao3k/yuanxu/module-system/building/test-observation ModuleTestingProfile.)
         (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress
@@ -163,9 +163,9 @@
             (parameterize ((current-output-port port))
               (.call Observed .run Observed "carrier prototype census"
                 (lambda ()
-                  (def generic (poo-clos-generic-function 'observed-carrier 1))
+                  (def generic (clos-generic-function 'observed-carrier 1))
                   (def method
-                    (poo-clos-method 'observed-method (list (poo-clos-any-specializer))
+                    (clos-method 'observed-method (list (clos-any-specializer))
                       (lambda (_frame _value) 'done)))
                   (def args '(payload))
                   (def effective (make-effective-method generic args '() '() (list method) '()))

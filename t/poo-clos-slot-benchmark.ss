@@ -6,16 +6,16 @@
 ;;; Hot bound-slot access witness; the CLOS lifecycle remains authoritative.
 
 (import (only-in :gerbil/runtime/gambit current-jiffy jiffies-per-second)
-        (only-in :clan/poo/mop poo-clos-class poo-clos-direct-slot-definition
-                 poo-clos-make-instance poo-clos-set-slot-value! poo-clos-slot-value))
+        (only-in :clan/poo/mop clos-class clos-direct-slot-definition
+                 clos-make-instance clos-set-slot-value! clos-slot-value))
 
 (def +iterations+ 100000)
 (def class-value
-  (poo-clos-class
+  (clos-class
    'slot-benchmark
-   direct-slots: (list (poo-clos-direct-slot-definition 'value))))
-(def instance-value (poo-clos-make-instance class-value))
-(poo-clos-set-slot-value! instance-value 'value 42)
+   direct-slots: (list (clos-direct-slot-definition 'value))))
+(def instance-value (clos-make-instance class-value))
+(clos-set-slot-value! instance-value 'value 42)
 
 (def (measure label thunk expected)
   (unless (= (thunk) expected)
@@ -39,7 +39,7 @@
 
 (display "schema=core.poo-clos-slot.v1\n")
 (display "iterations=") (display +iterations+) (newline)
-(measure "bound-read" (lambda () (poo-clos-slot-value instance-value 'value)) 42)
+(measure "bound-read" (lambda () (clos-slot-value instance-value 'value)) 42)
 (measure "bound-write"
-         (lambda () (poo-clos-set-slot-value! instance-value 'value 42)) 42)
+         (lambda () (clos-set-slot-value! instance-value 'value 42)) 42)
 (display "accepted=#t\n")

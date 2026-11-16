@@ -11,8 +11,8 @@
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!
                  slot-read-receiver slot-read-value without-observation)
         (only-in :clan/poo/mop Type. define-type element? validate
-                 poo-clos-generic-protocol poo-clos-compose-method-bundle
-                 poo-clos-compute-applicable-methods
+                 clos-generic-protocol clos-compose-method-bundle
+                 clos-compute-applicable-methods
                  .defgeneric .defmethod .generic-object .defmethod-bundle)
         (only-in :clan/poo/type List)
         (only-in :std/list/list any delete-duplicates/hash filter-map find map-in-order)
@@ -382,7 +382,7 @@
 ;;; packages can contribute a method bundle for a refined executor/role pair
 ;;; without extending a central role switch.
 (def ModuleAuthoringAnalysisProtocol
-  (poo-clos-generic-protocol 'module-system/authoring-analysis))
+  (clos-generic-protocol 'module-system/authoring-analysis))
 
 (.defgeneric module-authoring-analyze (executor role interface datum)
   (protocol ModuleAuthoringAnalysisProtocol))
@@ -413,7 +413,7 @@
   (authoring-method ModuleSourceRole. yuanxu-module-authoring-diagnostics/common)
   (authoring-method ConfigSourceRole. yuanxu-module-authoring-diagnostics/config))
 
-(poo-clos-compose-method-bundle
+(clos-compose-method-bundle
  ModuleAuthoringAnalysisGeneric
  ModuleAuthoringCoreMethods)
 
@@ -448,7 +448,7 @@
       (map
         (lambda (role)
           (let (methods
-                 (poo-clos-compute-applicable-methods ModuleAuthoringAnalysisGeneric
+                 (clos-compute-applicable-methods ModuleAuthoringAnalysisGeneric
                    ModuleAuthoringExecutor. role yuanxu-module-interface-prototype #f))
             (cons role (and (pair? methods) (car methods)))))
         (list ConfigSourceRole. ModuleSourceRole.)))
