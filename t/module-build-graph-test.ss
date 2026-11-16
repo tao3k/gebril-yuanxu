@@ -161,7 +161,7 @@
            (yuanxu-project-source-spec
              (yuanxu-load-modules (path-expand "init.ss" root)) '() root
              (path-expand "build.ss" root)))
-         (def build-spec (.get projection spec))
+         (def build-spec (.get projection std-make-spec))
          (check-equal? (eq? (.call projection .admit-spec build-spec) build-spec) #t)
          (check-exception (.call projection .admit-spec (map identity build-spec)) error?)
          (def compile-calls 0)
@@ -470,7 +470,7 @@
          (write-file (path-expand "build.ss" root) "(export #t)")
          (let* ((v (fixture-view root))
                 (artifact (yuanxu-project-source-spec v '() root (path-expand "build.ss" root)))
-                (names (map (lambda (target) (if (string? target) target (cadr target))) (.get artifact spec))))
+                (names (map (lambda (target) (if (string? target) target (cadr target))) (.get artifact std-make-spec))))
            (check-equal? (eq? (.get artifact build-graph) (.get v build-graph)) #t)
            (check-equal? (length names) 10)
            (check-equal? (andmap (cut string-prefix? "modules/" <>) names) #t)
@@ -502,7 +502,7 @@
          (defvalues (_single single-windows) (project (list (car retained))))
          (defvalues (many many-windows) (project retained))
          (check-equal? many-windows single-windows)
-         (check-equal? (length (.get many spec)) 14)
+         (check-equal? (length (.get many std-make-spec)) 14)
          (write-file (path-expand "retained/d.ss" root) ";; changed after preparation")
          (check-exception ((.get many admit-current)) error?))))
     (yuanxu-test-case "unconsumed generated contributions cannot silently disappear from spec"

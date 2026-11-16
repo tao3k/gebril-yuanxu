@@ -210,16 +210,16 @@
           (check-exception (.call tests admit-current) error?)
           (def targets
             (filter (lambda (target) (equal? (if (string? target) target (cadr target)) "modules/app/example/entry"))
-                    (.get projection spec)))
+                    (.get projection std-make-spec)))
           (check-equal? targets
             '((gxc: "modules/app/example/entry" "-O")))
           (check-equal? (and (member '(exe: "modules/app/example/run" bin: "entry-tool" "-debug")
-                                     (.get projection spec)) #t) #t)
+                                     (.get projection std-make-spec)) #t) #t)
           (check-equal?
             (filter (lambda (target)
                       (let (name (if (string? target) target (cadr target)))
                         (member name '("modules/app/later/library" "modules/app/later/command"))))
-                    (.get projection spec))
+                    (.get projection std-make-spec))
             '("modules/app/later/library" (exe: "modules/app/later/command" bin: "later-tool")))
           (write-source (path-normalize (path-expand "entry.ss" owner))
             "(def (main . args) (void)) (export main) ;; changed")
@@ -244,7 +244,7 @@
                 (filter (lambda (target)
                           (member (if (string? target) target (cadr target))
                             '("modules/app/example/entry" "modules/app/example/helper" "modules/app/example/leaf")))
-                        (.get projection spec)))
+                        (.get projection std-make-spec)))
               (check-equal? (length targets) 3)
               (check-equal? (filter (lambda (target)
                                      (equal? (if (string? target) target (cadr target)) "modules/app/example/entry")) targets)
@@ -1005,7 +1005,7 @@
           (def projection (yuanxu-project-source-spec (path-expand "init.ss" root) '() consumer script))
           (def helper (yuanxu-prepare-module-build-source (path-expand "kernel-helper.ss" root) void))
           (assert 'foreign-package-kernel-target
-            (member (list gxc: (symbol->string (.get helper compiler-identity))) (.get projection spec)))
+            (member (list gxc: (symbol->string (.get helper compiler-identity))) (.get projection std-make-spec)))
           (write-source (path-expand "kernel-helper.ss" root) "(def answer 43) (export answer)")
           (check-exception ((.get graph compiler-current)) error?))))
     (yuanxu-test-case "Module public entries reject package escapes and missing sources"
@@ -1086,7 +1086,7 @@
             (lambda ()
               (.call projection .compile lib
                 (lambda ()
-                  (make (.get projection spec) srcdir: root
+                  (make (.get projection std-make-spec) srcdir: root
                     libdir: (or (current-build-output-directory) lib) optimize: #f)))))
           (yuanxu-test-checkpoint 'gerbil-compilation-complete)
           (check-equal? (file-exists? marker) #f)

@@ -54,8 +54,8 @@
           (write-product libdir "unrelated/unit.ssi")
           (parameterize ((current-build-output-directory libdir))
             (def entered? #f)
-            (def substituted (.cc projection 'spec '("unrelated/unit")))
-            (check-equal? (.get substituted spec) '("unrelated/unit"))
+            (def substituted (.cc projection 'std-make-spec '("unrelated/unit")))
+            (check-equal? (.get substituted std-make-spec) '("unrelated/unit"))
             (check-exception
               (.call substituted .with-clean-outputs
                 (lambda () (set! entered? #t))) error?)
@@ -69,7 +69,7 @@
                 (def directory (current-build-source-directory))
                 (check-equal? (directory-files (list path: directory ignore-hidden: 'dot-and-dot-dot)) '())
                 (def (this-source-file) (path-expand "build.ss" directory))
-                (gerbil-defbuild-script (.get projection spec) libdir: libdir)
+                (gerbil-defbuild-script (.get projection std-make-spec) libdir: libdir)
                 (main "clean"))))
           (check-equal? (file-exists? (path-expand "clean-producer/unit.ssi" libdir)) #f)
           (check-equal? (file-exists? (path-expand "unrelated/unit.ssi" libdir)) #t)
@@ -92,14 +92,14 @@
                         other-projections: '() selected-graph: #f compiler-current: void))
           (def projection
             (yuanxu-project-source-spec (.o build-graph: graph) '("prelude" "owned") root build))
-          (check-equal? (.get projection spec) '("prelude" "owned"))
+          (check-equal? (.get projection std-make-spec) '("prelude" "owned"))
           (write-product libdir "tao3k/yuanxu/prelude.ssi")
           (write-product libdir "tao3k/yuanxu/owned.ssi")
           (write-product libdir "unselected/prelude.ssi")
           (parameterize ((current-build-output-directory libdir))
             (.call projection .with-clean-outputs
               (lambda ()
-                (make-clean (.get projection spec) srcdir: root libdir: libdir))))
+                (make-clean (.get projection std-make-spec) srcdir: root libdir: libdir))))
           (check-equal? (file-exists? (path-expand "tao3k/yuanxu/prelude.ssi" libdir)) #f)
           (check-equal? (file-exists? (path-expand "tao3k/yuanxu/owned.ssi" libdir)) #f)
           (check-equal? (file-exists? (path-expand "unselected/prelude.ssi" libdir)) #t)

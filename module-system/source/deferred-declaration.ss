@@ -4,11 +4,12 @@
 ;;; purity flag or an alternate cache. POO owns all delayed role values.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/prototype-map prototype-map)
-        (only-in :gerbil/expander datum->syntax eval-syntax core-expand import-module resolve-identifier
+        (only-in :gerbil/expander datum->syntax eval-syntax resolve-identifier
                  current-expander-context expander-context-id
                  module-context? module-context-path make-top-context
-                 current-expander-module-import core-import-module core-module->prelude-context
-                 module-context-export module-export-name)
+                 current-expander-module-import core-import-module)
+        (rename-in (only-in "./module-binding.ss" module-binding-action)
+                   (module-binding-action resolve-module-binding))
         (only-in :clan/poo/io module-action)
         (only-in :tao3k/yuanxu/module-system/source/compiled-role
                  bind-program-interfaces compiled-role-values)
@@ -21,6 +22,10 @@
 (export module-deferred-role-exports include-deferred-declaration module-role-values
         current-module-role-resolver module-entry-action module-binding-action deferred-role-values
         wrapper-delivery? wrapper-delivery-value)
+
+;; Compiled callers of the original export still refer to this runtime binding.
+(def module-binding-action resolve-module-binding)
+
 (def current-module-role-resolver (make-parameter #f))
 (defstruct wrapper-delivery (value) final: #t)
 
@@ -45,31 +50,6 @@
       (eval-syntax `(import ,specifier)))
     (apply (eval binding) arguments)))
 
-;; Platform value factories need a public binding, not eager initialization of
-;; every runtime dependency in a whole facade. Runtime import owns the defining
-;; context and its errors; resolve anew so reloads never retain an old procedure.
-;; This is not the runtime-entry/publication admission boundary above.
-(def (module-binding-action module binding)
-  (def specifier (string->symbol (string-append ":" module)))
-  (lambda (arguments)
-    ;; Gerbil owns the shared weak language frame. A factory needs one strong
-    ;; public binding, not a fresh copy of every gerbil/core alias. Resolve the
-    ;; runtime owner on each invocation; retain no function or approval here.
-    (let* ((language (core-import-module ':gerbil/core))
-           ;; A colliding name must retain the original strong-import rules,
-           ;; including runtime duplicate-binding errors. Actual export metadata,
-           ;; not a caller flag, determines this conservative fallback.
-           (collision? (ormap (lambda (entry) (eq? binding (module-export-name entry)))
-                              (module-context-export language))))
-      (parameterize ((current-expander-context
-                      (make-top-context (and (not collision?)
-                                          (core-module->prelude-context language)))))
-        ;; Preserve the invoking reader's import owner. Replacing its hook with
-        ;; core-import-module loses dependency provenance on cached imports.
-        (when collision? (core-expand '(import :gerbil/core)))
-        (core-expand `(import (only-in ,specifier ,binding)))
-        (import-module specifier #f #t)
-        (apply (eval-syntax binding) arguments)))))
 (def (closed-rows body)
   (let loop ((rest body) (seen '()) (rows '()))
     (match rest

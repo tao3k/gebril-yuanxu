@@ -4,7 +4,7 @@
 (import (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source module-compiler-init-forms)
         (runtime: :clan/poo/object)
         (only-in :std/list/list find)
-        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-read module-source-type))
 (export project-program-init init-compiler-forms)
 

@@ -2,13 +2,12 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module System init projections. Infrastructure, not a selected module.
-(import (only-in :tao3k/yuanxu/module-system/building/products current-build-module-roots)
-        (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path package-build-script-path)
+(import (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path package-build-script-path)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
-        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
         (only-in :tao3k/yuanxu/module-system/building/source-closure
-                 call-with-build-expansion-accounting call-with-build-stage)
+                 call-with-build-expansion-accounting)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-type module-source-read module-source-admit-current!
                  call-with-module-source-read-cache call-with-module-source-callback
                  module-source-measure-operation))
@@ -35,7 +34,7 @@
   ;; Owned by this init projection, not a global root of the last source Graph.
   ;; Cache offsets/receiver layouts, never successful checks or unrelated cells.
   (def source-current-site (make-slot-cache 'admit-current))
-  (def source-spec-site (make-slot-cache 'spec))
+  (def source-spec-site (make-slot-cache 'std-make-spec))
   (def init-file (path-expand source))
   (def input-context-refused? #f)
   (def selection #f)
@@ -171,7 +170,8 @@
   (def (with-input-context output action)
     (when input-context-refused?
       (error "build input context was refused; use a fresh init context"))
-    (call-with-build-input-path output action refuse-input-context!))
+    (call-with-build-input-path output action refuse-input-context!
+      source-roots: (list (path-directory init-file))))
   ;; A consumer may add its native entry targets to the same source epoch
   ;; used by the namespace and test projections.
   (def (prepare-build (retained '()))
@@ -201,7 +201,7 @@
       (else (.get (selected!) modules))))
   (values
     (.o build: (prepare-build)
-        .project-build: prepare-build
+        .yuanxu-init: prepare-build
         std-make-spec:
         (with-input-context #f
           (lambda ()

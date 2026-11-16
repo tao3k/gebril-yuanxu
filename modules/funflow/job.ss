@@ -15,7 +15,7 @@
         (only-in "control-plane/runtime-protocol.ss" make-adapter-result adapter-result-value)
         (only-in "control-plane/strategy.ss" make-local-eager-strategy)
         (for-template "control-plane/runtime-adapter.ss" "control-plane/runner.ss")
-        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
         (only-in :tao3k/yuanxu/module-system/source/compiled-role
                  bind-deferred-interfaces deferred-interface-values))
 (export job-graph job-flow run-job)

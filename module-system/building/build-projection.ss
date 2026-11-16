@@ -333,7 +333,7 @@
       (validate BuildSpecContract
         (.o module-spec: module-value retained-spec: library-value spec: value))
       value)
-    (def spec-site (make-slot-cache 'spec))
+    (def spec-site (make-slot-cache 'std-make-spec))
     (def (with-admitted-spec receiver action)
       (current!)
       (admit-spec (.ref/inline receiver spec-site))
@@ -351,7 +351,7 @@
     (def with-compiler-inputs
         (lambda (receiver action (refuse-input-context #f) (record-selected-view? #f))
           ;; Reject derived specs before a graph's state callback can run.
-          (require-spec-identity! (.ref receiver 'spec))
+          (require-spec-identity! (.ref receiver 'std-make-spec))
           (def source-state (compiler-source-state))
           (def (compile-inputs)
             (with-admitted-spec receiver
@@ -383,7 +383,7 @@
         .admit-spec: admit-spec
         .prepare-compiler-contexts:
         (lambda ()
-          (require-spec-identity! (.ref projection 'spec))
+          (require-spec-identity! (.ref projection 'std-make-spec))
           (if (null? compiled-init-entries)
             (current!)
             (with-admitted-spec projection
@@ -426,7 +426,7 @@
                   gsc-options: options)))))
         .with-clean-outputs:
         (lambda (action)
-          (require-spec-identity! (.ref projection 'spec))
+          (require-spec-identity! (.ref projection 'std-make-spec))
           (def libdir (build-output-directory))
           (call-with-selected-output-lock libdir
             (lambda ()
@@ -448,4 +448,4 @@
         .process: (lambda (libdir command)
                    (publication-current!)
                    (process-build-artifacts (list projection libdir command)))
-        source-root: root spec: build-value admit-current: current!)))
+        source-root: root std-make-spec: build-value admit-current: current!)))

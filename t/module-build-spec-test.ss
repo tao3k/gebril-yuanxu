@@ -84,7 +84,7 @@
                 `((gxc: "probe" (extra-inputs: (,input)) "-cc-options" "-DPROBE"))
                 root entry))
             (def projection (project "include/probe.h"))
-            (check-equal? (.get projection spec)
+            (check-equal? (.get projection std-make-spec)
               `((gxc: "probe" (extra-inputs: (,(path-normalize header))) "-cc-options" "-DPROBE")))
             (check-equal? (cdr (assoc (path-normalize header) (.get projection source-inputs)))
                           "/* first */\n")
@@ -111,13 +111,13 @@
             (def library '(gxc: "entry" "-O"))
             (def program '(exe: "entry" bin: "entry-tool" "-debug"))
             (def selected-product (project (list program)))
-            (check-equal? (.get selected-product spec) (list program))
+            (check-equal? (.get selected-product std-make-spec) (list program))
             (check-equal? (.get selected-product compiler-identities) '(build-products/entry))
             (check-equal? (and (member "clan__poo__object.scm"
                                    (map (lambda (input) (.get input name))
                                         (.get selected-product static-inputs))) #t)
                           #t)
-            (check-equal? (.call selected-product .admit-spec (.get selected-product spec)) (list program))
+            (check-equal? (.call selected-product .admit-spec (.get selected-product std-make-spec)) (list program))
             (for-each
               (lambda (spec)
                 (check-equal? (rejects? "duplicate retained compiler target" (lambda () (project spec))) #t))
@@ -129,7 +129,7 @@
             (def conflicting-products
               (yuanxu-project-source-spec (.o build-graph: selected-graph) (list program)
                 temporary (path-expand "build.ss" temporary)))
-            (check-exception (.call conflicting-products .admit-spec (.get conflicting-products spec)) Error?)
+            (check-exception (.call conflicting-products .admit-spec (.get conflicting-products std-make-spec)) Error?)
             (write-source (path-expand "entry.ss" temporary)
               "(def (main . args) (void)) (export main)\n;; changed\n")
             (check-exception ((.get selected-product admit-current)) Error?))))
@@ -168,12 +168,12 @@
                 (def previous checks)
                 ((.get projection admit-current))
                 (check-equal? (- checks previous) 1)
-                (check-equal? (length (.get projection spec)) width)
+                (check-equal? (length (.get projection std-make-spec)) width)
                 (check-equal? (.slot? projection '.make-groups) #f)
-                (check-equal? (.call projection .admit-spec (.get projection spec)) (.get projection spec))
+                (check-equal? (.call projection .admit-spec (.get projection std-make-spec)) (.get projection std-make-spec))
                 ;; A well-shaped standard target still cannot be substituted for
                 ;; the init-owned merge; structural typing alone is insufficient.
-                (check-exception (.call projection .admit-spec (cons "not-selected" (.get projection spec))) Error?)
+                (check-exception (.call projection .admit-spec (cons "not-selected" (.get projection std-make-spec))) Error?)
                 ;; Merging the standard specs must not relocate ordinary library
                 ;; inputs or give them a generated role source identity.
                 ((.get projection .with-compiler-inputs)
@@ -185,7 +185,7 @@
                 ;; The parent's method is already cached. A derived receiver
                 ;; cannot use it to run with a substituted final standard spec.
                 (def entered? #f)
-                (def substituted (.cc projection 'spec (cons "not-selected" (.get projection spec))))
+                (def substituted (.cc projection 'std-make-spec (cons "not-selected" (.get projection std-make-spec))))
                 (check-exception (.call substituted .with-compiler-inputs
                                    (lambda () (set! entered? #t))) Error?)
                 (check-equal? entered? #f)
@@ -228,7 +228,7 @@
             (check-equal? (.get artifact source-root) root)
             (check-equal? (file-exists? (path-expand ".gerbil/module-build" root)) #f)
             (check-equal? (length (filter (lambda (row) (equal? (if (string? row) row (cadr row)) overlap-name))
-                                        (.get artifact spec))) 1)
+                                        (.get artifact std-make-spec))) 1)
             (check-equal? (rejects? "conflicting retained compiler options"
                             (lambda () (project (list (append overlap-spec '("-debug")))))) #t)
             (check-equal? (rejects? "duplicate retained compiler target"
@@ -259,7 +259,7 @@
               (write-source build "(export #t)")
               (write-source (path-expand "owned.ss" foreign) "(export #t)")
               (def consumer-projection (project '("owned") foreign build))
-              (check-equal? (and (member '(gxc: "other/owned") (.get consumer-projection spec)) #t) #t)
+              (check-equal? (and (member '(gxc: "other/owned") (.get consumer-projection std-make-spec)) #t) #t)
               (check-equal? (and (member 'other/owned (.get consumer-projection compiler-identities)) #t) #t)
               (for-each (lambda (entry)
                           (check-equal? (and (memq (.get entry compiler-identity)

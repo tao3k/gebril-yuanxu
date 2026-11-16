@@ -11,6 +11,7 @@
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!
                  slot-read-receiver slot-read-value without-observation)
         (only-in :clan/poo/mop Type. define-type element? validate prototype-instance?
+                 object-precedence-ready? object-find-in-precedence
                  clos-generic-protocol clos-compose-method-bundle
                  clos-compute-applicable-methods clos-call-carrier-policy-guard
                  .defgeneric .defmethod .generic-object .defmethod-bundle)
@@ -472,7 +473,7 @@
 (def (plain-dispatch-argument? value)
   ;; Inspect only warm runtime metadata. No cold getter or logical class bridge
   ;; may open a callback before ordinary Generic fallback owns that operation.
-  (and (object? value) (object-%precedence-list value) (not (object-protocol value))))
+  (and (object-precedence-ready? value) (not (object-protocol value))))
 ;; Two fixed access sites over the two maintained descriptors, NOT one layout
 ;; per selected Module. Runtime .ref/inline retains revision/receiver guards,
 ;; original read delivery and its ordinary lazy miss path.
@@ -503,10 +504,10 @@
   ;; precedence. Unknown axes/method state still use the public Generic below.
   (and (prototype-instance? ModuleAuthoringExecutor. executor)
        (prototype-instance? yuanxu-module-interface-prototype interface)
-       (any (lambda (parent)
-              (let (profile (assq parent default-function-profiles))
-                (and profile (cdr profile))))
-            (object-%precedence-list role))))
+       (object-find-in-precedence role
+         (lambda (parent)
+           (cond ((assq parent default-function-profiles) => cdr)
+                 (else #f))))))
 (def (current-default-method executor role interface)
   (and (plain-dispatch-argument? executor)
        (plain-dispatch-argument? role)

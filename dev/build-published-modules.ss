@@ -8,7 +8,7 @@
   (def projection (.get tao3k/yuanxu.init.exports build))
   (.call projection .with-compiler-inputs
     (lambda ()
-      (make (.get projection spec) srcdir: (.get projection source-root)))))
+      (make (.get projection std-make-spec) srcdir: (.get projection source-root)))))
 
 (def (print-published-module-tests)
   (def tests (.get tao3k/yuanxu.init.exports tests))

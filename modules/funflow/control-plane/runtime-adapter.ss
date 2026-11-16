@@ -9,7 +9,7 @@
 (import :tao3k/yuanxu/modules/funflow/control-plane/task
         :tao3k/yuanxu/modules/funflow/control-plane/runtime-protocol
         (for-template "./runtime-command-invocation.ss")
-        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
         (only-in :tao3k/yuanxu/module-system/source/compiled-role
                  bind-deferred-interfaces deferred-interface-values))
 

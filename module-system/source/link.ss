@@ -10,7 +10,7 @@
         :tao3k/yuanxu/module-system/source/objects
         :tao3k/yuanxu/module-system/source/publication
         :tao3k/yuanxu/module-system/source/admission
-        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
         :tao3k/yuanxu/module-system/source/selection
         (only-in :tao3k/yuanxu/module-system/feature/scope
                  compose-module-features module-feature-scope-contract)
@@ -350,7 +350,7 @@
       ((.ref context-value 'current?) generation-value))
     (def (prepared-input-state input)
       (or (and input-metadata-state (input-metadata-state input))
-          (and (object? input) (object-instantiated? input) (object-%precedence-list input)
+          (and (object? input) (object-instantiated? input) (object-precedence-ready? input)
                (not (object-protocol input))
           (let* ((id (.ref/cached input 'identity (lambda () #f)))
                  (entry (and (symbol? id) (hash-get prepared id))))

@@ -88,7 +88,7 @@
                                   (procedure? (.ref value slot))))
                '(eligible? namespace publication-preparation))
        (if (and (owned-read-function-scope?)
-                (object-%precedence-list value) (not (object-protocol value))
+                (object-precedence-ready? value) (not (object-protocol value))
                 (not (eq? absent-value (object-cached-value value 'module-ids absent-value)))
                 (not (eq? absent-value (object-cached-value value 'selected absent-value))))
          ;; These fields were actually validated above and remain warm. Native

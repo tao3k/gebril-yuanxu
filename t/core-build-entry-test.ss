@@ -57,7 +57,7 @@
         (def spec (spec-of run))
         (check-equal? spec libraries)
         (check-equal? (member "modules/json-schema/interface" (map target-name spec)) #f)
-        (def selected-spec (.get package spec))
+        (def selected-spec (.get package std-make-spec))
         ;; The projection owns the selected and retained target lists.
         (.call package .admit-spec selected-spec)
         (def names (map target-name selected-spec))

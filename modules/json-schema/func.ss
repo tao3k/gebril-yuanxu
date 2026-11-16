@@ -4,7 +4,7 @@
 (import (only-in :gerbil/core/contract using)
         "types.ss"
         (for-template "./json-schema-source.ss")
-        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
         (only-in :tao3k/yuanxu/module-system/source/compiled-role
                  bind-deferred-interfaces deferred-interface-values)
         (only-in "json-schema-normalize.ss" yuanxu-json-schema-normalize)

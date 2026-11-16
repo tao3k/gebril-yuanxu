@@ -55,7 +55,7 @@
                            (and policy state
                                 (lambda ()
                                   (and (policy) (state) (object-instantiated? view)
-                                       (object-%precedence-list view)
+                                       (object-precedence-ready? view)
                                        (begin
                                          (require-object-instance-route! view 'configuration-role)
                                          (eq? admit! (.ref/cached view 'admit-current

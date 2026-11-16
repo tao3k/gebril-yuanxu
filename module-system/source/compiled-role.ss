@@ -7,7 +7,6 @@ prelude: :gerbil/core
         (only-in :gerbil/runtime/loader load-module)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-measure-operation)
         (for-syntax :gerbil/expander
-                    (only-in :gerbil/compiler compile-module)
                     (only-in :gerbil/compiler/base module-id->path-string)))
 (export compiled-role-values bind-program-interfaces bind-deferred-interfaces deferred-interface-values)
 

@@ -13,7 +13,7 @@
   (def root (path-directory script))
   (def projection
     (yuanxu-project-source-spec (path-expand "init.ss" root) '("main") root script))
-  (def spec (.get projection spec))
+  (def spec (.get projection std-make-spec))
   (cond
     ((equal? operation "spec") (write spec) (newline))
     ((equal? operation "compile")

@@ -70,7 +70,7 @@
                                        '() root (path-expand "init.ss" root)))
           (check-equal? (and (memq identity (.get projection compiler-identities)) #t) #t)
           (def targets (map (lambda (target) (if (string? target) target (cadr target)))
-                               (.get projection spec)))
+                               (.get projection std-make-spec)))
           (check-equal? (and (member "prelude" targets) #t) #t)
           (for-each (lambda (target)
                       (check-equal? (file-exists? (path-expand (string-append target ".ss") root)) #t))
@@ -87,7 +87,7 @@
           (def build-name (string-append (symbol->string package) "/run"))
           (check-equal?
             (filter (lambda (target) (and (pair? target) (eq? (car target) exe:)))
-              (.get program-projection spec))
+              (.get program-projection std-make-spec))
             '((exe: "run" bin: "consumer-program")))
           (check-equal?
             (length (filter (cut eq? <> (string->symbol build-name))
@@ -98,7 +98,7 @@
               root (path-expand "init.ss" root)))
           (check-equal?
             (filter (lambda (target) (and (pair? target) (eq? (car target) exe:)))
-              (.get default-bin spec))
+              (.get default-bin std-make-spec))
             '((exe: "run")))
           (check-exception
             (yuanxu-project-source-spec program-view

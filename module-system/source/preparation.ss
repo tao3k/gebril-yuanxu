@@ -8,7 +8,7 @@
                  call-with-selected-output-lock selected-output-source-directory)
         (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path)
         (only-in :clan/poo/object .o .ref .ref/cached .slot? object? object-protocol
-                 object-instantiated? object-%precedence-list object-construction-current?
+                 object-instantiated? object-precedence-ready? object-construction-current?
                  require-object-instance-route!)
         (only-in :clan/poo/slot-observation without-observation)
         (only-in :clan/poo/read-projection owned-read-function-scope?)
@@ -67,7 +67,7 @@
           (def row (and inputs (hash-get inputs (path-normalize (path-expand path)))))
           (def input (and row (compiler-input-value row)))
           (or (not input)
-              (and (object? input) (object-%precedence-list input)
+              (and (object-precedence-ready? input)
                    (not (object-protocol input)) (object-instantiated? input)
                    (begin
                      (require-object-instance-route! input 'compiler-source)
@@ -83,7 +83,7 @@
   (and checker (object-construction-current?)
     (let (metadata (module-source-object-policy (list value)))
       (lambda ()
-        (and (metadata) (object-instantiated? value) (object-%precedence-list value)
+        (and (metadata) (object-instantiated? value) (object-precedence-ready? value)
              (begin
                (require-object-instance-route! value 'compiler-source)
                (eq? checker (.ref/cached value 'admit-current (lambda () #f))))

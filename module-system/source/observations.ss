@@ -68,7 +68,7 @@
                    (or (not reject-protocols?)
                        ;; Every ancestor is already in entries. Inspect its
                        ;; actual protocol field without forcing a cold C4 cache.
-                       (not (object-%protocol (car entry)))))) entries)))
+                       (not (object-direct-protocol? (car entry)))))) entries)))
 
 ;; Structural decomposition of ONE operation, not a source approval or cache.
 ;; Only this constructor creates the paired entry/resume procedures. Neither

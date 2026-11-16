@@ -15,7 +15,7 @@
         (only-in :tao3k/yuanxu/module-system/building/source-package
                  package-prelude-identity call-with-build-source-fallbacks)
         (only-in :tao3k/yuanxu/module-system/building/program-products make-target-spec program-targets make-target? resolve-make-target-inputs StdMakeRowContract)
-        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
         (only-in :std/string/path path-absolute? path-default-extension subpath?)
         (only-in :std/list/list find foldl)
         (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
@@ -127,7 +127,7 @@
          (lambda ()
            (without-observation
              (lambda ()
-               (and (object? graph) (object-instantiated? graph) (object-%precedence-list graph)
+               (and (object? graph) (object-instantiated? graph) (object-precedence-ready? graph)
                     (not (object-protocol graph))
                     (begin
                       (require-object-instance-route! graph 'admission-context)
@@ -173,7 +173,7 @@
              (without-observation
                (lambda ()
                  (and (object? result) (object-instantiated? result)
-                      (object-%precedence-list result) (not (object-protocol result))
+                      (object-precedence-ready? result) (not (object-protocol result))
                       (begin
                         (require-object-instance-route! result 'package-sources)
                         (let ((check (.ref/cached result '%package-source-check (lambda () #f)))
@@ -505,7 +505,7 @@
                     (and source-window graph-policy entry-policy
                          (eq? importer core-import-module) (string? target)
                          (object-construction-current?) (graph-policy) (entry-policy)
-                         (object? entry) (object-instantiated? entry) (object-%precedence-list entry)
+                         (object? entry) (object-instantiated? entry) (object-precedence-ready? entry)
                          (not (object-protocol entry))
                          (let (path (.ref/cached entry 'path (lambda () #f)))
                            (and (string? path) (eq? entry (hash-get by-path path))
@@ -543,7 +543,7 @@
         (with-catch (lambda (_unsupported) #f)
          (lambda () (without-observation
           (lambda ()
-            (and (object? entry) (object-instantiated? entry) (object-%precedence-list entry)
+            (and (object? entry) (object-instantiated? entry) (object-precedence-ready? entry)
                  (not (object-protocol entry))
                  (begin
                    (require-object-instance-route! entry 'compiler-entry)
@@ -623,7 +623,7 @@
                      (let/cc unavailable
                        (def (cached receiver key)
                          (unless (and (object? receiver) (object-instantiated? receiver)
-                                      (object-%precedence-list receiver) (not (object-protocol receiver)))
+                                      (object-precedence-ready? receiver) (not (object-protocol receiver)))
                            (unavailable #f))
                          (require-object-instance-route! receiver 'configuration-request)
                          (.ref/cached receiver key (lambda () (unavailable #f))))

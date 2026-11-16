@@ -345,7 +345,7 @@
           (def view (yuanxu-load-modules (path-expand "init.ss" consumer)))
           ;; Build before any business read: a warm scope can hide native init leakage.
           (def projection (yuanxu-project-source-spec view '() consumer (path-expand "build.ss" consumer)))
-          (check-equal? (pair? (.get projection spec)) #t)
+          (check-equal? (pair? (.get projection std-make-spec)) #t)
           (check-equal? (.get view modules Modules engine dependency value) '(42))
           (def graph (.get view build-graph))
           (call-with-output-file
@@ -449,12 +449,12 @@
           (check-equal?
             (and (member "modules/library/interface"
                    (map (lambda (row) (if (string? row) row (cadr row)))
-                        (.get projection spec))) #t) #t)
+                        (.get projection std-make-spec))) #t) #t)
           (def output (path-expand "lib" root))
           (with-compiler-progress
             (lambda ()
               (.call projection .compile output
-                (lambda () (make (.get projection spec) srcdir: root libdir: output)))))
+                (lambda () (make (.get projection std-make-spec) srcdir: root libdir: output)))))
           (parameterize ((current-expander-context (make-top-context)))
             (eval-syntax `(import ,(path-expand (string-append (symbol->string (fixture-owner root "modules/library/interface.ss")) ".ssi") output)))
             (check-equal? ((eval-syntax 'selected-value) (eval-syntax 'Shared)) 42))

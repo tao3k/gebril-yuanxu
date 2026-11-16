@@ -652,14 +652,14 @@
            (yuanxu-write-module-publication prepared wrapper)
            (write-file (path-expand "build.ss" root) "(void)")
            (def projection (yuanxu-project-source-spec view '() root (path-expand "build.ss" root)))
-           (check-equal? (pair? (.get projection spec)) #t)
+           (check-equal? (pair? (.get projection std-make-spec)) #t)
            (def lib (path-expand "lib" root))
            (yuanxu-test-checkpoint 'compiler-projection-prepared)
            (with-compiler-progress
              (lambda ()
                (.call projection .compile lib
                  (lambda ()
-                   (make (.get projection spec) srcdir: root
+                   (make (.get projection std-make-spec) srcdir: root
                      libdir: (or (current-build-output-directory) lib) optimize: #f)))))
            (yuanxu-test-checkpoint 'gerbil-compilation-complete)
            (def previous-path (load-path))

@@ -2,7 +2,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Private provenance lives on runtime specifications, not in a field registry.
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/prototype-map prototype-map-ref)
+        (only-in :clan/poo/mop object-direct-slot-specification
+                 object-direct-slot-declared? object-slot-assigned?)
         (only-in :std/list/list delete-duplicates/hash every)
         (only-in :tao3k/yuanxu/module-system/source/admission
                  module-source-type module-source-read module-source-admit-current!
@@ -33,7 +34,7 @@
                   (module-source-read path)))))) paths))
   (for-each
     (lambda (row)
-      (let (spec (prototype-map-ref (object-%slots object) (car row) absent-specification))
+      (let (spec (object-direct-slot-specification object (car row) absent-specification))
         (when (and (not (eq? spec absent-specification)) (cadr row))
           (.putslot! object (car row)
             (make-located-slot
@@ -43,26 +44,21 @@
   object)
 
 (defstruct slot-sources (visible observed opaque?) final: #t)
-;; One read-only MOP query for every operation. A runtime assignment or an
-;; unknown winning specification is an attribution barrier, not an older source.
+;; A runtime assignment or an unknown winning specification stops attribution.
 ;; Retain observed ancestor specifications for conservative currentness checks.
 (def (slot-origins object name)
-  ;; Read-only traversal borrows existing runtime metadata. Do not allocate a
-  ;; public snapshot merely to discard it; cold preparation still owns hooks.
-  (unless (object-%precedence-list object)
-    (compute-precedence-list! object))
-  (def assigned? (and (object-%overrides object) (hash-key? (object-%overrides object) name)))
-  (let loop ((parents (object-%precedence-list object))
+  ;; Walk the public C4 snapshot and query just this name on each prototype.
+  (def precedence (compute-precedence-list! object))
+  (def assigned? (object-slot-assigned? object name))
+  (let loop ((parents precedence)
              (visible '()) (observed '()) (open? (not assigned?)) (declared? assigned?))
     (if (null? parents)
       (make-slot-sources (reverse visible) (reverse observed)
         (and declared? (null? visible)))
       (let* ((parent (car parents))
-             (spec (prototype-map-ref (object-%slots parent) name absent-specification))
+             (spec (object-direct-slot-specification parent name absent-specification))
              (method? (not (eq? spec absent-specification)))
-             (declaration? (and (not method?)
-               (not (eq? (prototype-map-ref (object-%declarations parent) name absent-specification)
-                         absent-specification)))))
+             (declaration? (and (not method?) (object-direct-slot-declared? parent name))))
         (cond
          ((and method? (located-slot? spec))
           (loop (cdr parents) (if open? (cons spec visible) visible)

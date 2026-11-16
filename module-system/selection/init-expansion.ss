@@ -13,7 +13,7 @@
                    current-export-expander-phi current-expander-marks)
           (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-mounts module-init-export-name)
           (only-in :gerbil/compiler/base module-id->path-string)
-          (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)))
+          (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)))
 (import (only-in :clan/poo/object .ref .o .+)
         (only-in :std/source this-source-file)
         (only-in :tao3k/yuanxu/module-system/building/interface yuanxu-init-build)
@@ -63,7 +63,7 @@
                      (id (identifier? #'id) (.ref value 'name))))
                  (export name)))))
        (when (ormap (lambda (mount)
-                      (memq mount '(tests std-make-spec admit-current .project-build))) mounts)
+                      (memq mount '(tests std-make-spec admit-current .yuanxu-init))) mounts)
          (raise-syntax-error #f "mount conflicts with an init export" stx))
        (with-syntax
          ((exports-binding
