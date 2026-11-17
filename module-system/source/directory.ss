@@ -794,7 +794,8 @@
                           (foldr append '() (map auto-owners (or windows '(#f)))))
           (feature-roots)
           denied-modules: denied-values intent: scoped-intent init-source: init-path source-root: root-path
-          package-roots: source-package-roots
+          imported-source-roots:
+          (and (positive? (hash-length export-origins)) source-package-roots)
           locate: (lambda (id) (locate-source (resolve-request-root id)))
           collect-entrypoint:
           (lambda (owner contributor parts)

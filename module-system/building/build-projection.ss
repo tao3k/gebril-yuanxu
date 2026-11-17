@@ -90,15 +90,15 @@
     (error "build projection requires absolute source and entry roots"))
   (def view (if (string? source) (yuanxu-load-modules source) source))
   (def context (and (.slot? view 'context) (.ref view 'context)))
-  (def roots (and context (.slot? context 'package-roots) (.ref context 'package-roots)))
+  (def roots (and context (.slot? context 'imported-source-roots) (.ref context 'imported-source-roots)))
   ;; Retained libraries may reach a selected dependency before it has .ssi
   ;; files. Their native expansion uses the same admitted source roots.
   (def (with-source-roots action)
     (if roots (call-with-build-source-fallbacks roots action) (action)))
   (with-source-roots
-    (lambda () (project-build-view view retained root entry-source with-source-roots))))
+    (lambda () (project-build-view view retained root entry-source with-source-roots (and roots #t)))))
 
-(def (project-build-view view retained root entry-source with-source-roots)
+(def (project-build-view view retained root entry-source with-source-roots imported-sources?)
   (def entry-input
     (module-source-measure-operation 'build-entry-header
       (lambda () (yuanxu-prepare-module-build-source entry-source void))))
@@ -347,12 +347,19 @@
         (.o module-spec: module-value retained-spec: library-value spec: value))
       value)
     (def spec-site (make-slot-cache 'std-make-spec))
-    (def (with-admitted-spec receiver action)
+    (def (with-admitted-spec receiver action (check-outputs! current!))
       (current!)
       (admit-spec (.ref/inline receiver spec-site))
       (begin0 (action)
-        (current!)
+        (check-outputs!)
         (admit-spec (.ref/inline receiver spec-site))))
+    (def (check-output-sources!)
+      (if imported-sources?
+        ;; Make can replace resolution from an authored .ss with its new .ssi.
+        ;; Recheck the same authenticated sources of this Make spec, while the
+        ;; graph still checks prerequisites and the original input snapshots.
+        (call-with-module-compiler-input-bindings entries current! source-owner: graph)
+        (current!)))
     ;; Capture once from the very import contexts that selected the native
     ;; targets. The guard on each captured input still runs for every link.
     (def identities (map (cut .ref <> 'compiler-identity) entries))
@@ -378,7 +385,8 @@
                       source-reads: (.ref graph '.with-compiler-source-reads)
                       source-import: (.ref graph '.with-compiler-source-import)
                       source-state: source-state source-owner: graph
-                      refuse-input-context: refuse-input-context))))
+                      refuse-input-context: refuse-input-context))
+              check-output-sources!))
           (with-source-roots
             (lambda ()
               (if foreign? (compile-inputs)
@@ -454,7 +462,8 @@
                       (create-directory* directory)
                       (parameterize ((current-build-source-directory directory))
                         (action)))
-                    (action)))))))
+                    (action)))
+                check-output-sources!))))
         .compile: (lambda (libdir action)
                     (publication-current!)
                     (issue-build-artifacts
