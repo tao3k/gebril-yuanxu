@@ -46,7 +46,7 @@
     "module-system/building/source-closure.ss"
     "module-system/source/role-forms.ss"
     "module-system/bootstrap/body-inclusion.ss"
-    "module-system/source/declaration.ss"
+    "module-system/source/build-binding.ss"
     "module-system/source/module-prelude.ss"
     "module-system/source/config-prelude.ss"
     "module-system/authoring/import-policy.ss"

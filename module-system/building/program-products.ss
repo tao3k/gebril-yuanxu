@@ -1,12 +1,12 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Pure projection of standard native target products; no compiler or loader.
-(import (only-in :clan/poo/object .o .get .slot? .all-slots object?)
+(import (only-in :clan/poo/object .cc .o .get .slot? .all-slots object?)
         (only-in :std/list/list find filter-map delete-duplicates/hash)
         (only-in :std/string/path path-absolute?)
-        (only-in :clan/poo/type Type. define-type element? List)
+        (only-in :clan/poo/type Type. define-type element? List Record)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-name? module-source-type module-source-read))
-(export make-target? resolve-make-target-inputs StdMakeRowContract DefbuildScriptContract make-target-kind make-target-spec program-targets
+(export make-target? resolve-make-target-inputs StdMakeRowContract DefbuildScriptContract ModuleBuildContract make-target-kind make-target-spec program-targets
         program-path program-identity? projection-program-targets)
 
 (def (make-target-kind entry)
@@ -98,3 +98,9 @@
     (and (object? parameters)
          (equal? (.all-slots parameters) '(spec))
          (element? StdMakeRows (.get parameters spec)))))
+
+;; Build is a POO object, so an inherited Build supplies the same effective
+;; parameter slot as a directly defined Build.
+(def ModuleBuildContract
+  (.cc (Record defbuild-script: [DefbuildScriptContract])
+       identity: 'module/build))

@@ -98,19 +98,9 @@
               (check-equal? (eq? (resolve-identifier (datum->syntax #f name) 0 actual)
                                 (resolve-identifier (datum->syntax #f name) 0 poo)) #t))
             '(object? make-object))
-          (when (string=? name "module-prelude")
-            (let* ((declaration (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
-                   (declared (find (lambda (entry)
-                                     (and (eq? (module-export-name entry) '.def)
-                                          (= (module-export-phi entry) 0)))
-                                   (module-context-export declaration))))
-              ;; Export renaming does not rename the prelude module's private
-              ;; lexical .def (the complete POO import). Test the real consumer
-              ;; language, retaining exact identity with the published role API.
-              (check-equal? (not (not declared)) #t)
-              (def consumer (make-top-context (core-module->prelude-context actual)))
-              (check-equal? (eq? (resolve-identifier (datum->syntax #f '.def) 0 consumer)
-                                (resolved declared)) #t)))
+          (let (consumer (make-top-context (core-module->prelude-context actual)))
+            (check-equal? (eq? (resolve-identifier (datum->syntax #f '.def) 0 consumer)
+                              (resolve-identifier (datum->syntax #f '.def) 0 poo)) #t))
           (parameterize ((current-expander-context
                           (make-top-context (core-module->prelude-context actual))))
             (check-equal? (eval-syntax '(let ((make-object 'local-constructor)
@@ -141,7 +131,7 @@
         '(("config-prelude"
            "prelude: :tao3k/yuanxu/prelude\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) :clan/poo/object)\n(export (import: :gerbil/core :clan/poo/object))\n")
           ("module-prelude"
-           "prelude: :gerbil/core\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) (except-in :clan/poo/object .def) (only-in :tao3k/yuanxu/module-system/source/declaration .def) (phi: +1 :gerbil/core) (phi: +2 :gerbil/core))\n(export (import: :gerbil/core :clan/poo/object) (phi: +1 (import: :gerbil/core)) (phi: +2 (import: :gerbil/core)) (phi: 1 load-module) .def)\n"))))
+           "prelude: :gerbil/core\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) :clan/poo/object (phi: +1 :gerbil/core) (phi: +2 :gerbil/core))\n(export (import: :gerbil/core :clan/poo/object) (phi: +1 (import: :gerbil/core)) (phi: +2 (import: :gerbil/core)) (phi: 1 load-module))\n"))))
     (yuanxu-test-case "binding factories share the runtime language frame without copying aliases"
       (def before (current-expander-context))
       ;; A real higher-order library function observes the active factory

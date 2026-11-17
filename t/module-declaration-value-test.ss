@@ -4,8 +4,6 @@
 ;;; Declaration values, lexical bindings and POO inheritance need no filesystem.
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .def .o .get .slot? .put! .call .cc)
-        (only-in :gerbil/expander core-expand datum->syntax)
-        (rename-in (only-in :tao3k/yuanxu/module-system/source/declaration .def) (.def publication-definition))
         (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :clan/poo/object object?)
         (only-in :clan/poo/type Type. Function TypeError? Record)
@@ -27,7 +25,7 @@
 (def dependencies 'author-value)
 
 (def runtime-.ref 'author-shadow)
-(publication-definition Published
+(.def Published
   identity: 'custom/published
   core: (.o scope-contract: ScopeContract label: 'parent
             exports: (begin (set! factory-calls (+ factory-calls 1))
@@ -41,11 +39,11 @@
 (def CheckedDependency
   (.cc (Record run: (list (Function (list Integer) (list Integer))))
     identity: 'test/checked-dependency))
-(publication-definition ProviderPublication
+(.def ProviderPublication
   identity: 'custom/provider
   core: (.o scope-contract: ScopeContract exports: provider-scope)
   features: (.o))
-(publication-definition ConsumerPublication
+(.def ConsumerPublication
   identity: 'custom/consumer
   core: (.o scope-contract: ScopeContract
             exports: (let (checked-provider (.call CheckedDependency .validate provider-scope))
@@ -93,20 +91,14 @@
       (check-equal? (.get Published core exports value) 'parent)
       (check-equal? (.get Child core exports value) 'child)
       (check-equal? (.get Published core exports value) 'parent))
-    (yuanxu-test-case "duplicate fields, inherited dependencies and hand-written link wrappers are rejected"
+    (yuanxu-test-case "Module admission rejects legacy dependency slots in POO values"
+      (def source (make-yuanxu-module-generated-source 'invalid))
+      (def base (.o scope-contract: ScopeContract exports: (.o)))
       (for-each
-       (lambda (example)
-         (let (message
-               (exception-message
-                (lambda ()
-                  (core-expand
-                   (datum->syntax (quote-syntax publication-definition)
-                     `(publication-definition Invalid identity: 'invalid core: ,(car example) features: (.o)))))))
-           (check-equal? (if (string-contains message (cdr example)) #t #f) #t)))
-       (list
-        (cons '(.o requires: (.o) scope-contract: ScopeContract exports: (.o) exports: (.o)) "duplicate publication field")
-        (cons '(.o requires: (.o (:: @ Published)) scope-contract: ScopeContract exports: (.o)) "Module core uses Gerbil imports")
-        (cons '(.o requires: (.o) scope-contract: ScopeContract exports: (.o) link: values) "Module core uses Gerbil imports"))))
+        (lambda (scope)
+          (def publication (.o identity: 'invalid core: scope features: (.o)))
+          (check-exception (admit-module-publication! source 'invalid publication (.o)) error?))
+        (list (.cc base requires: (.o)) (.cc base link: values))))
     (yuanxu-test-case "Graph consumes the exact normalized publication from its single producer"
       ;; A generated-source capability exercises Graph admission directly;
       ;; the runtime file reader is outside this Case's boundary.

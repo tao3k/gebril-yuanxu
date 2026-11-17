@@ -14,8 +14,6 @@
         (only-in :tao3k/yuanxu/module-system/source/compiled-role
                  bind-program-interfaces compiled-role-values)
         (only-in :std/list/list delete-duplicates/hash append-map)
-        (rename-in (only-in :tao3k/yuanxu/module-system/source/declaration .def)
-                   (.def publication-.def))
         (for-syntax :gerbil/expander (only-in :std/list/list append-map)
                     (only-in :tao3k/yuanxu/module-system/source/observations
                              module-source-measure-operation)))
@@ -360,7 +358,7 @@
            (else #f)))
        (def (stock-publication form direct?)
          ;; A fully known frame requires no synthesized lexical slot
-         ;; transformers. All unknown source still uses declaration .def.
+         ;; transformers. Other source expands with the original POO .def.
          (call/cc
            (lambda (open)
              (def (known value) (or value (open #f)))
@@ -389,7 +387,7 @@
              (syntax-case form ()
                ((head binding . slots)
                 (and (identifier? #'binding) (identifier? #'head)
-                     (source-binding=? #'head (quote-syntax publication-.def)))
+                     (source-binding=? #'head (quote-syntax .def)))
                 (let* ((root-rows (known (plain-fields #'slots)))
                        (root-names (map car root-rows))
                        (root-self (genident 'publication-self))
@@ -400,8 +398,6 @@
                        (core-shadows (append core-names root-names)))
                   (known (and (andmap (cut memq <> '(identity core features tags)) root-names)
                               (assq 'features root-rows)
-                              ;; The declaration macro captures the owner-bound
-                              ;; Feature reader for named source entrypoints.
                               (not (named-features? (field root-rows 'features)))
                               (andmap (cut memq <> '(scope-contract exports)) core-names)
                               (assq 'scope-contract core-rows)
@@ -473,7 +469,7 @@
                   ((features:)
                    (if (named-features? value) value (wrap value core-reference shadows)))
                   (else (wrap value core-reference shadows)))))))
-              (syntax/loc form (head name . slots)))))))
+              (syntax/loc form (begin (head name . slots) (export name))))))))
        (def private? (and (eq? (stx-e #'resolver) #f) (pair? forms) (null? (cdr forms))))
        (def direct #f)
        (def definitions

@@ -369,7 +369,7 @@
                ((.get graph compiler-current)))
              (check-equal? (ormap (cut string-suffix? "/types.ss" <>) reads) #t)
              (check-exception (.get view modules app web) error?)
-             (let* ((tool (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
+             (let* ((tool (core-import-module ':tao3k/yuanxu/module-system/source/build-binding))
                     (origin (module-context-path tool)))
                (if (string=? (path-extension origin) ".ss")
                  (check-equal? (ormap (cut equal? (path-normalize origin) <>) reads) #t)

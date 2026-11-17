@@ -137,7 +137,7 @@ prelude: :gerbil/core
     "admission/contributions"
     "admission/publication"
     "module-system/bootstrap/body-inclusion"
-    "module-system/source/declaration"
+    "module-system/source/build-binding"
     "module-system/source/module-prelude"
     "module-system/source/config-prelude"
     "module-system/source/preparation"

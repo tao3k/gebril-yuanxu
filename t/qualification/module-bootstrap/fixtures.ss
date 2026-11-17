@@ -73,7 +73,7 @@
                                      "module-system/selection/init-syntax"
                                      "module-system/bootstrap/body-inclusion"
                                      "module-system/schema/slot-contracts"
-                                     "module-system/source/declaration" "module-system/source/role-forms"
+                                     "module-system/source/build-binding" "module-system/source/role-forms"
                                      "object/syntax"
                                      "types/contracts" "types/facts" "types/ports"
                                      "observability/funcs" "observability/objects" "observability/types"

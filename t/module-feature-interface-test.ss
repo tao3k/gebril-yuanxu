@@ -112,7 +112,8 @@
           (def imported-source (path-expand "label.ss" (path-directory facade)))
           (create-directory* (path-directory facade))
           (write-file facade
-            "(import (only-in :tao3k/yuanxu/module-system/source/declaration .def))
+            "(import (only-in :clan/poo/object .def) \"./types.ss\" \"./objects.ss\")
+             (export Feature)
              (.def Feature refine: refine-memory contract: MemoryContract)")
           (write-file types
             "(import (only-in :clan/poo/object .o .cc)

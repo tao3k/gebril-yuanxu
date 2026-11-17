@@ -19,6 +19,7 @@ must own its declared responsibility.  The functional Funflow module has
 | =objects= | inert POO values and one-receiver behavior | =.o=, =.def=, slot =.defgeneric= |
 | =funs/contracts= | pure algorithms, indexes, relations and receipts | named functions and Contract objects |
 | =config/provider= | Profile composition and open crossings | POO composition; CLOS only for independent axes |
+| =build= | owner-relative Make inputs | POO =.def Build= with =defbuild-script= parameters |
 | =interface= | one public POO entry | Ordinary library: closed imports/reexports; managed Module: one declarative POO publication |
 
 For roles that are present, imports flow
@@ -29,6 +30,20 @@ Gerbil library facades can use closed imports/reexports. These are distinct
 source classifications, not interchangeable loading protocols. A
 specialized Provider interface may be opt-in; it is never a second default
 entrypoint.
+
+A managed Module uses the native POO =.def= import. Its optional =build.ss=
+declares one =Build= object, which can inherit from another Build object.
+The effective =defbuild-script= slot is a POO parameter object whose =spec=
+lists standard Make targets. Source preparation admits the declared Build
+during the build phase. The package entry receives the selected modules'
+contributions as one =std-make-spec=.
+
+#+begin_src scheme
+(import (only-in :clan/poo/object .def .o))
+
+(.def Build
+  defbuild-script: (.o spec: '("bridge")))
+#+end_src
 
 * Executable admission
 

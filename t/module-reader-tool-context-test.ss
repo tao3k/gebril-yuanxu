@@ -50,18 +50,18 @@
   (def module-reader-tool-context-test
     (test-suite "Compiler tool reuse preserves source confinement"
       (test-case "installed execution does not own an unrelated checkout"
-        (def tool (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
+        (def tool (core-import-module ':tao3k/yuanxu/module-system/source/build-binding))
         (check-equal? (path-extension (module-context-path tool)) ".ssi")
         (with-publication-source
           (lambda (_root _module-root _source view)
             (def graph (.get view build-graph))
-            (with-change "module-system/source/declaration.ss"
+            (with-change "module-system/source/build-binding.ss"
               (lambda (text) (string-append text "\n;; unrelated installed-tool checkout edit\n"))
               (lambda ()
                 ((.get graph admit-current))
                 (check-equal? (.get graph selected-graph module-order) '(custom/example)))))))
       (test-case "captured installed artifact path remains part of runtime identity"
-        (def tool (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
+        (def tool (core-import-module ':tao3k/yuanxu/module-system/source/build-binding))
         (def path (module-context-path tool))
         (def reader (module-publication-reader))
         (dynamic-wind
@@ -71,7 +71,7 @@
                             (lambda () ((.get reader admit-current)))) #t))
           (lambda () (slot-set! tool 'path path))))
       (test-case "observer return cannot change installed tool identity"
-        (def tool (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
+        (def tool (core-import-module ':tao3k/yuanxu/module-system/source/build-binding))
         (def path (module-context-path tool))
         (def reader (module-publication-reader))
         (dynamic-wind
@@ -92,10 +92,10 @@
             (.get graph selected-graph module-order)
             '(json-schema))
           (check-equal?
-            (assoc (path-expand "module-system/source/declaration.ss" root)
+            (assoc (path-expand "module-system/source/build-binding.ss" root)
                    (.get graph compiler-inputs))
             #f)
-          (with-change "module-system/source/declaration.ss"
+          (with-change "module-system/source/build-binding.ss"
             (lambda (text) (string-append text "\n;; changed tool source\n"))
             (lambda ()
               (check-equal? (rejects? "tool source changed|stale|refused"
@@ -116,7 +116,7 @@
         ((.get graph admit-current)))
       (test-case "removed owned tool remains a required input in a fresh Graph"
         (def graph (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph))
-        (def file (path-expand "module-system/source/declaration.ss" root))
+        (def file (path-expand "module-system/source/build-binding.ss" root))
         (def backup (string-append file ".saved"))
         (dynamic-wind
           (lambda () (rename-file file backup))
@@ -125,10 +125,10 @@
             (check-exception (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph)
                              (lambda (_failure) #t)))
           (lambda () (rename-file backup file))))
-      (test-case "foreign same-identity declaration is rejected before evaluation"
+      (test-case "foreign same-identity Build binding is rejected before evaluation"
         (call-with-temporary-directory "foreign-tool-context"
           (lambda (foreign)
-            (let ((path (path-expand "declaration.ss" foreign))
+            (let ((path (path-expand "build-binding.ss" foreign))
                   (marker (path-expand "evaluated" foreign)))
               (write-source path
                 (string-append "package: tao3k/yuanxu/module-system/source\n"

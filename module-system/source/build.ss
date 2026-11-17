@@ -30,7 +30,7 @@
                  module-source-package-info)
         (only-in :tao3k/yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
         (only-in :tao3k/yuanxu/module-system/feature/capability-model feature-projection-request?)
-        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
+        (only-in :tao3k/yuanxu/module-system/source/build-binding current-module-build-phase?)
         (only-in :tao3k/yuanxu/module-system/building/package write-selected-package))
 (export module-test-source-spec module-build-graph module-build-graph/linked unique-build-inputs retained-build-entries ExternalPackageContributionContract BuildSpecContract
         BuildPublicationContract module-build-admit-context!

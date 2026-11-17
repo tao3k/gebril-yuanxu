@@ -16,7 +16,7 @@
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-deferred-role-exports)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-publication-role-imports module-interface-form? module-role-file)
         ;; Compiler bindings emitted by this preparer are real bootstrap inputs.
-        (only-in :tao3k/yuanxu/module-system/source/declaration include-module-body)
+        (only-in :tao3k/yuanxu/module-system/bootstrap/body-inclusion include-module-body)
         (only-in :tao3k/yuanxu/module-system/source/config-prelude)
         (only-in :tao3k/yuanxu/module-system/source/module-prelude)
         (only-in :std/list/list find)
@@ -257,13 +257,19 @@
 
 ;; The binding check and the closed role classifier consume the same private
 ;; datums. No datum is passed to the native reader or an author callback.
-(def (publication-source-binding path forms)
+(def (publication-source-declaration path forms)
   (let (declarations (filter (lambda (form) (and (pair? form) (eq? (car form) '.def))) forms))
     (unless (and (= (length declarations) 1)
                  (andmap (cut module-interface-form? <> forms) forms))
       (error "interface.ss must contain one Module .def with optional imports and local re-exports" path))
-    (let (binding (cadr (car declarations)))
-      (if (pair? binding) (car binding) binding))))
+    (let* ((declaration (car declarations))
+           (binding (cadr declaration))
+           (fields (memq 'features: (cddr declaration))))
+      (values (if (pair? binding) (car binding) binding)
+              (and (pair? fields) (pair? (cdr fields))
+                   (match (cadr fields)
+                     (['quote (? list? _names)] #t)
+                     (else #f)))))))
 
 (def (yuanxu-prepare-module-publication source-value
                                           style-policy: (policy yuanxu-default-module-style-policy)
@@ -305,7 +311,6 @@
              (interface-forms
                (module-source-measure-operation 'reader-interface-datums
                  (lambda () (call-with-input-string interface-text read-all))))
-             (name (publication-source-binding path interface-forms))
              (package-sources (package-source-snapshot path))
              (compiler-info (module-compiler-identity path))
              (prelude-inputs
@@ -315,6 +320,11 @@
              (suffix "/interface")
              (imports (module-publication-role-imports root (cut hash-key? texts <>)))
              (roles (map (lambda (name) (string->symbol (path-strip-extension (path-strip-directory name)))) imports)))
+        (defvalues (name named-features?) (publication-source-declaration path interface-forms))
+        (def exported?
+          (ormap (lambda (form)
+                   (and (pair? form) (eq? (car form) 'export) (memq name (cdr form))))
+                 interface-forms))
         (when (and (source-metadata source-value 'declaration-id)
                    (not (eq? owner (cadr compiler-info))))
           (error "selected native module identity differs from its source" owner (cadr compiler-info) path))
@@ -379,8 +389,11 @@
              (list 'prelude: (car compiler-info)))
            (list 'package: (substring id-text 0 (- (string-length id-text) (string-length suffix)))
                  'namespace: (caddr compiler-info)
-                 `(import ,@(if shared-prelude? '() '((except-in :clan/poo/object .def)))
-                          (only-in :tao3k/yuanxu/module-system/source/declaration .def define-module-build-binding)
+                 `(import ,@(if shared-prelude? '() '(:clan/poo/object))
+                          ,@(if (hash-key? texts (path-expand "build.ss" root))
+                              '((only-in :tao3k/yuanxu/module-system/source/build-binding
+                                         define-module-build-binding))
+                              '())
                           ,@(if deferred
                               '((only-in :tao3k/yuanxu/module-system/source/deferred-declaration
                                          include-deferred-declaration))
@@ -393,7 +406,10 @@
                           ,@imports))
            (if (hash-key? texts (path-expand "build.ss" root))
              (list '(define-module-build-binding Build)) '())
-           (list (if deferred `(include-deferred-declaration ,path ,deferred ,resolver) `(include ,path))))))
+           (if deferred
+             (list `(include-deferred-declaration ,path ,deferred ,resolver))
+             (cons `(include ,path)
+                   (if exported? '() (list `(export ,name))))))))
         ;; Retained preparation and guard closures own bytes, not this parse tree.
         (set! interface-forms #f)
         (def construction-intact? (object-construction-current?))
@@ -409,6 +425,7 @@
             role-sources: (map (lambda (role) (path-expand (string-append (symbol->string role) ".ss") root)) roles)
             build-source: (let (file (path-expand "build.ss" root))
                             (and (hash-key? texts file) file))
+            named-features?: named-features?
             build-role-kind:
             (let (text (hash-get texts (path-expand "build.ss" root)))
               (and text
@@ -416,23 +433,15 @@
                      (cond
                       ((ormap (lambda (form) (and (pair? form) (eq? (car form) 'defbuild-script))) forms)
                        'package-script)
-                      ((ormap (lambda (form)
-                                (match form
-                                  (['.def 'Build . slots]
-                                   (let loop ((slots slots))
-                                     (match slots
-                                       (['defbuild-script: . _] #t)
-                                       (['defbuild-script . _] #t)
-                                       ([['defbuild-script . _] . _] #t)
-                                       ([(? keyword?) _ . rest] (loop rest))
-                                       ([_ . rest] (loop rest))
-                                       (else #f))))
-                                  ;; POO owns inheritance and validates the effective
-                                  ;; slot after resolving this adjacent role.
-                                  (['.def ['Build '@ _ . _] . _] #t)
-                                  (else #f))) forms)
+                      ((= 1 (length
+                              (filter (lambda (form)
+                                        (match form
+                                          (['.def 'Build . _] #t)
+                                          (['.def ['Build '@ _ . _] . _] #t)
+                                          (else #f)))
+                                      forms)))
                        'make-parameters)
-                      (else #f)))))
+                      (else 'invalid)))))
             namespace: (caddr compiler-info) prelude: (car compiler-info)
             admit-current: current!
             deferred-roles: deferred-roles
@@ -556,7 +565,7 @@
                   (cond
                     ((and tool? header-free?) (list `(include ,source-path)))
                     ((string=? (path-strip-directory source-path) "config.ss")
-                    (list '(import (only-in :tao3k/yuanxu/module-system/source/declaration
+                    (list '(import (only-in :tao3k/yuanxu/module-system/bootstrap/body-inclusion
                                             include-module-body export-role-config))
                           `(include-module-body ,source-path)
                           '(export-role-config Config)))

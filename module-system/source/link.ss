@@ -18,7 +18,7 @@
         :tao3k/yuanxu/module-system/source/directory
         (only-in :tao3k/yuanxu/module-system/source/reader-support call-with-publication-reads
                  merge-publication-root-segments)
-        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?))
+        (only-in :tao3k/yuanxu/module-system/source/build-binding current-module-build-phase?))
 (import (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path))
 (export yuanxu-load-modules module-namespace-project module-program-namespace module-program-feature call-with-linked-prepared-guards
         linked-configuration-guard-active?)

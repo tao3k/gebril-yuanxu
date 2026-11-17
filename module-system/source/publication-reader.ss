@@ -13,7 +13,7 @@
                  core-read-module/sexp core-resolve-module-path core-resolve-library-module-path
                  core-import-module __module-registry)
         (only-in :clan/poo/type validate)
-        (only-in :tao3k/yuanxu/module-system/building/program-products DefbuildScriptContract)
+        (only-in :tao3k/yuanxu/module-system/building/program-products ModuleBuildContract)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/object .o .+ .ref .slot? object?)
         (only-in :tao3k/yuanxu/module-system/source/collection
@@ -21,8 +21,8 @@
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-feature-interface?)
         :tao3k/yuanxu/module-system/source/admission
         :tao3k/yuanxu/module-system/source/preparation
-        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-resolver current-module-build-phase?
-                 current-module-feature-reader)
+        (only-in :tao3k/yuanxu/module-system/source/build-binding
+                 current-module-build-resolver current-module-build-phase?)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration
                  current-module-role-resolver module-role-values
                  wrapper-delivery? wrapper-delivery-value)
@@ -519,10 +519,14 @@
                      (parameterize ((current-expander-module-import gerbil-import))
                        (gerbil-import original-path #f))))))))))
        (def role-kind (.ref prepared 'build-role-kind))
-       (def (reject-package-script!)
-         (error "Module build.ss requires .def Build with defbuild-script:; defbuild-script belongs to the package entry" interface-path))
+       (def (check-build-role!)
+         (case role-kind
+           ((package-script)
+            (error "defbuild-script belongs to the package entry" interface-path))
+           ((invalid)
+            (error "Module build.ss requires one POO .def Build declaration" interface-path))))
        (def (resolve-build/in-context!)
-         (when (eq? role-kind 'package-script) (reject-package-script!))
+         (check-build-role!)
          (parameterize ((current-module-source-phase 'build-role-before)) (reader-current! session))
          (let* ((path (.ref prepared 'build-source))
                 (input (yuanxu-prepare-module-build-source path void))
@@ -549,16 +553,10 @@
              (parameterize ((current-module-source-phase 'build-role-after)) (reader-current! session)) value)))
        (def (resolve-build!)
          (with-module-sources resolve-build/in-context!))
-       (def build-role (and (eq? role-kind 'make-parameters) (.o value: (resolve-build!))))
+       (def build-role (and role-kind (.o value: (resolve-build!))))
        (def (make-spec)
-         (case role-kind
-           ((package-script) (reject-package-script!))
-           ((make-parameters)
-            (let (build (module-build-role-spec build-role))
-              (unless (and (object? build) (.slot? build 'defbuild-script))
-                (error "Module Build requires a defbuild-script slot" interface-path))
-              (.ref (validate DefbuildScriptContract (.ref build 'defbuild-script)) 'spec)))
-           (else (error "Module has no Make contribution" interface-path))))
+         (.ref (.ref (validate ModuleBuildContract (module-build-role-spec build-role))
+                     'defbuild-script) 'spec))
        (def (module-build-role-spec role)
          (unless (current-module-build-phase?)
            (error "Build is available only in the Module build-publication phase"))
@@ -787,7 +785,6 @@
                      (current-expander-context (make-top-context))
                      (current-module-build-resolver
                        (if build-role (lambda () (module-build-role-spec build-role)) resolve-build!))
-                     (current-module-feature-reader resolve-feature)
                      (current-module-role-resolver resolve-role)
                      (current-expander-module-import
                       publication-import))
@@ -803,14 +800,18 @@
                                   (eval-syntax (.ref prepared 'binding))))
                     (set! delivered #f)
                     (parameterize ((current-module-source-phase 'declaration-after)) (reader-current! session))
+                    (def with-features
+                      (if (.ref prepared 'named-features?)
+                        (.+ value (.o feature-reader: resolve-feature))
+                        value))
                     (def publication
                       (if role-kind
-                        (.+ value (.o __std-make-spec:
-                                     (begin
-                                       (unless (current-module-build-phase?)
-                                         (error "Module Make spec is available only in the build phase"))
-                                       (make-spec))))
-                        value))
+                        (.+ with-features (.o __std-make-spec:
+                                             (begin
+                                               (unless (current-module-build-phase?)
+                                                 (error "Module Make spec is available only in the build phase"))
+                                               (make-spec))))
+                        with-features))
                     (def owners (reverse owner-order))
                     (hash-put! (reader-session-dependencies session) (cons 'import-owners interface-path) owners)
                     (def result (if consume (consume source-value publication owners) publication))

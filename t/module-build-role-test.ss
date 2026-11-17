@@ -38,7 +38,7 @@
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
 (def (make-role spec)
   (string-append "(.def Build defbuild-script: (.o spec: " spec "))"))
-(def (fixture root build (explicit-projection? #t))
+(def (fixture root build (explicit-projection? #f))
   (let ((owner (path-expand "modules/app/example" root)))
     (write-source (path-expand "gerbil.pkg" root)
       (string-append "(package: " (symbol->string (gensym 'build-role-)) ")"))
@@ -66,7 +66,7 @@
     (yuanxu-test-case "init exports a spec List and ordinary append keeps package inputs separate"
       (call-with-temporary-directory "build-export-value"
         (lambda (root)
-          (fixture root "(def Build '())")
+          (fixture root "(.def Build defbuild-script: (.o spec: '()))")
           (write-source (path-expand "init.ss" root)
             "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :app (example))")
           (write-source (path-expand "support.ss" root) "(def support 42) (export support)")
@@ -114,15 +114,15 @@
           (def marker (path-expand "build-evaluations" root))
           (def owner (fixture root
             (string-append
-              "(def Build (begin (call-with-output-file (list path: "
+              "(.def Build defbuild-script: (.o spec: (begin (call-with-output-file (list path: "
               (call-with-output-string (cut write marker <>))
-              " append: #t) (lambda (port) (display \"x\" port))) '(\"client\")))")))
+              " append: #t) (lambda (port) (display \"x\" port))) '(\"client\"))))")))
           ;; These authored sources are consumed by the official expander,
           ;; not a generated role wrapper or an already-installed test package.
           (write-source (path-expand "config.ss" owner)
             "(import :clan/poo/object) (def Config (.o value: 42)) (export Config)")
           (write-source (path-expand "interface.ss" owner)
-            "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Example identity: 'app/example core: (.o scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))")
+            "(import (only-in :clan/poo/object .def .o) \"./types.ss\" \"./objects.ss\") (export Example) (.def Example identity: 'app/example core: (.o scope-contract: Scope exports: Defaults) features: (.o))")
           (write-source (path-expand "init.ss" root)
             "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :app (example))")
           (write-source (path-expand "client.ss" owner) "(import \"../../../init.ss\") (export)")
@@ -263,29 +263,30 @@
         (lambda (control)
           (call-with-temporary-directory "module-build-conflict"
             (lambda (root)
-              (def owner (fixture root (cdr control)
-                (not (string-contains (cdr control) "defbuild-script:"))))
+              (def owner (fixture root (cdr control)))
               (for-each
                 (lambda (name) (write-source (path-expand name owner)
                                 "(def (main . args) (void)) (export main)"))
                 '("entry.ss" "other.ss"))
               (check-equal? (rejects? (car control)
                 (lambda () (.get (yuanxu-load-modules (path-expand "init.ss" root)) build-graph))) #t))))
-        (list (cons "TypeError|type error" "(.def Build defbuild-script: (lambda () '()))")
+        (list (cons "requires one POO .def Build" "(def Build '())")
+              (cons "TypeError|type error" "(.def Build unrelated: #t)")
+              (cons "TypeError|type error" "(.def Build defbuild-script: (lambda () '()))")
               (cons "TypeError|type error" "(.def Build defbuild-script: (.o spec: 42))")
               (cons "TypeError|type error" "(.def Build defbuild-script: (.o spec: '() prefix: \"elsewhere\"))")
               (cons "TypeError|type error" "(.def Build defbuild-script: (.o spec: '(42)))")
               (cons "defbuild-script belongs to the package entry"
                     "(import :std/build-script) (.def Build defbuild-script: (.o spec: '())) (defbuild-script '())")
-              (cons "duplicate Module Make target" "(def Build '(\"entry\" \"entry\"))")
-              (cons "duplicate Module Make target" "(def Build '((gxc: \"entry\" \"-O\") (gxc: \"entry\" \"-O\")))")
-              (cons "duplicate Module Make target" "(def Build '((exe: \"entry\" bin: \"tool\") (exe: \"entry\" bin: \"tool\")))")
-              (cons "conflicting Module Make targets" "(def Build '((gxc: \"entry\" \"-O\") (gxc: \"entry\" \"-debug\")))")
-              (cons "conflicting Module Make targets" "(def Build '(\"entry\" (exe: \"entry\" bin: \"tool\")))")
-              (cons "conflicting Module Make targets" "(def Build '((exe: \"entry\" bin: \"tool\") (exe: \"entry\" bin: \"other-tool\")))")
-              (cons "programs share one binary output" "(def Build '((exe: \"entry\" bin: \"tool\") (exe: \"other\" bin: \"tool\")))")
-              (cons "build contribution must name an owner-relative source" "(def Build '(\"../entry\"))")
-              (cons "invalid Module Make target" "(def Build '((exe: \"entry\" bin: \"../tool\")))"))))
+              (cons "duplicate Module Make target" "(.def Build defbuild-script: (.o spec: '(\"entry\" \"entry\")))")
+              (cons "duplicate Module Make target" "(.def Build defbuild-script: (.o spec: '((gxc: \"entry\" \"-O\") (gxc: \"entry\" \"-O\"))))")
+              (cons "duplicate Module Make target" "(.def Build defbuild-script: (.o spec: '((exe: \"entry\" bin: \"tool\") (exe: \"entry\" bin: \"tool\"))))")
+              (cons "conflicting Module Make targets" "(.def Build defbuild-script: (.o spec: '((gxc: \"entry\" \"-O\") (gxc: \"entry\" \"-debug\"))))")
+              (cons "conflicting Module Make targets" "(.def Build defbuild-script: (.o spec: '(\"entry\" (exe: \"entry\" bin: \"tool\"))))")
+              (cons "conflicting Module Make targets" "(.def Build defbuild-script: (.o spec: '((exe: \"entry\" bin: \"tool\") (exe: \"entry\" bin: \"other-tool\"))))")
+              (cons "programs share one binary output" "(.def Build defbuild-script: (.o spec: '((exe: \"entry\" bin: \"tool\") (exe: \"other\" bin: \"tool\"))))")
+              (cons "build contribution must name an owner-relative source" "(.def Build defbuild-script: (.o spec: '(\"../entry\")))")
+              (cons "TypeError|type error" "(.def Build defbuild-script: (.o spec: '((exe: \"entry\" bin: \"../tool\"))))"))))
     (yuanxu-test-case "a Module cannot use both Make declaration paths"
       (call-with-temporary-directory "duplicate-build-entry"
         (lambda (root)
@@ -363,7 +364,7 @@
     (yuanxu-test-case "official cached compiler imports retain both guards and reject foreign callbacks"
       (call-with-temporary-directory "compiler-warm-import-"
         (lambda (root)
-          (def owner (fixture root "(def Build '(\"source-a\"))"))
+          (def owner (fixture root "(.def Build defbuild-script: (.o spec: '(\"source-a\")))"))
           (write-source (path-expand "source-a.ss" owner) "(def value 42) (export value)")
           (write-source (path-expand "build.ss" root) "(void)")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
@@ -502,7 +503,7 @@
         (lambda (root)
           (def owner
             (fixture root
-              "(def Build '(\"source-a\" \"source-b\" \"source-c\" \"source-d\"))"))
+              "(.def Build defbuild-script: (.o spec: '(\"source-a\" \"source-b\" \"source-c\" \"source-d\")))"))
           (for-each (lambda (name)
             (write-source (path-expand (string-append name ".ss") owner)
               "(def value 42) (export value)"))
@@ -555,7 +556,7 @@
     (yuanxu-test-case "compiler metadata keeps the final publication fresh and every guard occurrence"
       (call-with-temporary-directory "compiler-source-prefix-"
         (lambda (root)
-          (def owner (fixture root "(def Build '())"))
+          (def owner (fixture root "(.def Build defbuild-script: (.o spec: '()))"))
           (def support (path-expand "support.ss" root))
           (write-source support "(def retained-answer 42) (export retained-answer)")
           (write-source (path-expand "build.ss" root) "(void)")
@@ -838,7 +839,7 @@
     (yuanxu-test-case "selected compiler sources survive runtime timestamp path removal only inside their owner"
       (call-with-temporary-directory "module-compiler-owned-source"
         (lambda (root)
-          (def owner (fixture root "(def Build '())"))
+          (def owner (fixture root "(.def Build defbuild-script: (.o spec: '()))"))
           (def shared (path-expand "modules/shared.ss" root))
           (write-source shared "(def source-answer 42) (export source-answer)")
           (call-with-output-file (list path: (path-expand "types.ss" owner) append: #t)
@@ -870,7 +871,7 @@
         (lambda (root)
           (def consumer (path-expand "consumer" root))
           (def provider (path-expand "provider" root))
-          (def owner (fixture consumer "(def Build '())"))
+          (def owner (fixture consumer "(.def Build defbuild-script: (.o spec: '()))"))
           (write-source (path-expand "gerbil.pkg" provider)
             (string-append "(package: " (symbol->string (gensym 'compiler-view-provider-)) ")"))
           (def shared (path-expand "value.ss" provider))
@@ -922,7 +923,7 @@
     (yuanxu-test-case "compiler source pin rechecks bytes and never enrolls an unselected source"
       (call-with-temporary-directory "module-compiler-source-drift"
         (lambda (root)
-          (fixture root "(def Build '())")
+          (fixture root "(.def Build defbuild-script: (.o spec: '()))")
           (def shared (path-expand "modules/shared.ss" root))
           (def foreign (path-expand "foreign/shared.ss" root))
           (write-source shared "(def value 42) (export value)")
@@ -943,7 +944,7 @@
       (call-with-temporary-directory "module-public-library-options"
         (lambda (root)
           (def owner (fixture root
-            "(def Build '(\"public\"))"))
+            "(.def Build defbuild-script: (.o spec: '(\"public\")))"))
           (def later (path-expand "modules/app/later" root))
           (for-each (lambda (role)
                       (write-source (path-expand role later)
@@ -951,9 +952,9 @@
                     '("types.ss" "objects.ss" "config.ss"))
           (write-source (path-expand "helper.ss" later) "(def value 42) (export value)")
           (write-source (path-expand "build.ss" later)
-            "(def Build '((gxc: \"helper\" \"-O\")))")
+            "(.def Build defbuild-script: (.o spec: '((gxc: \"helper\" \"-O\"))))")
           (write-source (path-expand "interface.ss" later)
-            "(.def Later identity: 'app/later core: (.o scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))")
+            "(.def Later identity: 'app/later core: (.o scope-contract: Scope exports: Defaults) features: (.o))")
           (write-source (path-expand "init.ss" root)
             "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" :app (example) (later))")
           (write-source (path-expand "public.ss" owner)
@@ -970,7 +971,7 @@
       (call-with-temporary-directory "module-public-library-entries"
         (lambda (root)
           (def owner (fixture root
-            "(def Build '(\"public\"))"))
+            "(.def Build defbuild-script: (.o spec: '(\"public\")))"))
           (add-load-path! root)
           (write-source (path-expand "service.ss" owner)
             "(error \"public source runtime must not execute\") (def answer 42) (export answer)")
@@ -987,8 +988,8 @@
     (yuanxu-test-case "standard public sources retain imports from the declared package kernel"
       (call-with-temporary-directory "module-public-library-identity"
         (lambda (root)
-          (def owner (fixture root "(def Build '())"))
-          (write-source (path-expand "build.ss" owner) "(def Build '(\"public\"))")
+          (def owner (fixture root "(.def Build defbuild-script: (.o spec: '()))"))
+          (write-source (path-expand "build.ss" owner) "(.def Build defbuild-script: (.o spec: '(\"public\")))")
           (write-source (path-expand "kernel-helper.ss" root)
             "(error \"standard public library runtime must not execute\") (def answer 42) (export answer)")
           (write-source (path-expand "public.ss" owner)
@@ -1014,8 +1015,8 @@
           (call-with-temporary-directory "module-public-library-denied"
             (lambda (root)
               (fixture root (string-append
-                "(def Build '("
-                (object->string entry) "))"))
+                "(.def Build defbuild-script: (.o spec: '("
+                (object->string entry) ")))"))
               (def view (yuanxu-load-modules (path-expand "init.ss" root)))
               (check-exception (.get view build-graph) error?))))
         '("../escape.ss" "missing.ss" foreign/public)))
@@ -1026,8 +1027,8 @@
             (lambda (root)
               (def owner (fixture root
                 (if (eq? kind 'malformed)
-                  "(def Build '(42))"
-                  "(def Build '(\"public\"))")))
+                  "(.def Build defbuild-script: (.o spec: '(42)))"
+                  "(.def Build defbuild-script: (.o spec: '(\"public\")))")))
               (case kind
                 ((foreign) (write-source (path-expand "public.ss" owner)
                              "package: other-runtime-package (def value 42) (export value)"))
@@ -1040,7 +1041,7 @@
     (yuanxu-test-case "private projections preserve runtime relative-symbol imports"
       (call-with-temporary-directory "module-runtime-relative-import"
         (lambda (root)
-          (def owner (fixture root "(def Build '())"))
+          (def owner (fixture root "(.def Build defbuild-script: (.o spec: '()))"))
           (add-load-path! root)
           (write-source (path-expand "shared.ss" owner) "(def answer 42) (export answer)")
           (write-source (path-expand "private/entry.ss" owner)
@@ -1048,7 +1049,7 @@
           (write-source (path-expand "objects.ss" owner)
             "(import :clan/poo/object (only-in ./private/entry answer)) (.def Defaults value: answer) (export Defaults)")
           (write-source (path-expand "interface.ss" owner)
-            "(.def Example identity: 'app/example core: (.o scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))")
+            "(.def Example identity: 'app/example core: (.o scope-contract: Scope exports: Defaults) features: (.o))")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (check-equal? (.get view modules app example value) 42)
           (def graph (.get view build-graph))
@@ -1061,7 +1062,7 @@
       (call-with-temporary-directory "compiled-role-demand"
         (lambda (root)
           (def marker (path-expand "config-demanded" root))
-          (def owner (fixture root "(def Build '())"))
+          (def owner (fixture root "(.def Build defbuild-script: (.o spec: '()))"))
           ;; This Case concerns inert runtime roles. The existing Cases below
           ;; separately cover operational Build's declared role dependencies.
           (delete-file (path-expand "build.ss" owner))
@@ -1112,28 +1113,24 @@
                 (check-exception (.call projection admit-current) error?)
                 (check-equal? (.get configuration value) 42)))
             (lambda () (set-load-path! previous))))))
-    (yuanxu-test-case "original interface compiler gets the lazy phase-bound Build binding"
-      (call-with-temporary-directory "module-raw-build-binding"
+    (yuanxu-test-case "an ordinary POO interface compiles without evaluating its Build role"
+      (call-with-temporary-directory "module-native-build-binding"
         (lambda (root)
           (def marker (path-expand "build-forced" root))
           (def owner
             (fixture root
-              (string-append "(def Build (begin (call-with-output-file "
+              (make-role (string-append "(begin (call-with-output-file "
                 (call-with-output-string (cut write marker <>))
-                " (lambda (p) (display \"wrong-phase\" p))) '()))")))
-          ;; An ordinary compiler has no reader-created publication wrapper.
-          ;; Explicit role imports are valid source syntax and do not import Build.
-          (write-source (path-expand "config.ss" owner)
-            "(import :clan/poo/object) (def Config (.o value: 42)) (export Config)")
+                " (lambda (p) (display \"wrong-phase\" p))) '())"))))
           (write-source (path-expand "interface.ss" owner)
-            "(import (except-in :clan/poo/object .def) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Example identity: 'app/example core: (.o scope-contract: Scope exports: (.o config: Config) configuration-build: Build) features: (.o))")
+            "(import (only-in :clan/poo/object .def .o) \"./types.ss\" \"./objects.ss\") (export Example) (.def Example identity: 'app/example core: (.o scope-contract: Scope exports: Defaults) features: (.o))")
           (parameterize ((current-expander-context (make-top-context)))
             (core-import-module (path-expand "interface.ss" owner)))
-          (assert 'raw-compiler-binds-build-without-executing-it (not (file-exists? marker))))))
+          (assert 'native-interface-keeps-build-cold (not (file-exists? marker))))))
     (yuanxu-test-case "configuration cleanup does not import an unused related role"
       (call-with-temporary-directory "configuration-unused-role"
         (lambda (root)
-          (def owner (fixture root "(def Build '())"))
+          (def owner (fixture root "(.def Build defbuild-script: (.o spec: '()))"))
           (write-source (path-expand "objects.ss" owner)
             "(begin-syntax (error \"unused related role expanded\")) (error \"unused related role evaluated\")")
           (write-source (path-expand "config.ss" owner)
@@ -1148,9 +1145,9 @@
         (lambda (root)
           (let* ((marker (path-expand "build-forced" root))
                  (owner (fixture root
-                   (string-append "prelude: :gerbil/core\n(def Build (begin (call-with-output-file "
+                   (string-append "prelude: :gerbil/core\n(import (only-in :clan/poo/object .def .o)) (.def Build defbuild-script: (.o spec: (begin (call-with-output-file "
                      (call-with-output-string (cut write marker <>))
-                     " (lambda (p) (display \"once\" p))) '()))")))
+                     " (lambda (p) (display \"once\" p))) '())))")))
                  (view (yuanxu-load-modules (path-expand "init.ss" root)))
                  (scope (.get view modules app example)))
             (assert 'selection-does-not-run-build (not (file-exists? marker)))
@@ -1180,7 +1177,7 @@
                       (.get graph source-inputs))))
             (assert 'runtime-build-denied-after-cache
               (rejects? "build-publication phase" (lambda () (.get scope forbidden))))
-            (write-source (path-expand "build.ss" owner) "(def Build (error \"changed\"))")
+            (write-source (path-expand "build.ss" owner) "(.def Build defbuild-script: (.o spec: (error \"changed\")))")
             (assert 'build-mutation-rejects-old-generation
               (rejects? "compiler tool source changed; use a fresh reader"
                 (lambda () ((.get view admit-current)))))))))
@@ -1190,21 +1187,21 @@
           (fixture root
             (string-append
               "(import (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)) "
-              "(def reload yuanxu-load-modules) (def Build (reload "
-              (call-with-output-string (cut write (path-expand "init.ss" root) <>)) "))"))
+              "(def reload yuanxu-load-modules) (.def Build defbuild-script: (.o spec: (reload "
+              (call-with-output-string (cut write (path-expand "init.ss" root) <>)) ")))"))
           (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
             (assert 'root-reentry-denied
               (rejects? "cannot reload the root" (lambda () (.get view build-graph))))))))
     (yuanxu-test-case "Absent Build role is observed and cannot be added to an old generation"
       (call-with-temporary-directory "module-build-absence"
         (lambda (root)
-          (let (owner (fixture root "(def Build '())"))
+          (let (owner (fixture root "(.def Build defbuild-script: (.o spec: '()))"))
             (delete-file (path-expand "build.ss" owner))
             (write-source (path-expand "interface.ss" owner)
               "(.def Example identity: 'app/example core: (.o scope-contract: Scope exports: (.o config: Config)) features: (.o))")
             (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
               (.get view build-graph)
-              (write-source (path-expand "build.ss" owner) "(def Build '())")
+              (write-source (path-expand "build.ss" owner) "(.def Build defbuild-script: (.o spec: '()))")
               (assert 'new-build-role-invalidates-old-generation
                 (rejects? "stale prepared Module publication"
                 (lambda () ((.get view admit-current))))))))))
@@ -1213,7 +1210,7 @@
         (lambda (root)
           (fixture root
             (string-append "(import "
-              (call-with-output-string (cut write (path-expand "init.ss" root) <>)) ") (def Build (.o))"))
+              (call-with-output-string (cut write (path-expand "init.ss" root) <>)) ") (.def Build defbuild-script: (.o spec: '()))"))
           (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
             (assert 'root-init-source-import-denied
               (rejects? "admitted role|prebuilt library|owner" (lambda () (.get view build-graph))))))))))
@@ -1223,12 +1220,12 @@
     (yuanxu-test-case "Module imports produce its spec without a Build inventory"
       (call-with-temporary-directory "module-import-build-graph"
         (lambda (root)
-          (def owner (fixture root "(def Build '())"))
+          (def owner (fixture root "(.def Build defbuild-script: (.o spec: '()))"))
           (delete-file (path-expand "build.ss" owner))
           (write-source (path-expand "init.ss" root)
             "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :app (example))")
           (write-source (path-expand "interface.ss" owner)
-            "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Example identity: 'app/example core: (.o scope-contract: Scope exports: Defaults) features: (.o))")
+            "(import (only-in :clan/poo/object .def .o) \"./types.ss\" \"./objects.ss\") (export Example) (.def Example identity: 'app/example core: (.o scope-contract: Scope exports: Defaults) features: (.o))")
           (write-source (path-expand "objects.ss" owner)
             "(import :clan/poo/object \"./helper.ss\") (.def Defaults) (export Defaults)")
           (write-source (path-expand "helper.ss" owner)

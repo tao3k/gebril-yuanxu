@@ -19,13 +19,13 @@ prelude: :gerbil/core
       (check-equal? (yuanxu-stable-duplicates '(a b a c b))
                     '(a b)))
     (test-case "compiler identities map back to the same root source"
-      (def context (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
+      (def context (core-import-module ':tao3k/yuanxu/module-system/source/build-binding))
       (def root (path-expand ".." (path-directory (this-source-file))))
       (check-equal? (expander-context-id context)
-                    'tao3k/yuanxu/module-system/source/declaration)
+                    'tao3k/yuanxu/module-system/source/build-binding)
       (def before (load-path))
       (check-equal? (path-normalize (module-build-source-path context root))
-                    (path-normalize (path-expand "module-system/source/declaration.ss" root)))
+                    (path-normalize (path-expand "module-system/source/build-binding.ss" root)))
       (check-equal? (path-normalize (module-build-source-path
                       (core-import-module ':tao3k/yuanxu/prelude) root))
                     (path-normalize (path-expand "prelude.ss" root)))

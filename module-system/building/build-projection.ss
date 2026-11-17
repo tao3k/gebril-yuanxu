@@ -13,7 +13,7 @@
                  current-build-source-directory current-build-module-roots call-with-selected-output-lock
                  selected-output-source-directory artifact-files)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-entry-action)
-        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
+        (only-in :tao3k/yuanxu/module-system/source/build-binding current-module-build-phase?)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)

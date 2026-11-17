@@ -1318,3 +1318,43 @@ initialized at 71.39 seconds. The combined child Harness appeared at
 114.03 seconds. The original outer deadline terminated the process
 before the business test returned. The open interval includes other
 selected test-module imports before Harness entry.
+
+* Indexed invalidation of shared publication metadata
+
+=Admission.SelectionReplay.post_write_replay_keeps_first_failure= models one
+ordered block of shared POO checks in a publication boundary. Bind the exact
+issued records and their transitive support to the existing POO reverse
+dependency index. The same write transition must revoke the affected groups
+before readers can observe the changed metadata. A hit reads the group's live
+validity at each boundary. A miss runs the original ordered checks.
+Open observers and unregistered effects take the original path. Local checks,
+Gerbil expansion and author callbacks retain their existing order. Independent
+source and Gerbil Context currentness still run across those boundaries.
+
+The proof requires complete write notification and correspondence between
+the registered owners and every fact the POO checks inspect, including
+issuance, route, slot state and checker identity. The omitted-registration
+example shows the stale acceptance possible without that premise. The
+10,000-owner arithmetic example counts one initial traversal plus indexed
+lookups for a fixed shared block. It excludes local checks and invalidation
+work. Actual block extraction, allocation and runtime performance require
+separate native evidence.
+
+For the pinned POO write route, =with-slot-dependencies= propagates a
+supported edit to its registered dependent object. Its revision alone
+cannot refine full replay. The first force of a lazy Slot can invalidate an
+issued cache-miss read without advancing the source or dependent revision.
+Gerbil MOP can also change the presented checker of an issued read without
+advancing those revisions. Ordinary replay rejects both changes. See
+=SelectionReplay.revision_only_cannot_decide_cache_miss= and
+=SelectionReplay.revision_only_cannot_decide_issuance=. Runtime adoption
+requires an observation group whose issuer and write paths account for these
+transitions, while keeping independent source and callback checks.
+
+A native identity diagnostic on the 64-declaration closed fixture found 916
+transitive records per preparation, with the same captured roots replayed at
+the five preparation checkpoints for each owner. Their intersection across
+owners contained 901 record identities on 109 receivers. The remaining 15
+records per preparation do not belong to that intersection. The diagnostic
+expands public dependency projections to compare actual record identities;
+its timing cannot qualify the production path.
