@@ -171,6 +171,7 @@ prelude: :gerbil/core
     "module-system/building/test-observation"
     "module-system/building/test-retention"
     "module-system/building/interface"
+    "module-system/building/build-script"
     "module-system/building/source-package"
     "module-system/source/imports"
     "module-system/selection/flags"
