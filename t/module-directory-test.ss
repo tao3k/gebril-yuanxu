@@ -352,10 +352,7 @@
     (yuanxu-test-case "malformed and computed init are refused, never evaluated"
       (for-each
        (lambda (form) (check-exception (module-init-intent form "init.ss") error?))
-       '(((yuanxu! mode: explicit :custom (guestbook)))
-         ((yuanxu! :load-modules "./modules" mode: auto :test-dir "./t" (guestbook)))
-         ((yuanxu! :load-modules "./modules" mode: auto :test-dir "./t"
-                   :load-modules "./other" mode: auto))
+       '(((yuanxu! :load-modules "./modules" mode: auto :test-dir "./t" (guestbook)))
          ((yuanxu! :test-dir computed mode: explicit :custom (guestbook)))
          ((yuanxu! :test-dir "../t" mode: explicit :custom (guestbook)))
          ((yuanxu! :test-dir "./t" mode: explicit :custom (guestbook +smoke -smoke)))

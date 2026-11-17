@@ -7,9 +7,11 @@ prelude: :gerbil/core
                  core-bound-module-prelude? syntax-local-e module-context?
                  module-source-path prelude-context-path core-read-module/sexp
                  core-library-package-plist)
-        (only-in :std/list/list delete-duplicates/hash find))
+        (only-in :std/list/list delete-duplicates/hash filter-map find)
+        (only-in :gerbil/tools/gxpkg pkg-root-dir pkg-list))
 (export package-library-prefix package-prelude-identity register-module-build-source! module-build-source-path module-build-library-source-path module-build-import-identity module-build-resolve-library
-        call-with-build-input-path call-with-build-source-fallbacks package-build-script-path)
+        call-with-build-input-path call-with-build-source-fallbacks package-build-script-path
+        package-module-source-path)
 
 ;; The init-owned source projection chooses its compiler inputs. std/make owns
 ;; the output directory separately; runtime consumers retain their normal path.
@@ -206,3 +208,28 @@ prelude: :gerbil/core
       (unless (eq? identity actual)
         (error "compiler source identity mismatch" identity actual source))
       source)))
+
+;; Gerbil's package roster is authoritative for an exported ModuleSource.
+;; Look up its source header without importing any provider code.
+(def (package-module-source-path library)
+  (def text (symbol->string library))
+  (def identity (string->symbol (substring text 1 (string-length text))))
+  (def name (symbol->string identity))
+  (def store (pkg-root-dir))
+  (def matches
+    (filter-map
+      (lambda (package)
+        (def root (path-expand package store))
+        (def prefix (package-library-prefix root))
+        (and prefix (string-prefix? prefix name)
+             (let (source (path-expand
+                            (string-append (substring name (string-length prefix) (string-length name)) ".ss")
+                            root))
+               (and (file-exists? source)
+                    (let-values (((_prelude declared _namespace _body) (core-read-module/sexp source)))
+                      (and (eq? identity declared) (path-normalize source)))))))
+      (pkg-list)))
+  (match matches
+    ([source] source)
+    ([] (error "ModuleSource owner is absent from installed Gerbil packages" library))
+    (else (error "ModuleSource owner is ambiguous in installed Gerbil packages" library matches))))

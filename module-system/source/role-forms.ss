@@ -108,7 +108,7 @@ prelude: :gerbil/core
 
 ;; The same literal declaration grammar serves the expander and the source
 ;; reader. Only the runtime reader needs selection objects.
-(export init-name? parse-module-init module-init-mounts)
+(export init-name? parse-module-init module-init-windows)
 
 (def (init-name? name)
   (and (symbol? name)
@@ -125,32 +125,39 @@ prelude: :gerbil/core
     (error "test directory must be relative to the yuanxu! declaration" directory source-path))
   relative)
 
-(def (parse-init-window body source-path (window? #f))
+(def (parse-init-window body source-path (root #f))
+  (def window? (and root #t))
   (def mount-value #f)
   (def profile-value #f)
-  (def test-dir #f)
+  (def test-dir "t")
+  (def source-export #f)
   (def seen (make-hash-table-eq))
-  (let parse ((tail body) (mode-value 'explicit) (root-value "modules")
+  (let parse ((tail body) (mode-value 'explicit) (root-value (or root "modules"))
               (group #f) (rows '()) (options '()))
     (cond
      ((null? tail)
       (unless (memq 'mode: options)
         (error "init.ss requires mode: explicit or mode: auto" source-path))
       (when profile-value
-        (unless (and (eq? mode-value 'auto) (memq 'source: options))
+        (unless (and (eq? mode-value 'auto) (or window? (memq 'source: options)))
           (error "profile selection requires source and auto mode" source-path)))
       [mode-value root-value mount-value profile-value
-       (and (memq 'source: options) #t) (reverse rows) test-dir])
+       (or window? (and (memq 'source: options) #t)) (reverse rows) test-dir source-export])
      ((not (pair? tail)) (error "improper init declaration" source-path))
-     ((memq (car tail) '(mode: source: rename: profile: :test-dir))
+     ((memq (car tail) '(mode: source: rename: profile: :test-dir export:))
       (unless (and (pair? (cdr tail)) (not group) (null? rows) (not (memq (car tail) options)))
         (error "duplicate or misplaced init option" (car tail) source-path))
       (let ((key (car tail)) (value (cadr tail)))
         (case key
           ((:test-dir) (set! test-dir (test-directory-value value source-path)))
+          ((export:)
+           (unless (and window? (init-name? value))
+             (error "export: requires a ModuleSource binding name in a directory window" value))
+           (set! source-export value))
           ((mode:) (unless (memq value '(auto explicit)) (error "invalid init mode" value)))
-          ((source:) (unless (and (string? value) (> (string-length value) 0))
-                       (error "invalid init source" value)))
+          ((source:)
+           (unless (and (not window?) (string? value) (not (string-empty? value)))
+             (error "invalid or duplicate init source" value)))
           ((profile:)
            (unless (init-name? value) (error "profile: requires a literal name" value))
            (set! profile-value value))
@@ -220,32 +227,48 @@ prelude: :gerbil/core
 
 ;; Windows normalize into the existing selection intent. Mount names route
 ;; values; they never rewrite publication/requirement identities.
+(def (init-source-reference? value)
+  (match value
+    (['from: (? symbol? owner) (? init-name? binding)]
+     (let (name (symbol->string owner))
+       (and (string-prefix? ":" name)
+            (andmap (lambda (part) (and (not (string-empty? part))
+                                        (init-name? (string->symbol part))))
+                    (string-split (substring name 1 (string-length name)) #\/)))))
+    (else #f)))
+
 (def (parse-init-windows body source-path)
   (match body
     ([] '())
-    ([':load-modules (? string? root) . tail]
+    ([':load-modules root . tail]
+     (unless (or (and (string? root) (not (string-empty? root)))
+                 (init-source-reference? root))
+       (error "directory window requires a path or a public ModuleSource reference" root))
      (let split ((rest tail) (clauses '()))
        (if (or (null? rest) (eq? (car rest) ':load-modules))
-         (with ([mode directory mount profile explicit? decisions test-dir]
-                (parse-init-window (cons* 'source: root (reverse clauses)) source-path #t))
+         (with ([mode directory mount profile explicit? decisions test-dir binding]
+                (parse-init-window (reverse clauses) source-path root))
            (def name
              (or mount
-                 (string->symbol
-                   (path-strip-directory
-                     (path-strip-trailing-directory-separator
+                 (if (string? root)
+                   (string->symbol
+                     (path-strip-directory (path-strip-trailing-directory-separator
                        (path-expand root
-                         (if source-path (path-directory source-path) (current-directory))))))))
-           ;; The declared window is the boundary. Like source: in a single
-           ;; window, a relative path may reach a separate package checkout.
-           (unless (> (string-length root) 0)
-             (error "invalid directory window source" root))
+                         (if source-path (path-directory source-path) (current-directory))))))
+                   (caddr root))))
            (unless (and (init-name? name)
                         (not (memq name '(build-spec build-current! test-spec test-current! tests))))
              (error "invalid or reserved directory mount" name))
-           (cons [mode directory name profile explicit? decisions test-dir]
+           (when (and binding (not (string? root)))
+             (error "only an owner path can export a ModuleSource" root binding))
+           (when (and (not (string? root))
+                      (ormap (lambda (row) (with ([_ _ _ _ _ _ override] row) override))
+                             decisions))
+             (error "ModuleSource window cannot change the package source of a module" root))
+           (cons [mode directory name profile explicit? decisions test-dir binding]
                  (parse-init-windows rest source-path)))
          (split (cdr rest) (cons (car rest) clauses)))))
-    (_ (error "directory window requires a literal source path" source-path))))
+    (_ (error "expected a :load-modules window" source-path))))
 
 (def (parse-module-init forms source-path)
   (def declarations (filter (lambda (form) (and (pair? form) (eq? (car form) 'yuanxu!))) forms))
@@ -253,41 +276,42 @@ prelude: :gerbil/core
   (unless (andmap (lambda (form) (and (list? form) (pair? form)
                                     (memq (car form) '(import export yuanxu!)))) forms)
     (error "init.ss contains non-declarative forms" source-path))
-  (defvalues (body test-dir)
-    (match (cdar declarations)
-      ([':test-dir (? string? directory) . rest]
-       (values rest (test-directory-value directory source-path)))
-      ([':test-dir . _] (error "test directory requires a literal path" source-path))
-      (body (values body #f))))
-  (def (require-test-dir local)
-    (unless (or local test-dir)
-      (error "Loader requires :test-dir; use :test-dir \"./t\" for the standard t/ directory" source-path)))
+  (def body (cdar declarations))
   (if (or (null? body) (not (eq? (car body) ':load-modules)))
-    (let (window (parse-init-window body source-path))
-      (with ([_ _ _ _ _ _ local-tests] window)
-        (require-test-dir local-tests)
-        (values (list window) #f test-dir)))
+    (begin
+      (when (memq ':load-modules body)
+        (error "options belong inside a :load-modules window" source-path))
+      (values (list (parse-init-window body source-path)) #f))
     (let ((windows (parse-init-windows body source-path))
-          (names (make-hash-table)) (roots (make-hash-table)))
+          (names (make-hash-table)) (roots (make-hash-table))
+          (bindings (make-hash-table-eq)))
       (for-each
         (lambda (window)
-         (with ([_ directory name _ _ _ local-tests] window)
-          (require-test-dir local-tests)
-          (def key (string-downcase (symbol->string name)))
-          (def root (path-strip-trailing-directory-separator
-                      (path-expand directory
-                        (if source-path (path-directory source-path) (current-directory)))))
-          (when (hash-key? names key) (error "duplicate directory mount" name))
-          (when (hash-key? roots root) (error "duplicate directory window source" root))
-          (hash-put! names key #t)
-          (hash-put! roots root #t)
-          ;; parse-init-window already rejects repeated names within a root.
-          ;; Distinct roots are routed by native owner identity at discovery.
-          )) windows)
-      (values windows #t test-dir))))
+          (with ([_ directory name _ _ _ _ binding] window)
+            (def key (string-downcase (symbol->string name)))
+            (def root
+              (if (string? directory)
+                (path-strip-trailing-directory-separator
+                  (path-expand directory
+                    (if source-path (path-directory source-path) (current-directory))))
+                directory))
+            (when (hash-key? names key) (error "duplicate directory mount" name))
+            (when (hash-key? roots root) (error "duplicate directory window source" root))
+            (when binding
+              (when (hash-key? bindings binding) (error "duplicate ModuleSource export" binding))
+              (hash-put! bindings binding #t))
+            (hash-put! names key #t)
+            (hash-put! roots root #t))) windows)
+      (for-each
+        (lambda (binding)
+          (when (or (memq binding '(tests std-make-spec admit-current .yuanxu-init))
+                    (hash-key? names (string-downcase (symbol->string binding))))
+            (error "ModuleSource export conflicts with an init binding" binding)))
+        (hash-keys bindings))
+      (values windows #t))))
 
-(def (module-init-mounts forms (source-path #f))
-  (let-values (((windows mounted? _) (parse-module-init forms source-path)))
+(def (module-init-windows forms (source-path #f))
+  (let-values (((windows mounted?) (parse-module-init forms source-path)))
     (if mounted?
-      (map (lambda (window) (with ([_ _ mount _ _ _ _] window) mount)) windows)
-      '(#f))))
+      (map (lambda (window) (with ([_ _ mount _ _ _ _ binding] window) (cons mount binding))) windows)
+      '())))

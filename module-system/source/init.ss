@@ -88,18 +88,18 @@
       (.o identity disabled? disable-specified? source-root
           selection: (.+ (yuanxu-user-module-selection group module flags)
                           (.o enabled?: (not disabled?))))))
-  (def (intent window default-tests)
-    (with ([mode root mount profile root-explicit? rows local-tests] window)
+  (def (intent window)
+    (with ([mode root mount profile root-explicit? rows test-dir source-export] window)
       (.o mode root mount profile root-explicit? init-source: source-path
-          test-dir: (or local-tests default-tests)
+          test-dir source-export
           decisions: (map decision rows))))
-  (let-values (((windows mounted? test-directory) (parse-module-init forms source-path)))
-    (def intents (map (cut intent <> test-directory) windows))
+  (let-values (((windows mounted?) (parse-module-init forms source-path)))
+    (def intents (map intent windows))
     (if mounted?
       (.o mode: (if (any (lambda (window) (eq? (.ref window 'mode) 'auto)) intents)
                   'auto 'explicit)
           root: (.ref (car intents) 'root) root-explicit?: #t init-source: source-path
-          windows: intents test-dir: test-directory
+          windows: intents
           decisions: (foldr append '()
                        (map (lambda (window)
                               (def name (.ref window 'mount))

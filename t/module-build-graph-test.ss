@@ -145,7 +145,7 @@
     (yuanxu-test-case "standard spec identity and explicit publication reject altered or stale inputs"
       (with-source
        (lambda (root _prefix)
-         (def declaration '(yuanxu! :test-dir "./t" :load-modules "./modules" mode: explicit :core (schema)))
+         (def declaration '(yuanxu! :load-modules "./modules" mode: explicit :core (schema)))
          (write-file (path-expand "init.ss" root)
            (call-with-output-string (cut write declaration <>)))
          (write-file (path-expand "build.ss" root) "(export #t)")
@@ -176,7 +176,7 @@
       (with-source
        (lambda (root prefix)
          (write-file (path-expand "init.ss" root)
-           "(yuanxu! :test-dir \"./t\" :load-modules \"./modules\" mode: explicit :app (web))")
+           "(yuanxu! :load-modules \"./modules\" mode: explicit :app (web))")
          (def settings-type (.cc ObjectContract. 'responsibilities (.o message: String)))
          (def bindings 0)
          (def shared (.o value: (list 'warm)))
@@ -224,7 +224,7 @@
        (lambda (root prefix)
          (def web-id (fixture-module-id prefix "app/web"))
          (write-file (path-expand "init.ss" root)
-           "(yuanxu! :test-dir \"./t\" :load-modules \"./modules\" mode: explicit :app (web) :core (schema))")
+           "(yuanxu! :load-modules \"./modules\" mode: explicit :app (web) :core (schema))")
          ;; Probe the handoff, not Nix realization. The product service gate
          ;; separately verifies actual Provider/Schema/engine outputs.
          (def (projection name)

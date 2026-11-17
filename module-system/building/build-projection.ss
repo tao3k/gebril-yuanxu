@@ -4,7 +4,8 @@
 ;;; Project selected sources to ordinary std/build-script specifications.
 ;;; std/make owns compilation, dependency scheduling and clean.
 (import (only-in :std/string/path path-absolute?)
-        (only-in :tao3k/yuanxu/module-system/building/source-package package-prelude-identity)
+        (only-in :tao3k/yuanxu/module-system/building/source-package
+                 package-prelude-identity call-with-build-source-fallbacks)
         (only-in :tao3k/yuanxu/module-system/building/program-publication project-program-init)
         (only-in :gerbil/expander core-import-module core-resolve-library-module-path
                  expander-context-id module-context-path import-module current-expander-compiling?)
@@ -87,6 +88,17 @@
   (unless (and (string? root) (path-absolute? root)
                (string? entry-source) (path-absolute? entry-source))
     (error "build projection requires absolute source and entry roots"))
+  (def view (if (string? source) (yuanxu-load-modules source) source))
+  (def context (and (.slot? view 'context) (.ref view 'context)))
+  (def roots (and context (.slot? context 'package-roots) (.ref context 'package-roots)))
+  ;; Retained libraries may reach a selected dependency before it has .ssi
+  ;; files. Their native expansion uses the same admitted source roots.
+  (def (with-source-roots action)
+    (if roots (call-with-build-source-fallbacks roots action) (action)))
+  (with-source-roots
+    (lambda () (project-build-view view retained root entry-source with-source-roots))))
+
+(def (project-build-view view retained root entry-source with-source-roots)
   (def entry-input
     (module-source-measure-operation 'build-entry-header
       (lambda () (yuanxu-prepare-module-build-source entry-source void))))
@@ -107,8 +119,7 @@
     (or (package-prelude-entry? entry)
         (string-prefix? identity-prefix
                         (symbol->string (.ref entry 'compiler-identity)))))
-  (let* ((view (if (string? source) (yuanxu-load-modules source) source))
-         (graph (module-source-measure-operation 'build-selected-graph
+  (let* ((graph (module-source-measure-operation 'build-selected-graph
                   (lambda ()
                     (call-with-build-stage 'build-selected-graph
                       (lambda ()
@@ -310,13 +321,15 @@
                             (hash-get selected-states identity)))
               (and state (state input actual)))))))
     (def (current!)
-      (module-source-measure-operation 'build-current
+      (with-source-roots
         (lambda ()
-          (call-with-module-source-read-cache
+          (module-source-measure-operation 'build-current
             (lambda ()
-              ((.ref graph 'compiler-current))
-              (for-each (lambda (entry) ((.ref (.ref entry 'input) 'admit-current))) kept)
-              (module-source-admit-current! observed))))))
+              (call-with-module-source-read-cache
+                (lambda ()
+                  ((.ref graph 'compiler-current))
+                  (for-each (lambda (entry) ((.ref (.ref entry 'input) 'admit-current))) kept)
+                  (module-source-admit-current! observed))))))))
     (def (publication-current!)
       (current!)
       ;; Output issuance covers the entire selected Graph. Ordinary selected
@@ -366,8 +379,10 @@
                       source-import: (.ref graph '.with-compiler-source-import)
                       source-state: source-state source-owner: graph
                       refuse-input-context: refuse-input-context))))
-          (if foreign? (compile-inputs)
-            (call-with-selected-output-lock (build-output-directory) compile-inputs))) )
+          (with-source-roots
+            (lambda ()
+              (if foreign? (compile-inputs)
+                (call-with-selected-output-lock (build-output-directory) compile-inputs))))))
     (call-with-build-stage 'projection-current current!)
     (.o (:: projection) selected-graph: (.ref graph 'selected-graph) build-graph: graph
         compiler-identities: identities
@@ -448,4 +463,4 @@
         .process: (lambda (libdir command)
                    (publication-current!)
                    (process-build-artifacts (list projection libdir command)))
-        source-root: root std-make-spec: build-value admit-current: current!)))
+        source-root: root unified-source?: foreign? std-make-spec: build-value admit-current: current!)))

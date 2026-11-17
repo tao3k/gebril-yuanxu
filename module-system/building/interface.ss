@@ -3,6 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module System init projections. Infrastructure, not a selected module.
 (import (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path package-build-script-path)
+        (only-in :tao3k/yuanxu/module-system/building/products current-build-dispatch)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
@@ -208,7 +209,10 @@
           (lambda ()
             (def spec (.ref/inline build source-spec-site))
             (.call build .admit-spec spec)
-            (.call build .prepare-compiler-contexts)
+            (let (dispatch (current-build-dispatch))
+              (if (and dispatch (.ref build 'unified-source?))
+                (dispatch build spec)
+                (.call build .prepare-compiler-contexts)))
             spec))
         admit-current:
         (lambda ()

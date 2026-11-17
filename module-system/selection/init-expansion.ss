@@ -11,13 +11,13 @@
                    module-context? expander-context-id module-context-path current-expander-compiling? stx-car datum->syntax
                    make-top-context current-expander-phi current-import-expander-phi
                    current-export-expander-phi current-expander-marks)
-          (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-mounts module-init-export-name)
+          (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-windows module-init-export-name)
           (only-in :gerbil/compiler/base module-id->path-string)
           (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)))
 (import (only-in :clan/poo/object .ref .o .+)
         (only-in :std/source this-source-file)
         (only-in :tao3k/yuanxu/module-system/building/interface yuanxu-init-build)
-)
+        (only-in :tao3k/yuanxu/module-system/source/types make-module-source))
 (export expand-yuanxu-declaration expand-yuanxu-program-declaration)
 
 ;;; Every named window uses the same module protocol. Profiles and Scenarios
@@ -30,10 +30,11 @@
      ;; Normalize literal data only. One private getter is shared by all mounts;
      ;; expansion does not demand a Module scope or a test executor.
      (let* ((owner (core-context-top (current-expander-context) module-context?))
-            (mounts
-             (module-init-mounts
+            (windows
+             (module-init-windows
                (list (cons 'yuanxu! (cdr (syntax->datum stx))))
                (or (and origin (syntax->datum origin)) (and owner (module-context-path owner)))))
+            (mounts (if (null? windows) '(#f) (map car windows)))
             (getter (genident 'init-modules-getter))
             (base-exports (genident 'init-exports))
             ;; An exported identifier transformer needs a stable private runtime
@@ -62,6 +63,13 @@
                    (identifier-rules ()
                      (id (identifier? #'id) (.ref value 'name))))
                  (export name)))))
+       (def (source-export window)
+         (with-syntax ((binding (datum->syntax (syntax ctx) (cdr window)))
+                       (id (datum->syntax (syntax ctx) (expander-context-id owner)))
+                       (mount (datum->syntax (syntax ctx) (car window))))
+           #'(begin
+               (def binding (make-module-source 'id 'mount))
+               (export binding))))
        (when (ormap (lambda (mount)
                       (memq mount '(tests std-make-spec admit-current .yuanxu-init))) mounts)
          (raise-syntax-error #f "mount conflicts with an init export" stx))
@@ -81,6 +89,7 @@
           (exports-value exports-value-id)
           ((mount-slot ...) (map namespace-slot mounts))
           ((mount-export ...) (map mount-binding (filter identity mounts)))
+          ((source-export-form ...) (map source-export (filter cdr windows)))
           (module-source-getter getter))
          (syntax
            (begin
@@ -102,6 +111,7 @@
                      (.ref exports-value 'std-make-spec))))
              (export exports-binding make-spec-binding)
              mount-export ...
+             source-export-form ...
              ;; Runtime runtime modules have one result, not projection values.
              (void))))))
     (_ (raise-syntax-error #f

@@ -18,7 +18,8 @@
         :tao3k/yuanxu/module-system/source/admission
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-object-policies
                  module-source-text-guard)
-        :tao3k/yuanxu/module-system/source/init)
+        :tao3k/yuanxu/module-system/source/init
+        (only-in :tao3k/yuanxu/module-system/building/source-package package-module-source-path))
 (export module-directory-context directory-candidate-guard? directory-candidate-guard-invoke)
 (defstruct directory-source (value current?) final: #t)
 (defstruct directory-decision (value current?) final: #t)
@@ -100,6 +101,46 @@
                                                   (and (member "interface.ss" names) #t))))
              (hash-put! directories directory value)
              value))))
+    ;; Resolve an export through its declaring init. These observations are
+    ;; part of the same source epoch as the consuming init and its local paths.
+    (def export-origins (make-hash-table))
+    (def (resolve-window window)
+      (def source (.ref window 'root))
+      (if (string? source) window
+        (with ([_ owner binding] source)
+          (def origin (observe! package-module-source-path owner))
+          (def producer
+            (module-init-intent
+              (call-with-input-string (observe! module-source-read origin #t #t) read-all) origin))
+          (def provided
+            (and (.slot? producer 'windows)
+                 (find (lambda (entry) (eq? binding (.ref entry 'source-export)))
+                       (.ref producer 'windows))))
+          (unless provided (error "source binding is not a public ModuleSource" owner binding))
+          (def root (path-strip-trailing-directory-separator
+                       (path-normalize (module-init-source-root provided origin))))
+          (def package (observe! module-source-package-info (path-directory origin)))
+          (def root-package
+            (observe! module-source-package-info
+                      (path-directory (path-expand "interface.ss" root))))
+          (unless (and package root-package (equal? (car package) (car root-package)))
+            (error "ModuleSource window belongs to another package" owner binding))
+          (hash-put! export-origins root (path-directory origin))
+          (.cc window 'root root))))
+    (def (resolve-windows intent)
+      (if (.slot? intent 'windows)
+        (let (windows (.ref intent 'windows))
+          (if (andmap (lambda (window) (string? (.ref window 'root))) windows)
+            intent
+            (let* ((resolved (map resolve-window windows))
+                   (roots
+                    (map (lambda (window) (path-strip-trailing-directory-separator
+                                           (module-init-source-root window (.ref intent 'init-source))))
+                         resolved)))
+              (unless (= (length roots) (length (delete-duplicates/hash roots)))
+                (error "duplicate resolved directory window source" roots))
+              (.cc intent 'windows resolved 'root (.ref (car resolved) 'root)))))
+        intent))
     (def (intent-root intent file)
         (let (configured (.ref intent 'root))
           (if (and (not (.ref intent 'root-explicit?)) (string=? configured "modules")
@@ -126,8 +167,9 @@
                  (else #f)))))
            (_declared (unless init-path (error "module window requires a yuanxu! declaration" input)))
            (intent-value
-             (module-init-intent
-               (call-with-input-string (observe! module-source-read init-path #t #t) read-all) init-path))
+             (resolve-windows
+               (module-init-intent
+                 (call-with-input-string (observe! module-source-read init-path #t #t) read-all) init-path)))
            (root-path (intent-root
                         (if (.slot? intent-value 'windows)
                           (car (.ref intent-value 'windows)) intent-value) init-path))
@@ -523,8 +565,11 @@
                           (and intent
                             (let (roots
                                    (if (.slot? intent 'windows)
-                                     (map (lambda (window) (module-init-source-root window file))
-                                          (.ref intent 'windows))
+                                     (filter-map
+                                       (lambda (window)
+                                         (and (string? (.ref window 'root))
+                                              (module-init-source-root window file)))
+                                       (.ref intent 'windows))
                                      (list (intent-root intent file))))
                               (and (any (lambda (path) (inside? root path)) roots)
                                    (path-normalize (path-directory file)))))))) candidates))
@@ -535,21 +580,27 @@
             (if (pair? origins) (car origins) (path-normalize root)))))
       (def kernel-roots
         (list->hash-table
-          (map (lambda (root) (cons (canonical root) (declared-kernel root)))
+          (map (lambda (root)
+                 (def key (canonical root))
+                 (cons key (or (hash-get export-origins key) (declared-kernel root))))
                (if windows (map window-root windows) (list root-path)))))
       ;; A foreign kernel is admitted by the init that owns the declared
       ;; directory. A bare external directory grants only its own source tree.
       (def package-kernels
         (filter-map (lambda (root)
                       (let (kernel (hash-ref kernel-roots (canonical root)))
-                        (and (not (inside? root (path-directory init-path)))
+                        (and (or (hash-key? export-origins (canonical root))
+                                 (not (inside? root (path-directory init-path))))
                              (not (equal? (canonical root) (canonical kernel)))
                              kernel)))
                     declared-window-roots))
       ;; A window prefix is not Module ownership. The indexed ancestor walk
       ;; above refuses actual closed boundaries; #f denotes an ordinary library.
+      (def source-package-roots
+        (delete-duplicates/hash
+          (map (lambda (root) (hash-ref kernel-roots (canonical root))) declared-window-roots)))
       (def source-tree
-        (.o locate-owner: source-owner package-roots: (delete-duplicates/hash (map cdr (hash->list kernel-roots)))
+        (.o locate-owner: source-owner package-roots: source-package-roots
             package-kernel: (lambda (file) (find (lambda (root) (inside? file root)) package-kernels))
             within-window?:
             (lambda (file) (any (lambda (root) (inside? file root)) declared-window-roots))))
@@ -572,6 +623,7 @@
                                   (if window (window-root window) root-path)))
                   (declared (and row (.ref row 'source-root)))
                   (origin (and declared (path-expand declared (path-directory init-path)))))
+             (def owner-root-key (canonical owner-root))
              (def (publish raw-child raw-collection-root (checked-kind? #f))
                (unless (or checked-kind? (eq? (observe! module-source-type raw-child) 'directory))
                  (error "module source is not a directory" raw-child))
@@ -594,9 +646,11 @@
                  (let (value (make-yuanxu-module-source-ref
                               'local (path-expand "interface.ss" child)
                               (append (if qualified-owners? (list (cons 'declaration-id local-id)) '())
+                              (if (hash-key? export-origins owner-root-key)
+                                '((imported-module-source? . #t)) '())
                               (list (cons 'module-id id) (cons 'module-root child)
                                     (cons 'collection-root collection-root)
-                                    (cons 'kernel-root (hash-ref kernel-roots (canonical owner-root)))
+                                    (cons 'kernel-root (hash-ref kernel-roots owner-root-key))
                                     ;; Mount is organization, never publication identity.
                                     (cons 'namespace-mount
                                       (if window (.ref window 'mount)
@@ -740,6 +794,7 @@
                           (foldr append '() (map auto-owners (or windows '(#f)))))
           (feature-roots)
           denied-modules: denied-values intent: scoped-intent init-source: init-path source-root: root-path
+          package-roots: source-package-roots
           locate: (lambda (id) (locate-source (resolve-request-root id)))
           collect-entrypoint:
           (lambda (owner contributor parts)

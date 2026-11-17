@@ -91,7 +91,7 @@
     (test-case "named Profile carries its source window and literal selector"
       (def intent
         (module-init-intent
-          '((yuanxu! :test-dir "./t" :load-modules "./modules" rename: Security
+          '((yuanxu! :load-modules "./modules" rename: Security
               mode: auto profile: security)) #f))
       (def window (car (.get intent windows)))
       (check-equal? (.get window mount) 'Security)
@@ -111,7 +111,7 @@
           (def (declaration core-tag)
             (write-source "consumer/init.ss"
               (string-append
-                "(yuanxu! :test-dir \"./t\" :load-modules \"../lab\" rename: Lab mode: auto profile: deployment"
+                "(yuanxu! :load-modules \"../lab\" rename: Lab mode: auto profile: deployment"
                 " :load-modules \"../core\" rename: Core mode: auto profile: " core-tag ")")))
           (declaration "deployment")
           ;; Exercise inert directory policy; real role admission is covered by

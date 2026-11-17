@@ -127,7 +127,7 @@
         (call-with-output-file path
           (lambda (out)
             (pretty-print '(import :tao3k/yuanxu/module-system/selection/init-syntax) out)
-            (pretty-print '(yuanxu! :test-dir "./t" :load-modules "./absent" mode: explicit
+            (pretty-print '(yuanxu! :load-modules "./absent" mode: explicit
                                    rename: Modules (missing)) out)))
         path)
       (def left-path (prepare! left ':tao3k/yuanxu/prelude))

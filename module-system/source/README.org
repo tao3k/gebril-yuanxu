@@ -45,10 +45,26 @@ The declaration can live in any Gerbil module, such as =yuanxu-init.ss=. It keep
 input identities and target order. The package build entry consumes that
 spec through =defbuild-script=.
 
-Each Loader requires an explicit =:test-dir=. Declare =:test-dir "./t"=
-before the module windows in =yuanxu!= to share the standard directory, or
-declare it inside a window to set that window's directory. The path is
-relative to the declaration file. Qualification discovery follows
+A window accepts a local path or a reference to a public =ModuleSource=.
+An owning package publishes a path window with =export: ModulesSource=.
+A consumer declares the package through Gerbil and selects its desired
+modules through the published binding:
+
+#+begin_src scheme
+(yuanxu!
+  :load-modules "./modules" mode: auto
+  :load-modules (from: :example/provider/init ModulesSource)
+  rename: Shared mode: explicit :test-dir "./checks"
+  (schema))
+#+end_src
+
+The consuming init's =std-make-spec= contains the selected targets from both
+packages in dependency order. Gerbil resolves the registered owner and
+compiles the targets with their original library identities.
+
+Each window uses =t/= relative to the consuming declaration file by default.
+Set =:test-dir= inside a window to use another relative directory.
+Qualification discovery follows
 =<test-dir>/yanxu/<mount>/<module-name>/=, for example
 =t/yanxu/Lab/services/opentofu/=. The mount uses =rename:= when supplied,
 otherwise it uses the Loader directory name. A missing qualification

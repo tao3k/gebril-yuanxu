@@ -17,7 +17,7 @@
   (def init (and (.slot? context 'init-source) (.ref context 'init-source)))
   (def declared (assq 'test-dir metadata))
   (unless (and (string? init) declared (string? (cdr declared)))
-    (error "qualification discovery requires an explicit :test-dir" init))
+    (error "qualification discovery requires a window test directory" init))
   (def mount (assq 'namespace-mount metadata))
   (def declaration (assq 'declaration-id metadata))
   (def parts
@@ -37,6 +37,7 @@
   (def roots (make-hash-table))
   (def directories (make-hash-table))
   (def owners (make-hash-table))
+  (def local-test-owners '())
   (def (real-or-absent! path)
     (unless (memq (module-source-type path) '(#f directory))
       (error "qualification ancestor must be a real directory" path)))
@@ -71,7 +72,11 @@
           (descend tree owner-parts (lambda (path) (hash-put! directories path #t))))
         (when (hash-key? owners directory)
           (error "two Loader owners share a test directory" directory))
-        (hash-put! owners directory owner)))
+        (hash-put! owners directory owner)
+        ;; The consumer may qualify an imported module, while mandatory
+        ;; owner tests stay with the package publishing its source.
+        (when (and required? (not (assq 'imported-module-source? metadata)))
+          (set! local-test-owners (cons (cons directory owner) local-test-owners)))))
     (.ref context 'loader-roots))
   (def found '())
   (def (suite-name? name) (string-suffix? "-test.ss" name))
@@ -111,11 +116,12 @@
         (lambda (file)
           (hash-put! populated (path-strip-trailing-directory-separator (path-directory file)) #t))
         found)
-      (hash-for-each
-        (lambda (directory owner)
-          (unless (hash-key? populated directory)
-            (error "Loader owner has no published tests" owner directory)))
-        owners)))
+      (for-each
+        (lambda (entry)
+          (with ([directory . owner] entry)
+            (unless (hash-key? populated directory)
+              (error "Loader owner has no published tests" owner directory))))
+        local-test-owners)))
   (unless (equal? (list-sort string<? found) (list-sort string<? published))
     (error "Loader test publication does not match the test tree"
            (filter (lambda (file) (not (member file published))) found)
