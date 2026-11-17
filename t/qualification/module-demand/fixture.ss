@@ -108,8 +108,7 @@
       (append '("gerbil.pkg" "interface.ss") (map cadr roles))))
   (def wrapper (path-expand "projected.ss" root))
   (write-forms wrapper
-    `((import (except-in :clan/poo/object .def)
-              (only-in :clan/poo/object .def)
+    `((import :clan/poo/object
               (only-in :tao3k/yuanxu/t/qualification/module-demand/projection-syntax include-projected-interface)
               (only-in :tao3k/yuanxu/t/qualification/module-demand/fixture load-role))
       (def core 'outer-core-must-not-be-used)

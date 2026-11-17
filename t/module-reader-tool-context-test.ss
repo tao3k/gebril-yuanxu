@@ -86,6 +86,8 @@
                               (lambda () ((.get reader admit-current)))) #t)))
           (lambda () (slot-set! tool 'path path))))
       (test-case "exact tool bytes remain guarded after Graph construction"
+        (write-source (path-expand "modules/json-schema/build.ss" root)
+          "(.def Build defbuild-script: (.o spec: '()))")
         (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                (graph (.get view build-graph)))
           (check-equal?

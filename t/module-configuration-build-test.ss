@@ -91,7 +91,8 @@
     (yuanxu-test-case "an unused builder never evaluates its contribution"
       (with-fixture
         (lambda (root builder)
-          (write-source (path-expand "build.ss" builder) "(error \"unused construction capability\")")
+          (write-source (path-expand "build.ss" builder)
+            "(.def Build defbuild-script: (.o spec: '()) unused: (error \"unused construction capability\"))")
           (write-source (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :tools (builder))")
           (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
             (assert 'unused-builder-has-no-package (null? (.get view build-graph external-packages)))

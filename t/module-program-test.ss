@@ -87,7 +87,7 @@
           (put root (string-append directory "build.ss")
             (string-append "(.def Build defbuild-script: (.o spec: '((exe: \"command\" bin: \"" name "-tool\"))))"))
           (put root (string-append directory "interface.ss")
-            (string-append "(import (only-in :clan/poo/object .def .o) \"./types.ss\" \"./config.ss\") (export Publication) (.def Publication identity: '" name
+            (string-append "(import (only-in :clan/poo/object .def .o) \"./types.ss\" \"./objects.ss\") (export Publication) (.def Publication identity: '" name
               " core: (.o scope-contract: Scope exports: Defaults) features: (.o))"))) modules)
       (def expected
         (append '("rootlib")

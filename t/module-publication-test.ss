@@ -301,10 +301,9 @@
           (hash-for-each
             (lambda (context _seen)
               (check-equal? (eq? (core-context-prelude context) prelude) #t)
-              ;; .o remains available through the shared runtime weak prelude;
-              ;; its import alias is not copied into either local table.
+              ;; Both POO bindings come from the shared weak prelude.
               (check-equal? (hash-key? (expander-context-table context) '.o) #f)
-              (check-equal? (hash-key? (expander-context-table context) '.def) #t))
+              (check-equal? (hash-key? (expander-context-table context) '.def) #f))
             interfaces))))
 
     (yuanxu-test-case "authored imports retain native binding identity in the stock frame"
@@ -707,7 +706,7 @@
               (write-file file (string-append (module-source-read file) extra)))
             (let (message (exception-message (lambda () (yuanxu-prepare-module-publication source))))
               (check-equal? (if (string-contains message "interface.ss must contain one Module .def") #t #f) #t)))))
-       '(" (export Fixture)"
+       '(" (export Greeting)"
          " (export (import: \"unimported.ss\"))"
          " (begin (error \"must not evaluate\"))")))
     (yuanxu-test-case "unchanged publication identity is parsed once; changed header and closer package refuse"

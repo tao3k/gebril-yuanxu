@@ -38,7 +38,7 @@
   (call-with-output-file (list path: path truncate: #t) (cut display text <>)))
 (def (make-role spec)
   (string-append "(.def Build defbuild-script: (.o spec: " spec "))"))
-(def (fixture root build (explicit-projection? #f))
+(def (fixture root build)
   (let ((owner (path-expand "modules/app/example" root)))
     (write-source (path-expand "gerbil.pkg" root)
       (string-append "(package: " (symbol->string (gensym 'build-role-)) ")"))
@@ -51,10 +51,7 @@
     (write-source (path-expand "config.ss" owner)
       "(def Config (.o value: 42))")
     (write-source (path-expand "interface.ss" owner)
-      (string-append
-        "(.def Example identity: 'app/example core: (.o scope-contract: Scope exports: (.o config: Config forbidden: Build)"
-        (if explicit-projection? " projections: (list Build)" "")
-        ") features: (.o))"))
+      "(.def Example identity: 'app/example core: (.o scope-contract: Scope exports: (.o config: Config forbidden: Build)) features: (.o))")
     (write-source (path-expand "build.ss" owner) build)
     (write-source (path-expand "modules/unused/bomb/interface.ss" root) "((invalid disabled interface")
     (write-source (path-expand "modules/unused/bomb/build.ss" root) "((invalid disabled build")
@@ -139,7 +136,7 @@
         (lambda (root)
           (def owner (fixture root
             ;; Distinct source files can carry independent compiler options.
-            (make-role "'((gxc: \"entry\" \"-O\") (exe: \"run\" bin: \"entry-tool\" \"-debug\"))") #f))
+            (make-role "'((gxc: \"entry\" \"-O\") (exe: \"run\" bin: \"entry-tool\" \"-debug\"))")))
           (def interface (path-expand "interface.ss" owner))
           (write-source interface
             (string-append "(import (for-template \"./entry.ss\")) "
@@ -232,7 +229,7 @@
               (def owner (fixture root
                 (make-role (if program?
                              "'((exe: \"entry\" bin: \"tool\"))"
-                             "'((gxc: \"entry\" \"-O\"))")) #f))
+                             "'((gxc: \"entry\" \"-O\"))"))))
               (write-source (path-expand "entry.ss" owner)
                 "(import \"./helper.ss\") (error \"standard source must not run\") (def (main . args) answer) (export main)")
               (write-source (path-expand "helper.ss" owner)
@@ -300,7 +297,7 @@
         (lambda (build)
           (call-with-temporary-directory "build-context-epoch-"
             (lambda (root)
-              (fixture root (make-role build) #f)
+              (fixture root (make-role build))
               (write-source (path-expand "init.ss" root)
                 "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :app (example))")
               (def exports (import-fixture-init! (path-expand "init.ss" root)))
@@ -1225,7 +1222,7 @@
           (write-source (path-expand "init.ss" root)
             "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :app (example))")
           (write-source (path-expand "interface.ss" owner)
-            "(import (only-in :clan/poo/object .def .o) \"./types.ss\" \"./objects.ss\") (export Example) (.def Example identity: 'app/example core: (.o scope-contract: Scope exports: Defaults) features: (.o))")
+            "(import (only-in :clan/poo/object .def .o)) (.def Example identity: 'app/example core: (.o scope-contract: Scope exports: Defaults) features: (.o))")
           (write-source (path-expand "objects.ss" owner)
             "(import :clan/poo/object \"./helper.ss\") (.def Defaults) (export Defaults)")
           (write-source (path-expand "helper.ss" owner)

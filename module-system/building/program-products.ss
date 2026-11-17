@@ -1,10 +1,10 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Pure projection of standard native target products; no compiler or loader.
-(import (only-in :clan/poo/object .cc .o .get .slot? .all-slots object?)
+(import (only-in :clan/poo/object .o .get .slot? .all-slots object?)
         (only-in :std/list/list find filter-map delete-duplicates/hash)
         (only-in :std/string/path path-absolute?)
-        (only-in :clan/poo/type Type. define-type element? List Record)
+        (only-in :clan/poo/type Type. define-type element? List)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-name? module-source-type module-source-read))
 (export make-target? resolve-make-target-inputs StdMakeRowContract DefbuildScriptContract ModuleBuildContract make-target-kind make-target-spec program-targets
         program-path program-identity? projection-program-targets)
@@ -101,6 +101,8 @@
 
 ;; Build is a POO object, so an inherited Build supplies the same effective
 ;; parameter slot as a directly defined Build.
-(def ModuleBuildContract
-  (.cc (Record defbuild-script: [DefbuildScriptContract])
-       identity: 'module/build))
+(define-type (ModuleBuildContract @ Type.)
+  identity: 'module/build
+  .element?: (lambda (build)
+               (and (object? build) (.slot? build 'defbuild-script)
+                    (element? DefbuildScriptContract (.get build defbuild-script)))))
