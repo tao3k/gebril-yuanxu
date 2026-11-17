@@ -19,7 +19,7 @@
                        (if inherited-options (string-append inherited-options ",") ""))
                  (substring runtime-option 2 (string-length runtime-option))))
 (def actions 0)
-(def (invoke command directory state producer (success? #t))
+(def (invoke command directory state producer (success? #t) stdout-only?: (stdout-only? #f))
   (def started (real-time))
   (displayln "THOUSAND-ACTION start state=" (path-strip-directory state) " command=" command)
   (force-output)
@@ -30,7 +30,8 @@
         timeout: 180 idle-timeout: 60 check-status: #f
         environment: (.o GERBIL_PATH: state GAMBOPT: runtime-environment
           GERBIL_LOADPATH: (string-join (append (list (path-expand "lib" state)) prerequisites (list producer)) ":")))
-      '() output-port: (if success? (current-error-port) (open-output-string))))
+      '() stderr-redirection: (not stdout-only?)
+      output-port: (if success? (current-error-port) (open-output-string))))
   (def output (.get result output))
   (unless (eq? (zero? (.get result status)) success?)
     (error "unexpected thousand-catalog action status" command (.get result status) output))
@@ -48,7 +49,8 @@
   (invoke (if (member operation '("use" "owner"))
             (list "gxi" (if (equal? operation "owner") "owner-check.ss" "use.ss"))
             (list "gxi" "build.ss" operation))
-          consumer state producer success?))
+          consumer state producer success?
+          stdout-only?: (and success? (equal? operation "spec"))))
 (def (compile-events output)
   (call-with-input-string output
     (lambda (port)

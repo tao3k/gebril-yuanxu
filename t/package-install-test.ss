@@ -145,7 +145,8 @@
                       (pkg state temporary "link" producer-id managed-producer)
                       (check-equal? (compile-events (pkg state temporary "build" producer-id)) '()))
                     (list a b))
-          (def spec (call-with-input-string (ordinary a managed-consumer "spec") read))
+          (def spec
+            (call-with-input-string (invoke '("./build.ss" "spec") managed-consumer a #t) read))
           ;; The source view uses full native identities as Make target names.
           (def targets
             (list-sort string<? (map (lambda (target) (if (string? target) target (cadr target))) spec)))
