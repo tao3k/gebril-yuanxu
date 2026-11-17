@@ -27,7 +27,7 @@
           (else
            (defvalues (graph counts)
              (call-with-module-source-operation-measurement
-               (lambda () (.get FixtureExports tests selected-graph)) accounting?: #f))
+               (lambda () (.get FixtureExports tests selected-graph)) accounting?: 'counts))
            (cons graph counts))))))
   (def graph (car measured))
   (def counts (cdr measured))

@@ -109,8 +109,8 @@
   ;; The runtime scalar table is private for the entire action. Report it only
   ;; afterwards: callers cannot install a custom hash/ref callback in the
   ;; middle of the reader's otherwise closed runtime replay segment.
-  (unless (memq accounting? '(#t #f stages))
-    (error "expected Boolean or stages operation accounting mode"))
+  (unless (memq accounting? '(#t #f stages counts))
+    (error "expected Boolean, stages, or counts operation accounting mode"))
   (let (times (make-hash-table))
     (def value (parameterize ((current-module-source-operation-times times)
                              (current-module-source-operation-accounting? accounting?)) (action)))
@@ -123,34 +123,36 @@
                     (memq (car name) '(reader-initialization reader-initializer-body))
                     (car name)))
              (accounting (current-module-source-operation-accounting?)))
-        (if (and initialization (not accounting)) (action)
+        (if (and initialization (memq accounting '(#f counts))) (action)
           ;; Stage summaries retain only initializer families. Explicit detailed
           ;; accounting keeps source paths. Owner-qualified scope counters
           ;; retain their identities in every mode.
           (let (name (if (and initialization (eq? accounting 'stages)) initialization name))
             (hash-update! times (list 'calls name) (cut + <> 1) 0)
-            ;; Attribute bounded stages, not each leaf read/query. In particular
-            ;; source-read starts AFTER its read-attempt counter was incremented.
-            (if (or (and (pair? name) (eq? (car name) 'reader-current))
-                    (memq name '(build-main build-selected-graph std-make reader-bootstrap
-                            reader-current reader-interface-start reader-preparation-start
-                            reader-admission-start reader-compiled-import reader-role-import
-                            reader-tool-inputs reader-private-closure reader-compile-start
-                            reader-eval-start metadata-replay source-init-current
-                            source-gerbil-owner-read source-role-open
-                            compiler-input-lookup compiler-role-inventory
-                            compiler-import-before compiler-import-after
-                            compiler-view-before compiler-view-after)))
-              (measure-source-read-attempts times name
-                (lambda () (measure-source-operation times name action)))
-                  (if (and (pair? name) (eq? (car name) 'reader-candidate-replay-site))
-                    (let (before (hash-ref times '(visits metadata-replay) 0))
-                      (dynamic-wind void
-                        (lambda () (measure-source-operation times name action))
-                        (lambda ()
-                          (hash-update! times (list 'visits name)
-                            (cut + <> (- (hash-ref times '(visits metadata-replay) 0) before)) 0))))
-                    (measure-source-operation times name action)))))))))
+            (if (eq? accounting 'counts)
+              (action)
+              ;; Attribute bounded stages, not each leaf read/query. In particular
+              ;; source-read starts AFTER its read-attempt counter was incremented.
+              (if (or (and (pair? name) (eq? (car name) 'reader-current))
+                      (memq name '(build-main build-selected-graph std-make reader-bootstrap
+                              reader-current reader-interface-start reader-preparation-start
+                              reader-admission-start reader-compiled-import reader-role-import
+                              reader-tool-inputs reader-private-closure reader-compile-start
+                              reader-eval-start metadata-replay source-init-current
+                              source-gerbil-owner-read source-role-open
+                              compiler-input-lookup compiler-role-inventory
+                              compiler-import-before compiler-import-after
+                              compiler-view-before compiler-view-after)))
+                (measure-source-read-attempts times name
+                  (lambda () (measure-source-operation times name action)))
+                    (if (and (pair? name) (eq? (car name) 'reader-candidate-replay-site))
+                      (let (before (hash-ref times '(visits metadata-replay) 0))
+                        (dynamic-wind void
+                          (lambda () (measure-source-operation times name action))
+                          (lambda ()
+                            (hash-update! times (list 'visits name)
+                              (cut + <> (- (hash-ref times '(visits metadata-replay) 0) before)) 0))))
+                      (measure-source-operation times name action))))))))))
 (def (measure-source-operation times name action)
   (if (if (eq? (current-module-source-operation-accounting?) 'stages)
               (or (and (pair? name)
