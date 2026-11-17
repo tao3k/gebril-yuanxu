@@ -10,7 +10,8 @@
                  current-expander-module-import eval-syntax eval-module expander-context-id module-context-path
                  module-context-code module-context?
                  current-expander-compile current-expander-eval expander-context-table syntax-e
-                 core-read-module/sexp core-resolve-module-path core-import-module __module-registry)
+                 core-read-module/sexp core-resolve-module-path core-resolve-library-module-path
+                 core-import-module __module-registry)
         (only-in :clan/poo/type validate)
         (only-in :tao3k/yuanxu/module-system/building/program-products DefbuildScriptContract)
         (only-in :clan/poo/read-route require-read-route!)
@@ -582,6 +583,28 @@
          (admit-compiled-context! context)
          context)
        (def (import-request path reload?)
+         (let* ((request (syntax-e path))
+                (tool (and (not reload?) (not (current-module-source-observer))
+                           (eq? gerbil-import core-import-module)
+                           (string? request)
+                           (string=? (path-extension request) ".ssi")
+                           (hash-get (reader-session-tool-paths session) request)))
+                (origin (and tool (hash-get (reader-session-compiler-contexts session) tool))))
+           ;; Gerbil passes the resolved path to its import hook. An exact
+           ;; registered tool cannot contribute a selected source role. Keep
+           ;; its live Context and tool-source checks without reparsing the
+           ;; installed interface solely to classify the same import again.
+           (if (and origin (equal? request (cdr origin))
+                    (registered-native-context-current? tool origin)
+                    (equal? request
+                      (core-resolve-library-module-path
+                        (string->symbol (string-append ":" (symbol->string (car origin)))))))
+             (let (context (gerbil-import request))
+               (unless (eq? context tool)
+                 (error "compiler tool context changed during publication" request))
+               (tool-context context #f))
+             (resolve-import-request path reload?))))
+       (def (resolve-import-request path reload?)
          ;; Native import arguments may carry syntax/source locations. Resolve
          ;; file requests before importing: expansion can execute initializers.
          (def requested (syntax-e path))
