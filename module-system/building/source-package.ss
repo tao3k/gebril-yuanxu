@@ -8,7 +8,7 @@ prelude: :gerbil/core
                  module-source-path prelude-context-path core-read-module/sexp
                  core-library-package-plist)
         (only-in :std/list/list delete-duplicates/hash filter-map find)
-        (only-in :gerbil/tools/gxpkg pkg-root-dir pkg-list))
+        (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action))
 (export package-library-prefix package-prelude-identity register-module-build-source! module-build-source-path module-build-library-source-path module-build-import-identity module-build-resolve-library
         call-with-build-input-path call-with-build-source-fallbacks package-build-script-path
         package-module-source-path)
@@ -209,13 +209,19 @@ prelude: :gerbil/core
         (error "compiler source identity mismatch" identity actual source))
       source)))
 
+;; Package tools are only needed when a window refers to an installed source.
+(def package-store-root
+  (module-binding-action "gerbil/tools/gxpkg" 'pkg-root-dir))
+(def installed-packages
+  (module-binding-action "gerbil/tools/gxpkg" 'pkg-list))
+
 ;; Gerbil's package roster is authoritative for an exported ModuleSource.
 ;; Look up its source header without importing any provider code.
 (def (package-module-source-path library)
   (def text (symbol->string library))
   (def identity (string->symbol (substring text 1 (string-length text))))
   (def name (symbol->string identity))
-  (def store (pkg-root-dir))
+  (def store (package-store-root '()))
   (def matches
     (filter-map
       (lambda (package)
@@ -228,7 +234,7 @@ prelude: :gerbil/core
                (and (file-exists? source)
                     (let-values (((_prelude declared _namespace _body) (core-read-module/sexp source)))
                       (and (eq? identity declared) (path-normalize source)))))))
-      (pkg-list)))
+      (installed-packages '())))
   (match matches
     ([source] source)
     ([] (error "ModuleSource owner is absent from installed Gerbil packages" library))
