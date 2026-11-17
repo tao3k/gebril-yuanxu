@@ -276,35 +276,43 @@
           (check-equal? calls 1)
           (check-equal? (file-exists? marker) #f))))
     (yuanxu-test-case "interfaces share the POO prelude without per-module alias copies"
-      (with-publication-source
-        (lambda (_root _module-root source _view)
-          (def reader (module-publication-reader))
-          (def prelude
-            (core-module->prelude-context
-              (core-import-module ':tao3k/yuanxu/module-system/source/config-prelude)))
-          (def gerbil-eval (current-expander-eval))
-          (def interfaces (make-hash-table-eq))
-          (parameterize
-              ((current-expander-eval
-                 (lambda (program)
-                   (def context (current-expander-context))
-                   (call-with-values (cut gerbil-eval program)
-                     (lambda results
-                       (when (and (module-context? context)
-                                  (string? (module-context-path context))
-                                  (string-suffix? "-interface.ss" (module-context-path context)))
-                         (hash-put! interfaces context #t))
-                       (apply values results))))))
-            (.call reader read source)
-            (.call reader read source))
-          (check-equal? (hash-length interfaces) 2)
-          (hash-for-each
-            (lambda (context _seen)
-              (check-equal? (eq? (core-context-prelude context) prelude) #t)
-              ;; Both POO bindings come from the shared weak prelude.
-              (check-equal? (hash-key? (expander-context-table context) '.o) #f)
-              (check-equal? (hash-key? (expander-context-table context) '.def) #f))
-            interfaces))))
+      (for-each
+        (lambda (explicit?)
+          (with-publication-source
+            (lambda (_root module-root source _view)
+              (when explicit?
+                (let (path (path-expand "interface.ss" module-root))
+                  (write-file path
+                    (string-append "(import (only-in :clan/poo/object .def))\n"
+                                   (module-source-read path)))))
+              (def reader (module-publication-reader))
+              (def prelude
+                (core-module->prelude-context
+                  (core-import-module ':tao3k/yuanxu/module-system/source/config-prelude)))
+              (def gerbil-eval (current-expander-eval))
+              (def interfaces (make-hash-table-eq))
+              (parameterize
+                  ((current-expander-eval
+                     (lambda (program)
+                       (def context (current-expander-context))
+                       (call-with-values (cut gerbil-eval program)
+                         (lambda results
+                           (when (and (module-context? context)
+                                      (string? (module-context-path context))
+                                      (string-suffix? "-interface.ss" (module-context-path context)))
+                             (hash-put! interfaces context #t))
+                           (apply values results))))))
+                (.call reader read source)
+                (.call reader read source))
+              (check-equal? (hash-length interfaces) 2)
+              (hash-for-each
+                (lambda (context _seen)
+                  (check-equal? (eq? (core-context-prelude context) prelude) #t)
+                  ;; An authored .def is local; weak prelude bindings stay shared.
+                  (check-equal? (hash-key? (expander-context-table context) '.o) #f)
+                  (check-equal? (hash-key? (expander-context-table context) '.def) explicit?))
+                interfaces))))
+        '(#f #t)))
 
     (yuanxu-test-case "authored imports retain native binding identity in the stock frame"
       (with-publication-source

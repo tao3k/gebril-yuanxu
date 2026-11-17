@@ -1,6 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Isolated lowering experiment. Not a public macro or a Loader entry point.
-(import :clan/poo/object (for-syntax :gerbil/expander))
+(import :clan/poo/object
+        (only-in :clan/poo/support/object-syntax normalize-slot-specs)
+        (for-syntax :gerbil/expander))
 (export include-projected-interface)
 (defsyntax (include-projected-interface input)
   (syntax-case input ()
@@ -52,5 +54,28 @@
                                   (lambda (key value)
                                     (if (eq? (stx-e key) 'core:) (wrap-core value) value)))))
               #'(head name . slots)))))
+       ;; Inspect the native POO slot binding and the original field location.
+       (def (check-declaration original-form projected-form)
+         (def original (syntax-local-rewrap original-form))
+         (def projected (syntax-local-rewrap projected-form))
+         (def (core-field-key form)
+           (let loop ((fields (cddr (syntax->list form))))
+             (and (pair? fields)
+                  (if (eq? (stx-e (car fields)) 'core:)
+                    (car fields)
+                    (loop (cddr fields))))))
+         (def original-key (core-field-key original))
+         (def projected-key (core-field-key projected))
+         (def methods
+           (car (normalize-slot-specs projected (stx-cdr (stx-cdr projected)))))
+         (def row
+           (find (lambda (row) (eq? (stx-e (stx-car row)) 'core)) methods))
+         (def expected (datum->syntax (stx-car original) 'core))
+         (unless (and row (bound-identifier=? (stx-car row) expected)
+                      original-key projected-key (stx-source original-key)
+                      (equal? (stx-source original-key) (stx-source projected-key)))
+           (raise-syntax-error #f "declaration lost original core binding or location" input)))
+       (def projected (map rewrite forms))
+       (for-each check-declaration forms projected)
        (syntax-local-rewrap
-         (stx-wrap-source (core-cons 'begin (map rewrite forms)) (stx-source input)))))))
+         (stx-wrap-source (core-cons 'begin projected) (stx-source input)))))))
