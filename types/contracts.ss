@@ -10,12 +10,17 @@
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/type define-type Type Type. Bool Object element? TypeError? validate
                  raise-type-error Record Symbol List)
-        (only-in :clan/poo/mop .defgeneric Slot instance prototype-instance?)
+        (only-in :clan/poo/mop .defgeneric Slot instance prototype-instance?
+                 object-precedence-ready? object-find-in-precedence
+                 object-direct-slot-specification
+                 object-direct-protocol?)
+        (only-in :clan/poo/slot-observation %slot-read-active?)
         (only-in :clan/poo/object-contract checked-action)
         (only-in :std/error Error-irritants)
         (only-in :std/list/list every)
         (only-in :clan/poo/read-projection
                  owned-read-leaf! owned-read-copy! owned-read-open!
+                 current-owned-read-open-guard
                  make-owned-method-check call-with-owned-read-method-checks)
 )
 
@@ -476,7 +481,43 @@
      (if accepted? '()
        (list (.o kind: 'prototype-mismatch type-identity: identity))) context)))
 
+;; Only the maintained object admission methods and empty contextual policy
+;; can answer a membership query without projecting admission evidence.
+;; Read actual POO declarations on each call, including edits to ancestors.
+(def (custom-object-admission? source)
+  (or (not (zero? (object-revision source)))
+      (object-direct-protocol? source)
+      (pair? (object-declarations source))
+      (and (not (eq? source YuanxuObjectContract.))
+           (not (eq? source YuanxuContract.))
+           (object-direct-slot-specification source '.classify))
+      (and (not (eq? source YuanxuContract.))
+           (or (object-direct-slot-specification source '.admit)
+               (object-direct-slot-specification source 'prepared-value-action)
+               (object-direct-slot-specification source 'responsibilities)
+               (object-direct-slot-specification source '.obligations)))))
+
+(def (yuanxu-object-contract-element? contract candidate)
+  (let (check (.ref contract '.identity-member?))
+    (if (and check
+             (not (%slot-read-active?))
+             (not (current-owned-read-open-guard))
+             (not (current-contract-analysis))
+             (object-precedence-ready? contract)
+             (zero? (object-revision YuanxuClassificationEvidence))
+             (zero? (object-revision YuanxuValidationEvidence))
+             (zero? (object-revision Slot))
+             (not (object-find-in-precedence contract custom-object-admission?))
+             (check (.ref contract 'value-contract) candidate))
+      (prototype-instance? (.ref contract 'proto) candidate)
+      (yuanxu-contract-element? contract candidate))))
+
 ;;; Invariant: runtime objects must prove prototype ancestry before slot obligations run.
 (define-type (YuanxuObjectContract. @ YuanxuContract.
-                                         identity proto)
+                                         identity proto .identity-member?)
+  ;; A value owner may prove that its current Type accepts this value and
+  ;; validation is effect-free and returns it unchanged. A false result
+  ;; delegates to the complete membership and normalization path.
+  .identity-member?: #f
+  .element?: (cut yuanxu-object-contract-element? @ <>)
   .classify: (cut yuanxu-prototype-classify identity proto <> <>))
