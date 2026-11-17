@@ -3,7 +3,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; The Build value is accessible only while projecting standard Make inputs.
 (import (only-in :clan/poo/object .o .ref))
-(export define-module-build-binding current-module-build-phase? current-module-build-resolver)
+(export define-module-build-binding current-module-build-phase? current-module-build-resolver
+        current-module-ffi-build)
+
+;; The package build entry supplies the native compiler action for this invocation.
+(def current-module-ffi-build (make-parameter #f))
 
 ;; Internal phase capability, not a runtime Loader or a global binding registry.
 (def current-module-build-phase? (make-parameter #f))

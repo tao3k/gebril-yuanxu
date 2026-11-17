@@ -6,7 +6,21 @@ prelude: :gerbil/core
 (export yuanxu-module-allowed-entrypoint-roles yuanxu-module-required-role-files
         module-role-file module-publication-role-imports
         module-regular-role-file? module-init-export-name module-interface-form?
-        module-feature-interface? module-feature-declaration?)
+        module-feature-interface? module-feature-declaration?
+        module-build-role-kind module-build-declaration?)
+
+(def (module-build-declaration? form)
+  (match form
+    (['.def 'Build . _] #t)
+    (['.def ['Build '@ _ . _] . _] #t)
+    (else #f)))
+
+(def (module-build-role-kind forms)
+  (cond
+    ((ormap (lambda (form) (and (pair? form) (eq? (car form) 'defbuild-script))) forms)
+     'package-script)
+    ((= 1 (length (filter module-build-declaration? forms))) 'make-parameters)
+    (else 'invalid)))
 
 (def (module-feature-declaration? path form)
   (and (string? path) (pair? form) (eq? (car form) '.def)

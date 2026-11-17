@@ -10,26 +10,31 @@
                  current-expander-module-import eval-syntax eval-module expander-context-id module-context-path
                  module-context-code module-context?
                  current-expander-compile current-expander-eval expander-context-table syntax-e
+                 current-expander-compiling? current-expander-phi current-expander-marks
+                 current-expander-path current-import-expander-phi current-export-expander-phi
                  core-read-module/sexp core-resolve-module-path core-resolve-library-module-path
                  core-import-module __module-registry)
         (only-in :clan/poo/type validate)
-        (only-in :tao3k/yuanxu/module-system/building/program-products ModuleBuildContract)
+        (only-in :tao3k/yuanxu/module-system/building/program-products
+                 ModuleBuildContract module-build-ffi-targets resolve-make-target-inputs)
+        (only-in :tao3k/yuanxu/module-system/building/products
+                 build-output-directory require-build-products! call-with-selected-output-lock)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/object .o .+ .ref .slot? object?)
         (only-in :tao3k/yuanxu/module-system/source/collection
                  yuanxu-module-source-collection-optional-entrypoint)
-        (only-in :tao3k/yuanxu/module-system/source/role-forms module-feature-interface?)
+        (only-in :tao3k/yuanxu/module-system/source/role-forms module-feature-interface? module-build-role-kind module-build-declaration?)
         :tao3k/yuanxu/module-system/source/admission
         :tao3k/yuanxu/module-system/source/preparation
         (only-in :tao3k/yuanxu/module-system/source/build-binding
-                 current-module-build-resolver current-module-build-phase?)
+                 current-module-build-resolver current-module-build-phase? current-module-ffi-build)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration
                  current-module-role-resolver module-role-values
                  wrapper-delivery? wrapper-delivery-value)
         :tao3k/yuanxu/module-system/source/objects
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :tao3k/yuanxu/module-system/building/source-package
-                 package-library-prefix module-build-source-path module-build-library-source-path module-build-import-identity call-with-build-source-fallbacks))
+                 package-library-prefix module-build-source-path module-build-library-source-path module-build-import-identity module-build-resolve-library call-with-build-source-fallbacks))
 (import :tao3k/yuanxu/module-system/source/reader-support
         :tao3k/yuanxu/module-system/source/reader-evaluation
         :tao3k/yuanxu/module-system/source/import-provenance
@@ -88,7 +93,8 @@
             (prefix (symbol->string (gensym 'publication-reader-)))
             (wrappers (make-hash-table)) (artifacts (make-hash-table))
             (completed (make-hash-table-eq))
-            (input-values '()) (input-paths (make-hash-table)) (gerbil-import (current-expander-module-import)))
+            (input-values '()) (input-paths (make-hash-table)) (gerbil-import (current-expander-module-import))
+            (gerbil-compile (current-expander-compile)) (gerbil-eval (current-expander-eval)))
        (def interface-wrapper #f)
        (def interface-context #f)
        (def delivered #f)
@@ -436,6 +442,123 @@
                        ;; ACTUAL transitive input support passes afresh.
                        ((.ref input 'admit-current))))))))
            context))
+       ;; Read an explicit bootstrap declaration without forcing the owner's
+       ;; Interface, which may itself import the FFI library.
+       (def (ffi-declaration owner)
+         (def owner-root (.ref owner 'root))
+         (def build-file (path-expand "build.ss" owner-root))
+         (and (eq? (module-source-type build-file) 'regular)
+              (let* ((text (module-source-read build-file))
+                     (forms (call-with-input-string text read-all))
+                     (declaration (find module-build-declaration? forms)))
+                (and declaration (memq 'ffi: (cddr declaration))
+                     (let ((input (yuanxu-prepare-module-private-source owner-root build-file void))
+                           (observations (make-hash-table)))
+                       (unless (eq? (module-build-role-kind forms) 'make-parameters)
+                         (error "FFI requires one Module Build declaration" build-file))
+                       ;; An import can reach this Build before its Interface
+                       ;; has its own reader. Use the same source policy then.
+                       (unless (equal? build-file (.ref prepared 'build-source))
+                         ((.ref yuanxu-default-module-style-policy 'validate)
+                          yuanxu-default-module-style-policy (.ref owner 'identity) owner-root
+                          (lambda (file)
+                            (def bytes (module-source-read file))
+                            (record-source-observations! observations (list (cons file bytes)))
+                            bytes)))
+                       (record-source-observations! observations (list (cons build-file text)))
+                       (module-source-admit-current! (hash->list observations) "FFI Build declaration changed")
+                       ;; This Build is a separate module evaluation, even
+                       ;; when an enclosing dependency expands a phase import.
+                       (def build
+                         (with-catch
+                           (lambda (cause) (error "cannot evaluate FFI Build" build-file cause))
+                           (lambda ()
+                             (parameterize ((current-expander-module-import gerbil-import)
+                                            (current-expander-compile gerbil-compile)
+                                            (current-expander-eval gerbil-eval)
+                                            (current-expander-compiling? #f)
+                                            (current-expander-phi 0)
+                                            (current-expander-marks '())
+                                            (current-expander-path '())
+                                            (current-import-expander-phi #f)
+                                            (current-export-expander-phi #f))
+                               (module-prepared-source-binding input 'Build
+                                 import-provenance: (reader-import-provenance)
+                                 source-inputs: (cut record-source-observations! observations <>))))))
+                       (validate ModuleBuildContract build)
+                       (cons (module-build-ffi-targets build) (hash->list observations)))))))
+       (def (reader-import-provenance)
+         (list (reader-session-tool-contexts session) (reader-session-tool-paths session)
+               (reader-session-tool-dependencies session) (reader-session-tool-observations session)
+               (reader-session-compiler-contexts session)))
+       (def (load-ffi-product path owner selected observations compile)
+         (def input
+           (yuanxu-prepare-module-private-source (.ref owner 'root) path void
+             capture: (cut reader-capture-input session <...>)))
+         (def identity (.ref input 'compiler-identity))
+         (def package (.ref input 'package-root))
+         (unless package (error "FFI target has no Gerbil package" path))
+         (def prefix (package-library-prefix package))
+         (unless prefix (error "FFI target has no Gerbil package prefix" path))
+         (def name (build-target-name identity (path-strip-trailing-directory-separator prefix)))
+         (unless (equal? path (path-normalize (path-expand (string-append name ".ss") package)))
+           (error "FFI target and compiler identity disagree" path identity))
+         (def target
+           (resolve-make-target-inputs
+             (if (string? selected) name (cons* 'gxc: name (cddr selected)))
+             package (lambda (row) (set! observations (cons row observations)))))
+         (def (current!)
+           ((.ref input 'admit-current))
+           (module-source-admit-current! observations "FFI Build input changed"))
+         (record-input! input)
+         (reader-add-input-guard! session input)
+         (reader-session-add-guard! session (make-source-preparation #f #f #f #f current! #f #f))
+         (reader-enroll-candidate! session current!)
+         (current!)
+         (reader-open-boundary! session (list 'ffi-build path))
+         (def output (build-output-directory))
+         (call-with-selected-output-lock output
+           (lambda ()
+             (parameterize ((current-expander-module-import core-import-module)
+                            (current-expander-context (make-top-context))
+                            (current-expander-compile gerbil-compile)
+                            (current-expander-eval gerbil-eval))
+               (current!)
+               (compile package target)
+               (current!)
+               (require-build-products! (list identity) output)
+               (def artifact (module-build-resolve-library identity))
+               (def expected (path-expand (string-append (symbol->string identity) ".ssi") output))
+               (unless (equal? artifact (path-normalize expected))
+                 (error "FFI build resolved outside the owning output" identity artifact))
+               (def context (core-import-module artifact))
+               (current!)
+               context))))
+       (def (ffi-import path owner reload?)
+         (def compile (current-module-ffi-build))
+         (and compile owner
+              (let* ((root (.ref owner 'root))
+                     (inputs (reader-session-preparations session))
+                     (key (cons 'ffi-build root))
+                     (declaration
+                       (if (hash-key? inputs key) (hash-ref inputs key)
+                         (let (value (ffi-declaration owner))
+                           (hash-put! inputs key value)
+                           value))))
+                (and declaration
+                     (let (target (find (lambda (row)
+                                          (let (name (if (string? row) row (cadr row)))
+                                            (equal? path (path-expand (string-append name ".ss") root))))
+                                        (car declaration)))
+                       (and target
+                            (let (key (cons 'ffi-product path))
+                              (when reload? (error "FFI reload requires a fresh build invocation" path))
+                              (def context
+                                (or (hash-get inputs key)
+                                    (let (result (load-ffi-product path owner target (cdr declaration) compile))
+                                      (hash-put! inputs key result)
+                                      result)))
+                              context)))))))
        (def (source-context original-path reload?)
          (let (path (path-normalize original-path))
            (cond
@@ -452,14 +575,16 @@
              ;; treating every descendant as this Module's private library.
              (let (owner (and source-tree ((.ref source-tree 'locate-owner) path)))
                (record-owner! owner)
-               (if (and owner (not (equal? (path-strip-trailing-directory-separator root)
-                                          (path-strip-trailing-directory-separator (.ref owner 'root)))))
-                 (shared-context original-path (.ref owner 'root) reload?)
-                 (shared-context original-path root reload? #f))))
+               (or (ffi-import path owner reload?)
+                   (if (and owner (not (equal? (path-strip-trailing-directory-separator root)
+                                              (path-strip-trailing-directory-separator (.ref owner 'root)))))
+                     (shared-context original-path (.ref owner 'root) reload?)
+                     (shared-context original-path root reload? #f)))))
             ((and source-tree ((.ref source-tree 'locate-owner) path))
              => (lambda (owner)
                  (record-owner! owner)
-                 (shared-context original-path (.ref owner 'root) reload?)))
+                 (or (ffi-import path owner reload?)
+                     (shared-context original-path (.ref owner 'root) reload?))))
             ;; The directory source-tree above has already refused actual
             ;; unselected/disabled Interface owners. An ownerless library
             ;; may therefore use the SAME package-kernel route across window
@@ -536,8 +661,7 @@
            (def init-source (assq 'init-source (yuanxu-module-source-ref-metadata source-value)))
            (let (value (module-prepared-source-binding input 'Build related role-imports?: #t
              init-source: (and init-source (path-normalize (cdr init-source)))
-             import-provenance: (list (reader-session-tool-contexts session) (reader-session-tool-paths session) (reader-session-tool-dependencies session)
-                                   (reader-session-tool-observations session) (reader-session-compiler-contexts session))
+             import-provenance: (reader-import-provenance)
              shared-contexts: (reader-session-kernel-contexts session) shared-inputs: (reader-session-kernel-inputs session)
              source-inputs: (cut record-source-observations! (reader-session-tool-observations session) <>)
              private-sources: (filter (lambda (entry)
@@ -555,8 +679,8 @@
          (with-module-sources resolve-build/in-context!))
        (def build-role (and role-kind (.o value: (resolve-build!))))
        (def (make-spec)
-         (.ref (.ref (validate ModuleBuildContract (module-build-role-spec build-role))
-                     'defbuild-script) 'spec))
+         (def build (validate ModuleBuildContract (module-build-role-spec build-role)))
+         (append (module-build-ffi-targets build) (.ref (.ref build 'defbuild-script) 'spec)))
        (def (module-build-role-spec role)
          (unless (current-module-build-phase?)
            (error "Build is available only in the Module build-publication phase"))

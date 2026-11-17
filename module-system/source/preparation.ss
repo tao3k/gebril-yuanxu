@@ -14,7 +14,8 @@
         (only-in :clan/poo/read-projection owned-read-function-scope?)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-deferred-role-exports)
-        (only-in :tao3k/yuanxu/module-system/source/role-forms module-publication-role-imports module-interface-form? module-role-file)
+        (only-in :tao3k/yuanxu/module-system/source/role-forms module-publication-role-imports module-interface-form? module-role-file
+                 module-build-role-kind)
         ;; Compiler bindings emitted by this preparer are real bootstrap inputs.
         (only-in :tao3k/yuanxu/module-system/bootstrap/body-inclusion include-module-body)
         (only-in :tao3k/yuanxu/module-system/source/config-prelude)
@@ -428,20 +429,7 @@
             named-features?: named-features?
             build-role-kind:
             (let (text (hash-get texts (path-expand "build.ss" root)))
-              (and text
-                   (let (forms (call-with-input-string text read-all))
-                     (cond
-                      ((ormap (lambda (form) (and (pair? form) (eq? (car form) 'defbuild-script))) forms)
-                       'package-script)
-                      ((= 1 (length
-                              (filter (lambda (form)
-                                        (match form
-                                          (['.def 'Build . _] #t)
-                                          (['.def ['Build '@ _ . _] . _] #t)
-                                          (else #f)))
-                                      forms)))
-                       'make-parameters)
-                      (else 'invalid)))))
+              (and text (module-build-role-kind (call-with-input-string text read-all))))
             namespace: (caddr compiler-info) prelude: (car compiler-info)
             admit-current: current!
             deferred-roles: deferred-roles

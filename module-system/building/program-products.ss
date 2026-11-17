@@ -7,7 +7,7 @@
         (only-in :clan/poo/type Type. define-type element? List)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-name? module-source-type module-source-read))
 (export make-target? resolve-make-target-inputs StdMakeRowContract DefbuildScriptContract ModuleBuildContract make-target-kind make-target-spec program-targets
-        program-path program-identity? projection-program-targets)
+        program-path program-identity? projection-program-targets module-build-ffi-targets)
 
 (def (make-target-kind entry)
   (if (.slot? entry 'make-kind) (.get entry make-kind) 'gxc:))
@@ -105,4 +105,13 @@
   identity: 'module/build
   .element?: (lambda (build)
                (and (object? build) (.slot? build 'defbuild-script)
-                    (element? DefbuildScriptContract (.get build defbuild-script)))))
+                    (let (script (.get build defbuild-script))
+                      (and (element? DefbuildScriptContract script)
+                           (or (not (.slot? build 'ffi))
+                               (let (targets (.get build ffi))
+                                 (and (list? targets)
+                                      (andmap build-root? targets)
+                                      (null? (filter (cut member <> (.get script spec)) targets))))))))))
+
+(def (module-build-ffi-targets build)
+  (if (.slot? build 'ffi) (.get build ffi) '()))
