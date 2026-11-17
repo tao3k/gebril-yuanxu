@@ -4,7 +4,8 @@
 ;;; Generation-local linking over admitted source capabilities. The filesystem source adapter remains separate from runtime loading.
 (import (only-in :std/list/list delete-duplicates/hash foldl)
         (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
-        (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
+        (only-in :clan/poo/slot-observation without-observation %slot-read-active?
+                 slot-read-observers-compatible?)
         (only-in :clan/poo/read-projection owned-read-function-scope?)
         (runtime: :clan/poo/object)
         :tao3k/yuanxu/module-system/source/objects
@@ -850,6 +851,24 @@
                     (_feature-tail
                      (unless (null? features)
                        (for-each (lambda (check!) (check!)) (reverse construction-checks))))
+                    (assembly-closed?
+                     ;; The post-Contract guard has already run. The record
+                     ;; below reads only prepared evidence on the stock route.
+                     (and (null? features) (null? feature-contracts)
+                          (not realization) (not (current-module-source-observer))
+                          paired-context-current? reader-read-only-current?
+                          (slot-read-observers-compatible? (list void))
+                          (object-construction-current?)
+                          (without-observation
+                            (lambda ()
+                              (with-catch (lambda (_) #f)
+                                (lambda ()
+                                  (and (paired-context-current?)
+                                       (reader-read-only-current?)
+                                       (object-construction-current?)
+                                       (object-precedence-ready? scope-evidence-value)
+                                       (not (object-protocol scope-evidence-value))
+                                       (object-prepared-read? scope-evidence-value 'candidate))))))))
                     (record
                      (let ((admit-construction-current
                             (lambda ()
@@ -864,7 +883,7 @@
                        (.o identity generation source publication publication-evidence
                            scope scope-contract scope-evidence
                            admit-construction-current))))
-               (current! 'scope-linked)
+               (unless assembly-closed? (current! 'scope-linked))
                (hash-put! cache id record)
                record)))
          (lambda () (hash-remove! active id))))))
