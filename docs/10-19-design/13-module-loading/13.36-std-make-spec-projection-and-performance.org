@@ -102,26 +102,26 @@ consumer can use the existing =from:= window reference and select =hcl=
 explicitly in its own =yuanxu!= declaration.
 
 The POO projection also lets a dedicated build entry demand a spec
-through the published mount. Access to the leaf's public =std-make-spec=
-projects that leaf and its admitted imports. Access to the mount's public
-=std-make-spec= descends through the published window and projects all
+through the published mount. The leaf's implicit =__std-make-spec= slot
+projects that leaf and its admitted imports. The same implicit slot on
+the mount descends through the published window and projects all
 eligible leaves. Reading an ordinary mount value does not request a build.
 
 #+begin_src scheme
 ;; A dedicated HCL build entry.
 (defbuild-script
-  (.get gerbil-parser.init.exports Languages hcl std-make-spec))
+  (.get gerbil-parser.init.exports Languages hcl __std-make-spec))
 
 ;; A dedicated build entry for the entire published language window.
 (defbuild-script
-  (.get gerbil-parser.init.exports Languages std-make-spec))
+  (.get gerbil-parser.init.exports Languages __std-make-spec))
 #+end_src
 
 A leaf follows its Gerbil imports and can declare special options through
-=Build.defbuild-script=. The raw
-=__std-make-spec= input remains internal and owner-relative. The mount
-collects leaf identities into one selection and passes it to the existing
-Yuanxu projector. It does not concatenate raw lists or project each leaf's
+=Build.defbuild-script=. The projector admits its owner-relative rows as
+input. At the published mount or leaf, =__std-make-spec= returns the
+projected Make list rooted at the package. The mount collects leaf
+identities into one selection and passes it to the existing Yuanxu projector. It does not concatenate raw lists or project each leaf's
 closure independently. Gerbil remains the authority for imports and Make
 execution. A shared import contributes once, and conflicting ownership or
 explicit target options are refused by the same collector. Build, spec and

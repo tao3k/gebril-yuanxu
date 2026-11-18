@@ -223,10 +223,10 @@
             (.call build .prepare-compiler-contexts)))
         spec)))
   (def (window-namespace mount)
-    (.o std-make-spec: (build-spec (prepare-build '() (cons mount #f)))
+    (.o __std-make-spec: (build-spec (prepare-build '() (cons mount #f)))
         no-applicable-method:
         (lambda (_self leaf)
-          (.o std-make-spec: (build-spec (prepare-build '() (cons mount leaf)))))))
+          (.o __std-make-spec: (build-spec (prepare-build '() (cons mount leaf)))))))
   (def (module-namespace (mount #f))
     (cond
       (mount (window-namespace mount))
