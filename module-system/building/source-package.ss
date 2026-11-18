@@ -8,7 +8,7 @@ prelude: :gerbil/core
                  module-source-path prelude-context-path core-read-module/sexp
                  core-library-package-plist)
         (only-in :std/list/list delete-duplicates/hash filter-map find)
-        (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action))
+        (only-in :clan/poo/io module-action))
 (export package-library-prefix package-prelude-identity register-module-build-source! module-build-source-path module-build-library-source-path module-build-import-identity module-build-resolve-library
         call-with-build-input-path call-with-build-source-fallbacks package-build-script-path
         package-module-source-path)
@@ -210,11 +210,14 @@ prelude: :gerbil/core
         (error "compiler source identity mismatch" identity actual source))
       source)))
 
-;; Package tools are only needed when a window refers to an installed source.
+;; Package tools are runtime prerequisites. A currentness check may run
+;; inside an active Reader import guard, so it must use the existing POO IO
+;; action without entering the compiler's import hook again. The native loader
+;; owns initialization, and each invocation resolves the current binding.
 (def package-store-root
-  (module-binding-action "gerbil/tools/gxpkg" 'pkg-root-dir))
+  (module-action "gerbil/tools/gxpkg" 'gerbil/tools/gxpkg#pkg-root-dir))
 (def installed-packages
-  (module-binding-action "gerbil/tools/gxpkg" 'pkg-list))
+  (module-action "gerbil/tools/gxpkg" 'gerbil/tools/gxpkg#pkg-list))
 
 ;; Gerbil's package roster is authoritative for an exported ModuleSource.
 ;; Look up its source header without importing any provider code.
