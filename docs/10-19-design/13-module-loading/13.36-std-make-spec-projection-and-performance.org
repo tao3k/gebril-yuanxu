@@ -82,10 +82,10 @@ this case.
 
 #+begin_src scheme
 (yuanxu!
-  :load-modules "./src" mode: explicit rename: Library
+  :load-modules "./src" mode: explicit mount: Library
   (compiler) (runtime)
   :load-modules "./languages" mode: explicit
-  rename: Languages export: LanguagesSource)
+  mount: Languages export: LanguagesSource)
 #+end_src
 
 When an init owns ordinary package facades, =:build-roots= declares their

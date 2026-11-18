@@ -56,7 +56,7 @@ modules through the published binding:
 (yuanxu!
   :load-modules "./modules" mode: auto
   :load-modules (from: :example/provider/init ModulesSource)
-  rename: Shared mode: explicit :test-dir "./checks"
+  mount: Shared mode: explicit :test-dir "./checks"
   (schema))
 #+end_src
 
@@ -68,8 +68,9 @@ Each window uses =t/= relative to the consuming declaration file by default.
 Set =:test-dir= inside a window to use another relative directory.
 Qualification discovery follows
 =<test-dir>/yanxu/<mount>/<module-name>/=, for example
-=t/yanxu/Lab/services/opentofu/=. The mount uses =rename:= when supplied,
-otherwise it uses the Loader directory name. A missing qualification
+=t/yanxu/Lab/services/opentofu/=. The mount uses =mount:= when supplied
+and defaults to the Loader directory name. Existing =rename:= declarations
+name the same mount. A missing qualification
 directory contributes no tests. Gerbil runs =*-test.ss= files in the
 qualification directory and may import other Scheme files there as helpers.
 Module-owned tests live in the selected source owner's =tests/= directory.

@@ -13,7 +13,7 @@ determines the generated exports binding. The filename =init.ss= remains a
 directory-discovery convention. Passing an exact declaration file bypasses
 that convention.
 
-A root supplies the leaf names. =rename: Lab= mounts that root as =Lab= in
+A root supplies the leaf names. =mount: Lab= mounts that root as =Lab= in
 this exports object. A separate consumer can mount the same root under a
 different name. The mount never changes the leaf name, native compiler
 identity, dependency edges, build options, or ownership. Native identities

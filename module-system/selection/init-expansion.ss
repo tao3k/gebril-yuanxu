@@ -123,7 +123,7 @@
              ;; Runtime runtime modules have one result, not projection values.
              (void))))))
     (_ (raise-syntax-error #f
-         "yuanxu! requires a module source/window declaration; use rename: for Profiles or Scenarios"
+         "yuanxu! requires a module source/window declaration; use mount: to name a window"
          stx)))))
 
 (defsyntax (expand-yuanxu-declaration stx)

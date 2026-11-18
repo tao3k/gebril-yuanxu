@@ -82,11 +82,13 @@
     (yuanxu-test-case "header and identity collisions reject without evaluation"
       (for-each
         (lambda (body) (check-exception (module-init-intent (list (cons 'yuanxu! body)) #f) error?))
-        '((:load-modules "a" mode: explicit rename: X
+        '((:load-modules "a" mode: explicit mount: X
            :load-modules "b" mode: explicit rename: x)
           (:load-modules "a" mode: explicit rename: A
            :load-modules "./a/" mode: explicit rename: B)
-          (:load-modules "a" mode: explicit rename: tests)
+          (:load-modules "a" mode: explicit mount: tests)
+          (:load-modules "a" mode: explicit mount: A rename: A)
+          (:load-modules "a" mode: explicit rename: A mount: A)
           (:test-dir "../outside" :load-modules "a" mode: explicit)
           (:test-dir "/outside" :load-modules "a" mode: explicit)
           (:test-dir "./t" :test-dir "./other" mode: explicit)
@@ -252,8 +254,8 @@
         '(prelude: :gerbil/core
           (import (only-in :tao3k/yuanxu/module-system/selection/init-syntax yuanxu!))
           (yuanxu! :build-roots ("facade")
-            :load-modules "./modules" mode: explicit rename: Library (engine)
-            :load-modules "./languages" mode: explicit rename: Languages export: LanguagesSource)))
+            :load-modules "./modules" mode: explicit mount: Library (engine)
+            :load-modules "./languages" mode: explicit mount: Languages export: LanguagesSource)))
       (write-forms (path-expand "support.ss" root) '((export shared) (def shared 42)))
       (write-forms (path-expand "facade.ss" root)
         '((import "./support.ss") (export (import: "./support.ss"))))

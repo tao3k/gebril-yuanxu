@@ -61,12 +61,12 @@ Package dependency installation alone does not inject lexical identifiers.
 (yuanxu!
   :load-modules "./modules"
   mode: explicit
-  rename: modules
+  mount: modules
   (checks)
 
   :load-modules "./scenarios"
   mode: explicit
-  rename: scenarios
+  mount: scenarios
   (release))
 #+end_src
 
