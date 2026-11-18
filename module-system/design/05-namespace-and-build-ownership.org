@@ -40,6 +40,66 @@ Importing init or projecting build data must not reprioritize runtime
 libraries or reinstall held Contract identities. The installed Gerbil
 compiler and std/make own compilation and scheduling without source patches.
 
+* On-demand compilation from a command entry
+
+Core exports =yuanxu-compile-main=. The ordinary package build continues
+to use Gerbil's =defbuild-script= and the package's default =std-make-spec=.
+Import and spec evaluation are data operations. Explicit command invocation
+owns selection and execution.
+
+** Select at invocation
+
+A package can explicitly call the Core export from its =main=, following the
+same pattern as other Module System exports. A dedicated command entry is
+the direct way to expose the export alongside the standard =build.ss=.
+Pass the package's existing init export to Core.
+
+#+begin_src scheme
+(import (only-in :tao3k/yuanxu/module-system/building/build-script yuanxu-compile-main)
+        (only-in "./init.ss" package.init.exports))
+
+(def (main . arguments)
+  (apply yuanxu-compile-main package.init.exports arguments))
+#+end_src
+
+#+begin_src sh
+gxi <package-command>.ss --modules x1 x2 x2
+gxi <package-command>.ss --mounts mountName1 mountName2
+#+end_src
+
+=--modules= selects Module identities in the package's existing
+=init.exports=. Use =Mount/module= for a qualified request, including a leaf in
+an export-only window. =--mounts= selects the eligible Module leaves in the
+named directory windows. Both selectors can occur in one invocation and
+contribute to one admitted closure. Repeated roots contribute once. Unknown or ambiguous identities,
+missing or empty selectors and disabled requirements fail before compilation.
+Dependencies are discovered from the existing Module declarations and Gerbil
+imports, including compiler and FFI inputs owned by the selected Modules.
+
+A package that wants =gxi build.ss --modules …= or =--mounts …= can opt into
+the Core export in its own =main=. The installed Gerbil =defbuild-script=
+handles =spec=, =meta=, =clean= and =compile= with its standard flags.
+A spelling such as =gerbil build --modules …= requires the Gerbil package
+command to dispatch these arguments to the opt-in entry. That integration
+is a separate design decision.
+
+** Reuse the selected build projection
+
+The export resolves the CLI arguments against the init publication that
+owns ordinary build selection. It uses the directory and Module build
+projection that also serves =__std-make-spec=. Shared targets retain one
+canonical compiler identity, source and options. The projection rejects
+conflicting compiler inputs before invoking the compiler. Gerbil =std/make= executes the admitted
+target set through the existing compiler-input boundary and writes to the
+package's regular Gerbil output directory. The selection lives for one
+invocation. The default Build Graph continues to come from the package's
+default declaration.
+
+The [[file:../../t/module-build-command-test.ss][command regression]] calls a downstream =main=, checks real
+Gerbil products for repeated and overlapping selections, and compares the
+default spec before and after the command. It also covers malformed
+selectors, disabled Modules and cold export-only windows.
+
 * Evidence after migration
 
 Maintained examples and historical Scheme probes use the current namespace.

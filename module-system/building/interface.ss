@@ -7,7 +7,8 @@
                  package-library-prefix register-module-build-source!)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-build-roots)
         (only-in :tao3k/yuanxu/module-system/building/products
-                 build-output-directory current-build-dispatch)
+                 build-output-directory current-build-dispatch current-build-module-roots
+                 current-build-source-directory)
         (only-in :gerbil/expander core-import-module expander-context-id)
         (only-in :std/list/list filter-map delete-duplicates/hash)
         (runtime: :clan/poo/object)
@@ -198,7 +199,7 @@
         refuse-input-context! source-roots: (list root))))
   ;; A consumer may add its native entry targets to the same source epoch
   ;; used by the namespace and test projections.
-  (def (prepare-build (retained '()) (demand #f))
+  (def (prepare-build (retained '()) (demand #f) (command #f))
     (with-input-context #f
       (lambda ()
         (module-source-measure-operation 'build-projection
@@ -211,12 +212,27 @@
                   (when (and kind (not (eq? kind 'regular)))
                     (error "package build script must be a regular source" script))
                   (build-projector
-                    (list (if demand
+                    (list (if (or demand command)
                             (begin
                               (admit-init-declaration! (module-source-read init-file))
-                              (module-linker (list init-file build-window: demand)))
+                              (module-linker
+                                (list init-file build-window: demand build-selection: command)))
                             (selected!))
                           retained root (if kind script init-file)))))))))))
+  (def (compile-selection module-ids mount-names compile)
+    (call-with-build-input-path (build-output-directory)
+      (lambda ()
+        (def build
+          (parameterize ((current-build-module-roots #f))
+            (prepare-build '() #f (.o modules: module-ids mounts: mount-names))))
+        (.call build .with-compiler-inputs
+          (lambda ()
+            (def source-root (or (current-build-source-directory) root))
+            (call-with-build-input-path #f
+              (lambda () (compile (.get build std-make-spec) source-root))
+              refuse-input-context! make-source: source-root))
+          refuse-input-context!))
+      refuse-input-context!))
   ;; Reuse the Make selection and its admitted leaf scopes.
   (def (selected-link-entries)
     (call-with-build-source-fallbacks (list (path-directory init-file))
@@ -305,6 +321,7 @@
     (.o build: (prepare-build package-build-roots)
         std-make-spec: (build-spec build)
         .with-link: with-link
+        .compile-selection: compile-selection
         admit-current:
         (lambda ()
           (with-input-context #f

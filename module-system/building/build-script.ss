@@ -4,11 +4,32 @@
 (import (only-in :clan/poo/object .call .ref .slot?)
         (only-in :std/make make make-clean)
         (only-in :tao3k/yuanxu/module-system/building/products
-                 current-build-dispatch current-build-source-directory)
+                 build-output-directory current-build-dispatch current-build-source-directory)
         (only-in :tao3k/yuanxu/module-system/source/build-binding current-module-ffi-build)
         (only-in :tao3k/yuanxu/module-system/building/source-package
                  call-with-build-input-path call-with-build-source-fallbacks))
-(export defmodule-build-script)
+(export defmodule-build-script yuanxu-compile-main)
+
+(def (yuanxu-compile-main init . arguments)
+  (def (compile spec root)
+    (make spec srcdir: root libdir: (build-output-directory)))
+  (def (selectors arguments)
+    (let take ((rest arguments) (ids '()))
+      (if (or (null? rest) (string-prefix? "-" (car rest)))
+        (values ids rest)
+        (take (cdr rest) (cons (string->symbol (car rest)) ids)))))
+  (when (null? arguments) (error "expected --modules or --mounts with at least one name"))
+  (let parse ((rest arguments) (modules '()) (mounts '()))
+    (if (null? rest)
+      (.call init .compile-selection (reverse modules) (reverse mounts) compile)
+      (let (flag (car rest))
+        (unless (member flag '("--modules" "--mounts"))
+          (error "unknown compile selector" flag))
+        (let-values (((ids tail) (selectors (cdr rest))))
+          (unless (pair? ids) (error "compile selector requires at least one name" flag))
+          (if (string=? flag "--modules")
+            (parse tail (append ids modules) mounts)
+            (parse tail modules (append ids mounts))))))))
 
 ;; The native script still owns argument handling and Make. Bootstrap actions
 ;; run before reading the spec, since they may supply its compiler inputs.

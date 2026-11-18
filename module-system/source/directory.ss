@@ -36,7 +36,8 @@
     parts))
 (def (module-directory-context path publication-reader
                               publication-prepares-source?: (publication-prepares-source? #f)
-                              build-window: (build-window #f))
+                              build-window: (build-window #f)
+                              build-selection: (build-selection #f))
   (let ((observations '()) (directories (make-hash-table)) (sources (make-hash-table)))
     (def location-guards (make-parameter '()))
     (def (enroll-location! guard)
@@ -192,8 +193,23 @@
                                    (export-only-window? window))) windows))
                  (error "build demand requires an export-only directory window" build-window))))
       (def requested-leaf (and build-window (cdr build-window)))
+      (def (named-window name)
+        (and windows (find (lambda (window) (eq? name (.ref window 'mount))) windows)))
+      (def command-mounts
+        (if build-selection
+          (map (lambda (name)
+                 (or (named-window name) (error "unknown build mount" name)))
+               (delete-duplicates/hash (.ref build-selection 'mounts)))
+          '()))
+      (def command-modules (if build-selection (.ref build-selection 'modules) '()))
+      (def (mounted-module id)
+        (let (parts (source-parts id))
+          (and (pair? (cdr parts))
+               (let (window (named-window (string->symbol (car parts))))
+                 (and window (cons window (string->symbol (string-join (cdr parts) "/"))))))))
       (def (auto-window? window)
-        (or (eq? window requested-window) (eq? (.ref window 'mode) 'auto)))
+        (or (eq? window requested-window) (eq? (.ref window 'mode) 'auto)
+            (and build-selection (memq window command-export-windows))))
       ;; Literal tag/directory inspection has no publication reader and grants
       ;; no runtime authority. Native owner admission is demanded by a reader.
       (def qualified-owners? (and windows publication-reader))
@@ -325,6 +341,14 @@
                      (car (list-sort (lambda (left right)
                                        (> (string-length (hash-ref library-prefixes left))
                                           (string-length (hash-ref library-prefixes right)))) matches)))))))))
+      (def command-module-requests
+        (map (lambda (id) (if (key-window id) #f (mounted-module id))) command-modules))
+      ;; Opening an export-only window is a capability of this invocation.
+      (def command-export-windows
+        (filter export-only-window?
+          (append command-mounts
+            (filter-map (lambda (id request) (if request (car request) (key-window id)))
+              command-modules command-module-requests))))
       (def (key-name key)
         (if (not qualified-owners?) key
           (let ((row (decision-row key)) (window (key-window key)))
@@ -340,7 +364,8 @@
                    (lambda (window)
                      (def candidate (window-key window key))
                      (and (or (decision-row candidate)
-                              (and (eq? (.ref window 'mode) 'auto)
+                              (and (or (eq? (.ref window 'mode) 'auto)
+                                       (and build-selection (memq window command-export-windows)))
                                    (eq? (observe! module-source-type
                                            (path-expand (symbol->string key) (window-root window))) 'directory)))
                           candidate)) windows)))
@@ -416,16 +441,22 @@
       (def (auto-owners window)
         (def intent (or window intent-value))
         (if (or (not (auto-window? intent)) (profile-tag intent)) '()
-          (let walk ((directory (if window (window-root window) root-path)) (prefix ""))
-            (foldr append '()
-              (map (lambda (name)
-                     (def child (path-expand name directory))
-                     (def path (string-append prefix name))
-                     (def owner (window-key window (string->symbol path)))
-                     (if (module-directory? child (snapshot child))
-                       (if (decision-row owner) '() (list owner))
-                       (walk child (string-append path "/"))))
-                   (directory-snapshot-children (snapshot directory)))))))
+          (let (other-roots
+                 (if (and build-selection window)
+                   (map (lambda (other) (canonical (window-root other))) (remq window windows))
+                   '()))
+            (let walk ((directory (if window (window-root window) root-path)) (prefix ""))
+              (foldr append '()
+                (map (lambda (name)
+                       (def child (path-expand name directory))
+                       (def path (string-append prefix name))
+                       (cond
+                        ((and (pair? other-roots) (member (canonical child) other-roots)) '())
+                        ((module-directory? child (snapshot child))
+                         (def owner (window-key window (string->symbol path)))
+                         (if (decision-row owner) '() (list owner)))
+                        (else (walk child (string-append path "/")))))
+                     (directory-snapshot-children (snapshot directory))))))))
       (let ((profile-selected
                (foldr append '()
                  (map (lambda (window) (map (cut window-key window <>) (roots-for window)))
@@ -806,15 +837,37 @@
                    (or (not decision) ((directory-decision-current? decision)))
                    (andmap (lambda (check) (check)) location-inputs)
                    (or (not entry) ((directory-source-current? entry))))))))
+      (def (command-roots)
+        (def explicit-roots
+          (map (lambda (id request)
+                 (if request (window-key (car request) (cdr request))
+                   (resolve-request-root id)))
+               command-modules command-module-requests))
+        (def (mount-roots window)
+          (def roots
+            (append
+              (filter-map (lambda (row)
+                            (and (eq? window (row-window row))
+                                 (not (.ref row 'disabled?))
+                                 (.ref row 'identity))) decisions)
+              (map (cut window-key window <>) (roots-for window))
+              (auto-owners window)))
+          (unless (pair? roots) (error "build mount has no selected modules" (.ref window 'mount)))
+          roots)
+        (delete-duplicates/hash
+          (append explicit-roots (foldr append '() (map mount-roots command-mounts)))))
       (.o generation: generation-value module-ids: selected-values selected: selected-values
           loader-roots:
-          (if requested-window
+          (cond
+           (build-selection (command-roots))
+           (requested-window
             (if requested-leaf
               (begin (source-parts requested-leaf)
                      (list (window-key requested-window requested-leaf)))
-              (auto-owners requested-window))
+              (auto-owners requested-window)))
+           (else
             (append selected-values
-                    (foldr append '() (map auto-owners (or windows '(#f))))))
+                    (foldr append '() (map auto-owners (or windows '(#f)))))))
           (feature-roots)
           denied-modules: denied-values intent: scoped-intent init-source: init-path source-root: root-path
           imported-source-roots:
