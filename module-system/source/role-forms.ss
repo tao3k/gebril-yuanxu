@@ -90,7 +90,7 @@ prelude: :gerbil/core
 (def (module-role-file role)
   (string-append (symbol->string role) ".ss"))
 (def yuanxu-module-required-role-files
-  (map module-role-file '(types objects config interface)))
+  (map module-role-file '(types objects interface)))
 (def (module-publication-role-imports root present?)
   (filter-map
     (lambda (role)

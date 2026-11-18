@@ -22,7 +22,9 @@ The module that declares the final configuration contributes its package
 request through =core.projections=, with the owner bound by the build graph.
 
 =interface.ss= is the module publication entry. The role wrapper requires
-=types.ss=, =objects.ss= and =config.ss= and supplies =func.ss= when present.
+=types.ss= and =objects.ss=. It supplies =config.ss= and =func.ss= when present.
+Omit =config.ss= when the Module declares no configuration. The wrapper then
+has no configuration role to import or project into the Make spec.
 An adjacent =build.ss= is a deferred build role. To contribute Make targets,
 declare =(.def Build defbuild-script: (.o spec: targets))=. The reader checks
 the effective parameter object with =DefbuildScriptContract= and exposes its
@@ -214,10 +216,9 @@ exports object.
 
 Only immediate directory metadata is enumerated. Runtime lazy namespace slots
 expand a branch on access, not every module at startup. Source lookup validates
-=types.ss=, =objects.ss=, =config.ss= and =interface.ss= as regular files and records
-their contents for the selected module; it does not execute them. This new source
-adapter enforces the target four-role shell without changing legacy collection
-admission. A published Module directory is a namespace leaf. The shared
+=types.ss=, =objects.ss= and =interface.ss= as regular files. It applies the same
+checks to optional roles when present. It records these inputs for the selected
+module without executing them. A published Module directory is a namespace leaf. The shared
 Collection can also locate an Interface inside that owner. A selected
 =features/<name>= leaf contributes to its owner without creating another
 public scope path.

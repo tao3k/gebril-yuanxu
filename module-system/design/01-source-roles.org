@@ -13,15 +13,14 @@ scenarios does not exempt its children from role admission. Ordinary nested
 Scenario/Profile values do not each require their own directory. Package-backed
 built-ins and uniform contextual role injection remain proposed integration.
 
-The target shell for an independently published reusable Module has four required
-roles, an optional algorithm role and an optional build-publication role. This is a shared Module System design,
-not a Agentic AI Lab-specific configuration language rule.
+An independently published reusable Module has three required roles. The
+configuration, algorithm and build-publication roles are optional.
 
 #+begin_example
 <namespace>/<module>/
   types.ss       # required: Types/Contracts and public invariants
   objects.ss     # required: reusable objects/prototypes/receiver behavior
-  config.ss     # required: configuration and default objects
+  config.ss      # optional: configuration and default objects
   interface.ss   # required: assemble/publish the detailed Module object
   func.ss        # optional: named pure algorithms when actually needed
   build.ss       # optional: phase-isolated build contribution, published as Build
@@ -33,11 +32,10 @@ business algorithms, source scans or hidden runtime activation. Object defaults
 and configured selections have distinct owners; do not independently repeat the
 same default. Reuse schema-generated Contract bindings rather than copying fields.
 
-An absent configuration vocabulary must have an explicit closed no-options
-Contract, not an unexplained empty file. Before creating a four-file wrapper with
-no meaningful responsibility, consider whether it is a compilation unit inside an
-existing Module. Ordinary values, functions, Profiles and Scenarios do not each
-become independently published Modules.
+Omit =config.ss= when the Module has no configuration to declare. A Module
+that accepts configuration values owns their Contract and defaults. Ordinary
+values, functions, Profiles and Scenarios do not each become independently
+published Modules.
 
 * Source direction and publication
 

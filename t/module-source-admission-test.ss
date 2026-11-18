@@ -521,7 +521,17 @@
          (let (collection (make-yuanxu-module-source-collection 'fixture 'test root "modules/custom"))
            (check-exception
             (yuanxu-module-source-collection-locate collection '(custom . ../example)) error?))
-         (create-directory (path-expand "modules/custom/example/func.ss" root))
+         (def config (path-expand "modules/custom/example/config.ss" root))
+         (delete-file config)
+         (check-equal? (length (collection-source root)) 1)
+         (def view (yuanxu-load-modules (path-expand "modules" root)
+                     read-publication: (lambda (_source) (publication))))
+         (check-equal? (.get view modules custom example ready) #t)
+         ((.get view admit-current))
+         (write-role root "config" "(def Config (.o))")
+         (check-exception ((.get view admit-current)) error?)
+         (delete-file config)
+         (create-directory config)
          (both-refuse root))))
     (yuanxu-test-case "explicit integration exclusions preserve strict admission of selected Modules"
       (with-module

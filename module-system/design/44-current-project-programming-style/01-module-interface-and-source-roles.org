@@ -113,8 +113,8 @@ current. Never remove those checks while simplifying a scope declaration.
 * Pending design revision: published Module role shell
 
 The [[file:../01-source-roles.org][Core Module source-role design]] specifies a stronger target for published
-reusable Modules: required types.ss (Types/Contracts), objects.ss, config.ss and
-interface.ss, with func.ss optional. interface may assemble the detailed public
+reusable Modules: required types.ss (Types/Contracts), objects.ss and interface.ss,
+with config.ss, func.ss and build.ss optional. interface may assemble the detailed public
 Module object but owns no business algorithm or runtime effects. Profiles,
 Scenarios and ordinary compilation units do not each acquire that shell.
 
