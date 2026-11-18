@@ -71,7 +71,7 @@
                (def binding (make-module-source 'id 'mount))
                (export binding))))
        (when (ormap (lambda (mount)
-                      (memq mount '(tests std-make-spec admit-current .yuanxu-init))) mounts)
+                      (memq mount '(tests std-make-spec admit-current))) mounts)
          (raise-syntax-error #f "mount conflicts with an init export" stx))
        (with-syntax
          ((exports-binding

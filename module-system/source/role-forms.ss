@@ -304,7 +304,7 @@ prelude: :gerbil/core
             (hash-put! roots root #t))) windows)
       (for-each
         (lambda (binding)
-          (when (or (memq binding '(tests std-make-spec admit-current .yuanxu-init))
+          (when (or (memq binding '(tests std-make-spec admit-current))
                     (hash-key? names (string-downcase (symbol->string binding))))
             (error "ModuleSource export conflicts with an init binding" binding)))
         (hash-keys bindings))

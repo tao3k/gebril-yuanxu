@@ -203,7 +203,6 @@
       (else (.get (selected!) modules))))
   (values
     (.o build: (prepare-build)
-        .yuanxu-init: prepare-build
         std-make-spec:
         (with-input-context #f
           (lambda ()
