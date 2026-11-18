@@ -110,7 +110,7 @@ checks. Arbitrary transformers need not preserve cold enumeration.
 | Receiver-local self reference | Native POO computed slots and prototype composition | Existing; productive slot dependencies and CyclicSlot diagnostics belong to POO |
 | Other Module dependency | Core =requires= aliases, selected Graph and scope admission | Existing; a tree-relative name does not add an admitted dependency |
 | Public/internal view | Qualified init exports, role boundaries, explicit selection and =module-namespace-project= | Closed branch-local target restriction is implemented; arbitrary effectful perspective callbacks are not an adopted API |
-| Alias or mount transformation | Existing =rename:= window mounts | Existing; a mount changes organization, not publication/compiler identity |
+| Alias or mount transformation | Existing =mount:= window mounts | Existing; a mount changes organization, not publication/compiler identity |
 | Build contribution | Owner Build roles and native cross-package projection | Existing, including 13.34's real Nix owner; namespace transformations cannot change compilation authority |
 | Generic filesystem loader / arbitrary transformer API | No new public implementation | Unnecessary for this research stage; any future syntax needs the existing macro/phase review |
 

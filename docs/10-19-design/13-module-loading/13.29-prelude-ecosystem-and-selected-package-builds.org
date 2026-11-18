@@ -227,12 +227,12 @@ Proposed surface, not executable current syntax:
 ;; The symbol-source form and library entry names below require implementation.
 (yuanxu!
   :load-modules :agentic-ai-lab/module-library
-  mode: explicit rename: Lab
+  mode: explicit mount: Lab
   (nix)
   :services
   (opentofu)
   :load-modules :yuanxu/module-library
-  mode: explicit rename: Yuanxu
+  mode: explicit mount: Yuanxu
   (json-schema)
   (funflow))
 #+end_src

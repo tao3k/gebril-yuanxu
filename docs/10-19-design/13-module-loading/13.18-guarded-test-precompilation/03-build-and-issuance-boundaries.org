@@ -149,7 +149,7 @@ migrated directly, including the runtime build scripts and consumer tests.
 (.call tests .run)
 #+end_src
 
-Here the declaration uses =rename: Modules=. A =rename: Scenarios= window
+Here the declaration uses =mount: Modules=. A =mount: Scenarios= window
 instead publishes =yuanxu.init.exports.Scenarios=; an unrenamed window uses =modules=.
 These are lazy projections of the existing namespace, not additional module
 instances. The existing =init.Modules= identifier and =yuanxu.init.exports.Modules=

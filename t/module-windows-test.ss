@@ -30,8 +30,8 @@
   (lambda (failure) (and (Error? failure) (equal? (Error-message failure) text))))
 (def declaration
   '(yuanxu!
-     :load-modules "./modules" mode: explicit rename: Modules (engine)
-     :load-modules "./scenarios" mode: explicit rename: "Scenarios" (release)))
+     :load-modules "./modules" mode: explicit mount: Modules (engine)
+     :load-modules "./scenarios" mode: explicit mount: "Scenarios" (release)))
 (def (fixture-owner root path)
   (let-values (((_prelude identity _namespace _body)
                  (core-read-module/sexp (path-expand path root)))) identity))
@@ -83,18 +83,18 @@
       (for-each
         (lambda (body) (check-exception (module-init-intent (list (cons 'yuanxu! body)) #f) error?))
         '((:load-modules "a" mode: explicit mount: X
-           :load-modules "b" mode: explicit rename: x)
-          (:load-modules "a" mode: explicit rename: A
-           :load-modules "./a/" mode: explicit rename: B)
+           :load-modules "b" mode: explicit mount: x)
+          (:load-modules "a" mode: explicit mount: A
+           :load-modules "./a/" mode: explicit mount: B)
           (:load-modules "a" mode: explicit mount: tests)
-          (:load-modules "a" mode: explicit mount: A rename: A)
-          (:load-modules "a" mode: explicit rename: A mount: A)
+          (:load-modules "a" mode: explicit mount: A mount: A)
+          (:load-modules "a" mode: explicit rename: A)
           (:test-dir "../outside" :load-modules "a" mode: explicit)
           (:test-dir "/outside" :load-modules "a" mode: explicit)
           (:test-dir "./t" :test-dir "./other" mode: explicit)
           (:test-dir "./t" :load-modules "a" mode: explicit)
           (:load-modules "a" mode: explicit :test-dir "../outside")
-          (:load-modules "a" mode: explicit (module) rename: Late)))
+          (:load-modules "a" mode: explicit (module) mount: Late)))
       (def intent (module-init-intent (list declaration) #f))
       (check-equal? (map (cut .ref <> 'mount) (.get intent windows)) '(Modules Scenarios))
       (check-equal? (map (cut .ref <> 'identity) (.get intent decisions)) '(engine release)))
@@ -104,7 +104,7 @@
           '((yuanxu!
               :load-modules "./modules" mode: explicit export: LocalSource (engine)
               :load-modules (from: :fixture-owner/init SharedSource)
-              rename: Shared mode: explicit :test-dir "./checks" (runner)))
+              mount: Shared mode: explicit :test-dir "./checks" (runner)))
           "init.ss"))
       (def windows (.get intent windows))
       (check-equal? (map (cut .ref <> 'test-dir) windows) '("t" "checks"))
@@ -157,7 +157,7 @@
       (def (mounted-view file mount)
         (def source (path-expand file root))
         (write-forms source
-          `((yuanxu! :load-modules "./modules" mode: explicit rename: ,mount
+          `((yuanxu! :load-modules "./modules" mode: explicit mount: ,mount
                     (engine) (release @ "./scenarios/release"))))
         (yuanxu-load-modules source))
       (def original (mounted-view "init.ss" 'Modules))
@@ -199,8 +199,8 @@
       (write-forms (path-expand "init.ss" root)
         '((import :tao3k/yuanxu/module-system/selection/init-syntax)
           (yuanxu!
-            :load-modules "./modules" mode: explicit rename: Modules (engine)
-            :load-modules "./scenarios" mode: explicit rename: Scenarios (release) (spare))))
+            :load-modules "./modules" mode: explicit mount: Modules (engine)
+            :load-modules "./scenarios" mode: explicit mount: Scenarios (release) (spare))))
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
         (eval-syntax '(import :clan/poo/object))
@@ -244,7 +244,7 @@
         (eval-syntax '(def CapturedTests (.call (.get FixtureExports tests) .select '(release))))
         (check-equal? (eval-syntax '(.ref/cached (.get FixtureExports Scenarios) 'release)) #f)
         (write-forms (path-expand "init.ss" root)
-          '((yuanxu! :load-modules "./modules" mode: explicit rename: Changed (engine))))
+          '((yuanxu! :load-modules "./modules" mode: explicit mount: Changed (engine))))
         (check-exception (eval-syntax '(.all-slots (.get FixtureExports Modules))) error?)
         (check-exception (eval-syntax '((.get CapturedTests admit-current))) error?)))
     (yuanxu-test-fixture "published window builds only the demanded closure"
@@ -305,9 +305,9 @@
       (def (declare! disabled? (directory root))
         (write-forms (path-expand "init.ss" directory)
           `((import :tao3k/yuanxu/module-system/selection/init-syntax)
-            (yuanxu! :load-modules "./modules" mode: auto rename: Modules
+            (yuanxu! :load-modules "./modules" mode: auto mount: Modules
                      ,@(if disabled? '((engine disable: #t)) '())
-                     :load-modules "./scenarios" mode: explicit rename: Scenarios (release)))))
+                     :load-modules "./scenarios" mode: explicit mount: Scenarios (release)))))
       (def (load! (directory root))
         (parameterize ((current-expander-context (make-top-context)))
           (import-fixture-init! (path-expand "init.ss" directory))))
@@ -552,9 +552,9 @@
       ;; A disabled declaration still owns its directory when Interface is absent.
       (delete-file (path-expand "modules/bomb/interface.ss" root))
       (write-forms (path-expand "init.ss" root)
-        '((yuanxu! :load-modules "./modules" mode: explicit rename: Modules
+        '((yuanxu! :load-modules "./modules" mode: explicit mount: Modules
                    (engine) (bomb disable: #t)
-                   :load-modules "./scenarios" mode: explicit rename: Scenarios (release))))
+                   :load-modules "./scenarios" mode: explicit mount: Scenarios (release))))
       (def denied (yuanxu-load-modules (path-expand "init.ss" root)))
       (check-exception (.get denied build-graph) error?)
       (check-equal? (file-exists? marker) #f)
@@ -582,8 +582,8 @@
             core: (.o scope-contract: Scope exports: (.o value: 77))
             features: (.o))))
       (write-forms (path-expand "init.ss" root)
-        '((yuanxu! :load-modules "./modules" mode: explicit rename: Modules (engine)
-                    :load-modules "./scenarios" mode: explicit rename: Scenarios (engine))))
+        '((yuanxu! :load-modules "./modules" mode: explicit mount: Modules (engine)
+                    :load-modules "./scenarios" mode: explicit mount: Scenarios (engine))))
       (def view (yuanxu-load-modules (path-expand "init.ss" root)))
       (def left (.get view modules Modules engine))
       (def right (.get view modules Scenarios engine))
@@ -612,7 +612,7 @@
       (root Workspace)
       (fixture! root)
       (write-forms (path-expand "init.ss" root)
-        '((yuanxu! :load-modules "./scenarios" mode: explicit rename: Scenarios
+        '((yuanxu! :load-modules "./scenarios" mode: explicit mount: Scenarios
                     (engine @ "./modules/engine") (release))))
       (write-forms (path-expand "scenarios/release/interface.ss" root)
         '((import (rename-in (only-in "../../modules/engine/objects.ss" ScopeValue) (ScopeValue Engine)))
@@ -630,8 +630,8 @@
       (fixture! (path-expand "left" root) 'same-build-root)
       (fixture! (path-expand "right" root) 'same-build-root)
       (write-forms (path-expand "init.ss" root)
-        '((yuanxu! :load-modules "./left/modules" mode: auto rename: Left
-                    :load-modules "./right/modules" mode: auto rename: Right)))
+        '((yuanxu! :load-modules "./left/modules" mode: auto mount: Left
+                    :load-modules "./right/modules" mode: auto mount: Right)))
       (check-exception (yuanxu-load-modules (path-expand "init.ss" root))
         (message-is "native root identity has multiple source owners")))
     (yuanxu-test-fixture "a local requirement never falls back to another standard root"

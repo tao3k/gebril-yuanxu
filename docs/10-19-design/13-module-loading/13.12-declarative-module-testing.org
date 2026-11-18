@@ -136,7 +136,7 @@ declaration supplies the directory for loaders without a local value.
 An auto loader discovers module owners from their Interface declarations.
 Rows in an auto loader may select features, disable a module, or bind an
 explicit source path.
-Without =rename:=, the mount segment is the loader directory's name. Discovery
+Without =mount:=, the mount segment is the loader directory's name. Discovery
 observes all immediate Scheme sources, executes only =*-test.ss=, and binds
 directory/helper/test snapshots to the same selection guard. No caller builds
 a file list, combines guards or defines a replacement source object.
@@ -1155,10 +1155,10 @@ The original sources are moved, not forwarded or duplicated. The real AWS
 provider-export opt-in remains separate; an environment-dependent external
 fixture is not silently added to ordinary JsonSchema qualification.
 
-Qualification organization follows the init window's =rename:= mount:
+Qualification organization follows the init window's =mount:= mount:
 =t/<mount>/<publication-identity>/=. Thus AWS publication
 qualification belongs to =Scenarios/aws/= while library qualifications belong
-to =Modules/=. These names are not reserved: =rename: Libraries= selects
+to =Modules/=. These names are not reserved: =mount: Libraries= selects
 =Libraries/<identity>/=. Unmounted selections have no mount segment. There is
 no fallback to a former flat directory. Publication identity remains unchanged
 for dependencies and =.select=; the source reference records its namespace mount

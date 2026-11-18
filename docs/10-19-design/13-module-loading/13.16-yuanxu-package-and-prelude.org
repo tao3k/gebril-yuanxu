@@ -56,7 +56,7 @@ Configuration packages may select the common language in =gerbil.pkg=:
 #+begin_src scheme
 (package: example prelude: :tao3k/yuanxu/prelude depend: (...))
 ;; init.ss has no import of an internal selection implementation.
-(yuanxu! :load-modules "./modules" mode: explicit rename: Features (example))
+(yuanxu! :load-modules "./modules" mode: explicit mount: Features (example))
 #+end_src
 
 The native prelude Suite covers an ordinary consumer in a separate process,

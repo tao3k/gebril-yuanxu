@@ -4,12 +4,12 @@
 ;; One selection epoch owns both windows. Mount names affect access paths;
 ;; requirements continue to use the original publication identities.
 (yuanxu!
-  :load-modules "./modules" mode: explicit rename: Modules export: ModulesSource
+  :load-modules "./modules" mode: explicit mount: Modules export: ModulesSource
   (json-schema)
   (funflow)
 
   ;; Same module protocol, separate window. Library roots never own Scenarios.
-  :load-modules "./scenarios" mode: explicit rename: Scenarios :test-dir "./t"
+  :load-modules "./scenarios" mode: explicit mount: Scenarios :test-dir "./t"
   :services
   (postgresql @ "./scenarios/gitea-postgresql/postgresql")
   (gitea @ "./scenarios/gitea-postgresql/gitea")

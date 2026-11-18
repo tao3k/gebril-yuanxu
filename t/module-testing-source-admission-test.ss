@@ -52,7 +52,7 @@
       (root Workspace)
       (prepare-source root "(import :unavailable/qualification-dependency)")
       (write-source (path-expand "init.ss" root)
-        "(yuanxu! :load-modules \"./modules\" mode: explicit rename: App :test-dir \"./t\" (example))")
+        "(yuanxu! :load-modules \"./modules\" mode: explicit mount: App :test-dir \"./t\" (example))")
       (def file (path-expand "t/yanxu/App/example/layout-test.ss" root))
       (write-source file "(error \"qualification test evaluated during discovery\")")
       (def selection (yuanxu-load-modules (path-expand "init.ss" root)))

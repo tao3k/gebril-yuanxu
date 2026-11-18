@@ -144,8 +144,8 @@ prelude: :gerbil/core
       [mode-value root-value mount-value profile-value
        (or window? (and (memq 'source: options) #t)) (reverse rows) test-dir source-export])
      ((not (pair? tail)) (error "improper init declaration" source-path))
-     ((memq (car tail) '(mode: source: mount: rename: profile: :test-dir export:))
-      (let (key (if (eq? (car tail) 'rename:) 'mount: (car tail)))
+     ((memq (car tail) '(mode: source: mount: profile: :test-dir export:))
+      (let (key (car tail))
         (unless (and (pair? (cdr tail)) (not group) (null? rows) (not (memq key options)))
           (error "duplicate or misplaced init option" key source-path))
         (def value (cadr tail))

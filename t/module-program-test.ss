@@ -260,7 +260,7 @@
           (put root "gerbil.pkg" "(package: module-build-program)\n")
           (create-directory (path-expand "empty" root))
           (put root "init.ss"
-            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :load-modules \"./modules\" rename: modules mode: explicit (example) :load-modules \"./empty\" rename: Empty mode: explicit)\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :load-modules \"./modules\" mount: modules mode: explicit (example) :load-modules \"./empty\" mount: Empty mode: explicit)\n")
           (put root "modules/example/types.ss"
             "(import :clan/poo/object (only-in :clan/poo/type Type.)) (def Scope (.cc Type. identity: 'program/scope .element?: object?)) (export Scope)")
           (put root "modules/example/objects.ss"

@@ -7,7 +7,7 @@
 | [[file:funflow/gerbil-scheme.ss][Funflow Gerbil CI Profile]] | Reusable build/test/package defaults and receiver-relative Pipeline | Standalone Profile source; not a Core library build root |
 
 [[file:../init.ss][The root init]] selects the Gitea/PostgreSQL application and both service
-dependencies through the existing Module System. Its =rename: Scenarios= mount
+dependencies through the existing Module System. Its =mount: Scenarios= mount
 exposes =Scenarios.services.postgresql=, =Scenarios.services.gitea= and
 =Scenarios.applications.gitea-postgresql=. Namespace reflection leaves business
 scopes cold. Scenario public behavior tests live beside their module roles;

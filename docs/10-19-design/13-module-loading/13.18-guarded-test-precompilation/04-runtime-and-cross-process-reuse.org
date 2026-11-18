@@ -23,7 +23,7 @@ Both routes use the same execution factory, runtime Make projection, =.compile=
 issuer and Harness. There is no additional Builder or test assertion engine.
 
 The namespace slots on =yuanxu.init.exports= are generated from the declaration's
-actual =rename:= values. No unconditional =modules= container is inserted for
+actual =mount:= values. No unconditional =modules= container is inserted for
 renamed windows. The window regression checks object identity between the
 new projection and the existing hygienic identifier, rather than comparing
 independently reconstructed equivalent namespaces.
@@ -125,7 +125,7 @@ publication/artifact authority and currentness boundary, not another Builder
 or a disk-side assertion that compilation succeeded.
 
 The existing =module-windows-test= passed its four controls, including the
-=rename:= projection identity checks; =module-test-preparation-test= passed its
+=mount:= projection identity checks; =module-test-preparation-test= passed its
 two controls, including source rejection, removed compiler-association refusal,
 unselected poison laziness and compiler failure before Harness launch. Each
 accepted file has MODULE-OK, HARNESS-OK and final OK, without failure, overflow

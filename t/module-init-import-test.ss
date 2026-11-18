@@ -128,7 +128,7 @@
           (lambda (out)
             (pretty-print '(import :tao3k/yuanxu/module-system/selection/init-syntax) out)
             (pretty-print '(yuanxu! :load-modules "./absent" mode: explicit
-                                   rename: Modules (missing)) out)))
+                                   mount: Modules (missing)) out)))
         path)
       (def left-path (prepare! left ':tao3k/yuanxu/prelude))
       (def right-path (prepare! right ':gerbil/core))

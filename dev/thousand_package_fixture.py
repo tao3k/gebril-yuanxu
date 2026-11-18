@@ -76,22 +76,22 @@ def generate(root: Path, profile: bool = False) -> None:
                 text = text.replace("'(module-0 module-1)", "'(module-1)", 1)
             write(consumer / source.name, text)
     window = json.dumps(str(producer / "modules"), ensure_ascii=False)
-    selection = "mode: auto rename: Corpus profile: security" if profile else (
-        "mode: explicit rename: Corpus (module-0) (module-1)"
+    selection = "mode: auto mount: Corpus profile: security" if profile else (
+        "mode: explicit mount: Corpus (module-0) (module-1)"
     )
     write(consumer / "init.ss", f'(yuanxu! :load-modules {window} :test-dir "./t" {selection})\n')
     control = root / "scope-control"
     write(control / "gerbil.pkg",
           "(package: yuanxu-thousand-scope-control prelude: :tao3k/yuanxu/prelude)\n")
     write(control / "init.ss",
-          f'(yuanxu! :load-modules {window} :test-dir "./t" mode: explicit rename: Corpus (module-0) (module-1) (module-2))\n')
+          f'(yuanxu! :load-modules {window} :test-dir "./t" mode: explicit mount: Corpus (module-0) (module-1) (module-2))\n')
     write(control / "use.ss", (templates / "scope-control.ss").read_text())
     missing = root / "missing-provider"
     for source in consumer.iterdir():
         if source.name != "init.ss":
             write(missing / source.name, source.read_text())
     write(missing / "init.ss",
-          f'(yuanxu! :load-modules {window} :test-dir "./t" mode: explicit rename: Corpus (module-1))\n')
+          f'(yuanxu! :load-modules {window} :test-dir "./t" mode: explicit mount: Corpus (module-1))\n')
     shutil.copytree(templates.parent / "package-consumer", root / "package-consumer")
     installed_build = root / "package-consumer" / "build.ss"
     shutil.copyfile(templates / "build.ss", installed_build)

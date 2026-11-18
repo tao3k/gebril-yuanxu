@@ -41,7 +41,7 @@
       (root Workspace)
       (def init (path-expand "init.ss" root))
       (write-source init
-        "(yuanxu! :load-modules \"./modules\" mode: explicit rename: Test :test-dir \"./t\" (json-schema))\n")
+        "(yuanxu! :load-modules \"./modules\" mode: explicit mount: Test :test-dir \"./t\" (json-schema))\n")
       (write-source (path-expand "modules/json-schema/interface.ss" root)
         "(.def Published identity: 'json-schema)\n")
       (def suite (path-expand "t/yanxu/Test/json-schema/value-test.ss" root))
@@ -88,7 +88,7 @@
         '(json-schema funflow))
       (def init (path-expand "yuanxu-init.ss" root))
       (write-source init
-        "(yuanxu! :load-modules \"./modules\" mode: explicit rename: Libraries :test-dir \"./checks/t\" (json-schema) (funflow) (poison disable: #t))\n")
+        "(yuanxu! :load-modules \"./modules\" mode: explicit mount: Libraries :test-dir \"./checks/t\" (json-schema) (funflow) (poison disable: #t))\n")
       (def json (path-expand "checks/t/yanxu/Libraries/json-schema/value-test.ss" root))
       (def flow (path-expand "checks/t/yanxu/Libraries/funflow/job-test.ss" root))
       (def helper (path-expand "checks/t/yanxu/Libraries/json-schema/fixtures.ss" root))
