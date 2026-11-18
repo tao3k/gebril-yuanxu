@@ -2,7 +2,10 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module System init projections. Infrastructure, not a selected module.
-(import (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path package-build-script-path)
+(import (only-in :tao3k/yuanxu/module-system/building/source-package
+                 call-with-build-input-path package-build-script-path
+                 package-library-prefix register-module-build-source!)
+        (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-build-roots)
         (only-in :tao3k/yuanxu/module-system/building/products current-build-dispatch)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
@@ -37,6 +40,8 @@
   (def source-current-site (make-slot-cache 'admit-current))
   (def source-spec-site (make-slot-cache 'std-make-spec))
   (def init-file (path-expand source))
+  (def root (path-directory init-file))
+  (def package-build-roots (module-init-build-roots declaration))
   (def input-context-refused? #f)
   (def selection #f)
   (def compiled (and program (.o value: (program))))
@@ -173,10 +178,20 @@
       (error "build input context was refused; use a fresh init context"))
     ;; Admit the projected source explicitly. Keep the installed libraries
     ;; ahead of source when resolving runtime bindings during preparation.
-    (call-with-build-input-path output action refuse-input-context!))
+    (if (null? package-build-roots)
+      (call-with-build-input-path output action refuse-input-context!)
+      (call-with-build-input-path output
+        (lambda ()
+          (def prefix (package-library-prefix root))
+          (unless prefix (error "package build roots require a Gerbil package" root))
+          (register-module-build-source! root
+            (string->symbol (substring prefix 0 (- (string-length prefix) 1)))
+            add-load-path?: #f)
+          (action))
+        refuse-input-context! source-roots: (list root))))
   ;; A consumer may add its native entry targets to the same source epoch
   ;; used by the namespace and test projections.
-  (def (prepare-build (retained '()))
+  (def (prepare-build (retained '()) (demand #f))
     (with-input-context #f
       (lambda ()
         (module-source-measure-operation 'build-projection
@@ -189,11 +204,32 @@
                   (when (and kind (not (eq? kind 'regular)))
                     (error "package build script must be a regular source" script))
                   (build-projector
-                    (list (selected!) retained root (if kind script init-file)))))))))))
+                    (list (if demand
+                            (begin
+                              (admit-init-declaration! (module-source-read init-file))
+                              (module-linker (list init-file build-window: demand)))
+                            (selected!))
+                          retained root (if kind script init-file)))))))))))
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
-  (def (module-namespace)
+  (def (build-spec build)
+    (with-input-context #f
+      (lambda ()
+        (def spec (.ref/inline build source-spec-site))
+        (.call build .admit-spec spec)
+        (let (dispatch (current-build-dispatch))
+          (if (and dispatch (.ref build 'unified-source?))
+            (dispatch build spec)
+            (.call build .prepare-compiler-contexts)))
+        spec)))
+  (def (window-namespace mount)
+    (.o std-make-spec: (build-spec (prepare-build '() (cons mount #f)))
+        no-applicable-method:
+        (lambda (_self leaf)
+          (.o std-make-spec: (build-spec (prepare-build '() (cons mount leaf)))))))
+  (def (module-namespace (mount #f))
     (cond
+      (mount (window-namespace mount))
       ;; Dynamic Gerbil objects use generation-local Gambit units. The compiled
       ;; program value already identifies native lowering; a static unit-name
       ;; probe must not send a dynamic namespace back to the source reader.
@@ -202,17 +238,8 @@
        (error "init has no compiled Module publication" unit))
       (else (.get (selected!) modules))))
   (values
-    (.o build: (prepare-build)
-        std-make-spec:
-        (with-input-context #f
-          (lambda ()
-            (def spec (.ref/inline build source-spec-site))
-            (.call build .admit-spec spec)
-            (let (dispatch (current-build-dispatch))
-              (if (and dispatch (.ref build 'unified-source?))
-                (dispatch build spec)
-                (.call build .prepare-compiler-contexts)))
-            spec))
+    (.o build: (prepare-build package-build-roots)
+        std-make-spec: (build-spec build)
         admit-current:
         (lambda ()
           (with-input-context #f

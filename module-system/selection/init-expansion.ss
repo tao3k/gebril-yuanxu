@@ -7,11 +7,12 @@
 ;;; Invariant: the common init.ss path lowers only to declarative module data.
 
 (import (for-syntax
+          (only-in :std/list/list filter-map)
           (only-in :gerbil/expander current-expander-context core-context-top
                    module-context? expander-context-id module-context-path current-expander-compiling? stx-car datum->syntax
                    make-top-context current-expander-phi current-import-expander-phi
                    current-export-expander-phi current-expander-marks)
-          (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-windows module-init-export-name)
+          (only-in :tao3k/yuanxu/module-system/source/role-forms parse-module-init module-init-export-name)
           (only-in :gerbil/compiler/base module-id->path-string)
           (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)))
 (import (only-in :clan/poo/object .ref .o .+)
@@ -26,15 +27,17 @@
   (def (expand-declaration stx (program #f) (origin #f))
   (syntax-case stx ()
     ((ctx option value init-clause ...)
-     (memq (syntax->datum (syntax option)) '(mode: source: :load-modules :test-dir))
+     (memq (syntax->datum (syntax option)) '(mode: source: :load-modules :test-dir :build-roots))
      ;; Normalize literal data only. One private getter is shared by all mounts;
      ;; expansion does not demand a Module scope or a test executor.
      (let* ((owner (core-context-top (current-expander-context) module-context?))
             (windows
-             (module-init-windows
-               (list (cons 'yuanxu! (cdr (syntax->datum stx))))
-               (or (and origin (syntax->datum origin)) (and owner (module-context-path owner)))))
-            (mounts (if (null? windows) '(#f) (map car windows)))
+             (let-values (((parsed mounted?)
+                           (parse-module-init
+                             (list (cons 'yuanxu! (cdr (syntax->datum stx))))
+                             (or (and origin (syntax->datum origin)) (and owner (module-context-path owner))))))
+               (if mounted? parsed '())))
+            (mounts (if (null? windows) '(#f) (map (lambda (window) (with ([_ _ mount _ _ _ _ _] window) mount)) windows)))
             (getter (genident 'init-modules-getter))
             (base-exports (genident 'init-exports))
             ;; An exported identifier transformer needs a stable private runtime
@@ -49,11 +52,14 @@
                     "::value")))))
        (unless owner
          (raise-syntax-error #f "init declaration requires a module context" stx))
-       (def (namespace-slot mount)
-         (with-syntax ((key (datum->syntax (syntax ctx) (or mount 'modules)))
-                       (get getter))
-           (if mount
-             (syntax (key (.ref (get) 'key)))
+       (def (namespace-slot window)
+         (if window
+           (with ([mode _ mount _ _ rows _ binding] window)
+             (with-syntax ((key (datum->syntax (syntax ctx) mount)) (get getter))
+               (if (and binding (eq? mode 'explicit) (null? rows))
+                 (syntax (key (get 'key)))
+                 (syntax (key (.ref (get) 'key))))))
+           (with-syntax ((key (datum->syntax (syntax ctx) 'modules)) (get getter))
              (syntax (key (get))))))
        (def (mount-binding mount)
          (let (name (datum->syntax (syntax ctx) mount))
@@ -64,12 +70,14 @@
                      (id (identifier? #'id) (.ref value 'name))))
                  (export name)))))
        (def (source-export window)
-         (with-syntax ((binding (datum->syntax (syntax ctx) (cdr window)))
-                       (id (datum->syntax (syntax ctx) (expander-context-id owner)))
-                       (mount (datum->syntax (syntax ctx) (car window))))
-           #'(begin
-               (def binding (make-module-source 'id 'mount))
-               (export binding))))
+         (with ([_ _ name _ _ _ _ binding] window)
+           (and binding
+                (with-syntax ((binding (datum->syntax (syntax ctx) binding))
+                              (id (datum->syntax (syntax ctx) (expander-context-id owner)))
+                              (mount (datum->syntax (syntax ctx) name)))
+                  #'(begin
+                      (def binding (make-module-source 'id 'mount))
+                      (export binding))))))
        (when (ormap (lambda (mount)
                       (memq mount '(tests std-make-spec admit-current))) mounts)
          (raise-syntax-error #f "mount conflicts with an init export" stx))
@@ -87,9 +95,9 @@
               (string->symbol
                 (string-join (string-split (module-id->path-string (expander-context-id owner)) #\/) "__"))))
           (exports-value exports-value-id)
-          ((mount-slot ...) (map namespace-slot mounts))
+          ((mount-slot ...) (map namespace-slot (if (null? windows) '(#f) windows)))
           ((mount-export ...) (map mount-binding (filter identity mounts)))
-          ((source-export-form ...) (map source-export (filter cdr windows)))
+          ((source-export-form ...) (filter-map source-export windows))
           (module-source-getter getter))
          (syntax
            (begin

@@ -215,7 +215,17 @@
                               (set! retained-contexts (cons dependency retained-contexts)))
                             seen))
                         #f)))))
-            (filter (lambda (name) (not (member name names))) closure)))
+            (filter
+              (lambda (name)
+                (and (not (member name names))
+                     ;; An inferred library row carries no options of its own.
+                     ;; Preserve explicit options on a target the Module owns.
+                     (not (and make-target-index
+                               (ormap (lambda (target)
+                                        (or (string? target) (eq? (car target) gxc:)))
+                                 (hash-ref make-target-index
+                                   (path-expand (string-append name ".ss") root) '()))))))
+              closure)))
          (retained
           (append additional-spec
             (map (lambda (target)

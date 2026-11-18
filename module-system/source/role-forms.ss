@@ -108,7 +108,7 @@ prelude: :gerbil/core
 
 ;; The same literal declaration grammar serves the expander and the source
 ;; reader. Only the runtime reader needs selection objects.
-(export init-name? parse-module-init module-init-windows)
+(export init-name? parse-module-init module-init-windows module-init-build-roots)
 
 (def (init-name? name)
   (and (symbol? name)
@@ -270,13 +270,31 @@ prelude: :gerbil/core
          (split (cdr rest) (cons (car rest) clauses)))))
     (_ (error "expected a :load-modules window" source-path))))
 
+(def (module-init-build-roots declaration)
+  (let (body (cdr declaration))
+    (if (and (pair? body) (eq? (car body) ':build-roots))
+      (begin
+        (unless (and (pair? (cdr body)) (list? (cadr body)) (andmap string? (cadr body)))
+          (error ":build-roots requires a literal list of package-relative library names"))
+        (cadr body))
+      '())))
+
 (def (parse-module-init forms source-path)
+  ;; A native Gerbil header lets init import before the package prelude
+  ;; exists. The source reader interprets only the inert declaration below.
+  (when (and (pair? forms) (eq? (car forms) prelude:)
+             (pair? (cdr forms)) (eq? (cadr forms) ':gerbil/core))
+    (set! forms (cddr forms)))
   (def declarations (filter (lambda (form) (and (pair? form) (eq? (car form) 'yuanxu!))) forms))
   (unless (= (length declarations) 1) (error "init.ss requires exactly one yuanxu! declaration" source-path))
   (unless (andmap (lambda (form) (and (list? form) (pair? form)
                                     (memq (car form) '(import export yuanxu!)))) forms)
     (error "init.ss contains non-declarative forms" source-path))
-  (def body (cdar declarations))
+  (def declaration (car declarations))
+  (def body (cdr declaration))
+  (when (and (pair? body) (eq? (car body) ':build-roots))
+    (module-init-build-roots declaration)
+    (set! body (cddr body)))
   (if (or (null? body) (not (eq? (car body) ':load-modules)))
     (begin
       (when (memq ':load-modules body)

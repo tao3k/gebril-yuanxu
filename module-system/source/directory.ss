@@ -35,7 +35,8 @@
       (error "invalid module directory identity" id))
     parts))
 (def (module-directory-context path publication-reader
-                              publication-prepares-source?: (publication-prepares-source? #f))
+                              publication-prepares-source?: (publication-prepares-source? #f)
+                              build-window: (build-window #f))
   (let ((observations '()) (directories (make-hash-table)) (sources (make-hash-table)))
     (def location-guards (make-parameter '()))
     (def (enroll-location! guard)
@@ -180,6 +181,19 @@
                                (filter (lambda (row) (.ref row 'disabled?)) decisions)))
            (generation-value (symbol->string (gensym 'module-directory-))))
       (def windows (and (.slot? intent-value 'windows) (.ref intent-value 'windows)))
+      (def (export-only-window? window)
+        (and (.ref window 'source-export) (eq? (.ref window 'mode) 'explicit)
+             (null? (.ref window 'decisions))))
+      (def requested-window
+        (and build-window
+             (or (and windows
+                      (find (lambda (window)
+                              (and (eq? (.ref window 'mount) (car build-window))
+                                   (export-only-window? window))) windows))
+                 (error "build demand requires an export-only directory window" build-window))))
+      (def requested-leaf (and build-window (cdr build-window)))
+      (def (auto-window? window)
+        (or (eq? window requested-window) (eq? (.ref window 'mode) 'auto)))
       ;; Literal tag/directory inspection has no publication reader and grants
       ;; no runtime authority. Native owner admission is demanded by a reader.
       (def qualified-owners? (and windows publication-reader))
@@ -386,7 +400,7 @@
                       (walk child (string-append prefix name "/")))))
                 (directory-snapshot-children (snapshot parent))))
             (hash-put! profile-roots window (reverse selected)))))
-      (when (any profile-tag (or windows (list intent-value)))
+      (when (and (not requested-window) (any profile-tag (or windows (list intent-value))))
         (module-source-measure-operation 'profile-interface-scan
           (lambda ()
             (for-each (lambda (window)
@@ -401,7 +415,7 @@
                        (path-expand "interface.ss" directory))))
       (def (auto-owners window)
         (def intent (or window intent-value))
-        (if (or (not (eq? (.ref intent 'mode) 'auto)) (profile-tag intent)) '()
+        (if (or (not (auto-window? intent)) (profile-tag intent)) '()
           (let walk ((directory (if window (window-root window) root-path)) (prefix ""))
             (foldr append '()
               (map (lambda (name)
@@ -480,7 +494,7 @@
         (map (lambda (directory)
                (path-strip-trailing-directory-separator (path-normalize directory)))
              (if windows
-               (map window-root (filter (lambda (window) (eq? (.ref window 'mode) 'auto)) windows))
+               (map window-root (filter auto-window? windows))
                (if (eq? (.ref intent-value 'mode) 'auto) (list root-path) '()))))
       (def (auto-source-owner directory)
         (def identities
@@ -617,7 +631,7 @@
                   (local-id (key-name id))
                   (_eligible
                    (when (and windows (not row)
-                              (not (and window (eq? (.ref window 'mode) 'auto))))
+                              (not (and window (auto-window? window))))
                      (error "module is outside explicit directory windows" id)))
                   (owner-root (if row (row-root row)
                                   (if window (window-root window) root-path)))
@@ -672,19 +686,20 @@
              (if origin
                (publish origin (path-directory (path-strip-trailing-directory-separator origin)))
                (let walk ((directory owner-root) (parts (source-parts local-id)))
-                 (let* ((node (snapshot directory))
-                        (index (directory-snapshot-child-index node)))
-                   (unless (if index (hash-key? index (car parts))
-                             (member (car parts) (directory-snapshot-children node)))
-                     (error "module directory not found" id directory))
-                   (let ((child (path-expand (car parts) directory))
-                         (closed? (and (null? (cdr parts)) (closed-directory-observation?))))
-                     (unless (eq? (observe! module-source-type child) 'directory)
-                       (error "module path is not a directory" id child))
-                     (if (pair? (cdr parts)) (walk child (cdr parts))
-                       ;; The terminal kind was just observed and enrolled in
-                       ;; the same location frame. Keep both checks on open paths.
-                       (publish child owner-root (and closed? (closed-directory-observation?))))))))))))
+                 (unless (and requested-leaf (eq? window requested-window))
+                   (let* ((node (snapshot directory))
+                          (index (directory-snapshot-child-index node)))
+                     (unless (if index (hash-key? index (car parts))
+                               (member (car parts) (directory-snapshot-children node)))
+                       (error "module directory not found" id directory))))
+                 (let ((child (path-expand (car parts) directory))
+                       (closed? (and (null? (cdr parts)) (closed-directory-observation?))))
+                   (unless (eq? (observe! module-source-type child) 'directory)
+                     (error "module path is not a directory" id child))
+                   (if (pair? (cdr parts)) (walk child (cdr parts))
+                     ;; The terminal kind was just observed and enrolled in
+                     ;; the same location frame. Keep both checks on open paths.
+                     (publish child owner-root (and closed? (closed-directory-observation?)))))))))))
       (def (locate-source id)
         (if (hash-key? sources id) (locate-source* id)
           (let* ((frame (box '()))
@@ -765,9 +780,11 @@
                      (tree resolve child (string-append (symbol->string id) "/") window children))))))
            keys: (map string->symbol names))))
       ;; Capture the root metadata now, never recursively enumerate every module.
-      (snapshot root-path)
-      (when windows
-        (for-each (lambda (window) (snapshot (window-root window))) windows))
+      (if windows
+        (for-each (lambda (window)
+                    (unless (export-only-window? window)
+                      (snapshot (window-root window)))) windows)
+        (snapshot root-path))
       ;; Candidate location does not depend on every earlier located Module.
       ;; Root/init/window observations are fixed here; a requested decision and
       ;; its actual path support are checked separately. Full current-source?
@@ -790,8 +807,14 @@
                    (andmap (lambda (check) (check)) location-inputs)
                    (or (not entry) ((directory-source-current? entry))))))))
       (.o generation: generation-value module-ids: selected-values selected: selected-values
-          loader-roots: (append selected-values
-                          (foldr append '() (map auto-owners (or windows '(#f)))))
+          loader-roots:
+          (if requested-window
+            (if requested-leaf
+              (begin (source-parts requested-leaf)
+                     (list (window-key requested-window requested-leaf)))
+              (auto-owners requested-window))
+            (append selected-values
+                    (foldr append '() (map auto-owners (or windows '(#f))))))
           (feature-roots)
           denied-modules: denied-values intent: scoped-intent init-source: init-path source-root: root-path
           imported-source-roots:
@@ -826,7 +849,7 @@
                          (and (not (and row (.ref row 'disabled?)))
                               (or row
                                   (if windows
-                                    (let (window (key-window id)) (and window (eq? (.ref window 'mode) 'auto)))
+                                    (let (window (key-window id)) (and window (auto-window? window)))
                                     (eq? (.ref intent-value 'mode) 'auto)))
                               (begin (locate-source id) #t))))
           namespace:

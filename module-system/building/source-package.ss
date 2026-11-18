@@ -106,7 +106,8 @@ prelude: :gerbil/core
   (def properties (core-library-package-plist root #t))
   (path-expand (or (and (list? properties) (pgetq build: properties)) "build.ss") root))
 
-(def (register-module-build-source! root expected-package prelude: (expected-prelude #f))
+(def (register-module-build-source! root expected-package prelude: (expected-prelude #f)
+                                      add-load-path?: (add-path? #t))
   (def directory (package-source-path root expected-package))
   (def identity (package-prelude-identity directory))
   ;; Verify before changing the expander or its search path. An off-prefix
@@ -117,7 +118,7 @@ prelude: :gerbil/core
     (let (context (core-import-module (path-expand "prelude.ss" directory)))
       (core-bind-root-syntax!
         (string->symbol (string-append ":" (symbol->string identity))) context #t)))
-  (add-load-path! directory))
+  (when add-path? (add-load-path! directory)))
 
 ;; The package owns this source declaration. Consumers never reconstruct it
 ;; from the public language name or from a compiled artifact's filename.
