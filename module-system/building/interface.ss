@@ -3,10 +3,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Module System init projections. Infrastructure, not a selected module.
 (import (only-in :tao3k/yuanxu/module-system/building/source-package
-                 call-with-build-input-path package-build-script-path
+                 call-with-build-input-path call-with-build-source-fallbacks package-build-script-path
                  package-library-prefix register-module-build-source!)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-build-roots)
-        (only-in :tao3k/yuanxu/module-system/building/products current-build-dispatch)
+        (only-in :tao3k/yuanxu/module-system/building/products
+                 build-output-directory current-build-dispatch)
+        (only-in :gerbil/expander core-import-module expander-context-id)
+        (only-in :std/list/list filter-map delete-duplicates/hash)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
@@ -16,6 +19,10 @@
                  call-with-module-source-read-cache call-with-module-source-callback
                  module-source-measure-operation))
 (export yuanxu-init-build)
+
+(def program-projector
+  (module-binding-action "tao3k/yuanxu/module-system/building/program"
+    'yuanxu-project-compiled-program))
 
 ;; Factories import their public binding through Gerbil. Actual artifact effects
 ;; retain whole runtime entry initialization. Both are inert at construction and
@@ -210,18 +217,75 @@
                               (module-linker (list init-file build-window: demand)))
                             (selected!))
                           retained root (if kind script init-file)))))))))))
+  ;; Reuse the Make selection and its admitted leaf scopes.
+  (def (selected-link-entries)
+    (call-with-build-source-fallbacks (list (path-directory init-file))
+      (lambda ()
+        (filter-map
+          (lambda (record)
+            (let (scope (.get record scope))
+              (and (.slot? scope 'program-entry)
+                   (cons (.get record identity) (.get scope program-entry)))))
+          (.get (selected!) selected-records)))))
+  (def (init-library)
+    (symbol->string (expander-context-id (core-import-module init-file))))
+  (def (link-root)
+    (path-expand "programs"
+      (path-expand (path-directory (init-library)) (build-output-directory))))
+  (def (with-link options build)
+    (lambda args
+      (def (run-build)
+        ;; Make prepends the source directory. Resolve installed products
+        ;; on the original load path when projecting executable metadata.
+        (let (inputs (load-path))
+          (dynamic-wind void (lambda () (apply build args))
+            (lambda () (set-load-path! inputs)))))
+      (match args
+        ((or [] ["compile" . _])
+         ;; Source admissions must precede creating the compiled .ssi files.
+         (def entries (selected-link-entries))
+         (def package-directory (path-directory (init-library)))
+         (def (program-name entry)
+           (let (directory (path-directory (symbol->string (cdr entry))))
+             (unless (and (string-prefix? package-directory directory)
+                          (> (string-length directory) (string-length package-directory)))
+               (error "selected program entry is outside its package directory" entry))
+             (path-strip-trailing-directory-separator
+               (substring directory (string-length package-directory) (string-length directory)))))
+         (def names (map program-name entries))
+         (unless (= (length names) (length (delete-duplicates/hash names)))
+           (error "selected modules share a link output name" names))
+         (def init (string->symbol (string-append ":" (init-library))))
+         (def root (link-root))
+         (run-build)
+         (def flags (options))
+         (for-each
+           (lambda (entry name)
+             (let (destination (path-expand name root))
+               (create-directory* destination)
+               (program-projector (list (cdr entry) destination (list init) gsc-options: flags))))
+           entries names))
+        (["clean"]
+         (run-build)
+         (let (root (link-root))
+           (when (file-exists? root) (delete-file-or-directory root))))
+        (else (run-build)))))
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
   (def (build-spec build)
     (with-input-context #f
       (lambda ()
-        (def spec (.ref/inline build source-spec-site))
-        (.call build .admit-spec spec)
-        (let (dispatch (current-build-dispatch))
-          (if (and dispatch (.ref build 'unified-source?))
-            (dispatch build spec)
-            (.call build .prepare-compiler-contexts)))
-        spec)))
+        ;; defbuild-script reads the spec before std/make adds srcdir.
+        ;; Both collecting and preparing it can resolve local imports.
+        (call-with-build-source-fallbacks (list root)
+          (lambda ()
+            (def spec (.ref/inline build source-spec-site))
+            (.call build .admit-spec spec)
+            (let (dispatch (current-build-dispatch))
+              (if (and dispatch (.ref build 'unified-source?))
+                (dispatch build spec)
+                (.call build .prepare-compiler-contexts)))
+            spec)))))
   (def (window-namespace mount)
     (.o __std-make-spec: (build-spec (prepare-build '() (cons mount #f)))
         no-applicable-method:
@@ -240,6 +304,7 @@
   (values
     (.o build: (prepare-build package-build-roots)
         std-make-spec: (build-spec build)
+        .with-link: with-link
         admit-current:
         (lambda ()
           (with-input-context #f
