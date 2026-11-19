@@ -5,6 +5,7 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :gerbil/expander current-expander-context eval-syntax make-top-context)
+        (only-in :gerbil/runtime/loader load-path set-load-path!)
         (only-in :clan/poo/object .get .call)
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :tao3k/yuanxu/module-system/building/products current-build-output-directory)
@@ -73,6 +74,39 @@
 
 (def module-build-command-test
   (test-suite "Explicit Module and mount compiler command"
+    (yuanxu-test-case "clean projects against authored inputs before its own output"
+      (call-with-temporary-directory "module-clean-inputs"
+        (lambda (root)
+          (def script (path-expand "build.ss" root))
+          (def output (path-expand "lib" root))
+          (def first (path-expand "first" root))
+          (def second (path-expand "second" root))
+          (def caller (list output first second))
+          (write-source script
+            (call-with-output-string
+              (lambda (port)
+                (for-each
+                  (lambda (form) (write form port) (newline port))
+                  `((import (only-in :std/source this-source-file)
+                            (only-in :std/build-script defbuild-script)
+                            (only-in :clan/poo/object .o)
+                            (only-in :gerbil/runtime/loader load-path)
+                            (only-in :tao3k/yuanxu/module-system/building/build-script defmodule-build-script))
+                    (def (targets)
+                      (unless (equal? (load-path)
+                                     (list ,first ,second (path-directory (this-source-file)) ,output))
+                        (error "clean changed the source input order" (load-path)))
+                      '())
+                    (defmodule-build-script (defbuild-script (targets) libdir: ,output) (.o)))))))
+          (def clean (import-build-script! script))
+          (def previous (load-path))
+          (parameterize ((current-build-output-directory output))
+            (dynamic-wind
+              (lambda () (set-load-path! caller))
+              (lambda ()
+                (clean "clean")
+                (check-equal? (load-path) caller))
+              (lambda () (set-load-path! previous)))))))
     (yuanxu-test-case "one native build consumes the union without changing the default spec"
       (call-with-temporary-directory "module-build-command"
         (lambda (root)

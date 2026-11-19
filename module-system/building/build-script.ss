@@ -88,7 +88,12 @@
        (compile))
      (call-action '.finish))
     (["clean"]
-     (dispatch (project #f) #f)
+     ;; Keep authored inputs ahead of this invocation's products from
+     ;; projection through output admission and Make's clean.
+     (call-with-build-source-fallbacks (list root)
+       (lambda ()
+         (call-with-build-input-path (build-output-directory)
+           (lambda () (dispatch (project #f) #f)))))
      (call-action '.clean))
     (else (native-main (project #f) args))))
 
