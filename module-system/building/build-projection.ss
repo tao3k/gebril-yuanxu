@@ -461,14 +461,28 @@
             (lambda ()
               (with-admitted-spec projection
                 (lambda ()
-                  (artifact-files (.ref projection 'compiler-identities) libdir #f)
+                  (def products (artifact-files (.ref projection 'compiler-identities) libdir #f))
+                  (def (product-exists? path)
+                    (let (kind (module-source-type path))
+                      (when (and kind (not (eq? kind 'regular)))
+                        (error "selected clean product is not a regular file" path))
+                      (eq? kind 'regular)))
+                  (for-each product-exists? products)
                   ;; Unified Make targets need the same prefix-free directory.
-                  (if foreign?
-                    (let (directory (selected-output-source-directory libdir))
-                      (create-directory* directory)
-                      (parameterize ((current-build-source-directory directory))
-                        (action)))
-                    (action)))
+                  (begin0
+                    (if foreign?
+                      (let (directory (selected-output-source-directory libdir))
+                        (create-directory* directory)
+                        (parameterize ((current-build-source-directory directory))
+                          (action)))
+                      (action))
+                    (check-output-sources!)
+                    ;; Gerbil Make leaves the compiler's numbered dynamic
+                    ;; products behind. Remove only the admitted file list.
+                    (for-each (lambda (file)
+                                (when (product-exists? file)
+                                  (delete-file file)))
+                              products)))
                 check-output-sources!))))
         .compile: (lambda (libdir action)
                     (publication-current!)

@@ -246,6 +246,16 @@
               refuse-input-context! make-source: source-root))
           refuse-input-context!))
       refuse-input-context!))
+  (def (clean-selection module-ids mount-names clean)
+    (with-input-context (build-output-directory)
+      (lambda ()
+        (def build (prepare-selection module-ids mount-names))
+        (.call build .with-clean-outputs
+          (lambda ()
+            (def source-root (or (current-build-source-directory) root))
+            (call-with-build-input-path #f
+              (lambda () (clean (.get build std-make-spec) source-root))
+              refuse-input-context! make-source: source-root))))))
   ;; Reuse the Make selection and its admitted leaf scopes.
   (def (selected-link-entries)
     (call-with-build-source-fallbacks (list (path-directory init-file))
@@ -387,6 +397,7 @@
                          (build-spec (prepare-selection module-ids '())))
         .with-link: with-link
         .compile-selection: compile-selection
+        .clean-selection: clean-selection
         admit-current:
         (lambda ()
           (with-input-context #f
