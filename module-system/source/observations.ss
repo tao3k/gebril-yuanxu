@@ -371,7 +371,7 @@
 ;; A matched large read already has an exact private text snapshot. Expose a
 ;; mutable copy only when an ordinary reader asks for the text in this window.
 (defstruct source-text-read (snapshot materialized) final: #t)
-(defstruct source-text-snapshot (text chunks) final: #t)
+(defstruct source-text-snapshot (text chunks scratch mutex) final: #t)
 (def current-source-text-snapshot (make-parameter #f))
 (def (source-text-content text)
   (if (source-text-read? text)
@@ -403,7 +403,23 @@
     (let loop ((start 0))
       (if (= start size) '()
         (let (end (min (+ start source-snapshot-chunk-size) size))
-          (cons (subu8vector bytes start end) (loop end)))))))
+          (cons (subu8vector bytes start end) (loop end)))))
+    #f (make-mutex)))
+(def (swap-source-scratch! snapshot replacement)
+  (def mutex (source-text-snapshot-mutex snapshot))
+  (mutex-lock! mutex)
+  (dynamic-wind void
+    (lambda ()
+      (begin0 (source-text-snapshot-scratch snapshot)
+        (set! (source-text-snapshot-scratch snapshot) replacement)))
+    (lambda () (mutex-unlock! mutex))))
+(def (make-source-scratch chunks)
+  (def size (u8vector-length (car chunks)))
+  (cons (make-u8vector size)
+        (let loop ((rest chunks))
+          (if (pair? (cdr rest)) (loop (cdr rest))
+            (let (tail (u8vector-length (car rest)))
+              (and (< tail size) (make-u8vector tail)))))))
 (def (decode-source-bytes bytes)
   (def port (open-input-u8vector (cons* init: bytes source-file-settings)))
   (dynamic-wind void
@@ -418,32 +434,37 @@
                 (loop)))))))
     (lambda () (close-input-port port))))
 (def (read-source-snapshot path snapshot)
-  ;; Gerbil owns the decoding settings. A canonical byte match already
-  ;; proves the decoded text. Otherwise decode the bytes from this same
-  ;; open file, including the matched prefix and the rest through EOF.
-  (call-with-input-source-file path
-    (lambda (port)
-      (def expected (source-text-snapshot-chunks snapshot))
-      (def buffer (make-u8vector (u8vector-length (car expected))))
-      (def (decode-change matched tail)
-        (decode-source-bytes
-          (u8vector-concatenate
-            (append (take expected matched) (list tail (read-all-as-u8vector port))))))
-      (let loop ((chunks expected) (matched 0))
-        (if (null? chunks)
-          (let (next (read-u8 port))
-            (if (eof-object? next)
-              (make-source-text-read (source-text-snapshot-text snapshot) #f)
-              (decode-change matched (u8vector next))))
-          (let* ((chunk (car chunks))
-                 (size (u8vector-length chunk))
-                 (target (if (= size (u8vector-length buffer)) buffer (make-u8vector size)))
-                 (count (read-subu8vector target 0 size port)))
-            (if (and (= count size) (equal? target chunk))
-              (loop (cdr chunks) (1+ matched))
-              (begin
-                (u8vector-shrink! target count)
-                (decode-change matched target)))))))))
+  ;; Gerbil owns decoding. Compare the complete file bytes on each fresh read.
+  ;; Only scratch storage returns to the snapshot. Overlapping reads borrow
+  ;; separate buffers, and no mutex is held while a port reads or decodes.
+  (def expected (source-text-snapshot-chunks snapshot))
+  (def scratch #f)
+  (dynamic-wind
+    (lambda ()
+      (set! scratch (or (swap-source-scratch! snapshot #f)
+                        (make-source-scratch expected))))
+    (lambda ()
+      (call-with-input-source-file path
+        (lambda (port)
+          (def buffer (car scratch))
+          (def (decode-change matched tail)
+            (decode-source-bytes
+              (u8vector-concatenate
+                (append (take expected matched) (list tail (read-all-as-u8vector port))))))
+          (let loop ((chunks expected) (matched 0))
+            (if (null? chunks)
+              (let (next (read-u8 port))
+                (if (eof-object? next)
+                  (make-source-text-read (source-text-snapshot-text snapshot) #f)
+                  (decode-change matched (u8vector next))))
+              (let* ((chunk (car chunks))
+                     (size (u8vector-length chunk))
+                     (target (if (= size (u8vector-length buffer)) buffer (cdr scratch)))
+                     (count (read-subu8vector target 0 size port)))
+                (if (and (= count size) (equal? target chunk))
+                  (loop (cdr chunks) (1+ matched))
+                  (decode-change matched (subu8vector target 0 count)))))))))
+    (lambda () (swap-source-scratch! snapshot scratch))))
 (def (read-source-text path expected-length)
   (let (snapshot (and expected-length (current-source-text-snapshot)))
     (cond (snapshot (read-source-snapshot path snapshot))

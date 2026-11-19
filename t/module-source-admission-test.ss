@@ -259,7 +259,7 @@
           (check-exception (module-source-admit-current! (list (cons file text))) error?)
           (module-source-admit-current! (list (cons file "")))
           (def prefix (make-string 8192 #\λ))
-          (def suffix (make-string 32768 #\a))
+          (def suffix (make-string 65536 #\a))
           (def large (string-append prefix "猫" suffix "\n"))
           (def current? (module-source-text-guard file large))
           (def different (string-append prefix "犬" suffix "\n"))
@@ -271,7 +271,7 @@
                 (write-role root "types" changed)
                 (check-equal? (current?) #f))
               (list different
-                    (string-append prefix "猫" (substring suffix 0 32767) "b\n")
+                    (string-append prefix "猫" (substring suffix 0 65535) "b\n")
                     (string-append prefix "猫" suffix)
                     (string-append large "λ"))))
           (parameterize ((current-module-source-observer #f))
