@@ -138,6 +138,8 @@ prelude: :gerbil/core
      ((null? tail)
       (unless (memq 'mode: options)
         (error "init.ss requires mode: explicit or mode: auto" source-path))
+      (when (and (eq? mode-value 'explicit) (null? rows))
+        (error "mode: explicit requires at least one Module leaf" source-path root-value))
       (when profile-value
         (unless (and (eq? mode-value 'auto) (or window? (memq 'source: options)))
           (error "profile selection requires source and auto mode" source-path)))

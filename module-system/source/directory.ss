@@ -36,7 +36,6 @@
     parts))
 (def (module-directory-context path publication-reader
                               publication-prepares-source?: (publication-prepares-source? #f)
-                              build-window: (build-window #f)
                               build-selection: (build-selection #f))
   (let ((observations '()) (directories (make-hash-table)) (sources (make-hash-table)))
     (def location-guards (make-parameter '()))
@@ -182,17 +181,6 @@
                                (filter (lambda (row) (.ref row 'disabled?)) decisions)))
            (generation-value (symbol->string (gensym 'module-directory-))))
       (def windows (and (.slot? intent-value 'windows) (.ref intent-value 'windows)))
-      (def (export-only-window? window)
-        (and (.ref window 'source-export) (eq? (.ref window 'mode) 'explicit)
-             (null? (.ref window 'decisions))))
-      (def requested-window
-        (and build-window
-             (or (and windows
-                      (find (lambda (window)
-                              (and (eq? (.ref window 'mount) (car build-window))
-                                   (export-only-window? window))) windows))
-                 (error "build demand requires an export-only directory window" build-window))))
-      (def requested-leaf (and build-window (cdr build-window)))
       (def (named-window name)
         (and windows (find (lambda (window) (eq? name (.ref window 'mount))) windows)))
       (def command-mounts
@@ -207,9 +195,7 @@
           (and (pair? (cdr parts))
                (let (window (named-window (string->symbol (car parts))))
                  (and window (cons window (string->symbol (string-join (cdr parts) "/"))))))))
-      (def (auto-window? window)
-        (or (eq? window requested-window) (eq? (.ref window 'mode) 'auto)
-            (and build-selection (memq window command-export-windows))))
+      (def (auto-window? window) (eq? (.ref window 'mode) 'auto))
       ;; Literal tag/directory inspection has no publication reader and grants
       ;; no runtime authority. Native owner admission is demanded by a reader.
       (def qualified-owners? (and windows publication-reader))
@@ -343,12 +329,6 @@
                                           (string-length (hash-ref library-prefixes right)))) matches)))))))))
       (def command-module-requests
         (map (lambda (id) (if (key-window id) #f (mounted-module id))) command-modules))
-      ;; Opening an export-only window is a capability of this invocation.
-      (def command-export-windows
-        (filter export-only-window?
-          (append command-mounts
-            (filter-map (lambda (id request) (if request (car request) (key-window id)))
-              command-modules command-module-requests))))
       (def (key-name key)
         (if (not qualified-owners?) key
           (let ((row (decision-row key)) (window (key-window key)))
@@ -364,8 +344,7 @@
                    (lambda (window)
                      (def candidate (window-key window key))
                      (and (or (decision-row candidate)
-                              (and (or (eq? (.ref window 'mode) 'auto)
-                                       (and build-selection (memq window command-export-windows)))
+                              (and (auto-window? window)
                                    (eq? (observe! module-source-type
                                            (path-expand (symbol->string key) (window-root window))) 'directory)))
                           candidate)) windows)))
@@ -425,7 +404,7 @@
                       (walk child (string-append prefix name "/")))))
                 (directory-snapshot-children (snapshot parent))))
             (hash-put! profile-roots window (reverse selected)))))
-      (when (and (not requested-window) (any profile-tag (or windows (list intent-value))))
+      (when (any profile-tag (or windows (list intent-value)))
         (module-source-measure-operation 'profile-interface-scan
           (lambda ()
             (for-each (lambda (window)
@@ -717,12 +696,11 @@
              (if origin
                (publish origin (path-directory (path-strip-trailing-directory-separator origin)))
                (let walk ((directory owner-root) (parts (source-parts local-id)))
-                 (unless (and requested-leaf (eq? window requested-window))
-                   (let* ((node (snapshot directory))
-                          (index (directory-snapshot-child-index node)))
-                     (unless (if index (hash-key? index (car parts))
-                               (member (car parts) (directory-snapshot-children node)))
-                       (error "module directory not found" id directory))))
+                 (let* ((node (snapshot directory))
+                        (index (directory-snapshot-child-index node)))
+                   (unless (if index (hash-key? index (car parts))
+                             (member (car parts) (directory-snapshot-children node)))
+                     (error "module directory not found" id directory)))
                  (let ((child (path-expand (car parts) directory))
                        (closed? (and (null? (cdr parts)) (closed-directory-observation?))))
                    (unless (eq? (observe! module-source-type child) 'directory)
@@ -812,9 +790,7 @@
            keys: (map string->symbol names))))
       ;; Capture the root metadata now, never recursively enumerate every module.
       (if windows
-        (for-each (lambda (window)
-                    (unless (export-only-window? window)
-                      (snapshot (window-root window)))) windows)
+        (for-each (lambda (window) (snapshot (window-root window))) windows)
         (snapshot root-path))
       ;; Candidate location does not depend on every earlier located Module.
       ;; Root/init/window observations are fixed here; a requested decision and
@@ -860,11 +836,6 @@
           loader-roots:
           (cond
            (build-selection (command-roots))
-           (requested-window
-            (if requested-leaf
-              (begin (source-parts requested-leaf)
-                     (list (window-key requested-window requested-leaf)))
-              (auto-owners requested-window)))
            (else
             (append selected-values
                     (foldr append '() (map auto-owners (or windows '(#f)))))))

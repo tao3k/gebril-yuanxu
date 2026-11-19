@@ -260,7 +260,7 @@
           (put root "gerbil.pkg" "(package: module-build-program)\n")
           (create-directory (path-expand "empty" root))
           (put root "init.ss"
-            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :load-modules \"./modules\" mount: modules mode: explicit (example) :load-modules \"./empty\" mount: Empty mode: explicit)\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :load-modules \"./modules\" mount: modules mode: explicit (example) :load-modules \"./empty\" mount: Empty mode: auto)\n")
           (put root "modules/example/types.ss"
             "(import :clan/poo/object (only-in :clan/poo/type Type.)) (def Scope (.cc Type. identity: 'program/scope .element?: object?)) (export Scope)")
           (put root "modules/example/objects.ss"
@@ -276,7 +276,7 @@
           (put root "modules/example/interface.ss"
             "(import (only-in :clan/poo/object .def .o) \"./types.ss\" \"./config.ss\") (export Example) (.def Example identity: 'example core: (.o scope-contract: Scope exports: Config) features: (.o))")
           (put root "modules/example/command.ss"
-            "(import :clan/poo/object (only-in \"../../init.ss\" module-build-program.init.exports)) (export main) (def (main . args) (unless (null? (.all-slots (.get module-build-program.init.exports Empty))) (error \"compiled empty namespace changed\")) (displayln \"MODULE-PROGRAM-OK \" (list (.get module-build-program.init.exports modules example value) (.get module-build-program.init.exports modules example value))))")
+            "(import :clan/poo/object (only-in \"../../init.ss\" module-build-program.init.exports)) (export main) (def (main . args) (unless (and (.slot? (.get module-build-program.init.exports Empty) '__std-make-spec) (not (.slot? (.get module-build-program.init.exports Empty) 'example))) (error \"compiled empty namespace changed\")) (displayln \"MODULE-PROGRAM-OK \" (list (.get module-build-program.init.exports modules example value) (.get module-build-program.init.exports modules example value))))")
           (call-with-output-file
             (list path: (path-expand "build.ss" root) permissions: #o755)
             (cut display

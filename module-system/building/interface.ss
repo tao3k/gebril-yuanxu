@@ -203,7 +203,7 @@
         refuse-input-context! source-roots: (list root))))
   ;; A consumer may add its native entry targets to the same source epoch
   ;; used by the namespace and test projections.
-  (def (prepare-build (retained '()) (demand #f) (command #f))
+  (def (prepare-build (retained '()) (command #f))
     (with-input-context #f
       (lambda ()
         (module-source-measure-operation 'build-projection
@@ -216,19 +216,21 @@
                   (when (and kind (not (eq? kind 'regular)))
                     (error "package build script must be a regular source" script))
                   (build-projector
-                    (list (if (or demand command)
+                    (list (if command
                             (begin
                               (admit-init-declaration! (module-source-read init-file))
                               (module-linker
-                                (list init-file build-window: demand build-selection: command)))
+                                (list init-file build-selection: command)))
                             (selected!))
                           retained root (if kind script init-file)))))))))))
+  (def (prepare-selection module-ids mount-names)
+    (prepare-build '() (.o modules: module-ids mounts: mount-names)))
   (def (compile-selection module-ids mount-names compile)
     (call-with-build-input-path (build-output-directory)
       (lambda ()
         (def build
           (parameterize ((current-build-module-roots #f))
-            (prepare-build '() #f (.o modules: module-ids mounts: mount-names))))
+            (prepare-selection module-ids mount-names)))
         (.call build .with-compiler-inputs
           (lambda ()
             (def source-root (or (current-build-source-directory) root))
@@ -334,10 +336,10 @@
                 (.call build .prepare-compiler-contexts)))
             spec)))))
   (def (window-namespace mount)
-    (.o __std-make-spec: (build-spec (prepare-build '() (cons mount #f)))
-        no-applicable-method:
-        (lambda (_self leaf)
-          (.o __std-make-spec: (build-spec (prepare-build '() (cons mount leaf)))))))
+    (.+ (fallback-to (lambda () (.ref (module-namespace) mount)))
+        (.o __std-make-spec:
+            (parameterize ((current-build-module-roots #f))
+              (build-spec (prepare-selection '() (list mount)))))))
   (def (module-namespace (mount #f))
     (cond
       (mount (window-namespace mount))

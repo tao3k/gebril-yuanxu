@@ -73,69 +73,42 @@ excludes Gerbil's compilation work and the checked preparation of genuinely
 computed targets. No whole-graph traversal per target and no traversal of
 unselected role bodies are needed on that path.
 
-* Build demand on a published window
+* Build demand on a named mount
 
-A provider may publish a source window without selecting any of its leaves
-for the default package. An empty explicit window with =export:= already
-expresses this distinction. A separate optional flag is unnecessary for
-this case.
+=mount:= names a directory in the init namespace. =mode: explicit= requires
+at least one Module row, including rows that record a disabled choice.
+=mode: auto= discovers Module leaves from the directory. =export:= publishes
+a =ModuleSource= for another init's =from:= reference.
 
 #+begin_src scheme
 (yuanxu!
   :load-modules "./src" mode: explicit mount: Library
   (compiler) (runtime)
-  :load-modules "./languages" mode: explicit
-  mount: Languages export: LanguagesSource)
+  :load-modules "./languages" mode: auto mount: Languages)
 #+end_src
 
-When an init owns ordinary package facades, =:build-roots= declares their
-package-relative library entry names before the windows. The default projector
-adds the native import closure of those roots. A build demand on a published
-window does not automatically add the default package roots. The declared
-roots keep their normal Gerbil identities and the projector preserves explicit
-options of any Module target reached through the facade imports.
-
-The default =init.exports.std-make-spec= projects the default selection.
-Importing the provider init or reading its default spec does not walk the
-language tree, expand language roles, or compile language parsers. A
-consumer can use the existing =from:= window reference and select =hcl=
-explicitly in its own =yuanxu!= declaration.
-
-The POO projection also lets a dedicated build entry demand a spec
-through the published mount. The leaf's implicit =__std-make-spec= slot
-projects that leaf and its admitted imports. The same implicit slot on
-the mount descends through the published window and projects all
-eligible leaves. Reading an ordinary mount value does not request a build.
+The package's =std-make-spec= follows its default roots and the native import
+closure of its optional =:build-roots=. A dedicated build entry can demand the
+mount's Make projection directly. Reading the mount or selecting a business
+leaf does not evaluate the mount's Make specification.
 
 #+begin_src scheme
-;; A dedicated HCL build entry.
-(defbuild-script
-  (.get gerbil-parser.init.exports Languages hcl __std-make-spec))
-
-;; A dedicated build entry for the entire published language window.
 (defbuild-script
   (.get gerbil-parser.init.exports Languages __std-make-spec))
 #+end_src
 
-A leaf follows its Gerbil imports and can declare special options through
-=Build.defbuild-script=. The projector admits its owner-relative rows as
-input. At the published mount or leaf, =__std-make-spec= returns the
-projected Make list rooted at the package. The mount collects leaf
-identities into one selection and passes it to the existing Yuanxu projector. It does not concatenate raw lists or project each leaf's
-closure independently. Gerbil remains the authority for imports and Make
-execution. A shared import contributes once, and conflicting ownership or
-explicit target options are refused by the same collector. Build, spec and
-clean use the same projection and source-currentness rules for that demand.
+The mount slot and =--mounts Languages= use the same selection of eligible
+leaves. Use =--modules Languages/hcl Languages/gql= for a subset. Yuanxu resolves
+Module identities and their declared inputs once per selection. A shared
+target contributes once, and conflicting ownership or target options are
+refused by the existing collector. Gerbil owns import closure and Make
+execution. The selected projection retains the ordinary source-currentness
+and compiler-input checks.
 
-Qualify the default, one-leaf and whole-window reads through the actual
-=std/build-script= entrypoint. Keep a language with a failing role initializer
-outside the one-leaf selection. Check that the default spec has no language
-rows and observes no language role bodies, that the one-leaf spec includes
-only the chosen closure, and that the whole-window spec includes eligible
-leaves with a shared dependency exactly once. Scale the dormant language
-catalog while holding the one-leaf dependency graph fixed. Record the
-projector's visits and Make rows so importing a window cannot silently
-become a request to compile its entire catalog.
+Qualify the default build, a single leaf and the whole mount independently.
+Keep an unrelated role outside the selected closure. Verify that a shared
+dependency appears once and that accessing the namespace leaves the Make
+specification lazy.
 
 * Qualification and promotion
 

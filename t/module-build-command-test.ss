@@ -8,7 +8,8 @@
         (only-in :gerbil/runtime/loader load-path set-load-path!)
         (only-in :clan/poo/object .get .call)
         (only-in :std/misc/ports read-all-as-u8vector)
-        (only-in :tao3k/yuanxu/module-system/building/products current-build-output-directory)
+        (only-in :tao3k/yuanxu/module-system/building/products
+                 current-build-output-directory current-build-module-roots)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in "./qualification/module-init/fixture.ss" import-fixture-init! import-build-script! with-compiler-progress))
 (export module-build-command-test)
@@ -119,12 +120,13 @@
              (yuanxu!
                :load-modules \"./default\" mode: explicit mount: Default
                (main) (blocked disable: #t)
-               :load-modules \"./tools\" mode: explicit mount: Tools export: ToolsSource
-               :load-modules \"./cold\" mode: explicit mount: Cold export: ColdSource)")
+               :load-modules \"./tools\" mode: auto mount: Tools
+               :load-modules \"./cold\" mode: explicit mount: Cold (unused disable: #t))")
           (write-module root "default/main" "main")
           (write-module root "tools/worker" "worker")
-          ;; Importing the CLI or inspecting the default spec must leave both
-          ;; export-only windows cold.
+          (write-module root "tools/helper" "helper")
+          ;; A scoped default spec and individual leaf requests leave
+          ;; unrelated builds cold.
           (write-module root "cold/unused" "unused")
           (write-source (path-expand "cold/unused/build.ss" root) "(error \"unexpected build\")")
           (write-source entry
@@ -138,10 +140,14 @@
             (def exports (import-fixture-init! init))
             (eval-syntax `(import (rename-in (only-in ,entry main) (main compile-main))))
             (def compile (eval-syntax 'compile-main))
-            (def default-spec (.get exports std-make-spec))
+            (def (default-spec)
+              (parameterize ((current-build-module-roots '(main)))
+                (.get exports std-make-spec)))
+            (def default (default-spec))
             (def (product path)
               (file-exists? (path-expand (string-append "lib/" package "/" path "/interface.ssi") root)))
             (check-equal? (product "tools/worker") #f)
+            (check-equal? (product "tools/helper") #f)
             (check-exception (compile "--extra" "main") (rejects? "unknown compile selector"))
             (check-exception (compile "--modules") (rejects? "requires at least one name"))
             (check-exception (compile "--mounts" "Missing") (rejects? "unknown build mount"))
@@ -150,12 +156,13 @@
             (def input-path (load-path))
             (with-compiler-progress
               (lambda ()
-                (compile "--modules" "Tools/worker" "Tools/worker")))
+                (compile "--modules" "Tools/worker" "Tools/helper" "Tools/worker")))
             (check-equal? (load-path) input-path)
             (check-equal? (product "tools/worker") #t)
+            (check-equal? (product "tools/helper") #t)
             (check-equal? (product "default/main") #f)
             (check-equal? (product "cold/unused") #f)
-            (check-equal? (.get exports std-make-spec) default-spec)
+            (check-equal? (default-spec) default)
             (with-compiler-progress
               (lambda ()
                 (compile "--modules" "worker" "Tools/worker" "--mounts" "Tools" "Default" "Default")))

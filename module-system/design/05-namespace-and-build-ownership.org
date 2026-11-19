@@ -68,9 +68,11 @@ gxi <package-command>.ss --mounts mountName1 mountName2
 #+end_src
 
 =--modules= selects Module identities in the package's existing
-=init.exports=. Use =Mount/module= for a qualified request, including a leaf in
-an export-only window. =--mounts= selects the eligible Module leaves in the
-named directory windows. Both selectors can occur in one invocation and
+=init.exports=. Use =Mount/module= for a qualified leaf request.
+=--mounts= selects the eligible Module leaves in the named directory windows.
+=mount:= names a local build and runtime namespace. =mode: explicit= requires
+Module rows and =mode: auto= discovers leaves. =export:= publishes the source
+reference used by another init's =from:=. Both selectors can occur in one invocation and
 contribute to one admitted closure. Repeated roots contribute once. Unknown or ambiguous identities,
 missing or empty selectors and disabled requirements fail before compilation.
 Dependencies are discovered from the existing Module declarations and Gerbil
@@ -98,7 +100,7 @@ default declaration.
 The [[file:../../t/module-build-command-test.ss][command regression]] calls a downstream =main=, checks real
 Gerbil products for repeated and overlapping selections, and compares the
 default spec before and after the command. It also covers malformed
-selectors, disabled Modules and cold export-only windows.
+selectors, disabled Modules and unrelated cold Modules.
 
 * Evidence after migration
 

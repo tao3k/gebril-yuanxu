@@ -268,11 +268,10 @@
 
 (def (yuanxu-load-modules source read-publication: (publication-reader #f)
                            module-view: (module-view #f)
-                           build-window: (build-window #f)
                            build-selection: (build-selection #f))
   (load-module-source source publication-reader module-view make-publication-reader
-    build-window build-selection))
-(def (load-module-source source publication-reader module-view reader-maker build-window build-selection)
+    build-selection))
+(def (load-module-source source publication-reader module-view reader-maker build-selection)
   (when (current-module-build-phase?)
     (error "Module build phase cannot reload the root module selection"))
   (if (and (string? source) (not publication-reader))
@@ -299,8 +298,7 @@
            (lambda ()
              (module-directory-context source
                (lambda args (apply (reader-ref 'read) args))
-               publication-prepares-source?: #t build-window: build-window
-               build-selection: build-selection))))
+               publication-prepares-source?: #t build-selection: build-selection))))
        (def original-current? (.ref context 'current?))
        (.+ (link-module-context
         (.+ context (.o publication-inputs:
@@ -326,11 +324,11 @@
              ;; its transfer checks the new graph's actual source authority.
              (load-module-source source #f module-view
                (if reader (lambda () ((.ref reader '.fork))) make-publication-reader)
-               build-window build-selection)))))
+               build-selection)))))
      (link-module-context
        (if (string? source)
          (module-directory-context source publication-reader
-           build-window: build-window build-selection: build-selection) source)
+           build-selection: build-selection) source)
        #f #f module-view)))
 (def (link-module-context context-value (realization #f) (original-graph #f) (module-view #f)
                           (source-publications #f) (source-prepared #f) (read-located #f)

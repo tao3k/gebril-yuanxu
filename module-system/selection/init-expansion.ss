@@ -52,13 +52,10 @@
                     "::value")))))
        (unless owner
          (raise-syntax-error #f "init declaration requires a module context" stx))
-       (def (namespace-slot window)
-         (if window
-           (with ([mode _ mount _ _ rows _ binding] window)
-             (with-syntax ((key (datum->syntax (syntax ctx) mount)) (get getter))
-               (if (and binding (eq? mode 'explicit) (null? rows))
-                 (syntax (key (get 'key)))
-                 (syntax (key (.ref (get) 'key))))))
+       (def (namespace-slot mount)
+         (if mount
+           (with-syntax ((key (datum->syntax (syntax ctx) mount)) (get getter))
+             (syntax (key (get 'key))))
            (with-syntax ((key (datum->syntax (syntax ctx) 'modules)) (get getter))
              (syntax (key (get))))))
        (def (mount-binding mount)
@@ -95,7 +92,7 @@
               (string->symbol
                 (string-join (string-split (module-id->path-string (expander-context-id owner)) #\/) "__"))))
           (exports-value exports-value-id)
-          ((mount-slot ...) (map namespace-slot (if (null? windows) '(#f) windows)))
+          ((mount-slot ...) (map namespace-slot mounts))
           ((mount-export ...) (map mount-binding (filter identity mounts)))
           ((source-export-form ...) (filter-map source-export windows))
           (module-source-getter getter))

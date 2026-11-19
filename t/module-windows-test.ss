@@ -82,11 +82,11 @@
     (yuanxu-test-case "header and identity collisions reject without evaluation"
       (for-each
         (lambda (body) (check-exception (module-init-intent (list (cons 'yuanxu! body)) #f) error?))
-        '((:load-modules "a" mode: explicit mount: X
-           :load-modules "b" mode: explicit mount: x)
-          (:load-modules "a" mode: explicit mount: A
-           :load-modules "./a/" mode: explicit mount: B)
-          (:load-modules "a" mode: explicit mount: tests)
+        '((:load-modules "a" mode: explicit mount: X (left)
+           :load-modules "b" mode: explicit mount: x (right))
+          (:load-modules "a" mode: explicit mount: A (left)
+           :load-modules "./a/" mode: explicit mount: B (right))
+          (:load-modules "a" mode: explicit mount: tests (module))
           (:load-modules "a" mode: explicit mount: A mount: A)
           (:load-modules "a" mode: explicit rename: A)
           (:test-dir "../outside" :load-modules "a" mode: explicit)
@@ -98,6 +98,15 @@
       (def intent (module-init-intent (list declaration) #f))
       (check-equal? (map (cut .ref <> 'mount) (.get intent windows)) '(Modules Scenarios))
       (check-equal? (map (cut .ref <> 'identity) (.get intent decisions)) '(engine release)))
+    (yuanxu-test-case "mode explicit requires a leaf independently of source export"
+      (for-each
+        (lambda (body)
+          (check-exception
+            (module-init-intent (list (cons 'yuanxu! body)) "init.ss")
+            (message-is "mode: explicit requires at least one Module leaf")))
+        '((mode: explicit)
+          (:load-modules "./languages" mode: explicit mount: Languages)
+          (:load-modules "./languages" mode: explicit mount: Languages export: LanguagesSource))))
     (yuanxu-test-case "test directories default per window and ModuleSource references stay inert"
       (def intent
         (module-init-intent
@@ -247,7 +256,7 @@
           '((yuanxu! :load-modules "./modules" mode: explicit mount: Changed (engine))))
         (check-exception (eval-syntax '(.all-slots (.get FixtureExports Modules))) error?)
         (check-exception (eval-syntax '((.get CapturedTests admit-current))) error?)))
-    (yuanxu-test-fixture "published window builds only the demanded closure"
+    (yuanxu-test-fixture "local mount projects its Make spec and keeps the runtime namespace"
       (root Workspace)
       (fixture! root)
       (write-forms (path-expand "init.ss" root)
@@ -255,7 +264,7 @@
           (import (only-in :tao3k/yuanxu/module-system/selection/init-syntax yuanxu!))
           (yuanxu! :build-roots ("facade")
             :load-modules "./modules" mode: explicit mount: Library (engine)
-            :load-modules "./languages" mode: explicit mount: Languages export: LanguagesSource)))
+            :load-modules "./languages" mode: auto mount: Languages)))
       (write-forms (path-expand "support.ss" root) '((export shared) (def shared 42)))
       (write-forms (path-expand "facade.ss" root)
         '((import "./support.ss") (export (import: "./support.ss"))))
@@ -280,14 +289,9 @@
           (map (lambda (row) (if (string? row) row (cadr row))) (eval-syntax request)))
         (def default (names '(.get FixtureExports std-make-spec)))
         (check-equal? (and (member "facade" default) #t) #t)
-        (check-equal? (filter (cut string-prefix? "languages/" <>) default) '())
+        (check-equal? (and (member "languages/hcl/interface" default) #t) #t)
         (check-equal? (eval-syntax '(.slot? (.get FixtureExports Languages) 'std-make-spec)) #f)
         (check-equal? (eval-syntax '(.slot? (.get FixtureExports Languages hcl) 'std-make-spec)) #f)
-        (def one (names '(.get FixtureExports Languages hcl __std-make-spec)))
-        (check-equal? (and (member "languages/hcl/interface" one) #t) #t)
-        (check-equal? (filter (cut string-prefix? "languages/gql/" <>) one) '())
-        (check-equal? (member "languages/hcl/config" one) #f)
-        (check-equal? (member "facade" one) #f)
         (def all (names '(.get FixtureExports Languages __std-make-spec)))
         (check-equal? (and (member "languages/hcl/interface" all)
                            (member "languages/gql/interface" all) #t) #t)
@@ -295,7 +299,9 @@
         (check-equal? (and (member "languages/gql/config" all) #t) #t)
         (check-equal? (filter (cut equal? "support" <>) all) '("support"))
         (check-equal? (length all) (length (delete-duplicates/hash all)))
-        (check-exception (eval-syntax '(.get FixtureExports Languages missing __std-make-spec)) error?)))
+        (check-equal? (member "facade" all) #f)
+        (check-equal? (eval-syntax '(.get FixtureExports Languages hcl value)) 42)
+        (check-exception (eval-syntax '(.get FixtureExports Languages missing)) NoApplicableMethod?)))
     (yuanxu-test-fixture "forward type imports resolve only their eligible auto-window owner"
       (root Workspace)
       (fixture! root)
