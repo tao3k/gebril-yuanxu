@@ -246,16 +246,19 @@
               refuse-input-context! make-source: source-root))
           refuse-input-context!))
       refuse-input-context!))
+  (def (clean-build build action)
+    (.call build .with-clean-outputs
+      (lambda ()
+        (def source-root (or (current-build-source-directory) root))
+        (call-with-build-input-path #f
+          (lambda () (action source-root))
+          refuse-input-context! make-source: source-root))))
   (def (clean-selection module-ids mount-names clean)
     (with-input-context (build-output-directory)
       (lambda ()
         (def build (prepare-selection module-ids mount-names))
-        (.call build .with-clean-outputs
-          (lambda ()
-            (def source-root (or (current-build-source-directory) root))
-            (call-with-build-input-path #f
-              (lambda () (clean (.get build std-make-spec) source-root))
-              refuse-input-context! make-source: source-root))))))
+        (clean-build build
+          (lambda (source-root) (clean (.get build std-make-spec) source-root))))))
   ;; Reuse the Make selection and its admitted leaf scopes.
   (def (selected-link-entries)
     (call-with-build-source-fallbacks (list (path-directory init-file))
@@ -325,7 +328,7 @@
         (let (inputs (load-path))
           (dynamic-wind void (lambda () (apply build args))
             (lambda () (set-load-path! inputs)))))
-      (def (with-targets prepare action)
+      (def (with-targets prepare action (clean? #f))
         ;; Admit the same source owners before native Make changes its .ssi files.
         (def library (symbol->string (expander-context-id (core-import-module init-file))))
         ;; Linking can demand selection before Make constructs its spec.
@@ -334,14 +337,23 @@
           (with-input-context #f
             (lambda () (selected-link-targets library))))
         (def output (build-output-directory))
-        (run-build)
-        (def flags (prepare))
-        (unless (null? targets)
-          (call-with-selected-output-lock output
+        (def (finish flags)
+          (for-each (lambda (target)
+                      (action target (link-destination output (.get target destination)) flags))
+                    targets))
+        (if clean?
+          (with-input-context output
             (lambda ()
-              (for-each (lambda (target)
-                          (action target (link-destination output (.get target destination)) flags))
-                        targets)))))
+              (clean-build (.get exports build)
+                (lambda (_source-root)
+                  (run-build)
+                  (finish (prepare))))))
+          (begin
+            (run-build)
+            (let (flags (prepare))
+              (unless (null? targets)
+                (call-with-selected-output-lock output
+                  (lambda () (finish flags))))))))
       (match args
         ((or [] ["compile" . _])
          (with-targets options
@@ -352,7 +364,7 @@
                  gsc-options: flags)))))
         (["clean"]
          (with-targets void (lambda (_target destination _flags)
-                         (program-cleaner (list destination)))))
+                              (program-cleaner (list destination))) #t))
         (else (run-build)))))
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
@@ -390,7 +402,7 @@
       ((and unit (##lookup-registered-module unit))
        (error "init has no compiled Module publication" unit))
       (else (.get (selected!) modules))))
-  (values
+  (def exports
     (.o build: (prepare-build package-build-roots)
         std-make-spec: (build-spec build)
         .make-spec-for: (lambda (module-ids)
@@ -402,5 +414,5 @@
         (lambda ()
           (with-input-context #f
             (lambda () ((.ref/inline build source-current-site)))))
-        tests: test-source-value)
-    module-namespace))
+        tests: test-source-value))
+  (values exports module-namespace))
