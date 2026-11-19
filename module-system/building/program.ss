@@ -167,8 +167,18 @@ prelude: :gerbil/core
           (for-each (lambda (ctx)
                       (let (id (expander-context-id ctx))
                         (when id (hash-put! by-path (module-id->path-string id) ctx)))) templates)
+          ;; gxc puts phase zero in the static unit. An installed SSI's
+          ;; dynamic loader can still ask for that unit under its ~0 name.
+          (def aliases
+            (filter-map (lambda (row)
+                          (def id (hash-ref row "module"))
+                          (def scm (hash-ref row "scm"))
+                          (and (not (string-index id #\~))
+                               (> (file-info-size (file-info scm)) 0)
+                               (cons (string-append id "~0") id)))
+                        modules))
           (program-register-builtins! stub base
-            (filter (cut hash-ref <> "deferred" #f) modules) by-path))
+            (filter (cut hash-ref <> "deferred" #f) modules) by-path aliases))
       (call-with-output-file (path-expand program-manifest-file output-dir)
         (lambda (port)
           (write-json
@@ -229,7 +239,10 @@ prelude: :gerbil/core
   (remove-empty-directory output-dir))
 
 
-(def (program-register-builtins! stub modules metadata contexts)
+(def (program-register-builtins! stub modules metadata contexts aliases)
+  (def eager-aliases
+    (filter-map (lambda (alias) (and (member (cdr alias) modules) (car alias)))
+                aliases))
   (let (forms (call-with-input-file stub
                  (lambda (port)
                    (read port)
@@ -239,7 +252,7 @@ prelude: :gerbil/core
                          (loop (cons form forms))))))))
     (call-with-output-file stub
       (lambda (port)
-        (write `(define builtin-modules ',modules) port)
+        (write `(define builtin-modules ',(append modules eager-aliases)) port)
         (newline port)
         ;; Compiler-owned dependency plans activate through Gerbil's existing
         ;; registry. Availability never implies eager initialization.
@@ -255,7 +268,7 @@ prelude: :gerbil/core
                        (string->symbol (path-strip-directory (path-strip-extension scm))))
                      scm
                      (if (module-context? context) (program-loader-imports context) '()))))
-               metadata)) port)
+               metadata) aliases) port)
         (newline port)
         (for-each (lambda (form) (write form port) (newline port)) forms)))))
 

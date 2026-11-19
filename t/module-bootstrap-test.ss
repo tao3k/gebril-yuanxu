@@ -14,6 +14,7 @@
         (only-in :std/list/list find)
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/prelude yuanxu-autoload yuanxu-module-export)
         (only-in :tao3k/yuanxu/module-system/source/admission call-with-module-source-operation-measurement)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
@@ -181,6 +182,23 @@
           ((module-binding-action "std/func" 'repeat) (list (lambda () 42) 2))
           '(42 42)))
       (check-equal? (and (memq 'std/func imports) #t) #t))
+    (yuanxu-test-case "public autoload resolves the binding on first use"
+      (def import-owner (current-expander-module-import))
+      (def imports 0)
+      (parameterize ((current-expander-module-import
+                       (lambda arguments
+                         (let (context (apply import-owner arguments))
+                           (when (eq? (expander-context-id context) 'std/func)
+                             (set! imports (1+ imports)))
+                           context))))
+        (def action (yuanxu-autoload ':std/func 'repeat))
+        (check-equal? imports 0)
+        (check-equal? (action (lambda () 42) 2) '(42 42))
+        (def after-first imports)
+        (check-equal? (> after-first 0) #t)
+        (check-equal? (action (lambda () 43) 1) '(43))
+        (check-equal? imports after-first)
+        (check-equal? (procedure? (yuanxu-module-export ':std/func 'repeat)) #t)))
     (yuanxu-test-case "direct Gerbil preludes retain their complete module association"
       (def language (core-import-module ':gerbil/core))
       ;; The Gerbil constructor is valid independently of its registry-caching

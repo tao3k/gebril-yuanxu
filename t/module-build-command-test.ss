@@ -31,7 +31,7 @@
     (string-append "(.def Module identity: '" identity
                    " core: (.o scope-contract: Scope exports: Defaults) features: (.o))")))
 
-(def (linked-build root lib package name (entry-owner name))
+(def (linked-build root lib package name (entry-owner name) (imports #f))
   (def owner (string-append "modules/" name))
   (def init (string-append name "-init"))
   (def binding (string->symbol (string-append package "." init ".exports")))
@@ -42,10 +42,19 @@
         (lambda (port)
           (for-each (lambda (form) (write form port) (newline port)) forms)))))
   (write-module root owner name)
+  (def support (string-append name "-support"))
+  (def support-library (string->symbol (string-append ":" package "/" support)))
+  (write-forms (string-append support ".ss")
+    '(export support-value) '(def support-value 7))
+  ;; Gerbil clean can leave generated Scheme beside a removed .ssi. The
+  ;; linker must resolve the declared source root over that generated file.
+  (write-source (path-expand (string-append package "/" support ".scm") lib)
+    "(define generated-output 0)")
+  (def entry (string->symbol (string-append package "/modules/" entry-owner "/entry")))
   (write-forms (string-append owner "/objects.ss")
-    '(import :clan/poo/object) '(export Defaults)
-    `(def Defaults (.o program-entry: ',(string->symbol
-                                          (string-append package "/modules/" entry-owner "/entry")))))
+    `(import :clan/poo/object (only-in ,support-library support-value)) '(export Defaults)
+    `(def Defaults (.o program-entry: ',entry source-value: support-value
+                    ,@(if imports `(program-runtime-imports: ',imports) '()))))
   (write-forms (string-append owner "/entry.ss")
     '(export main) '(def (main . args) 0))
   (write-forms (string-append owner "/interface.ss")
@@ -58,7 +67,7 @@
     '(.def Build defbuild-script: (.o spec: '("entry"))))
   (write-forms (string-append init ".ss")
     '(import :tao3k/yuanxu/module-system/selection/init-syntax)
-    `(yuanxu! :build-roots (,init)
+    `(yuanxu! :build-roots (,init ,support)
        :load-modules "./modules" mode: explicit mount: Default (,(string->symbol name))))
   (write-forms script
     `(import (only-in :std/build-script defbuild-script)
@@ -152,19 +161,22 @@
             (lambda ()
               (parameterize ((current-build-output-directory lib))
                 (def alpha (linked-build root lib package "alpha"))
-                (def beta (linked-build root lib package "beta"))
+                (def beta (linked-build root lib package "beta" "beta" '()))
                 (def foreign (linked-build root lib package "foreign" "beta"))
                 (def (program name)
                   (path-expand (string-append package "/programs/modules/" name) lib))
                 (def (entry name)
                   (path-expand (string-append package "/modules/" name "/entry.ssi") lib))
-                (def (products name)
+                (def (products name (metadata? #t))
                   (map (cut path-expand <> (program name))
-                       '("program.json" "program__exe.scm" "metadata-modules.dat")))
+                       (if metadata?
+                         '("program.json" "program__exe.scm" "metadata-modules.dat")
+                         '("program.json" "program__exe.scm"))))
                 (def (bytes path) (call-with-input-file path read-all-as-u8vector))
                 (with-compiler-progress (lambda () (alpha "compile") (beta "compile")))
                 (check-equal? (map file-exists? (cons (entry "alpha") (products "alpha"))) '(#t #t #t #t))
-                (def beta-paths (cons (entry "beta") (products "beta")))
+                (def beta-paths (cons (entry "beta") (products "beta" #f)))
+                (check-equal? (file-exists? (path-expand "metadata-modules.dat" (program "beta"))) #f)
                 (def beta-before (map bytes beta-paths))
                 (check-exception (foreign "clean") (rejects? "outside its selected module"))
                 ;; A file that was never published by either Build stays in place.

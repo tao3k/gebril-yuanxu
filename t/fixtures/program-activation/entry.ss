@@ -17,7 +17,7 @@ package: tao3k/yuanxu/t/fixtures/program-activation
   (unless (timeval? (current-system-time-coarse))
     (error "bootstrap lost the nested FFI superclass"))
   (unless (##unbound? (activation)) (error "link-only role initialized before demand"))
-  (load-module "tao3k/yuanxu/t/fixtures/program-activation/role")
+  (load-module "tao3k/yuanxu/t/fixtures/program-activation/role~0")
   (let (first (activation))
     (unless (equal? first '(42)) (error "runtime dependency was not activated before role" first))
     (load-module "tao3k/yuanxu/t/fixtures/program-activation/role")

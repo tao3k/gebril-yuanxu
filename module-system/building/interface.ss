@@ -261,27 +261,41 @@
                                     (equal? (path-directory (symbol->string owner))
                                             (path-directory (symbol->string entry))))
                          (error "program entry is outside its selected module" (.get record identity) entry))
-                       (cons (.get record identity) entry))))))
+                       (cons entry scope))))))
           (.get (selected!) selected-records)))))
   (def (selected-link-targets library)
     (def package (path-strip-trailing-directory-separator (path-directory library)))
     (def prefix (if (string=? package "") "" (string-append package "/")))
     (def package-parts (if (string=? package "") '() (string-split package #\/)))
     (def targets
-      (map (lambda (entry)
+      (map (lambda (selected)
+             (def entry-value (car selected))
+             (def scope (cdr selected))
+             ;; A leaf can name the extra runtime metadata that it will load
+             ;; by name. Its compiled entry always provides ordinary imports.
+             (def runtime-imports
+               (if (.slot? scope 'program-runtime-imports)
+                 (.get scope program-runtime-imports)
+                 (list (string->symbol (string-append ":" library)))))
+             (unless (and (list? runtime-imports)
+                          (andmap (lambda (name)
+                                    (and (symbol? name)
+                                         (string-prefix? ":" (symbol->string name))))
+                                  runtime-imports))
+               (error "expected program runtime library imports" entry-value runtime-imports))
              (let (directory (path-strip-trailing-directory-separator
-                               (path-directory (symbol->string (cdr entry)))))
+                               (path-directory (symbol->string entry-value))))
                (unless (and (string-prefix? prefix directory)
                             (> (string-length directory) (string-length prefix)))
-                 (error "selected program entry is outside its package directory" entry))
+                 (error "selected program entry is outside its package directory" entry-value))
                (let (parts (append package-parts '("programs")
                              (string-split (substring directory (string-length prefix)
                                              (string-length directory)) #\/)))
                  (unless (andmap module-source-name? parts)
-                   (error "invalid selected program output path" entry))
-                 (cons (cdr entry) parts))))
+                   (error "invalid selected program output path" entry-value))
+                 (.o entry: entry-value imports: runtime-imports destination: parts))))
            (selected-link-entries)))
-    (def names (map cdr targets))
+    (def names (map (lambda (target) (.get target destination)) targets))
     (unless (= (length names) (length (delete-duplicates/hash names)))
       (error "selected modules share a link output name" names))
     targets)
@@ -304,26 +318,30 @@
       (def (with-targets prepare action)
         ;; Admit the same source owners before native Make changes its .ssi files.
         (def library (symbol->string (expander-context-id (core-import-module init-file))))
-        (def targets (selected-link-targets library))
+        ;; Linking can demand selection before Make constructs its spec.
+        ;; Resolve declared build roots in the same input context.
+        (def targets
+          (with-input-context #f
+            (lambda () (selected-link-targets library))))
         (def output (build-output-directory))
         (run-build)
         (def flags (prepare))
         (unless (null? targets)
           (call-with-selected-output-lock output
             (lambda ()
-              (for-each (lambda (target destination)
-                          (action library (car target) destination flags))
-                        targets (map (cut link-destination output <>) (map cdr targets)))))))
+              (for-each (lambda (target)
+                          (action target (link-destination output (.get target destination)) flags))
+                        targets)))))
       (match args
         ((or [] ["compile" . _])
          (with-targets options
-           (lambda (library entry destination flags)
+           (lambda (target destination flags)
              (create-directory* destination)
              (program-projector
-               (list entry destination (list (string->symbol (string-append ":" library)))
+               (list (.get target entry) destination (.get target imports)
                  gsc-options: flags)))))
         (["clean"]
-         (with-targets void (lambda (_library _entry destination _flags)
+         (with-targets void (lambda (_target destination _flags)
                          (program-cleaner (list destination)))))
         (else (run-build)))))
   ;; The generated read-only identifier calls this accessor, as the existing
