@@ -65,19 +65,22 @@
         (lambda (port)
           (display "prelude: :gerbil/core\n" port)
           (write '(export core-spec) port) (newline port)
-          ;; The process smoke needs the real prelude and its local import.
-          ;; Other source fixtures exercise the wider selected projection.
-          (write `(def core-spec ',(if sample
-                                   '("prelude" "core-spec" "module-system/selection/init-syntax")
-                                   '("prelude" "core-spec"
-                                     "module-system/selection/init-syntax"
-                                     "module-system/bootstrap/body-inclusion"
-                                     "module-system/schema/slot-contracts"
-                                     "module-system/source/build-binding" "module-system/source/role-forms"
-                                     "object/syntax"
-                                     "types/contracts" "types/facts" "types/ports"
-                                     "observability/funcs" "observability/objects" "observability/types"
-                                     "utilities/algorithms" "utilities/functional"))) port)))
+          ;; Both fixtures compile the prelude and its local imports. Gerbil
+          ;; orders those targets before checking fresh-process reuse.
+          (def bootstrap
+            '("prelude" "core-spec" "module-system/selection/init-syntax"
+              "module-system/source/module-binding"))
+          (def targets
+            (if sample bootstrap
+              (append bootstrap
+                '("module-system/bootstrap/body-inclusion"
+                  "module-system/schema/slot-contracts"
+                  "module-system/source/build-binding" "module-system/source/role-forms"
+                  "object/syntax"
+                  "types/contracts" "types/facts" "types/ports"
+                  "observability/funcs" "observability/objects" "observability/types"
+                  "utilities/algorithms" "utilities/functional"))))
+          (write `(def core-spec ',targets) port)))
       (.o root: fixture-root state: fixture-state cold: #t))))
 
 (def (link-fixture-dependencies source target)
