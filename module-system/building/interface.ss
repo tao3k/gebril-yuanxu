@@ -9,14 +9,15 @@
         (only-in :tao3k/yuanxu/module-system/building/products
                  build-output-directory current-build-dispatch current-build-module-roots
                  current-build-source-directory call-with-selected-output-lock)
-        (only-in :gerbil/expander core-import-module expander-context-id)
+        (only-in :gerbil/expander core-import-module core-read-module/sexp expander-context-id)
         (only-in :std/list/list filter-map delete-duplicates/hash)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
         (only-in :tao3k/yuanxu/module-system/building/source-closure
                  call-with-build-expansion-accounting)
-        (only-in :tao3k/yuanxu/module-system/source/observations module-source-type module-source-read module-source-admit-current!
+        (only-in :tao3k/yuanxu/module-system/source/observations
+                 module-source-type module-source-name? module-source-read module-source-admit-current!
                  call-with-module-source-read-cache call-with-module-source-callback
                  module-source-measure-operation))
 (export yuanxu-init-build)
@@ -24,6 +25,9 @@
 (def program-projector
   (module-binding-action "tao3k/yuanxu/module-system/building/program"
     'yuanxu-project-compiled-program))
+(def program-cleaner
+  (module-binding-action "tao3k/yuanxu/module-system/building/program"
+    'yuanxu-clean-compiled-program))
 
 ;; Factories import their public binding through Gerbil. Actual artifact effects
 ;; retain whole runtime entry initialization. Both are inert at construction and
@@ -241,13 +245,45 @@
           (lambda (record)
             (let (scope (.get record scope))
               (and (.slot? scope 'program-entry)
-                   (cons (.get record identity) (.get scope program-entry)))))
+                   (let (entry (.get scope program-entry))
+                     (let-values (((_prelude owner _namespace _body)
+                                   (core-read-module/sexp (.get record source value))))
+                       (unless (and (symbol? entry)
+                                    (equal? (path-directory (symbol->string owner))
+                                            (path-directory (symbol->string entry))))
+                         (error "program entry is outside its selected module" (.get record identity) entry))
+                       (cons (.get record identity) entry))))))
           (.get (selected!) selected-records)))))
-  (def (init-library)
-    (symbol->string (expander-context-id (core-import-module init-file))))
-  (def (link-root)
-    (path-expand "programs"
-      (path-expand (path-directory (init-library)) (build-output-directory))))
+  (def (selected-link-targets library)
+    (def package (path-strip-trailing-directory-separator (path-directory library)))
+    (def prefix (if (string=? package "") "" (string-append package "/")))
+    (def package-parts (if (string=? package "") '() (string-split package #\/)))
+    (def targets
+      (map (lambda (entry)
+             (let (directory (path-strip-trailing-directory-separator
+                               (path-directory (symbol->string (cdr entry)))))
+               (unless (and (string-prefix? prefix directory)
+                            (> (string-length directory) (string-length prefix)))
+                 (error "selected program entry is outside its package directory" entry))
+               (let (parts (append package-parts '("programs")
+                             (string-split (substring directory (string-length prefix)
+                                             (string-length directory)) #\/)))
+                 (unless (andmap module-source-name? parts)
+                   (error "invalid selected program output path" entry))
+                 (cons (cdr entry) parts))))
+           (selected-link-entries)))
+    (def names (map cdr targets))
+    (unless (= (length names) (length (delete-duplicates/hash names)))
+      (error "selected modules share a link output name" names))
+    targets)
+  (def (link-destination output parts)
+    (foldl (lambda (part parent)
+             (let* ((path (path-expand part parent))
+                    (kind (module-source-type path)))
+               (when (and kind (not (eq? kind 'directory)))
+                 (error "expected an ordinary selected program output directory" path))
+               path))
+           output parts))
   (def (with-link options build)
     (lambda args
       (def (run-build)
@@ -256,42 +292,30 @@
         (let (inputs (load-path))
           (dynamic-wind void (lambda () (apply build args))
             (lambda () (set-load-path! inputs)))))
+      (def (with-targets prepare action)
+        ;; Admit the same source owners before native Make changes its .ssi files.
+        (def library (symbol->string (expander-context-id (core-import-module init-file))))
+        (def targets (selected-link-targets library))
+        (def output (build-output-directory))
+        (run-build)
+        (def flags (prepare))
+        (unless (null? targets)
+          (call-with-selected-output-lock output
+            (lambda ()
+              (for-each (lambda (target destination)
+                          (action library (car target) destination flags))
+                        targets (map (cut link-destination output <>) (map cdr targets)))))))
       (match args
         ((or [] ["compile" . _])
-         ;; Source admissions must precede creating the compiled .ssi files.
-         (def entries (selected-link-entries))
-         (def package-directory (path-directory (init-library)))
-         (def (program-name entry)
-           (let (directory (path-directory (symbol->string (cdr entry))))
-             (unless (and (string-prefix? package-directory directory)
-                          (> (string-length directory) (string-length package-directory)))
-               (error "selected program entry is outside its package directory" entry))
-             (path-strip-trailing-directory-separator
-               (substring directory (string-length package-directory) (string-length directory)))))
-         (def names (map program-name entries))
-         (unless (= (length names) (length (delete-duplicates/hash names)))
-           (error "selected modules share a link output name" names))
-         (def init (string->symbol (string-append ":" (init-library))))
-         (def root (link-root))
-         (run-build)
-         (def flags (options))
-         ;; Link projection rewrites metadata in place. Serialize it with
-         ;; other publishers and clean for the same compiler output directory.
-         (call-with-selected-output-lock (build-output-directory)
-           (lambda ()
-             (for-each
-               (lambda (entry name)
-                 (let (destination (path-expand name root))
-                   (create-directory* destination)
-                   (program-projector
-                     (list (cdr entry) destination (list init) gsc-options: flags))))
-               entries names))))
+         (with-targets options
+           (lambda (library entry destination flags)
+             (create-directory* destination)
+             (program-projector
+               (list entry destination (list (string->symbol (string-append ":" library)))
+                 gsc-options: flags)))))
         (["clean"]
-         (run-build)
-         (call-with-selected-output-lock (build-output-directory)
-           (lambda ()
-             (let (root (link-root))
-               (when (file-exists? root) (delete-file-or-directory root))))))
+         (with-targets void (lambda (_library _entry destination _flags)
+                         (program-cleaner (list destination)))))
         (else (run-build)))))
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.

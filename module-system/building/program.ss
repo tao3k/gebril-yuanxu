@@ -4,9 +4,16 @@ prelude: :gerbil/core
 (import :gerbil/compiler
         :gerbil/expander
         (only-in :std/list/list delete-duplicates/hash append-map)
-        (only-in :std/encoding/json write-json))
+        (only-in :std/encoding/json write-json read-json current-json-read-options make-JSONReadOptions)
+        (only-in :tao3k/yuanxu/module-system/source/observations module-source-name? module-source-type))
 (import (only-in "program-activation.ss" program-activation-form))
-(export yuanxu-project-compiled-program)
+(export yuanxu-project-compiled-program yuanxu-clean-compiled-program)
+
+(def program-stub-file "program__exe.scm")
+(def program-manifest-file "program.json")
+(def program-observation-file "metadata-modules.dat")
+(def program-metadata-directory "metadata")
+(def program-schema "gerbil-scheme-rust.aot-program.v1")
 
 ;; The versioned compiler adapter lives here, never in a downstream Rust
 ;; parser. These are the same native graph operations used by compile-exe.
@@ -150,7 +157,7 @@ prelude: :gerbil/core
                  ids)))
       (def templates
         (program-template-contexts (append contexts (map import-module runtime-imports))))
-      (let* ((stub (string-append output "__exe.scm"))
+      (let* ((stub (path-expand program-stub-file output-dir))
                (base (delete-duplicates/hash
                        (append gerbil-runtime-modules
                          (map (cut hash-ref <> "module")
@@ -162,15 +169,64 @@ prelude: :gerbil/core
                         (when id (hash-put! by-path (module-id->path-string id) ctx)))) templates)
           (program-register-builtins! stub base
             (filter (cut hash-ref <> "deferred" #f) modules) by-path))
-      (call-with-output-file (path-expand "program.json" output-dir)
+      (call-with-output-file (path-expand program-manifest-file output-dir)
         (lambda (port)
           (write-json
            port
-           (hash ("schema" "gerbil-scheme-rust.aot-program.v1")
+           (hash ("schema" program-schema)
                  ("modules" (list->vector modules))
-                 ("stub" (string-append output "__exe.scm"))
+                 ("stub" (path-expand program-stub-file output-dir))
                  ("library_dir" (path-expand "lib" home))
                  ("link_options" (list->vector link-options)))))))))
+
+
+(def (yuanxu-clean-compiled-program output-dir)
+  (def manifest (path-expand program-manifest-file output-dir))
+  (def metadata (path-expand program-metadata-directory output-dir))
+  (def (product-exists? path expected)
+    (let (kind (module-source-type path))
+      (when (and kind (not (eq? kind expected)))
+        (error "unexpected selected program product type" path kind))
+      kind))
+  (def metadata? (product-exists? metadata 'directory))
+  (def manifest? (product-exists? manifest 'regular))
+  (def copies
+    (if manifest?
+      (let* ((plan (parameterize ((current-json-read-options
+                                  (make-JSONReadOptions object-as-hash: #t)))
+                     (call-with-input-file manifest read-json)))
+             (stub (hash-ref plan "stub"))
+             (rows (hash-ref plan "modules")))
+        (unless (and (equal? (hash-ref plan "schema") program-schema)
+                     (equal? (path-strip-directory stub) program-stub-file))
+          (error "invalid selected program manifest" manifest))
+        (def recorded-metadata
+          (path-expand program-metadata-directory (path-directory stub)))
+        ;; The link plan also references installed static inputs. Only copies
+        ;; listed under this programme's own metadata directory are products.
+        (filter-map (lambda (row)
+                      (let* ((scm (hash-ref row "scm"))
+                             (name (path-strip-directory scm)))
+                        (and (equal? (path-strip-trailing-directory-separator
+                                       (path-directory scm)) recorded-metadata)
+                             (module-source-name? name)
+                             (string-suffix? ".scm" name)
+                             (path-expand name metadata))))
+                    (if (vector? rows) (vector->list rows) rows)))
+      '()))
+  (def files
+    (filter (cut product-exists? <> 'regular)
+      (append (map (cut path-expand <> output-dir)
+                   (list program-stub-file program-observation-file))
+              (delete-duplicates/hash copies))))
+  (def (remove-empty-directory directory)
+    (when (and (product-exists? directory 'directory)
+               (null? (directory-files (list path: directory ignore-hidden: 'dot-and-dot-dot))))
+      (delete-directory directory)))
+  (for-each delete-file files)
+  (when metadata? (remove-empty-directory metadata))
+  (when manifest? (delete-file manifest))
+  (remove-empty-directory output-dir))
 
 
 (def (program-register-builtins! stub modules metadata contexts)
@@ -205,7 +261,7 @@ prelude: :gerbil/core
 
 (def (program-observe-metadata imports output-dir)
   (if (null? imports) '()
-    (let* ((observation (path-expand "metadata-modules.dat" output-dir))
+    (let* ((observation (path-expand program-observation-file output-dir))
            (expression
              (call-with-output-string
                (lambda (port)
@@ -238,7 +294,7 @@ prelude: :gerbil/core
                       templates))))
           (seen (list->hash-table (map (lambda (id) (cons id #t))
                     (append builtin (map (cut string-append <> "~0") builtin)))))
-          (directory (path-expand "metadata" output-dir)))
+          (directory (path-expand program-metadata-directory output-dir)))
       (create-directory* directory)
       (filter-map
         (lambda (row)
