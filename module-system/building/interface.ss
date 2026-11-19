@@ -225,8 +225,9 @@
                                 (list init-file build-selection: command)))
                             (selected!))
                           retained root (if kind script init-file)))))))))))
-  (def (prepare-selection module-ids mount-names)
-    (prepare-build '() (.o modules: module-ids mounts: mount-names)))
+  (def (prepare-selection module-ids mount-names (package-roots? #f))
+    (prepare-build (if package-roots? package-build-roots '())
+      (.o modules: module-ids mounts: mount-names)))
   (def (compile-selection module-ids mount-names compile)
     (call-with-build-input-path (build-output-directory)
       (lambda ()
@@ -253,10 +254,10 @@
         (call-with-build-input-path #f
           (lambda () (action source-root))
           refuse-input-context! make-source: source-root))))
-  (def (clean-selection module-ids mount-names clean)
+  (def (clean-selection module-ids mount-names clean package-roots?: (package-roots? #f))
     (with-input-context (build-output-directory)
       (lambda ()
-        (def build (prepare-selection module-ids mount-names))
+        (def build (prepare-selection module-ids mount-names package-roots?))
         (clean-build build
           (lambda (source-root) (clean (.get build std-make-spec) source-root))))))
   ;; Reuse the Make selection and its admitted leaf scopes.
@@ -405,8 +406,9 @@
   (def exports
     (.o build: (prepare-build package-build-roots)
         std-make-spec: (build-spec build)
-        .make-spec-for: (lambda (module-ids)
-                         (build-spec (prepare-selection module-ids '())))
+        .make-spec-for:
+        (lambda (module-ids package-roots?: (package-roots? #f))
+          (build-spec (prepare-selection module-ids '() package-roots?)))
         .with-link: with-link
         .compile-selection: compile-selection
         .clean-selection: clean-selection

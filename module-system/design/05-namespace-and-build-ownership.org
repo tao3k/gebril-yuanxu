@@ -53,6 +53,10 @@ or disabled owners before Make runs.
   (.call package.init.exports .make-spec-for '(Modules/clock Modules/nix)))
 #+end_src
 
+A package build that narrows its leaf selection can pass =package-roots?: #t=
+to =.make-spec-for= and =.clean-selection= to also include the targets
+declared in =:build-roots=. Mount projections remain leaf-scoped.
+
 An explicit build operation can invoke =.compile-selection= with leaf names,
 mount names and a Gerbil Make callback. The action supplies the admitted
 targets and their source directory, including any declared FFI prerequisites

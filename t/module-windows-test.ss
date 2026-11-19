@@ -301,6 +301,12 @@
         (check-equal? (filter (cut equal? "support" <>) all) '("support"))
         (check-equal? (length all) (length (delete-duplicates/hash all)))
         (check-equal? (member "facade" all) #f)
+        (def scoped
+          (names '(.call FixtureExports .make-spec-for '(Languages/hcl) package-roots?: #t)))
+        (check-equal? (filter (cut equal? "facade" <>) scoped) '("facade"))
+        (check-equal? (filter (cut equal? "languages/hcl/interface" <>) scoped)
+                      '("languages/hcl/interface"))
+        (check-equal? (member "languages/gql/interface" scoped) #f)
         (check-equal? (eval-syntax '(.get FixtureExports Languages hcl value)) 42)
         (check-exception (eval-syntax '(.get FixtureExports Languages missing)) NoApplicableMethod?)))
     (yuanxu-test-fixture "forward type imports resolve only their eligible auto-window owner"
