@@ -8,7 +8,7 @@
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-build-roots)
         (only-in :tao3k/yuanxu/module-system/building/products
                  build-output-directory current-build-dispatch current-build-module-roots
-                 current-build-source-directory)
+                 current-build-source-directory call-with-selected-output-lock)
         (only-in :gerbil/expander core-import-module expander-context-id)
         (only-in :std/list/list filter-map delete-duplicates/hash)
         (runtime: :clan/poo/object)
@@ -275,16 +275,23 @@
          (def root (link-root))
          (run-build)
          (def flags (options))
-         (for-each
-           (lambda (entry name)
-             (let (destination (path-expand name root))
-               (create-directory* destination)
-               (program-projector (list (cdr entry) destination (list init) gsc-options: flags))))
-           entries names))
+         ;; Link projection rewrites metadata in place. Serialize it with
+         ;; other publishers and clean for the same compiler output directory.
+         (call-with-selected-output-lock (build-output-directory)
+           (lambda ()
+             (for-each
+               (lambda (entry name)
+                 (let (destination (path-expand name root))
+                   (create-directory* destination)
+                   (program-projector
+                     (list (cdr entry) destination (list init) gsc-options: flags))))
+               entries names))))
         (["clean"]
          (run-build)
-         (let (root (link-root))
-           (when (file-exists? root) (delete-file-or-directory root))))
+         (call-with-selected-output-lock (build-output-directory)
+           (lambda ()
+             (let (root (link-root))
+               (when (file-exists? root) (delete-file-or-directory root))))))
         (else (run-build)))))
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
