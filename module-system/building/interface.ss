@@ -335,11 +335,20 @@
                 (dispatch build spec)
                 (.call build .prepare-compiler-contexts)))
             spec)))))
+  (def window-build-protocol
+    (.o fallback-slot-names: (lambda (_window names) (remq '__std-make-spec names))))
   (def (window-namespace mount)
-    (.+ (fallback-to (lambda () (.ref (module-namespace) mount)))
-        (.o __std-make-spec:
-            (parameterize ((current-build-module-roots #f))
-              (build-spec (prepare-selection '() (list mount)))))))
+    ;; Namespace reads retain the mounted directory's ordinary admission and
+    ;; reflection. The reserved build demand is a lazy, explicit operation.
+    (make-object
+      supers: (list (.ref (module-namespace) mount))
+      protocol: window-build-protocol
+      slots:
+      (list (cons '__std-make-spec
+              ($thunk-slot-spec
+                (lambda ()
+                  (parameterize ((current-build-module-roots #f))
+                    (build-spec (prepare-selection '() (list mount))))))))))
   (def (module-namespace (mount #f))
     (cond
       (mount (window-namespace mount))
