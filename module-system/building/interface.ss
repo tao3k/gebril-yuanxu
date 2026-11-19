@@ -6,8 +6,10 @@
                  call-with-build-input-path call-with-build-source-fallbacks package-build-script-path
                  package-library-prefix register-module-build-source!)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-build-roots)
+
+        (only-in :tao3k/yuanxu/module-system/source/build-binding current-module-ffi-build)
         (only-in :tao3k/yuanxu/module-system/building/products
-                 build-output-directory current-build-dispatch current-build-module-roots
+                 build-output-directory
                  current-build-source-directory call-with-selected-output-lock)
         (only-in :gerbil/expander core-import-module core-read-module/sexp expander-context-id)
         (only-in :std/list/list filter-map delete-duplicates/hash)
@@ -229,7 +231,12 @@
     (call-with-build-input-path (build-output-directory)
       (lambda ()
         (def build
-          (parameterize ((current-build-module-roots #f))
+          (parameterize
+              ((current-module-ffi-build
+                 (lambda (owner target)
+                   (call-with-build-input-path #f
+                     (lambda () (compile (list target) owner))
+                     refuse-input-context! make-source: owner))))
             (prepare-selection module-ids mount-names)))
         (.call build .with-compiler-inputs
           (lambda ()
@@ -330,10 +337,7 @@
           (lambda ()
             (def spec (.ref/inline build source-spec-site))
             (.call build .admit-spec spec)
-            (let (dispatch (current-build-dispatch))
-              (if (and dispatch (.ref build 'unified-source?))
-                (dispatch build spec)
-                (.call build .prepare-compiler-contexts)))
+            (.call build .prepare-compiler-contexts)
             spec)))))
   (def window-build-protocol
     (.o fallback-slot-names: (lambda (_window names) (remq '__std-make-spec names))))
@@ -347,8 +351,7 @@
       (list (cons '__std-make-spec
               ($thunk-slot-spec
                 (lambda ()
-                  (parameterize ((current-build-module-roots #f))
-                    (build-spec (prepare-selection '() (list mount))))))))))
+                  (build-spec (prepare-selection '() (list mount)))))))))
   (def (module-namespace (mount #f))
     (cond
       (mount (window-namespace mount))
@@ -362,6 +365,8 @@
   (values
     (.o build: (prepare-build package-build-roots)
         std-make-spec: (build-spec build)
+        .make-spec-for: (lambda (module-ids)
+                         (build-spec (prepare-selection module-ids '())))
         .with-link: with-link
         .compile-selection: compile-selection
         admit-current:

@@ -173,6 +173,26 @@ prelude: :gerbil/core
                       (path-normalize (path-expand (core-resolve-library-module-path library))))
         (error "compiled import identity differs from runtime package resolution" request identity))
       identity))
+   ((and (string? request) (string=? (path-extension request) ".scm"))
+    ;; Native clean can leave generated Scheme beside the removed interface.
+    ;; Gerbil can resolve that file as source. Its emitted body has no library
+    ;; header, so recover only an identity that Gerbil resolves back to it.
+    (let (resolved (path-normalize (path-expand request)))
+      (ormap
+        (lambda (directory)
+          (def root (string-append
+                       (path-strip-trailing-directory-separator
+                         (path-normalize (path-expand directory))) "/"))
+          (and (string-prefix? root resolved)
+               (let* ((relative (substring resolved (string-length root) (string-length resolved)))
+                      (name (string-append (or (package-library-prefix directory) "")
+                                           (path-strip-extension relative)))
+                      (library (string->symbol (string-append ":" name))))
+                 (and (with-catch
+                        (lambda (failure) (if (syntax-error? failure) #f (raise failure)))
+                        (lambda () (equal? (core-resolve-library-module-path library) resolved)))
+                      (string->symbol name)))))
+        (load-path))))
    (else #f)))
 
 (def (module-build-source-path context package-root)

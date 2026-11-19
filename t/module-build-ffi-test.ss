@@ -18,14 +18,12 @@
     "(import :tao3k/yuanxu/module-system/selection/init-syntax)
      (yuanxu! :load-modules \"./modules\" mode: explicit :test-dir \"./t\" (consumer) (clock))")
   (write-source root "build.ss"
-    "(import (only-in :clan/poo/object .get .o)
-             (only-in :std/source this-source-file)
-             (only-in :std/build-script defbuild-script)
-             (only-in :tao3k/yuanxu/module-system/building/build-script defmodule-build-script)
+    "(import (only-in :clan/poo/object .call)
+             (only-in :std/make make)
              (only-in \"./init.ss\" ffi-build-fixture.init.exports))
-     (defmodule-build-script
-       (defbuild-script (.get ffi-build-fixture.init.exports std-make-spec))
-       (.o))")
+     (def (main _operation)
+       (.call ffi-build-fixture.init.exports .compile-selection '(consumer) '()
+         (lambda (targets source-root) (make targets srcdir: source-root))))")
   (for-each
     (lambda (name)
       (def directory (path-expand name (path-expand "modules" root)))

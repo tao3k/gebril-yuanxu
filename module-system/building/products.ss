@@ -9,16 +9,12 @@
 (export artifact-files require-build-products! require-build-interface! build-output-directory
         call-with-selected-output-lock selected-output-source-directory
         current-build-output-directory current-build-source-directory current-build-compiler-options
-        current-build-module-roots current-build-dispatch static-product-path)
+        static-product-path)
 
 ;; The output directory is an invocation parameter, not an approval.
 (def current-build-output-directory (make-parameter #f))
 (def current-build-source-directory (make-parameter #f))
 (def current-build-compiler-options (make-parameter '()))
-;; Only the current build invocation can narrow the init owner roots.
-(def current-build-module-roots (make-parameter #f))
-;; The package build consuming a spec also needs its admitted source view.
-(def current-build-dispatch (make-parameter #f))
 
 ;; Gerbil's public Make entry accepts #f for its default. Only callers
 ;; inspecting output files need the concrete directory used by Make.

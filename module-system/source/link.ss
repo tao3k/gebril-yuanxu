@@ -1078,13 +1078,6 @@
         (or original-graph
             (let (graph selected-graph)
               (build-selected graph init-selection)))
-        .build-graph-for:
-        (lambda (roots)
-          (def selection
-            (resolve-linked-selection
-              (if (.slot? context-value 'resolve-root)
-                (map (.ref context-value 'resolve-root) roots) roots)))
-          (build-selected (linked-selection-graph selection) selection))
         selected-graph:
         (let (selection (resolve-linked-selection (selection-roots)))
           (set! init-selection selection)

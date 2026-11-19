@@ -40,67 +40,33 @@ Importing init or projecting build data must not reprioritize runtime
 libraries or reinstall held Contract identities. The installed Gerbil
 compiler and std/make own compilation and scheduling without source patches.
 
-* On-demand compilation from a command entry
+* On-demand compilation from init.exports
 
-Core exports =yuanxu-compile-main=. The ordinary package build continues
-to use Gerbil's =defbuild-script= and the package's default =std-make-spec=.
-Import and spec evaluation are data operations. Explicit command invocation
-owns selection and execution.
-
-** Select at invocation
-
-A package can explicitly call the Core export from its =main=, following the
-same pattern as other Module System exports. A dedicated command entry is
-the direct way to expose the export alongside the standard =build.ss=.
-Pass the package's existing init export to Core.
+Use Gerbil =defbuild-script= to run a package Make spec. Request a scoped
+spec through the init publication when only some leaves belong in that
+build. =Mount/module= identifies a leaf without constructing its scope.
+Repeated roots contribute once. The existing source guards refuse unknown
+or disabled owners before Make runs.
 
 #+begin_src scheme
-(import (only-in :tao3k/yuanxu/module-system/building/build-script yuanxu-compile-main)
-        (only-in "./init.ss" package.init.exports))
-
-(def (main . arguments)
-  (apply yuanxu-compile-main package.init.exports arguments))
+(defbuild-script
+  (.call package.init.exports .make-spec-for '(Modules/clock Modules/nix)))
 #+end_src
 
-#+begin_src sh
-gxi <package-command>.ss --modules x1 x2 x2
-gxi <package-command>.ss --mounts mountName1 mountName2
+An explicit build operation can invoke =.compile-selection= with leaf names,
+mount names and a Gerbil Make callback. The action supplies the admitted
+targets and their source directory, including any declared FFI prerequisites
+needed before Interface expansion.
+
+#+begin_src scheme
+(.call package.init.exports .compile-selection '(Modules/clock) '()
+  (lambda (targets source-root)
+    (make targets srcdir: source-root)))
 #+end_src
 
-=--modules= selects Module identities in the package's existing
-=init.exports=. Use =Mount/module= for a qualified leaf request.
-=--mounts= selects the eligible Module leaves in the named directory windows.
-=mount:= names a local build and runtime namespace. =mode: explicit= requires
-Module rows and =mode: auto= discovers leaves. =export:= publishes the source
-reference used by another init's =from:=. Both selectors can occur in one invocation and
-contribute to one admitted closure. Repeated roots contribute once. Unknown or ambiguous identities,
-missing or empty selectors and disabled requirements fail before compilation.
-Dependencies are discovered from the existing Module declarations and Gerbil
-imports, including compiler and FFI inputs owned by the selected Modules.
-
-A package that wants =gxi build.ss --modules …= or =--mounts …= can opt into
-the Core export in its own =main=. The installed Gerbil =defbuild-script=
-handles =spec=, =meta=, =clean= and =compile= with its standard flags.
-A spelling such as =gerbil build --modules …= requires the Gerbil package
-command to dispatch these arguments to the opt-in entry. That integration
-is a separate design decision.
-
-** Reuse the selected build projection
-
-The export resolves the CLI arguments against the init publication that
-owns ordinary build selection. It uses the directory and Module build
-projection that also serves =__std-make-spec=. Shared targets retain one
-canonical compiler identity, source and options. The projection rejects
-conflicting compiler inputs before invoking the compiler. Gerbil =std/make= executes the admitted
-target set through the existing compiler-input boundary and writes to the
-package's regular Gerbil output directory. The selection lives for one
-invocation. The default Build Graph continues to come from the package's
-default declaration.
-
-The [[file:../../t/module-build-command-test.ss][command regression]] calls a downstream =main=, checks real
-Gerbil products for repeated and overlapping selections, and compares the
-default spec before and after the command. It also covers malformed
-selectors, disabled Modules and unrelated cold Modules.
+The [[file:../../t/module-build-command-test.ss][selection regression]] checks
+real Gerbil products, repeated and overlapping roots, and the unchanged
+default spec. It covers missing and disabled leaves and unrelated cold Modules.
 
 * Evidence after migration
 

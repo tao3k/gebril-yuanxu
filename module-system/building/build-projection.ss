@@ -11,7 +11,7 @@
                  expander-context-id module-context-path import-module current-expander-compiling?)
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module call-with-build-stage package-library-spec/source-context)
         (only-in :tao3k/yuanxu/module-system/building/products build-output-directory
-                 current-build-source-directory current-build-module-roots call-with-selected-output-lock
+                 current-build-source-directory call-with-selected-output-lock
                  selected-output-source-directory artifact-files)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-entry-action)
         (only-in :tao3k/yuanxu/module-system/source/build-binding current-module-build-phase?)
@@ -122,11 +122,7 @@
   (let* ((graph (module-source-measure-operation 'build-selected-graph
                   (lambda ()
                     (call-with-build-stage 'build-selected-graph
-                      (lambda ()
-                        (let (roots (current-build-module-roots))
-                          (if roots
-                            ((.ref view '.build-graph-for) roots)
-                            (.ref view 'build-graph))))))))
+                      (lambda () (.ref view 'build-graph))))))
          (graph-entries (.ref graph 'entries))
          (module-roots
           (map (lambda (entry)

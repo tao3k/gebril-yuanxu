@@ -97,8 +97,18 @@ leaf does not evaluate the mount's Make specification.
   (.get gerbil-parser.init.exports Languages __std-make-spec))
 #+end_src
 
-The mount slot and =--mounts Languages= use the same selection of eligible
-leaves. Use =--modules Languages/hcl Languages/gql= for a subset. Yuanxu resolves
+A package default can select individual leaves from its existing init
+publication. The action takes mount-qualified leaf names and returns one
+admitted Make spec. Reading this spec leaves business scopes cold.
+
+#+begin_src scheme
+(defbuild-script
+  (.call gerbil-parser.init.exports .make-spec-for
+         '(Languages/hcl Languages/gql)))
+#+end_src
+
+The mount slot selects all eligible leaves. Use =.make-spec-for= for a
+subset. Yuanxu resolves
 Module identities and their declared inputs once per selection. A shared
 target contributes once, and conflicting ownership or target options are
 refused by the existing collector. Gerbil owns import closure and Make

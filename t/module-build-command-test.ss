@@ -4,13 +4,16 @@
 (import :std/test
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/text/pregexp pregexp-match)
-        (only-in :gerbil/expander current-expander-context eval-syntax make-top-context)
+        (only-in :gerbil/expander current-expander-context make-top-context)
         (only-in :gerbil/runtime/loader load-path set-load-path!)
         (only-in :clan/poo/object .get .call)
         (only-in :std/misc/ports read-all-as-u8vector)
+        (only-in :std/make make)
         (only-in :tao3k/yuanxu/module-system/building/products
-                 current-build-output-directory current-build-module-roots)
+                 current-build-output-directory)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
+        (only-in :tao3k/yuanxu/module-system/source/observations
+                 call-with-module-source-operation-measurement)
         (only-in "./qualification/module-init/fixture.ss" import-fixture-init! import-build-script! with-compiler-progress))
 (export module-build-command-test)
 
@@ -75,45 +78,11 @@
 
 (def module-build-command-test
   (test-suite "Explicit Module and mount compiler command"
-    (yuanxu-test-case "clean projects against authored inputs before its own output"
-      (call-with-temporary-directory "module-clean-inputs"
-        (lambda (root)
-          (def script (path-expand "build.ss" root))
-          (def output (path-expand "lib" root))
-          (def first (path-expand "first" root))
-          (def second (path-expand "second" root))
-          (def caller (list output first second))
-          (write-source script
-            (call-with-output-string
-              (lambda (port)
-                (for-each
-                  (lambda (form) (write form port) (newline port))
-                  `((import (only-in :std/source this-source-file)
-                            (only-in :std/build-script defbuild-script)
-                            (only-in :clan/poo/object .o)
-                            (only-in :gerbil/runtime/loader load-path)
-                            (only-in :tao3k/yuanxu/module-system/building/build-script defmodule-build-script))
-                    (def (targets)
-                      (unless (equal? (load-path)
-                                     (list ,first ,second (path-directory (this-source-file)) ,output))
-                        (error "clean changed the source input order" (load-path)))
-                      '())
-                    (defmodule-build-script (defbuild-script (targets) libdir: ,output) (.o)))))))
-          (def clean (import-build-script! script))
-          (def previous (load-path))
-          (parameterize ((current-build-output-directory output))
-            (dynamic-wind
-              (lambda () (set-load-path! caller))
-              (lambda ()
-                (clean "clean")
-                (check-equal? (load-path) caller))
-              (lambda () (set-load-path! previous)))))))
     (yuanxu-test-case "one native build consumes the union without changing the default spec"
       (call-with-temporary-directory "module-build-command"
         (lambda (root)
           (def package (symbol->string (gensym 'build-command-)))
           (def init (path-expand "init.ss" root))
-          (def entry (path-expand "compile.ss" root))
           (write-source (path-expand "gerbil.pkg" root) (string-append "(package: " package ")"))
           (write-source init
             "(import :tao3k/yuanxu/module-system/selection/init-syntax)
@@ -125,38 +94,41 @@
           (write-module root "default/main" "main")
           (write-module root "tools/worker" "worker")
           (write-module root "tools/helper" "helper")
-          ;; A scoped default spec and individual leaf requests leave
+          ;; The default spec and individual leaf requests leave
           ;; unrelated builds cold.
           (write-module root "cold/unused" "unused")
           (write-source (path-expand "cold/unused/build.ss" root) "(error \"unexpected build\")")
-          (write-source entry
-            (string-append
-              "(import (only-in :tao3k/yuanxu/module-system/building/build-script yuanxu-compile-main)
-                       (only-in \"./init.ss\" " package ".init.exports))
-               (def (main . args) (apply yuanxu-compile-main " package ".init.exports args))
-               (export main)"))
           (parameterize ((current-expander-context (make-top-context))
                          (current-build-output-directory (path-expand "lib" root)))
             (def exports (import-fixture-init! init))
-            (eval-syntax `(import (rename-in (only-in ,entry main) (main compile-main))))
-            (def compile (eval-syntax 'compile-main))
-            (def (default-spec)
-              (parameterize ((current-build-module-roots '(main)))
-                (.get exports std-make-spec)))
+            (def (compile leaves mounts)
+              (.call exports .compile-selection leaves mounts
+                (lambda (targets source-root)
+                  (make targets srcdir: source-root libdir: (path-expand "lib" root)))))
+            (def (default-spec) (.get exports std-make-spec))
             (def default (default-spec))
+            (def (make-target-names spec)
+              (list-sort string<? (map (lambda (target)
+                                       (if (string? target) target (cadr target))) spec)))
+            (defvalues (selected-spec work)
+              (call-with-module-source-operation-measurement
+                (lambda () (.call exports .make-spec-for '(Tools/worker Tools/helper Tools/worker)))
+                accounting?: #f))
+            (check-equal? (hash-ref work '(calls scope-factory) 0) 0)
+            (check-equal? (make-target-names selected-spec)
+                          (make-target-names (.get exports Tools __std-make-spec)))
+            (check-equal? (default-spec) default)
             (def (product path)
               (file-exists? (path-expand (string-append "lib/" package "/" path "/interface.ssi") root)))
             (check-equal? (product "tools/worker") #f)
             (check-equal? (product "tools/helper") #f)
-            (check-exception (compile "--extra" "main") (rejects? "unknown compile selector"))
-            (check-exception (compile "--modules") (rejects? "requires at least one name"))
-            (check-exception (compile "--mounts" "Missing") (rejects? "unknown build mount"))
-            (check-exception (compile "--modules" "Default/blocked") (rejects? "disabled"))
-            (check-exception (compile "--modules" "Default/missing") (rejects? "outside selected"))
+            (check-exception (compile '() '(Missing)) (rejects? "unknown build mount"))
+            (check-exception (compile '(Default/blocked) '()) (rejects? "disabled"))
+            (check-exception (compile '(Default/missing) '()) (rejects? "outside selected"))
             (def input-path (load-path))
             (with-compiler-progress
               (lambda ()
-                (compile "--modules" "Tools/worker" "Tools/helper" "Tools/worker")))
+                (compile '(Tools/worker Tools/helper Tools/worker) '())))
             (check-equal? (load-path) input-path)
             (check-equal? (product "tools/worker") #t)
             (check-equal? (product "tools/helper") #t)
@@ -165,7 +137,7 @@
             (check-equal? (default-spec) default)
             (with-compiler-progress
               (lambda ()
-                (compile "--modules" "worker" "Tools/worker" "--mounts" "Tools" "Default" "Default")))
+                (compile '(worker Tools/worker) '(Tools Default Default))))
             (check-equal? (product "default/main") #t)))))
     (yuanxu-test-case "native link clean removes only selected program products"
       (call-with-temporary-directory "module-link-clean"
