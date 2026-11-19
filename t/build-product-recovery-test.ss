@@ -7,17 +7,18 @@
         (rename-in (only-in :std/build-script defbuild-script)
                    (defbuild-script gerbil-defbuild-script))
         (only-in :tao3k/yuanxu/module-system/building/products
-                 build-output-directory current-build-output-directory current-build-source-directory)
+                 build-output-directory current-build-output-directory current-build-source-directory
+                 require-build-interface!)
         (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
         (only-in :tao3k/yuanxu/module-system/building/artifacts
                  require-build-products! test-build-publication)
         :clan/poo/object)
 (export build-product-recovery-test)
-(def (write-product root relative)
+(def (write-product root relative (contents "fixture\n"))
   (def path (path-expand relative root))
   (create-directory* (path-directory path))
-  (call-with-output-file path (cut display "fixture\n" <>)))
+  (call-with-output-file path (cut display contents <>)))
 (def (publication-at projection prefix)
   (def previous (getenv "GERBIL_PATH" #f))
   (dynamic-wind
@@ -151,6 +152,16 @@
               "fixture/unit~1.scm" "fixture/unit~1.o1" "static/fixture__unit.scm"))
           (require-build-products! '(fixture/unit) root)
           (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #t))))
+    (test-case "the selected compiler interface requires runtime output and the library identity"
+      (call-with-temporary-directory "selected-interface"
+        (lambda (root)
+          (def relative "fixture/unit.ssi")
+          (write-product root relative "package: fixture\n(%#begin)\n")
+          (check-exception (require-build-interface! 'fixture/unit root) error?)
+          (write-product root "fixture/unit.o1")
+          (check-equal? (require-build-interface! 'fixture/unit root) (path-expand relative root))
+          (write-product root relative "package: other\n(%#begin)\n")
+          (check-exception (require-build-interface! 'fixture/unit root) error?))))
     (test-case "non-regular runtime products refuse without deleting a marker"
       (call-with-temporary-directory "product-refusal"
         (lambda (root)

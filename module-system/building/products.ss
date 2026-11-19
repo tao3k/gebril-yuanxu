@@ -1,11 +1,12 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Make output inventory/completion only; no publication or signing authority.
-(import (only-in :std/string/path path-force-extension)
+(import (only-in :gerbil/expander core-read-module/sexp)
+        (only-in :std/string/path path-force-extension)
         (only-in "./program-products.ss" program-path program-identity?)
         (only-in :std/os/flock open-output-file/lock)
         (only-in :std/os/device device-close)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-type module-source-measure-operation))
-(export artifact-files require-build-products! build-output-directory
+(export artifact-files require-build-products! require-build-interface! build-output-directory
         call-with-selected-output-lock selected-output-source-directory
         current-build-output-directory current-build-source-directory current-build-compiler-options
         current-build-module-roots current-build-dispatch static-product-path)
@@ -47,6 +48,9 @@
 
 (def (numeric? text)
   (and (not (string-empty? text)) (andmap char-numeric? (string->list text))))
+(def (interface-product-path base)
+  (string-append base ".ssi"))
+
 (def (static-product-path identity libdir)
   (path-expand
     (path-force-extension
@@ -66,7 +70,7 @@
       (foldr append '()
         (map (lambda (id)
                (let (base (path-expand (symbol->string id) libdir))
-                 (list (string-append base ".ssi") (string-append base ".o1")))) identities)))
+                 (list (interface-product-path base) (string-append base ".o1")))) identities)))
     (filter (lambda (file) (not (regular? file)))
       (map (cut path-force-extension <> ".o1")
         (filter (lambda (file)
@@ -75,6 +79,17 @@
   (let (missing (missing-build-products identities libdir))
     (unless (null? missing)
       (error "build-required: selected runtime products are incomplete" missing))))
+
+;; Read the compiler interface under the selected output. Resolving its
+;; library identity through the source search path can select the input.
+(def (require-build-interface! identity libdir)
+  (require-build-products! (list identity) libdir)
+  (def path (interface-product-path (path-expand (symbol->string identity) libdir)))
+  (let-values (((_prelude actual _namespace _body) (core-read-module/sexp path)))
+    (unless (eq? actual identity)
+      (error "build product identity differs from requested library" identity actual path)))
+  path)
+
 (def (output-stem file)
   (let (suffix (find (cut string-suffix? <> file) '(".gxc-complete" ".ssxi.ss" ".ssi" ".scm" ".c")))
     (if suffix (substring file 0 (- (string-length file) (string-length suffix)))
@@ -95,7 +110,7 @@
     (def base (path-expand (symbol->string identity) libdir))
     (def directory (path-directory base))
     (when (and complete? (not (program-identity? identity programs))
-               (not (and (file-exists? (string-append base ".ssi"))
+               (not (and (file-exists? (interface-product-path base))
                          (file-exists? (string-append base ".o1")))))
       (error "build-required: selected compiler output is missing" identity))
     (unless (hash-key? directories directory)

@@ -18,7 +18,7 @@
         (only-in :tao3k/yuanxu/module-system/building/program-products
                  ModuleBuildContract module-build-ffi-targets resolve-make-target-inputs)
         (only-in :tao3k/yuanxu/module-system/building/products
-                 build-output-directory require-build-products! call-with-selected-output-lock)
+                 build-output-directory require-build-interface! call-with-selected-output-lock)
         (only-in :clan/poo/read-route require-read-route!)
         (only-in :clan/poo/object .o .+ .ref .slot? object?)
         (only-in :tao3k/yuanxu/module-system/source/collection
@@ -34,7 +34,7 @@
         :tao3k/yuanxu/module-system/source/objects
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :tao3k/yuanxu/module-system/building/source-package
-                 package-library-prefix module-build-source-path module-build-library-source-path module-build-import-identity module-build-resolve-library call-with-build-source-fallbacks))
+                 package-library-prefix module-build-source-path module-build-library-source-path module-build-import-identity call-with-build-source-fallbacks))
 (import :tao3k/yuanxu/module-system/source/reader-support
         :tao3k/yuanxu/module-system/source/reader-evaluation
         :tao3k/yuanxu/module-system/source/import-provenance
@@ -526,12 +526,7 @@
                (current!)
                (compile package target)
                (current!)
-               (require-build-products! (list identity) output)
-               (def artifact (module-build-resolve-library identity))
-               (def expected (path-expand (string-append (symbol->string identity) ".ssi") output))
-               (unless (equal? artifact (path-normalize expected))
-                 (error "FFI build resolved outside the owning output" identity artifact))
-               (def context (core-import-module artifact))
+               (def context (core-import-module (require-build-interface! identity output)))
                (current!)
                context))))
        (def (ffi-import path owner reload?)
