@@ -231,8 +231,10 @@
                        (let-values (((name enabled?) (signed-feature flag)))
                          ;; Negative decisions validate the name, but do not force
                          ;; its descriptor or contribution payload.
-                         (let ((id (feature-node-id owner-id name))
-                               (features (.ref (publication-for owner-id) 'features)))
+                         (let* ((id (feature-node-id owner-id name))
+                               (publication (publication-for owner-id))
+                               (features (if (.slot? publication 'features)
+                                           (.ref publication 'features) '())))
                            (unless (if (list? features) (memq name features) (.slot? features name))
                              (error "unknown init feature" owner-id name origin (.ref context 'generation)))
                            (if enabled?

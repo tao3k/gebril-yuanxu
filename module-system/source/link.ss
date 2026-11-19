@@ -255,7 +255,8 @@
           ;; A changed runtime declaration cannot be relabeled as that owner.
           (unless (eq? (.ref value 'identity) (.ref descriptor 'declaration))
             (error "compiled Module declaration identity changed" id))
-          (def declared-features (.ref value 'features))
+          (def declared-features
+            (if (.slot? value 'features) (.ref value 'features) '()))
           (def names (cond ((list? declared-features) declared-features)
                            ((object? declared-features) (.all-slots declared-features))
                            (else (error "invalid compiled Module Feature inventory" id))))

@@ -61,7 +61,8 @@
                (def original (.ref node 'publication))
                (def prepared (publication-input id))
                (def value (role-value prepared (.ref prepared 'binding)))
-               (def features (.ref original 'features))
+               (def features
+                 (if (.slot? original 'features) (.ref original 'features) '()))
                (def names (if (list? features) features (.all-slots features)))
                `(,id (.o declaration: ',(.ref original 'identity)
                          publication: ,value

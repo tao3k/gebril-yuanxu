@@ -136,10 +136,11 @@
         ([['.def (? symbol?) . body]]
          (def rows (closed-rows body))
          (closed-symbol (closed-field rows 'identity:))
-         (match (closed-field rows 'features:)
-           (['quote (? list? names)]
-            (unless (andmap symbol? names) (error "invalid Feature names" names)))
-           (value (closed-object value)))
+         (when (assq 'features: rows)
+           (match (closed-field rows 'features:)
+             (['quote (? list? names)]
+              (unless (andmap symbol? names) (error "invalid Feature names" names)))
+             (value (closed-object value))))
          (def baseline (closed-object (closed-field rows 'core:)))
          (closed-field baseline 'scope-contract:)
          (closed-field baseline 'exports:)
@@ -397,8 +398,8 @@
                        (core-self (genident 'core-self))
                        (core-shadows (append core-names root-names)))
                   (known (and (andmap (cut memq <> '(identity core features tags)) root-names)
-                              (assq 'features root-rows)
-                              (not (named-features? (field root-rows 'features)))
+                              (not (and (assq 'features root-rows)
+                                        (named-features? (field root-rows 'features))))
                               (andmap (cut memq <> '(scope-contract exports)) core-names)
                               (assq 'scope-contract core-rows)
                               (assq 'exports core-rows)))

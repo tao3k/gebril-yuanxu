@@ -52,7 +52,7 @@
 (define-type (ContributionRoutes @ Type.) .element?: (named-values? ContributionRouteContract))
 (define-type (AdmissionRoutes @ Type.) .element?: (named-values? AdmissionRoute))
 (def PublicationShape
-  (Record identity: [Symbol] features: [(Or Object (List Symbol))]
+  (Record identity: [Symbol] features: [(Or Object (List Symbol)) optional: #t]
           core: [(Record contributions: [ContributionRoutes optional: #t]
                          admissions: [AdmissionRoutes optional: #t]
                          scope-contract: [ScopeType])]))
