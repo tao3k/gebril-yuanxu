@@ -228,7 +228,7 @@
   (def (prepare-selection module-ids mount-names (package-roots? #f))
     (prepare-build (if package-roots? package-build-roots '())
       (.o modules: module-ids mounts: mount-names)))
-  (def (compile-selection module-ids mount-names compile)
+  (def (compile-selection module-ids mount-names compile package-roots?: (package-roots? #f))
     (call-with-build-input-path (build-output-directory)
       (lambda ()
         (def build
@@ -238,7 +238,7 @@
                    (call-with-build-input-path #f
                      (lambda () (compile (list target) owner))
                      refuse-input-context! make-source: owner))))
-            (prepare-selection module-ids mount-names)))
+            (prepare-selection module-ids mount-names package-roots?)))
         (.call build .with-compiler-inputs
           (lambda ()
             (def source-root (or (current-build-source-directory) root))

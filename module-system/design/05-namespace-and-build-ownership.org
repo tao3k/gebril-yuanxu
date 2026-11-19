@@ -54,13 +54,14 @@ or disabled owners before Make runs.
 #+end_src
 
 A package build that narrows its leaf selection can pass =package-roots?: #t=
-to =.make-spec-for= and =.clean-selection= to also include the targets
+to =.make-spec-for=, =.compile-selection= and =.clean-selection= to include the targets
 declared in =:build-roots=. Mount projections remain leaf-scoped.
 
 An explicit build operation can invoke =.compile-selection= with leaf names,
 mount names and a Gerbil Make callback. The action supplies the admitted
 targets and their source directory, including any declared FFI prerequisites
-needed before Interface expansion.
+needed before Interface expansion. For mixed package owners, the supplied
+source directory is the admitted compiler input view.
 
 #+begin_src scheme
 (.call package.init.exports .compile-selection '(Modules/clock) '()
