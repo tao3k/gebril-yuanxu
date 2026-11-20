@@ -30,7 +30,8 @@
                  module-source-package-info)
         (only-in :tao3k/yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
         (only-in :tao3k/yuanxu/module-system/feature/capability-model feature-projection-request?)
-        (only-in :tao3k/yuanxu/module-system/source/build-binding current-module-build-phase?)
+        (only-in :tao3k/yuanxu/module-system/source/build-binding
+                 current-module-build-phase? current-module-build-selection)
         (only-in :tao3k/yuanxu/module-system/building/package write-selected-package))
 (export module-test-source-spec module-build-graph module-build-graph/linked unique-build-inputs retained-build-entries ExternalPackageContributionContract BuildSpecContract
         BuildPublicationContract module-build-admit-context!
@@ -186,7 +187,8 @@
 (def (module-build-graph selected-value prepare-publication (source-window #f) (source-state #f))
   (module-build-graph/linked selected-value prepare-publication source-window source-state #f))
 (def (module-build-graph/linked selected-value prepare-publication source-window source-state support)
-  (parameterize ((current-module-build-phase? #t))
+  (parameterize ((current-module-build-phase? #t)
+                 (current-module-build-selection selected-value))
     (module-build-graph/phase selected-value prepare-publication source-window source-state support)))
 (def (module-build-graph/phase selected-value prepare-publication source-window source-state support)
   (parameterize ((current-module-source-phase 'build-entry))

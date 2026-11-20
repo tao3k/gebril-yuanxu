@@ -7,7 +7,8 @@
                  package-library-prefix register-module-build-source!)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-build-roots)
 
-        (only-in :tao3k/yuanxu/module-system/source/build-binding current-module-ffi-build)
+        (only-in :tao3k/yuanxu/module-system/source/build-binding
+                 current-module-ffi-build current-module-build-selection)
         (only-in :tao3k/yuanxu/module-system/building/products
                  build-output-directory
                  current-build-source-directory call-with-selected-output-lock)
@@ -229,7 +230,9 @@
     (prepare-build (if package-roots? package-build-roots '())
       (.o modules: module-ids mounts: mount-names)))
   (def (compile-selection module-ids mount-names compile package-roots?: (package-roots? #f))
-    (call-with-build-input-path (build-output-directory)
+    ;; Make consumes the source origins admitted during projection. Keep those
+    ;; origins ahead of the output library for its pre- and post-build checks.
+    (with-input-context (build-output-directory)
       (lambda ()
         (def build
           (parameterize
@@ -245,8 +248,7 @@
             (call-with-build-input-path #f
               (lambda () (compile (.get build std-make-spec) source-root))
               refuse-input-context! make-source: source-root))
-          refuse-input-context!))
-      refuse-input-context!))
+          refuse-input-context!))))
   (def (clean-build build action)
     (.call build .with-clean-outputs
       (lambda ()
@@ -334,27 +336,29 @@
         (def library (symbol->string (expander-context-id (core-import-module init-file))))
         ;; Linking can demand selection before Make constructs its spec.
         ;; Resolve declared build roots in the same input context.
-        (def targets
+        (defvalues (selection targets)
           (with-input-context #f
-            (lambda () (selected-link-targets library))))
+            (lambda ()
+              (values (.get (selected!) selected-graph) (selected-link-targets library)))))
         (def output (build-output-directory))
         (def (finish flags)
           (for-each (lambda (target)
                       (action target (link-destination output (.get target destination)) flags))
                     targets))
-        (if clean?
-          (with-input-context output
-            (lambda ()
-              (clean-build (.get exports build)
-                (lambda (_source-root)
-                  (run-build)
-                  (finish (prepare))))))
-          (begin
-            (run-build)
-            (let (flags (prepare))
-              (unless (null? targets)
-                (call-with-selected-output-lock output
-                  (lambda () (finish flags))))))))
+        (parameterize ((current-module-build-selection selection))
+          (if clean?
+            (with-input-context output
+              (lambda ()
+                (clean-build (.get exports build)
+                  (lambda (_source-root)
+                    (run-build)
+                    (finish (prepare))))))
+            (begin
+              (run-build)
+              (let (flags (prepare))
+                (unless (null? targets)
+                  (call-with-selected-output-lock output
+                    (lambda () (finish flags)))))))))
       (match args
         ((or [] ["compile" . _])
          (with-targets options

@@ -14,7 +14,7 @@
         (only-in :tao3k/yuanxu/module-system/feature/resolver resolve-feature-profile schedule-core-rows)
         (only-in :tao3k/yuanxu/module-system/feature/feature-manifest feature-manifest-bundle)
         (only-in :tao3k/yuanxu/module-system/feature/composition feature-composition-plan))
-(export select-module-graph module-feature-declaration)
+(export select-module-graph module-feature-declaration module-selected-feature?)
 
 ;; One complete value from the EXISTING Feature publisher. Runtime .cc copies
 ;; direct persistent specifications, never this prototype's evaluated cells.
@@ -54,6 +54,20 @@
   (string->symbol (string-append (symbol->string id) "/:core")))
 (def (feature-node-id owner-id name)
   (string->symbol (string-append (symbol->string owner-id) "/" (symbol->string name))))
+;; Find the authored leaf in this selection. Relative leaf names may recur
+;; across package windows, so a compiler request must resolve unambiguously.
+(def (module-selected-feature? graph leaf feature)
+  (def owners
+    (filter-map
+      (lambda (node)
+        (and (eq? (.ref node 'kind) 'module-core)
+             (eq? (.ref (.ref node 'publication) 'identity) leaf)
+             (.ref node 'identity)))
+      (.ref graph 'nodes)))
+  (match owners
+    ([] #f)
+    ([owner] (and (memq (feature-node-id owner feature) (.ref graph 'feature-order)) #t))
+    (else (error "Feature request has ambiguous Module leaves" leaf feature owners))))
 (def (signed-feature flag)
   (let (text (symbol->string flag))
     (values (string->symbol (substring text 1 (string-length text)))

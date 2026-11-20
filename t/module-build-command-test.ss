@@ -55,20 +55,31 @@
     `(import :clan/poo/object (only-in ,support-library support-value)) '(export Defaults)
     `(def Defaults (.o program-entry: ',entry source-value: support-value
                     ,@(if imports `(program-runtime-imports: ',imports) '()))))
+  (def enabled? (string=? name "alpha"))
   (write-forms (string-append owner "/entry.ss")
+    '(import (for-syntax :gerbil/expander
+               (only-in :tao3k/yuanxu/module-system/source/build-binding
+                        module-build-feature-selected?)))
+    `(defsyntax (check-feature stx)
+       (unless (eq? (module-build-feature-selected? ',(string->symbol name) 'trace) ,enabled?)
+         (raise-syntax-error #f "unexpected compiler Feature decision" stx))
+       (syntax (void)))
+    '(check-feature)
     '(export main) '(def (main . args) 0))
   (write-forms (string-append owner "/interface.ss")
     '(import (only-in :clan/poo/object .def .o) "./types.ss" "./objects.ss")
     '(export Module)
     `(.def Module identity: ',(string->symbol name)
-       core: (.o scope-contract: Scope exports: Defaults) features: (.o)))
+       core: (.o scope-contract: Scope exports: Defaults)
+       features: (.o trace: (.o refine: (lambda (scope) scope) contract: Scope))))
   (write-forms (string-append owner "/build.ss")
     '(import (only-in :clan/poo/object .def .o)) '(export Build)
     '(.def Build defbuild-script: (.o spec: '("entry"))))
   (write-forms (string-append init ".ss")
     '(import :tao3k/yuanxu/module-system/selection/init-syntax)
     `(yuanxu! :build-roots (,init ,support)
-       :load-modules "./modules" mode: explicit mount: Default (,(string->symbol name))))
+       :load-modules "./modules" mode: explicit mount: Default
+       (,(string->symbol name) ,(if enabled? '+trace '-trace))))
   (write-forms script
     `(import (only-in :std/build-script defbuild-script)
              (only-in :std/source this-source-file)

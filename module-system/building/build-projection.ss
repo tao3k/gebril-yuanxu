@@ -14,7 +14,8 @@
                  current-build-source-directory call-with-selected-output-lock
                  selected-output-source-directory artifact-files)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-entry-action)
-        (only-in :tao3k/yuanxu/module-system/source/build-binding current-module-build-phase?)
+        (only-in :tao3k/yuanxu/module-system/source/build-binding
+                 current-module-build-phase? current-module-build-selection)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
@@ -96,7 +97,10 @@
   (def (with-source-roots action)
     (if roots (call-with-build-source-fallbacks roots action) (action)))
   (with-source-roots
-    (lambda () (project-build-view view retained root entry-source with-source-roots (and roots #t)))))
+    (lambda ()
+      (parameterize ((current-module-build-selection
+                       (and (.slot? view 'selected-graph) (.ref view 'selected-graph))))
+        (project-build-view view retained root entry-source with-source-roots (and roots #t))))))
 
 (def (project-build-view view retained root entry-source with-source-roots imported-sources?)
   (def entry-input
@@ -354,11 +358,12 @@
       value)
     (def spec-site (make-slot-cache 'std-make-spec))
     (def (with-admitted-spec receiver action (check-outputs! current!))
-      (current!)
-      (admit-spec (.ref/inline receiver spec-site))
-      (begin0 (action)
-        (check-outputs!)
-        (admit-spec (.ref/inline receiver spec-site))))
+      (parameterize ((current-module-build-selection (.ref graph 'selected-graph)))
+        (current!)
+        (admit-spec (.ref/inline receiver spec-site))
+        (begin0 (action)
+          (check-outputs!)
+          (admit-spec (.ref/inline receiver spec-site)))))
     (def (check-output-sources!)
       (if imported-sources?
         ;; Make can replace resolution from an authored .ss with its new .ssi.
