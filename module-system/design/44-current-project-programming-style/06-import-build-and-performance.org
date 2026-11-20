@@ -153,6 +153,14 @@ both facade and internals, or production and test owners, as independent roots.
 Profiles, Scenarios, contribution modules and advanced authoring owners remain
 lazy until an explicit consumer demands them.
 
+Optional compiled libraries can publish metadata with
+=define-yuanxu-module-declaration=. The compiler supplies the declaring module
+identity. =yuanxu-module-declaration= uses Gerbil's =load-module= and validates
+the registered value against the consumer's contract. Initialize an optional
+implementation from a separate module so consumers can inspect the metadata
+without loading it. Use =yuanxu-autoload= with =contract:= to defer invocation
+of a declared procedure until first use.
+
 Use the existing import-closure projection and upstream =std/make=. ASP remains
 a development policy dependency, not a production build prerequisite. Do not add a scheduler,
 currentness cache, source expander or duplicate graph.  Diagnose root count,

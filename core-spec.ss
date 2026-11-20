@@ -88,6 +88,7 @@ prelude: :gerbil/core
     "module-system/source/compiled-role"
     "module-system/source/deferred-declaration"
     "module-system/source/module-binding"
+    "module-system/source/autoload-declarations"
     "module-system/module-hooks"
     "module-system/source/objects"
     "module-system/source/types"
