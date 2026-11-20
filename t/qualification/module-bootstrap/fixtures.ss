@@ -69,7 +69,8 @@
           ;; orders those targets before checking fresh-process reuse.
           (def bootstrap
             '("prelude" "core-spec" "module-system/selection/init-syntax"
-              "module-system/source/module-binding"))
+              "module-system/source/module-binding"
+              "module-system/source/autoload-declarations"))
           (def targets
             (if sample bootstrap
               (append bootstrap
