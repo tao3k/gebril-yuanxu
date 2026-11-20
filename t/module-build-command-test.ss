@@ -8,6 +8,7 @@
         (only-in :gerbil/runtime/loader load-path set-load-path!)
         (only-in :clan/poo/object .get .call)
         (only-in :std/misc/ports read-all-as-u8vector)
+        (only-in :std/encoding/json read-json current-json-read-options make-JSONReadOptions)
         (only-in :std/make make)
         (only-in :tao3k/yuanxu/module-system/building/products
                  current-build-output-directory)
@@ -28,10 +29,12 @@
   (write-source (path-expand "objects.ss" owner)
     "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
   (write-source (path-expand "interface.ss" owner)
-    (string-append "(.def Module identity: '" identity
+    (string-append "(import (only-in :clan/poo/object .def .o) \"./types.ss\" \"./objects.ss\")
+                   (export Module)
+                   (.def Module identity: '" identity
                    " core: (.o scope-contract: Scope exports: Defaults) features: (.o))")))
 
-(def (linked-build root lib package name (entry-owner name) (imports #f))
+(def (linked-build root lib package name (entry-owner name) (imports #f) (runtime-leaf? #f))
   (def owner (string-append "modules/" name))
   (def init (string-append name "-init"))
   (def binding (string->symbol (string-append package "." init ".exports")))
@@ -42,6 +45,10 @@
         (lambda (port)
           (for-each (lambda (form) (write form port) (newline port)) forms)))))
   (write-module root owner name)
+  (def runtime-name (string-append name "-runtime"))
+  (def runtime-library
+    (string->symbol (string-append ":" package "/modules/" runtime-name "/interface")))
+  (when runtime-leaf? (write-module root (string-append "modules/" runtime-name) runtime-name))
   (def support (string-append name "-support"))
   (def support-library (string->symbol (string-append ":" package "/" support)))
   (write-forms (string-append support ".ss")
@@ -57,9 +64,10 @@
                     ,@(if imports `(program-runtime-imports: ',imports) '()))))
   (def enabled? (string=? name "alpha"))
   (write-forms (string-append owner "/entry.ss")
-    '(import (for-syntax :gerbil/expander
+    `(import (for-syntax :gerbil/expander
                (only-in :tao3k/yuanxu/module-system/source/build-binding
-                        module-build-feature-selected?)))
+                        module-build-feature-selected?))
+             ,@(if runtime-leaf? `((for-template ,runtime-library)) '()))
     `(defsyntax (check-feature stx)
        (unless (eq? (module-build-feature-selected? ',(string->symbol name) 'trace) ,enabled?)
          (raise-syntax-error #f "unexpected compiler Feature decision" stx))
@@ -79,7 +87,8 @@
     '(import :tao3k/yuanxu/module-system/selection/init-syntax)
     `(yuanxu! :build-roots (,init ,support)
        :load-modules "./modules" mode: explicit mount: Default
-       (,(string->symbol name) ,(if enabled? '+trace '-trace))))
+       (,(string->symbol name) ,(if enabled? '+trace '-trace))
+       ,@(if runtime-leaf? (list (list (string->symbol runtime-name))) '())))
   (write-forms script
     `(import (only-in :std/build-script defbuild-script)
              (only-in :std/source this-source-file)
@@ -172,7 +181,7 @@
             (lambda ()
               (parameterize ((current-build-output-directory lib))
                 (def alpha (linked-build root lib package "alpha"))
-                (def beta (linked-build root lib package "beta" "beta" '()))
+                (def beta (linked-build root lib package "beta" "beta" '() #t))
                 (def foreign (linked-build root lib package "foreign" "beta"))
                 (def (program name)
                   (path-expand (string-append package "/programs/modules/" name) lib))
@@ -200,6 +209,16 @@
                 (def beta-paths (cons (entry "beta") (append (products "beta" #f) beta-dynamic)))
                 (check (andmap file-exists? alpha-paths) => #t)
                 (check-equal? (file-exists? (path-expand "metadata-modules.dat" (program "beta"))) #f)
+                ;; The selected publication stays a single runtime library.
+                (def beta-plan
+                  (parameterize ((current-json-read-options (make-JSONReadOptions object-as-hash: #t)))
+                    (call-with-input-file (path-expand "program.json" (program "beta")) read-json)))
+                (def runtime-id (string-append package "/modules/beta-runtime/interface"))
+                (def modules (hash-ref beta-plan "modules"))
+                (def runtime-modules
+                  (filter (lambda (module) (equal? (hash-ref module "module") runtime-id))
+                          (if (vector? modules) (vector->list modules) modules)))
+                (check-equal? (map (cut hash-ref <> "deferred" #f) runtime-modules) '(#t))
                 (def beta-before (map bytes beta-paths))
                 (check-exception (foreign "clean") (rejects? "outside its selected module"))
                 ;; A file that was never published by either Build stays in place.

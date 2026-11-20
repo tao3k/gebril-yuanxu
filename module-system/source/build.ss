@@ -328,7 +328,13 @@
               (error "public library compiler source differs from declared package" identity path actual))
             ;; The executable root was enrolled above. Its imports are
             ;; libraries unless they were independently declared as programs.
-            (unless (equal? path program-source)
+            ;; The selected Module already owns and guards its publication.
+            ;; An import of that same source adds a dependency, not a Build target.
+            (unless (or (equal? path program-source)
+                        (let (existing (hash-get by-path path))
+                          (and existing
+                               (eq? 'publication (.ref existing 'kind))
+                               (eq? identity (.ref existing 'compiler-identity)))))
               (add-source! path owner contributor)))))
       (def (declared-source-context context)
         (let ((identity (expander-context-id context))
