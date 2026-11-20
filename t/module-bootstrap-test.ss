@@ -16,7 +16,7 @@
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
         (only-in :tao3k/yuanxu/prelude yuanxu-autoload yuanxu-module-export yuanxu-build-autoloads)
         (only-in :tao3k/yuanxu/module-system/building/program-products ModuleBuildContract)
-        (only-in :tao3k/yuanxu/module-system/package-hooks PackageHook. make-package-hooks)
+        (only-in :tao3k/yuanxu/module-system/module-hooks ModuleHook. make-module-hooks)
         (only-in :clan/poo/type element?)
         (for-syntax (only-in :clan/poo/object object<-alist))
         (only-in :tao3k/yuanxu/module-system/source/admission call-with-module-source-operation-measurement)
@@ -39,17 +39,17 @@
 (def root (path-expand ".." (path-directory (this-source-file))))
 (def module-bootstrap-test
   (test-suite "Source tool consumes uncompiled JsonSchema publication"
-    (yuanxu-test-case "package hooks run only the selected scene in depth and declaration order"
+    (yuanxu-test-case "module hooks run only the selected scene in depth and declaration order"
       (def hooks
-        (make-package-hooks
-          (.o last: (.o (:: @ PackageHook.) on: '(open) depth: 20
+        (make-module-hooks
+          (.o last: (.o (:: @ ModuleHook.) on: '(open) depth: 20
                         .run: (lambda (_ result) (cons 'last result)))
-              first: (.o (:: @ PackageHook.) on: '(open resume) depth: -20
+              first: (.o (:: @ ModuleHook.) on: '(open resume) depth: -20
                          .run: (lambda (_ result) (cons 'first result)))
-              next: (.o (:: @ PackageHook.) on: '(open)
+              next: (.o (:: @ ModuleHook.) on: '(open)
                         .when: (lambda (active?) active?)
                         .run: (lambda (_ result) (cons 'next result)))
-              peer: (.o (:: @ PackageHook.) on: '(open)
+              peer: (.o (:: @ ModuleHook.) on: '(open)
                         .run: (lambda (_ result) (cons 'peer result))))))
       (check-equal? (.call hooks .run 'open #t '()) '(last peer next first))
       (check-equal? (.call hooks .run 'open #f '()) '(last peer first))
