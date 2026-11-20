@@ -6,7 +6,7 @@ prelude: :gerbil/core
                  make-top-context current-expander-context core-expand import-module eval-syntax
                  module-context-export module-export-name)
         (only-in :gerbil/runtime/init gerbil-load-expander!))
-(export module-binding-action module-binding-value module-binding-autoload)
+(export module-binding-action module-binding-value)
 
 (def (call-with-module-binding specifier binding consume)
   (let* ((language (core-import-module ':gerbil/core))
@@ -31,16 +31,3 @@ prelude: :gerbil/core
 (def (module-binding-value specifier binding)
   (gerbil-load-expander!)
   (call-with-module-binding specifier binding values))
-
-(def (module-binding-autoload specifier binding)
-  (def directory (current-directory))
-  ;; The owner may publish a callback long before its code is needed. Gerbil
-  ;; still owns module initialization and the module registry.
-  (def procedure
-    (delay
-      (parameterize ((current-directory directory))
-        (let (value (module-binding-value specifier binding))
-          (unless (procedure? value)
-            (error "autoload export must be a procedure" specifier binding))
-          value))))
-  (lambda arguments (apply (force procedure) arguments)))

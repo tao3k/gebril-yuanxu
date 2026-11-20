@@ -2,13 +2,17 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 prelude: :gerbil/core
 ;;; Export resolution belongs to compilation; runtime demand uses Gerbil loading.
-(import (only-in :clan/poo/object object<-alist)
+(import (only-in :clan/poo/object object<-alist .ref)
         (only-in :clan/poo/slot-observation without-observation)
         (only-in :gerbil/runtime/loader load-module)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-measure-operation)
         (for-syntax :gerbil/expander
-                    (only-in :gerbil/compiler/base module-id->path-string)))
-(export compiled-role-values bind-program-interfaces bind-deferred-interfaces deferred-interface-values)
+                    (only-in :gerbil/compiler/base module-id->path-string)
+                    (only-in :clan/poo/object object? .get .ref .slot? .all-slots)
+                    (only-in :tao3k/yuanxu/module-system/building/program-products
+                             module-build-autoloads?)))
+(export compiled-role-values bind-program-interfaces bind-deferred-interfaces
+        deferred-interface-values expand-build-autoloads)
 
 (def (program-linked-unit? name)
   ;; Darwin's Gerbil compiler can give a dynamically loaded unit the same
@@ -213,3 +217,33 @@ prelude: :gerbil/core
                        (error "compiled Module export is uninitialized" owner 'identifier))
                      value)) ...))))))
     (_ (raise-syntax-error #f "compiled role requires literal owner and exports" stx))))
+
+;; The compiler consumes Build and admits the native link edge. Runtime
+;; calls share one delayed resolution for the selected module exports.
+(defsyntax (expand-build-autoloads stx)
+  (syntax-case stx ()
+    ((_ (_ build group))
+     (and (identifier? #'build) (identifier? #'group))
+     (let* ((value (parameterize ((current-expander-phi (1+ (current-expander-phi))))
+                     (eval-syntax #'build)))
+            (groups (and (object? value) (.slot? value 'autoload) (.get value autoload)))
+            (name (syntax->datum #'group)))
+       (unless (and (module-build-autoloads? groups) (.slot? groups name))
+         (raise-syntax-error #f "missing or invalid Build autoload group" stx name))
+       (let* ((plan (.ref groups name))
+              (exports (.get plan exports))
+              (module (.get plan module))
+              (specifier (symbol->string module)))
+         (with-syntax ((source module)
+                       (owner (string->symbol (substring specifier 1 (string-length specifier))))
+                       (actions (genident 'autoloads))
+                       (((local binding) ...)
+                        (map (lambda (local)
+                               (list (datum->syntax #'group local) (.ref exports local)))
+                             (.all-slots exports))))
+           #'(begin
+               (import (for-template source))
+               (def actions (delay (compiled-role-values 'owner '(binding ...))))
+               (def (local . arguments) (apply (.ref (force actions) 'binding) arguments))
+               ...)))))
+    (_ (raise-syntax-error #f "expected a Build identifier and autoload group" stx))))

@@ -14,7 +14,10 @@
         (only-in :std/list/list find)
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
-        (only-in :tao3k/yuanxu/prelude yuanxu-autoload yuanxu-module-export)
+        (only-in :tao3k/yuanxu/prelude yuanxu-autoload yuanxu-module-export yuanxu-build-autoloads)
+        (only-in :tao3k/yuanxu/module-system/building/program-products ModuleBuildContract)
+        (only-in :clan/poo/type element?)
+        (for-syntax (only-in :clan/poo/object object<-alist))
         (only-in :tao3k/yuanxu/module-system/source/admission call-with-module-source-operation-measurement)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
@@ -24,6 +27,14 @@
         (only-in :tao3k/yuanxu/types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules))
 (export module-bootstrap-test)
+(begin-syntax
+  (def AutoloadBuild
+    (let* ((exports (object<-alist '((repeat-on-demand . repeat))))
+           (group (object<-alist (list (cons 'module ':std/func) (cons 'exports exports))))
+           (groups (object<-alist (list (cons 'repetition group)))))
+      (object<-alist (list (cons 'autoload groups))))))
+(yuanxu-build-autoloads AutoloadBuild repetition)
+
 (def root (path-expand ".." (path-directory (this-source-file))))
 (def module-bootstrap-test
   (test-suite "Source tool consumes uncompiled JsonSchema publication"
@@ -199,6 +210,18 @@
         (check-equal? (action (lambda () 43) 1) '(43))
         (check-equal? imports after-first)
         (check-equal? (procedure? (yuanxu-module-export ':std/func 'repeat)) #t)))
+    (yuanxu-test-case "Build autoloads resolve native exports without entering the expander"
+      (parameterize ((current-expander-module-import
+                       (lambda _ (error "compiled autoload entered the expander"))))
+        (check-equal? (repeat-on-demand (lambda () 42) 2) '(42 42))
+        (check-equal? (repeat-on-demand (lambda () 43) 1) '(43))))
+    (yuanxu-test-case "Build refuses non-symbol autoload exports"
+      (check-equal?
+        (element? ModuleBuildContract
+          (.o defbuild-script: (.o spec: '())
+              autoload: (.o repetition: (.o module: ':std/func
+                                            exports: (.o repeat-on-demand: "repeat")))))
+        #f))
     (yuanxu-test-case "direct Gerbil preludes retain their complete module association"
       (def language (core-import-module ':gerbil/core))
       ;; The Gerbil constructor is valid independently of its registry-caching

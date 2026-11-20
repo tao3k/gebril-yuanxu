@@ -1,13 +1,14 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Pure projection of standard native target products; no compiler or loader.
-(import (only-in :clan/poo/object .o .get .slot? .all-slots object?)
+(import (only-in :clan/poo/object .o .get .ref .slot? .all-slots object?)
         (only-in :std/list/list find filter-map delete-duplicates/hash)
         (only-in :std/string/path path-absolute?)
         (only-in :clan/poo/type Type. define-type element? List)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-name? module-source-type module-source-read))
 (export make-target? resolve-make-target-inputs StdMakeRowContract DefbuildScriptContract ModuleBuildContract make-target-kind make-target-spec program-targets
-        program-path program-identity? projection-program-targets module-build-ffi-targets)
+        program-path program-identity? projection-program-targets module-build-ffi-targets
+        module-build-autoloads?)
 
 (def (make-target-kind entry)
   (if (.slot? entry 'make-kind) (.get entry make-kind) 'gxc:))
@@ -101,12 +102,28 @@
 
 ;; Build is a POO object, so an inherited Build supplies the same effective
 ;; parameter slot as a directly defined Build.
+(def (module-build-autoloads? groups)
+  (def (group? group)
+    (and (object? group) (= (length (.all-slots group)) 2)
+         (.slot? group 'module) (.slot? group 'exports)
+         (let ((module (.get group module)) (exports (.get group exports)))
+           (and (symbol? module)
+                (string-prefix? ":" (symbol->string module))
+                (> (string-length (symbol->string module)) 1)
+                (object? exports)
+                (pair? (.all-slots exports))
+                (andmap (lambda (name) (symbol? (.ref exports name))) (.all-slots exports))))))
+  (and (object? groups)
+       (andmap (lambda (name) (group? (.ref groups name))) (.all-slots groups))))
+
 (define-type (ModuleBuildContract @ Type.)
   identity: 'module/build
   .element?: (lambda (build)
                (and (object? build) (.slot? build 'defbuild-script)
                     (let (script (.get build defbuild-script))
                       (and (element? DefbuildScriptContract script)
+                           (or (not (.slot? build 'autoload))
+                               (module-build-autoloads? (.get build autoload)))
                            (or (not (.slot? build 'ffi))
                                (let (targets (.get build ffi))
                                  (and (list? targets)

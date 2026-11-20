@@ -240,6 +240,12 @@ prelude: :gerbil/core
 
 
 (def (program-register-builtins! stub modules metadata contexts aliases)
+  (def (runtime-load? path)
+    ;; Gerbil emits loader wrappers for its language modules, even when
+    ;; compile-exe has no static body for them. Their underlying runtime
+    ;; modules already belong to the native programme.
+    (or (not (or (equal? path "gerbil/core") (string-prefix? "gerbil/core/" path)))
+        (positive? (file-info-size (file-info (find-static-module-file path))))))
   (def eager-aliases
     (filter-map (lambda (alias) (and (member (cdr alias) modules) (car alias)))
                 aliases))
@@ -267,7 +273,9 @@ prelude: :gerbil/core
                      (and (> (file-info-size (file-info scm)) 0)
                        (string->symbol (path-strip-directory (path-strip-extension scm))))
                      scm
-                     (if (module-context? context) (program-loader-imports context) '()))))
+                     (if (module-context? context)
+                       (filter runtime-load? (program-loader-imports context))
+                       '()))))
                metadata) aliases) port)
         (newline port)
         (for-each (lambda (form) (write form port) (newline port)) forms)))))
