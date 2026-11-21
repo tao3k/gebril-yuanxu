@@ -201,7 +201,7 @@
         (executable-targets (make-hash-table))
         (library-sources (make-hash-table))
         (package-values '()) (package-demands '()) (library-demands '()) (package-refused? #f)
-        (selected-library-packages '())
+        (selected-library-packages #f)
         (package-ids (make-hash-table-eq))
         (cores (make-hash-table-eq)) (owned-graph #f) (graph-policy #f) (entry-construction-intact? (object-construction-current?)))
     ;; Index the selected Core nodes for the build-publication lookup.
@@ -286,6 +286,28 @@
                           (when state (hash-put! by-id value state)) value)))))
     (def (add-source! path owner contributor (observed-input #f) (library? #t))
       (add! 'source (or observed-input (prepare-source path)) owner contributor library?))
+    ;; Look up the longest selected package prefix at component boundaries.
+    (def (selected-native-package identity)
+      (let (name (symbol->string identity))
+        (let loop ((separator (string-rindex name #\/)))
+          (and separator
+               (or (hash-get selected-library-packages (substring name 0 separator))
+                   (loop (string-rindex name #\/ (- separator 1))))))))
+    (def (index-selected-native-package! publication owner contributor)
+      (def path (.ref (.ref publication 'source) 'value))
+      (def binding (module-source-package-info (path-directory path)))
+      (when binding
+        (let ((package (pgetq package: (cadr binding) #f))
+              (root (path-normalize (car binding))))
+          (when (symbol? package)
+            (let* ((name (symbol->string package))
+                   (existing (hash-get selected-library-packages name)))
+              (if existing
+                (unless (equal? root (.ref existing 'root))
+                  (error "selected native package has different source roots" package))
+                (hash-put! selected-library-packages name
+                  (.o (package := package) (root := root)
+                      (owner := owner) (contributor := contributor)))))))))
     ;; Package public entries belong to their declaring Module. Gerbil supplies
     ;; the actual import graph; the existing preparer guards every local source.
     ;; Owner-relative roots remain confined and keep their explicit options.
@@ -310,15 +332,12 @@
              (or (eq? identity language)
                  (string-prefix? prefix (symbol->string identity)))))
       (def local-package
-        (.o (package := package) (prefix := prefix) (root := package-root)
+        (.o (package := package) (root := package-root)
             (owner := owner) (contributor := contributor)))
       (def (context-package context)
         (def identity (expander-context-id context))
         (and (symbol? identity)
-          (let ((selected
-                 (find (lambda (candidate)
-                         (string-prefix? (.ref candidate 'prefix) (symbol->string identity)))
-                       selected-library-packages)))
+          (let (selected (selected-native-package identity))
             (cond ((and selected (not (eq? package (.ref selected 'package)))) selected)
                   ((owned? identity) local-package)
                   (else selected)))))
@@ -483,6 +502,10 @@
                       library-demands)))
             (add-projections! owner contributor (.ref (.ref node 'descriptor) 'projections)))
            (else (error "unknown selected Graph node" node))))) nodes)
+    ;; Package ownership is only needed when walking a native library closure.
+    ;; Platform admission and declaration-only Builds need no metadata pass.
+    (when (pair? library-demands)
+      (set! selected-library-packages (make-hash-table)))
     (for-each
      (lambda (node)
        (when (eq? (.ref node 'kind) 'module-core)
@@ -509,38 +532,12 @@
                               (add-asset! input owner)
                               (add! 'source input owner contributor)))
                           inputs))
-              (add! 'publication publication owner contributor))))) nodes)
-    ;; Only packages already represented by selected publications may acquire
-    ;; source outputs. Ordinary dependency facades do not end that closure;
-    ;; unselected packages remain Gerbil prerequisites. This index lives for
-    ;; this projection only and grants no Module selection or runtime scope.
-    (let (packages (make-hash-table-eq))
-      (for-each
-        (lambda (node)
-          (when (and (eq? (.ref node 'kind) 'module-core)
-                     (hash-key? prepared (.ref node 'owner)))
-            (let* ((publication (hash-ref prepared (.ref node 'owner)))
-                   (binding (module-source-package-info (path-directory (.ref publication 'path)))))
-             (when binding
-              (let ((package (pgetq package: (cadr binding) #f))
-                    (root (path-normalize (car binding))))
-               (when (symbol? package)
-                (let (existing (hash-get packages package))
-                  (if existing
-                    (unless (equal? root (.ref existing 'root))
-                      (error "selected native package has different source roots" package))
-                    (let (candidate
-                           (.o (package := package) (root := root)
-                               (prefix := (string-append (symbol->string package) "/"))
-                               (owner := (.ref node 'owner)) (contributor := (.ref node 'identity))))
-                      (hash-put! packages package candidate)
-                      (set! selected-library-packages (cons candidate selected-library-packages)))))))))))
-        (.ref selected-value 'nodes))
-      (set! selected-library-packages
-        (list-sort (lambda (a b) (> (string-length (.ref a 'prefix)) (string-length (.ref b 'prefix))))
-                   selected-library-packages)))
+              (add! 'publication publication owner contributor)
+              (when selected-library-packages
+                (index-selected-native-package! publication owner contributor)))))) nodes)
     (for-each (lambda (request) (apply add-library! request)) (reverse library-demands))
     (set! library-demands '())
+    (set! selected-library-packages #f)
     (def entry-policy
       (and entry-construction-intact? (module-source-object-policy entry-values)))
     (def (bound-input-state input)
