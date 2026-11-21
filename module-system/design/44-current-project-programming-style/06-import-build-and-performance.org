@@ -66,6 +66,10 @@ The broad runtime unit batch cannot substitute its longer aggregate deadline.
 
 ** Source and native imports
 
+An enrolled package's native language entry retains its compiler forms in the
+unified source view: Gerbil resolves that prelude directly, outside ordinary
+import redirection. It must not become an ordinary library's metadata-only stamp.
+
 Managed Module consumers use the owning =init.exports= namespace and ordinary
 POO =.get= demand. =modules/<name>/interface.ss= is the Module System's loading
 configuration, not a second compiled-import application API. Ordinary library

@@ -6,7 +6,8 @@
                  build-output-directory current-build-source-directory current-build-compiler-options
                  artifact-files static-product-path
                  call-with-selected-output-lock selected-output-source-directory)
-        (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path)
+        (only-in :tao3k/yuanxu/module-system/building/source-package
+                 call-with-build-input-path package-prelude-identity)
         (only-in :clan/poo/object .o .ref .ref/cached .slot? object? object-protocol
                  object-instantiated? object-precedence-ready? object-construction-current?
                  require-object-instance-route!)
@@ -93,10 +94,23 @@
   ;; Module roles and the init publication are compiler-owned entries, not
   ;; basename guesses or caller strategy flags. One inventory routes/writes both.
   (def roles (make-hash-table))
+  (def languages (make-hash-table))
+  (def (native-language? input)
+    (and (.slot? input 'package-root)
+         (let (root (.ref input 'package-root))
+           (and root
+                (begin
+                  (unless (hash-key? languages root)
+                    (hash-put! languages root (package-prelude-identity root)))
+                  (eq? (.ref input 'compiler-identity) (hash-get languages root)))))))
   (for-each
     (lambda (entry)
       (def input (.ref entry 'input))
-      (when (or (.slot? input 'role-sources) (and (.slot? entry 'kind) (eq? (.ref entry 'kind) 'init-publication)))
+      ;; Gerbil resolves a package prelude directly, bypassing the ordinary
+      ;; import redirect. Its authenticated language entry needs real syntax,
+      ;; never the header-only freshness stamp used by ordinary libraries.
+      (when (or (.slot? input 'role-sources) (native-language? input)
+                (and (.slot? entry 'kind) (eq? (.ref entry 'kind) 'init-publication)))
         (hash-put! roles (path-normalize (.ref entry 'path)) #t)
         (when (.slot? input 'role-sources)
           (for-each (lambda (path) (hash-put! roles (path-normalize path) #t))
