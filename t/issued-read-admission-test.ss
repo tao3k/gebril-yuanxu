@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Consumer regressions for the actual producer, not a signing fixture.
-(import :std/test :clan/poo/object
+(import (prefix-in (only-in :gerbil/runtime/mop slot-ref) poo-fixture.)
+        :std/test :clan/poo/object
         (only-in :clan/poo/mop make-slot-read object-read-issued? %deliver-slot-read)
         (only-in :std/error Error? Error-message)
         (only-in :tao3k/yuanxu/configuration/diagnostics config-diagnostic-locator)
@@ -28,7 +29,7 @@
     (.get dependency port)
     (def calls 0)
     (def forged (make-slot-read dependency 'port (object-revision dependency)
-      (object-%instance dependency) 5432 '() (lambda (_read) (set! calls (+ calls 1)) #t)))
+      (poo-fixture.slot-ref dependency '%instance) 5432 '() (lambda (_read) (set! calls (+ calls 1)) #t)))
     (def Contract (.cc (.get sample contract)
       .obligations: (lambda (_candidate _context) (%deliver-slot-read forged #t) '())))
     (refuses "unissued slot dependency"

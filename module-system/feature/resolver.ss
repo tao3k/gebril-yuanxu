@@ -4,15 +4,15 @@
 
 ;;; Boundary: resolves feature-profile selections into deterministic feature sets.
 ;;; Invariant: dependency closure cannot introduce an undeclared feature identity.
-(import (only-in :std/list/list fold-right map filter-map)
-        (runtime: :clan/poo/object)
+(import (runtime: :clan/poo/object)
         (prefix-in :clan/poo/generalized-graph graph.)
         (prefix-in :clan/poo/strong-components scc.)
         (only-in :clan/poo/dependency-analysis Computation.)
+        (only-in :tao3k/yuanxu/module-system/source/observations module-source-measure-operation)
         :tao3k/yuanxu/module-system/feature/model
         :tao3k/yuanxu/utilities/functional)
 
-(export resolve-feature-profile)
+(export resolve-feature-profile schedule-core-rows)
 
 (def (selection-id selection)
   (.ref selection 'feature-id))
@@ -36,7 +36,7 @@
   (values index (reverse keys) (reverse diagnostics)))
 
 (def (missing-dependency-diagnostics selections index)
-  (fold-right
+  (foldr
    (lambda (selection diagnostics)
      (let* ((descriptor (selection-descriptor selection))
             (feature-id (selection-id selection)))
@@ -52,7 +52,7 @@
    selections))
 
 (def (conflict-diagnostics selections index)
-  (fold-right
+  (foldr
    (lambda (selection diagnostics)
      (let* ((descriptor (selection-descriptor selection))
             (feature-id (selection-id selection)))
@@ -78,24 +78,18 @@
       (and (hash-key? index optional-id) optional-id))
     (.ref descriptor 'optional-requires))))
 
-(def (topological-feature-selections keys index)
-  ;; Admission owns the payload index; POO owns the structural schedule.
-  ;; One row per accepted selection, with no Feature payload evaluation.
-  (def codes
-    (filter-map
-      (lambda (key)
-        (let (reads (selected-dependencies (selection-descriptor (hash-ref index key)) index))
-          (and (pair? reads) (cons key (.cc Computation. reads: reads)))))
-      keys))
+(def (schedule-feature-ids keys codes)
   (def scheduled
     (with-catch
       (lambda (cause)
         (if (and (graph.failure? cause) (eq? (graph.failure-kind cause) 'cycle))
           #f
           (raise cause)))
-      (lambda () (graph.schedule-owned keys codes))))
+      (lambda ()
+        (module-source-measure-operation 'selected-poo-schedule
+          (lambda () (graph.schedule-owned keys codes))))))
   (if scheduled
-    (values (map (cut hash-ref index <>) (graph.schedule-order scheduled)) '())
+    (values (graph.schedule-order scheduled) '())
     ;; An invalid graph has no execution order. Use the same captured rows
     ;; for POO's compact SCC diagnostics; do not reread authored slots.
     (let (partition (scc.partition (graph.declaration keys codes)))
@@ -106,6 +100,24 @@
               (and (or (pair? (cdr group)) (memq key ((scc.partition-reads partition) key)))
                    (feature-diagnostic 'dependency-cycle key key group))))
           (scc.partition-groups partition))))))
+
+(def (dependency-code key reads)
+  (and (pair? reads) (cons key (.cc Computation. reads: reads))))
+
+(def (topological-feature-selections keys index)
+  (def codes
+    (filter-map
+      (lambda (key)
+        (dependency-code key (selected-dependencies (selection-descriptor (hash-ref index key)) index)))
+      keys))
+  (let-values (((ordered diagnostics) (schedule-feature-ids keys codes)))
+    (values (map (cut hash-ref index <>) ordered) diagnostics)))
+
+(def (schedule-core-rows rows)
+  ;; The admitted owner closure supplies distinct keys and all required owners.
+  ;; Core has no optional edges or conflicts.
+  (schedule-feature-ids (map car rows)
+    (filter-map (lambda (row) (dependency-code (car row) (cdr row))) rows)))
 
 (def (resolve-feature-profile profile)
   (let ((selections (.ref profile 'selections)))

@@ -2,8 +2,6 @@
 import YuanxuProof.Admission.CoreStoreRecovery
 namespace YuanxuProof.Admission.CoreApprovedRecovery
 
-def quintSourceDigest : String := "sha256:afe6c07216d82ded02b212a24d87878a9a4943e8b915e3f846d257d8bbd6079e"
-
 -- Obtaining the Source from governed package policy is a bootstrap premise.
 -- An initial approved Source is distinct from its later currentness result.
 def finish (restored approval source files a b : Bool) : Bool :=

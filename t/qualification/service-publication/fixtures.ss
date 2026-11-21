@@ -5,6 +5,7 @@
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile clear-temporary-file!)
         (only-in :std/func compose)
+        (only-in :std/string/misc string-subst)
         (only-in :std/encoding/json write-json)
         (only-in :std/error Error? Error-message Error-irritants)
         (only-in "../testing/directory.ss" DirectoryFixture write-source)
@@ -69,11 +70,14 @@
     (lambda (role)
       (write-source
         (path-expand (string-append "modules/applications/gitea-postgresql/" role ".ss") root)
-        (module-source-read
-          (path-expand (string-append role ".ss") source-root))))
+        (let (text (module-source-read (path-expand (string-append role ".ss") source-root)))
+          (if (string=? role "objects")
+            (string-subst (string-subst text "postgresql/config.ss" "../../services/postgresql/config.ss")
+                          "gitea/config.ss" "../../services/gitea/config.ss")
+            text))))
     '("types" "objects" "config" "interface"))
   (write-source (path-expand "init.ss" root)
-    "(yuanxu! mode: explicit (closed-package disable: #t) :services (postgresql) (gitea) (unused disable: #t) :applications (gitea-postgresql))")
+    "(yuanxu! :test-dir \"./t\" mode: explicit (closed-package disable: #t) :services (postgresql) (gitea) (unused disable: #t) :applications (gitea-postgresql))")
   (write-source (path-expand "modules/services/unused/interface.ss" root) "(((cold")
   (select-services workspace root))
 
@@ -94,7 +98,7 @@
   (write-source (path-expand "init.ss" root)
     (call-with-output-string
       (lambda (out)
-        (display "(yuanxu! mode: explicit :services (postgresql @ " out)
+        (display "(yuanxu! :test-dir \"./t\" mode: explicit :services (postgresql @ " out)
         (write (path-expand "postgresql" source-root) out)
         (display ") (gitea @ " out)
         (write (path-expand "gitea" source-root) out)
@@ -123,7 +127,7 @@
 (def (read-overrides path (names '(release explicit)))
   (parameterize ((current-expander-context (make-top-context)))
     (eval-syntax '(import :gerbil/core))
-    (eval-syntax '(import :tao3k/yuanxu/object-syntax/path-slots))
+    (eval-syntax '(import :tao3k/yuanxu/syntax/path-slots))
     (for-each eval-syntax (syntax->list (read-syntax-from-file path)))
     (apply values (map eval-syntax names))))
 (def (cause failure)

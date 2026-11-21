@@ -1,8 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/type Enum. Tuple)
-        (only-in :clan/poo/mop Bool)
+        (only-in :clan/poo/type Enum. Tuple Bool)
         (prefix-in :clan/poo/testing/type property.)
         (only-in :clan/poo/support/testing require-property-passed)
         (only-in :clan/poo/testing/property make-policy)

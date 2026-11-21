@@ -3,9 +3,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 
 ;;; Backend construction checks Function fields; plans retain opaque Backend values.
-(import (only-in :clan/poo/mop define-type Bool Object Function)
-        (only-in :clan/poo/number UInt)
-        (only-in :clan/poo/type Record List OrFalse String Symbol Pair Or))
+(import (only-in :clan/poo/type define-type Bool Object Function Record List OrFalse String Symbol
+                 Pair Or)
+        (only-in :clan/poo/number UInt))
 (export ModuleLoaderBackend ModuleLoadReceipt LazyLoadPlan LoaderMetadata)
 
 ;; Extensible annotation keys do not permit arbitrary procedures/objects as values.

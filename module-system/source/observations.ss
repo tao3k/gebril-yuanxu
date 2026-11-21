@@ -68,7 +68,7 @@
                    (or (not reject-protocols?)
                        ;; Every ancestor is already in entries. Inspect its
                        ;; actual protocol field without forcing a cold C4 cache.
-                       (not (object-%protocol (car entry)))))) entries)))
+                       (not (object-direct-protocol? (car entry)))))) entries)))
 
 ;; Structural decomposition of ONE operation, not a source approval or cache.
 ;; Only this constructor creates the paired entry/resume procedures. Neither
@@ -86,7 +86,7 @@
   ;; hook or read observer. Cold/mutated objects, overridden methods, different
   ;; guards and instrumented reads retain the ordinary checked call. This probe
   ;; must not execute anything between the caller's guard and the continuation.
-  (and (object? receiver) (object-%instance receiver)
+  (and (object? receiver) (object-instantiated? receiver)
        (not (%slot-read-active?)) (not (object-protocol receiver))
        (let ((operation (.ref/cached receiver '%source-operation (lambda () #f)))
              (invoke (.ref/cached receiver 'admit-current (lambda () #f))))
@@ -109,8 +109,8 @@
   ;; The runtime scalar table is private for the entire action. Report it only
   ;; afterwards: callers cannot install a custom hash/ref callback in the
   ;; middle of the reader's otherwise closed runtime replay segment.
-  (unless (memq accounting? '(#t #f stages))
-    (error "expected Boolean or stages operation accounting mode"))
+  (unless (memq accounting? '(#t #f stages counts))
+    (error "expected Boolean, stages, or counts operation accounting mode"))
   (let (times (make-hash-table))
     (def value (parameterize ((current-module-source-operation-times times)
                              (current-module-source-operation-accounting? accounting?)) (action)))
@@ -123,49 +123,71 @@
                     (memq (car name) '(reader-initialization reader-initializer-body))
                     (car name)))
              (accounting (current-module-source-operation-accounting?)))
-        (if (and initialization (not accounting)) (action)
+        (if (and initialization (memq accounting '(#f counts))) (action)
           ;; Stage summaries retain only initializer families. Explicit detailed
           ;; accounting keeps source paths. Owner-qualified scope counters
           ;; retain their identities in every mode.
           (let (name (if (and initialization (eq? accounting 'stages)) initialization name))
             (hash-update! times (list 'calls name) (cut + <> 1) 0)
-            ;; Attribute bounded stages, not each leaf read/query. In particular
-            ;; source-read starts AFTER its read-attempt counter was incremented.
-            (if (or (and (pair? name) (eq? (car name) 'reader-current))
-                    (memq name '(build-main build-selected-graph std-make reader-bootstrap
-                            reader-current reader-interface-start reader-preparation-start
-                            reader-admission-start reader-native-import reader-role-import
-                            reader-tool-inputs reader-private-closure reader-compile-start
-                            reader-eval-start metadata-replay source-init-current
-                            compiler-input-lookup compiler-role-inventory
-                            compiler-import-before compiler-import-after
-                            compiler-view-before compiler-view-after)))
-              (measure-source-read-attempts times name
-                (lambda () (measure-source-operation times name action)))
-              (measure-source-operation times name action))))))))
+            (if (eq? accounting 'counts)
+              (action)
+              ;; Attribute bounded stages, not each leaf read/query. In particular
+              ;; source-read starts AFTER its read-attempt counter was incremented.
+              (if (or (and (pair? name) (eq? (car name) 'reader-current))
+                      (memq name '(build-main build-selected-graph std-make reader-bootstrap
+                              reader-current reader-interface-start reader-preparation-start
+                              reader-admission-start reader-compiled-import reader-role-import
+                              reader-tool-inputs reader-private-closure reader-compile-start
+                              reader-eval-start metadata-replay source-init-current
+                              source-gerbil-owner-read source-role-open
+                              compiler-input-lookup compiler-role-inventory
+                              compiler-import-before compiler-import-after
+                              compiler-view-before compiler-view-after)))
+                (measure-source-read-attempts times name
+                  (lambda () (measure-source-operation times name action)))
+                    (if (and (pair? name) (eq? (car name) 'reader-candidate-replay-site))
+                      (let (before (hash-ref times '(visits metadata-replay) 0))
+                        (dynamic-wind void
+                          (lambda () (measure-source-operation times name action))
+                          (lambda ()
+                            (hash-update! times (list 'visits name)
+                              (cut + <> (- (hash-ref times '(visits metadata-replay) 0) before)) 0))))
+                      (measure-source-operation times name action))))))))))
 (def (measure-source-operation times name action)
   (if (if (eq? (current-module-source-operation-accounting?) 'stages)
               (or (and (pair? name)
-                       (memq (car name) '(reader-initialization reader-initializer-body
+                       (memq (car name) '(link-current scope-current compiled-role-load
+                                         reader-initialization reader-initializer-body
                                          reader-candidate-replay-site)))
                   (memq name '(reader-initialization reader-initializer-body
                            build-main build-specification build-dispatch std-make build-current
-                           profile-interface-scan reader-bootstrap reader-preparation-start reader-interface-start
-                           selected-owner-closure selected-core-projection selected-topological-resolution
+                           directory-context profile-interface-scan directory-current-observations link-current
+                           reader-bootstrap reader-preparation-start reader-interface-start
+                           selected-owner-closure selected-core-projection selected-topological-resolution selected-core-rows selected-poo-schedule
                            reader-wrapper-write reader-wrapper-expansion reader-interface-read reader-interface-rewrite
-                           reader-admission-start reader-value-admission reader-admission-evidence
-                           reader-current metadata-replay reader-candidate-fused-return-replay
+                           reader-admission-start reader-value-admission reader-admission-evidence scope-factory
+                           publication-read publication-admission scope-admission
+                           publication-shape-record publication-shape-core
+                           scope-shape-type scope-shape-record scope-shape-protocol
+                           reader-current reader-gerbil-identity reader-tool-source-current reader-source-guards
+                           metadata-replay metadata-checkpoints observed-metadata-replay publication-guard-sweep
+                           reader-candidate-entry-replay reader-candidate-return-replay reader-candidate-fused-return-replay
+                           metadata-index metadata-root-merge metadata-cache-miss-receivers
                            source-init-current source-authoring-profile-checkpoint
                            reader-tool-inputs reader-private-closure reader-private-prepare
-                           reader-native-import reader-role-import reader-source-resolution
+                           reader-compiled-import reader-role-import reader-source-resolution reader-source-import
+                           reader-tool-context
                            reader-compile-start reader-eval-start
                            reader-expander-compile reader-expander-eval
                            reader-expander-phase-compile reader-expander-phase-eval
                            source-authoring source-authoring-profile source-authoring-role
+                           source-authoring-role-checkpoint
+                           source-ref-preparation source-ref-admission source-gerbil-owner-read
+                           source-role-open
                            source-direction source-import-policy source-parse)))
               (and (current-module-source-operation-accounting?)
                  (memq name '(metadata-replay selection-current selected-graph reader-current source-read
-                        selected-owner-closure selected-core-projection selected-topological-resolution
+                        selected-owner-closure selected-core-projection selected-topological-resolution selected-core-rows selected-poo-schedule
                         build-projection build-current std-make
                         build-product-repair build-product-require))))
           (measure-source-accounting times name action)
@@ -349,7 +371,7 @@
 ;; A matched large read already has an exact private text snapshot. Expose a
 ;; mutable copy only when an ordinary reader asks for the text in this window.
 (defstruct source-text-read (snapshot materialized) final: #t)
-(defstruct source-text-snapshot (text chunks) final: #t)
+(defstruct source-text-snapshot (text chunks scratch mutex) final: #t)
 (def current-source-text-snapshot (make-parameter #f))
 (def (source-text-content text)
   (if (source-text-read? text)
@@ -372,6 +394,7 @@
 (def (scheme-source-path? path)
   (equal? (path-extension path) ".ss"))
 (def source-read-chunk-size 8192)
+(def source-snapshot-chunk-size 65536)
 (def (source-text->snapshot text)
   (def snapshot (string-copy text))
   (def bytes (string->utf8 snapshot))
@@ -379,8 +402,24 @@
   (make-source-text-snapshot snapshot
     (let loop ((start 0))
       (if (= start size) '()
-        (let (end (min (+ start source-read-chunk-size) size))
-          (cons (subu8vector bytes start end) (loop end)))))))
+        (let (end (min (+ start source-snapshot-chunk-size) size))
+          (cons (subu8vector bytes start end) (loop end)))))
+    #f (make-mutex)))
+(def (swap-source-scratch! snapshot replacement)
+  (def mutex (source-text-snapshot-mutex snapshot))
+  (mutex-lock! mutex)
+  (dynamic-wind void
+    (lambda ()
+      (begin0 (source-text-snapshot-scratch snapshot)
+        (set! (source-text-snapshot-scratch snapshot) replacement)))
+    (lambda () (mutex-unlock! mutex))))
+(def (make-source-scratch chunks)
+  (def size (u8vector-length (car chunks)))
+  (cons (make-u8vector size)
+        (let loop ((rest chunks))
+          (if (pair? (cdr rest)) (loop (cdr rest))
+            (let (tail (u8vector-length (car rest)))
+              (and (< tail size) (make-u8vector tail)))))))
 (def (decode-source-bytes bytes)
   (def port (open-input-u8vector (cons* init: bytes source-file-settings)))
   (dynamic-wind void
@@ -395,32 +434,37 @@
                 (loop)))))))
     (lambda () (close-input-port port))))
 (def (read-source-snapshot path snapshot)
-  ;; Gerbil owns the decoding settings. A canonical byte match already
-  ;; proves the decoded text. Otherwise decode the bytes from this same
-  ;; open file, including the matched prefix and the rest through EOF.
-  (call-with-input-source-file path
-    (lambda (port)
-      (def expected (source-text-snapshot-chunks snapshot))
-      (def buffer (make-u8vector source-read-chunk-size))
-      (def (decode-change matched tail)
-        (decode-source-bytes
-          (u8vector-concatenate
-            (append (take expected matched) (list tail (read-all-as-u8vector port))))))
-      (let loop ((chunks expected) (matched 0))
-        (if (null? chunks)
-          (let (next (read-u8 port))
-            (if (eof-object? next)
-              (make-source-text-read (source-text-snapshot-text snapshot) #f)
-              (decode-change matched (u8vector next))))
-          (let* ((chunk (car chunks))
-                 (size (u8vector-length chunk))
-                 (target (if (= size source-read-chunk-size) buffer (make-u8vector size)))
-                 (count (read-subu8vector target 0 size port)))
-            (if (and (= count size) (equal? target chunk))
-              (loop (cdr chunks) (1+ matched))
-              (begin
-                (u8vector-shrink! target count)
-                (decode-change matched target)))))))))
+  ;; Gerbil owns decoding. Compare the complete file bytes on each fresh read.
+  ;; Only scratch storage returns to the snapshot. Overlapping reads borrow
+  ;; separate buffers, and no mutex is held while a port reads or decodes.
+  (def expected (source-text-snapshot-chunks snapshot))
+  (def scratch #f)
+  (dynamic-wind
+    (lambda ()
+      (set! scratch (or (swap-source-scratch! snapshot #f)
+                        (make-source-scratch expected))))
+    (lambda ()
+      (call-with-input-source-file path
+        (lambda (port)
+          (def buffer (car scratch))
+          (def (decode-change matched tail)
+            (decode-source-bytes
+              (u8vector-concatenate
+                (append (take expected matched) (list tail (read-all-as-u8vector port))))))
+          (let loop ((chunks expected) (matched 0))
+            (if (null? chunks)
+              (let (next (read-u8 port))
+                (if (eof-object? next)
+                  (make-source-text-read (source-text-snapshot-text snapshot) #f)
+                  (decode-change matched (u8vector next))))
+              (let* ((chunk (car chunks))
+                     (size (u8vector-length chunk))
+                     (target (if (= size (u8vector-length buffer)) buffer (cdr scratch)))
+                     (count (read-subu8vector target 0 size port)))
+                (if (and (= count size) (equal? target chunk))
+                  (loop (cdr chunks) (1+ matched))
+                  (decode-change matched (subu8vector target 0 count)))))))))
+    (lambda () (swap-source-scratch! snapshot scratch))))
 (def (read-source-text path expected-length)
   (let (snapshot (and expected-length (current-source-text-snapshot)))
     (cond (snapshot (read-source-snapshot path snapshot))
@@ -441,29 +485,24 @@
           read)))
     (if expected-length text (materialize-source-text text))))
 
-(def (read-large-source-matches? path expected snapshot)
-  (observe-read path)
-  (def text
-    (source-text-content
-      (module-source-measure-operation 'source-read
-        (lambda () (read-source-snapshot path snapshot)))))
-  (record-physical-source-read! (string-length text))
-  (equal? expected text))
-
 (def (module-source-text-guard path expected)
   (def expected-length (string-length expected))
   (if (or (< expected-length 32768) (not (scheme-source-path? path)))
     (lambda () (equal? expected (module-source-observe module-source-read path)))
-    (let (snapshot (source-text->snapshot expected))
+    (let* ((snapshot (source-text->snapshot expected))
+           (captured (source-text-snapshot-text snapshot)))
       (def (large-text-current?)
         (observe-read-request path)
         (unless (eq? (module-source-type path) 'regular)
           (error "module role must be a regular file" path))
-        (def cache (source-read-cache))
-        (def cached (if cache (hash-ref cache path missing-source-query) missing-source-query))
-        (if (eq? cached missing-source-query)
-          (read-large-source-matches? path expected snapshot)
-          (equal? expected (source-text-content cached))))
+        ;; Share the physical text with ordinary readers and other guards in
+        ;; this window. Compare each guard's own expected text on every call.
+        (parameterize ((current-source-text-snapshot snapshot))
+          (let (observed (source-text-content (read-regular-source path expected-length)))
+            ;; An exact byte match returns this private snapshot itself.
+            ;; A different guard's snapshot or a mutable reader view still
+            ;; requires the full comparison against the captured text.
+            (or (eq? captured observed) (equal? captured observed)))))
       (lambda ()
         (if (current-module-source-observer)
           ;; Keep the original query key and read notifications. Ordinary
@@ -471,7 +510,7 @@
           (parameterize ((current-source-text-snapshot snapshot))
             (equal? expected
               (source-text-content (module-source-observe read-module-source path expected-length))))
-          (module-source-observe large-text-current?))))))
+          (large-text-current?))))))
 
 (def (compiler-interface-info path)
   ;; The native importer owns .ssi paths. Bazel may project its Tree Artifact

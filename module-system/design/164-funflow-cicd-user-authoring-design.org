@@ -619,7 +619,7 @@ funflow itself; ProjectGerbilCI binds it once. ReleaseGerbilCI inherits that
 binding and refines all four existing objects. These are alternative effective
 Scenario configurations, not two pipeline execution steps.
 
-The following uses the implemented =:yuanxu/object-syntax/path-slots= authoring
+The following uses the implemented =:yuanxu/syntax/path-slots= authoring
 bindings =.def=, =.o= and braces. Raw gerbil-poo remains unchanged and does not
 interpret dotted keywords as paths. The bounded use-module body is implemented over an existing runtime scope;
 Scenario/Funflow publication still require Loader/domain adaptation. All ordinary downstream deep refinements use this
@@ -725,8 +725,8 @@ The pinned gerbil-poo normalizer converts a keyword to a single symbol using
 keyword->string/string->symbol; it does not split dots into slot traversal.
 Therefore raw .def still treats a dotted keyword as one literal slot.
 Core now provides an explicit authoring binding at
-[[file:../../object-syntax/path-slots.ss][object-syntax/path-slots.ss]], with its boundary and usage in the
-[[file:../../object-syntax/README.org][Core path-slot reference]]. Import this binding instead of primitive .def/.o/brace
+[[file:../../syntax/path-slots.ss][syntax/path-slots.ss]], with its boundary and usage in the
+[[file:../../syntax/README.org][Core path-slot reference]]. Import this binding instead of primitive .def/.o/brace
 bindings for path authoring; do not import competing bindings under the same name.
 No global primitive or Loader behavior changes. Runtime expansion above remains
 the semantic reference; .get's multi-slot access is an existing separate feature.
@@ -1328,7 +1328,7 @@ and list-Pipeline adapters, workflow projection functions.
 Implemented bounded scope declaration: one compound body binds an existing
 runtime object unchanged, without Loader/source resolution. Nine local cases
 verify identity, alias hygiene, lazy demand and upstream/downstream usage.
-Implemented path declaration adapter: =:yuanxu/object-syntax/path-slots=, registered
+Implemented path declaration adapter: =:yuanxu/syntax/path-slots=, registered
 in Core build.ss; eleven regression cases pass against the pinned POO source. This
 is separate from the implemented CLOS declaration/protocol/bundle surface.
 Verified runtime subset: the pinned-source parent-first receiver/cache probe

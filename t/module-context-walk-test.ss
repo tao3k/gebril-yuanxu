@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test
-        (only-in :gerbil/expander core-import-module make-module-context module-context? module-context-import
+        (only-in :gerbil/expander expander-context-id make-module-context module-context? module-context-import
                  make-module-import module-import? module-import-source
                  make-module-export module-export? module-export-context
                  make-import-set import-set? import-set-source)
@@ -41,12 +41,16 @@
       (check-equal? visits (hash-length contexts))
       (check-equal? (>= visits (hash-length names)) #t)
       (hash-for-each
-        (lambda (_name context) (check-equal? (hash-key? contexts context) #t)) names)
+        (lambda (name context)
+          (check-equal? (expander-context-id context) name)
+          (check-equal? (hash-key? contexts context) #t)) names)
+      ;; A later import can resolve a different Context for the same identity.
+      ;; The projection must return an actual Context visited by this walk.
       (for-each
-        (lambda (name identity)
-          (check-equal? (eq? (hash-get names identity) (core-import-module name)) #t))
-        '(:tao3k/yuanxu/object-family/role-syntax :tao3k/yuanxu/configuration/json)
-        '(tao3k/yuanxu/object-family/role-syntax tao3k/yuanxu/configuration/json)))
+        (lambda (identity) (check-equal? (hash-key? names identity) #t))
+        '(tao3k/yuanxu/module-system/building/build-projection
+          tao3k/yuanxu/module-system/source/module-prelude
+          tao3k/yuanxu/module-system/source/config-prelude)))
     (yuanxu-test-case "postorder, wrappers, identity sharing and cuts match the original walk"
       (def nodes (list->vector (map (lambda (_) (context-node)) (iota 6))))
       (def (node n) (vector-ref nodes n))

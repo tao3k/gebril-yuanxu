@@ -12,11 +12,11 @@ separate scenarios/init.ss and no repeated Module selection in that directory.
 #+begin_src scheme
 (import :yuanxu/module-system/selection/init-syntax)
 (yuanxu!
-  :load-modules "./core/modules" mode: explicit rename: Core
+  :load-modules "./core/modules" mode: explicit mount: Core
   (json-schema)
   (funflow)
   :load-modules "./modules" mode: auto
-  :load-modules "./scenarios" mode: explicit rename: scenarios
+  :load-modules "./scenarios" mode: explicit mount: scenarios
   (null)
   (aws-validation)
   (aws))

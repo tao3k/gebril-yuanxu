@@ -1,12 +1,14 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Read-only census of already surviving records. Never demand a runtime slot.
-(import :clan/poo/object
+(import (prefix-in (only-in :gerbil/runtime/mop slot-ref) poo-fixture.)
+        :clan/poo/object
         (only-in :std/list/list take)
         (only-in :std/string/symbol symbol<?)
         (only-in :clan/poo/slot-observation slot-read-key slot-read-receiver slot-read-value)
-        (only-in :clan/poo/mop Class. Slot. Type.)
+        (only-in :clan/poo/type Type.)
+        (only-in :clan/poo/mop Class. Slot.)
         (only-in :clan/poo/method-combination Contribution.)
-        (only-in :tao3k/yuanxu/object-types/contracts YuanxuClassificationEvidence YuanxuValidationEvidence)
+        (only-in :tao3k/yuanxu/types/contracts YuanxuClassificationEvidence YuanxuValidationEvidence)
         (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :gerbil/expander expander-context? expander-context-id expander-context-table)
         (only-in :gerbil/runtime/mop type-field-list)
@@ -193,7 +195,7 @@
            (set! context-bindings (+ context-bindings (hash-length (expander-context-table value)))))
          (when (object? value)
            (hash-put! receiver-frontiers value #t)
-           (let* ((fields (object-%instance value))
+           (let* ((fields (poo-fixture.slot-ref value '%instance))
                   (kind (and fields (hash-get fields 'kind)))
                   (identity (and fields (hash-get fields 'identity))))
              (hash-update! frontier-kinds
@@ -279,7 +281,7 @@
       ;; Inspect already prepared method/value tables, never instantiate or
       ;; reflect a cold owner. Missing value and a successful cached #f differ.
       ;; Each binding edge stays visible even when its function is shared.
-      (let ((methods (object-%slot-funs owner)) (values (object-%instance owner)))
+      (let ((methods (object-%slot-funs owner)) (values (poo-fixture.slot-ref owner '%instance)))
         (when (and methods values)
           (hash-for-each (lambda (name fun)
             (when (##closure? fun)
@@ -313,7 +315,7 @@
               (set! route (list (list 'receiver field)))
               (walk value))
             '(reads instance layout slot-funs slots defaults declarations declaration-index state)
-            (list (object-%reads owner) (object-%instance owner) (object-%layout owner)
+            (list (object-%reads owner) (poo-fixture.slot-ref owner '%instance) (poo-fixture.slot-ref owner '%layout)
                   (object-%slot-funs owner) (object-%slots owner) (object-%defaults owner)
                   (object-%declarations owner) (object-%declaration-index owner)
                   (object-%state owner)))))) owners)
@@ -384,6 +386,7 @@
 (def (report-retained-reads label weak)
   (def rows (make-hash-table))
   (def owners (make-hash-table-eq))
+  (def evidence (make-hash-table-eq))
   (def anonymous-shapes (make-hash-table-eq))
   (def (anonymous-shape receiver)
     (or (hash-get anonymous-shapes receiver)
@@ -398,13 +401,13 @@
   (def (schema! descriptor)
     (when (and (object? descriptor) (not (hash-key? schema-owners descriptor)))
       (hash-put! schema-owners descriptor #t)
-      (let (fields (object-%instance descriptor))
+      (let (fields (poo-fixture.slot-ref descriptor '%instance))
         (when fields
           (for-each (lambda (key)
                       (let (mapping (hash-get fields key))
                         (when (object? mapping)
                           (hash-put! schema-owners mapping #t)
-                          (let (entries (object-%instance mapping))
+                          (let (entries (poo-fixture.slot-ref mapping '%instance))
                             (when entries
                               (hash-for-each (lambda (_value slot) (schema! slot)) entries))))))
             '(slots effective-slots))
@@ -417,7 +420,7 @@
       (def receiver (slot-read-receiver read))
       (when (hash-key? schema-owners receiver) (set! schema-reads (1+ schema-reads)))
       (when (memq Class. (or (object-%precedence-list receiver) '()))
-        (let (fields (object-%instance receiver))
+        (let (fields (poo-fixture.slot-ref receiver '%instance))
           (when fields
             (for-each (lambda (key)
                         (let (value (hash-get fields key))
@@ -426,7 +429,7 @@
   (hash-for-each
     (lambda (read _)
       (def receiver (slot-read-receiver read))
-      (def fields (and (object? receiver) (object-%instance receiver)))
+      (def fields (and (object? receiver) (poo-fixture.slot-ref receiver '%instance)))
       (def kind (and fields (hash-get fields 'kind)))
       (def identity (and fields (hash-get fields 'identity)))
       (def precedence (or (object-%precedence-list receiver) '()))
@@ -442,6 +445,13 @@
       (def key (slot-read-key read))
       (def key-label (if (pair? key) (list (car key) (length key)) key))
       (hash-put! owners receiver #t)
+      (when (memq kind '(yuanxu.contract.validation-evidence yuanxu.type.classification-evidence))
+        (let (counts (or (hash-get evidence kind)
+                         (let (counts (cons (make-hash-table-eq) (box 0)))
+                           (hash-put! evidence kind counts)
+                           counts)))
+          (hash-put! (car counts) receiver #t)
+          (set-box! (cdr counts) (1+ (unbox (cdr counts))))))
       (hash-update! rows (list family key-label) 1+ 0)) weak)
   (for-each
     (lambda (row) (yuanxu-write-observation-line! "%s"
@@ -449,6 +459,12 @@
     (list-sort (lambda (a b) (string<? (object->string (car a)) (object->string (car b))))
       (hash->list rows)))
   (yuanxu-write-observation-line! "%s" (list 'RETAINED-OWNERS label (hash-length owners)))
+  (yuanxu-write-observation-line! "%s"
+    (list 'RETAINED-EVIDENCE label
+      (map (lambda (entry)
+             (let (counts (cdr entry))
+               (list (car entry) (hash-length (car counts)) (unbox (cdr counts)))))
+           (hash->list evidence))))
   (yuanxu-write-observation-line! "%s" (list 'RETAINED-SHARED-SCHEMA label schema-reads))
   (yuanxu-write-observation-line! "%s" (cons 'RETAINED-PAYLOAD
     (cons label (payload-bytes (hash-keys weak) owners))))

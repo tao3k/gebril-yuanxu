@@ -137,7 +137,7 @@ scope alias is lexically bounded; the body can capture it in delayed slots.
 * Layer one: business configuration over an existing published default
 
 #+begin_src scheme
-(import :yuanxu/object-syntax/path-slots
+(import :yuanxu/syntax/path-slots
         :yuanxu/profile-composition/selection-syntax
         (only-in :agentic-ai-lab/modules/funflow/runtime-scope Funflow))
 

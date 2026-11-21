@@ -72,10 +72,10 @@ a new syntax for selecting an installed package or an implemented multi-window A
 #+begin_src scheme
 ;; project/init.ss -- target syntax from the directory-window design
 (yuanxu!
-  :load-modules "./modules" mode: explicit rename: modules
+  :load-modules "./modules" mode: explicit mount: modules
   (kubernetes)
   (guestbook)
-  :load-modules "./scenarios" mode: explicit rename: scenarios
+  :load-modules "./scenarios" mode: explicit mount: scenarios
   (development))
 #+end_src
 

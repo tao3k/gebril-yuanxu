@@ -3,11 +3,12 @@
 ;;; Test-local collection adapter. Real MOP, source guards, selected/build graph,
 ;;; delayed CLOS bundle, Core .admit and checked publisher. No Loader call.
 (import (only-in :std/error Error? Error-message) :std/test :std/list/list :clan/poo/object
-        (only-in :clan/poo/mop define-type)
+        (only-in :clan/poo/type define-type)
+        (only-in :clan/poo/mop .defgeneric .defmethod .defmethod-bundle clos-call
+                 clos-compose-method-bundles clos-generic-function clos-generic-protocol)
         (only-in :std/io/tempfile make-temporary-file-name)
         (prefix-in :clan/poo/declarative-metadata metadata.)
-        :tao3k/yuanxu/poo-clos/interface
-        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence)
         (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
         (only-in :tao3k/yuanxu/module-system/source/selection select-module-graph)
         (only-in :tao3k/yuanxu/module-system/source/build module-build-graph)
@@ -35,7 +36,7 @@
 
 (.def PortRequirement.)
 (define-type (PortAdmission. @ YuanxuContract.))
-(def RequirementProtocol (poo-clos-generic-protocol 'isolation/port-requirement))
+(def RequirementProtocol (clos-generic-protocol 'isolation/port-requirement))
 (.defgeneric project-port (admission payload origin) (protocol RequirementProtocol))
 (def (dispatcher)
   (.defmethod-bundle Methods RequirementProtocol
@@ -45,8 +46,8 @@
       (unless (and (exact-integer? port) (<= 1 port 65535))
         (error "invalid policy port" port))
       (list (.cc (.o) value: port origin: origin))))
-  (poo-clos-compose-method-bundles
-    (poo-clos-generic-function 'project-port 3 protocol: RequirementProtocol)
+  (clos-compose-method-bundles
+    (clos-generic-function 'project-port 3 protocol: RequirementProtocol)
     (list Methods)))
 
 (.def (Parent @ [] config)
@@ -157,7 +158,7 @@
         (batch-current!)
         (def constraints
           (append-map
-            (lambda (row) (poo-clos-call dispatch @ (.get row payload) (.get row origin))) rows))
+            (lambda (row) (clos-call dispatch @ (.get row payload) (.get row origin))) rows))
         (def actual (.get candidate config postgresql settings port))
         (def issues
           (if (every (lambda (row) (= actual (.get row value))) constraints) '()

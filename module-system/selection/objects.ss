@@ -9,7 +9,7 @@
 ;;; Intent: keep the downstream surface focused on Yuanxu module activation.
 
 (import (runtime: :clan/poo/object)
-        (only-in :tao3k/yuanxu/object-family/syntax
+        (only-in :tao3k/yuanxu/object/syntax
                  defpoo-object-family)
         :tao3k/yuanxu/utilities/final-projection-syntax
         :tao3k/yuanxu/module-system/source/imports

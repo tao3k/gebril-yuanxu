@@ -714,17 +714,17 @@ Source: [[file:../types.ss][core/module-system/types.ss]].
 | =ModuleAuthoringProfileContract= | D | Use a maintained Module Contract; specialization is E. |
 | =SemanticModuleContract= | D | Use a maintained Module Contract; specialization is E. |
 
-* core/object-family/funcs.ss
+* core/object/funcs.ss
 
-Source: [[file:../../object-family/funcs.ss][core/object-family/funcs.ss]].
+Source: [[file:../../object/funcs.ss][core/object/funcs.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
 | =poo-object-family-position-index= | I | Indexed layout/lens/projection support; use domain accessors. |
 
-* core/object-family/indexed.ss
+* core/object/indexed.ss
 
-Source: [[file:../../object-family/indexed.ss][core/object-family/indexed.ss]].
+Source: [[file:../../object/indexed.ss][core/object/indexed.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|
@@ -739,17 +739,17 @@ Source: [[file:../../object-family/indexed.ss][core/object-family/indexed.ss]].
 | =poo-indexed-family-project-descriptors= | I | Indexed layout/lens/projection support; use domain accessors. |
 | =poo-indexed-family-project-objects= | I | Indexed layout/lens/projection support; use domain accessors. |
 
-* core/object-family/interface.ss
+* core/object/interface.ss
 
-Source: [[file:../../object-family/interface.ss][core/object-family/interface.ss]].
+Source: [[file:../../object/interface.ss][core/object/interface.ss]].
 
-Reexports [[file:../../object-family/indexed.ss][core/object-family/indexed.ss]]; its bindings retain the classifications below.
+Reexports [[file:../../object/indexed.ss][core/object/indexed.ss]]; its bindings retain the classifications below.
 
-Reexports [[file:../../object-family/syntax.ss][core/object-family/syntax.ss]]; its bindings retain the classifications below.
+Reexports [[file:../../object/syntax.ss][core/object/syntax.ss]]; its bindings retain the classifications below.
 
-* core/object-family/syntax.ss
+* core/object/syntax.ss
 
-Source: [[file:../../object-family/syntax.ss][core/object-family/syntax.ss]].
+Source: [[file:../../object/syntax.ss][core/object/syntax.ss]].
 
 | Existing export | Surface | Placement reason |
 |-----------------+---------+------------------|

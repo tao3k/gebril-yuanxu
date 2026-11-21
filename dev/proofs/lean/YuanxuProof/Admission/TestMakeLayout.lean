@@ -2,8 +2,6 @@
 import YuanxuProof.Admission.CoreApprovedRecovery
 namespace YuanxuProof.Admission.TestMakeLayout
 
-def quintSourceDigest : String := "sha256:44df7db711c1a732e982508e28e5d54d13f38515b46c1a50225ad3390ab7eb2f"
-
 -- Sanitized path components. Scheme's existing identity/path admission must
 -- establish this extraction; these lists do not model symlinks or host I/O.
 structure Target where

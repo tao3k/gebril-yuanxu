@@ -39,7 +39,7 @@ an import behind a function in an application does not repair this boundary.
 
 The implemented entry is =selection/init-syntax.ss:yuanxu!=. A Profile uses
 the same role wrappers, selection, dependency admission and source currentness
-as any other module. =rename:= changes the access namespace, not the module's
+as any other module. =mount:= changes the access namespace, not the module's
 identity, Type or dependency semantics. The former =yuanxu! Profile Registry
 (profile ...)= and =(extends ...)= alternatives are rejected at expansion;
 there is no compatibility branch in this macro.
@@ -48,15 +48,15 @@ The downstream Agentic AI Lab now selects its real sandbox configuration as:
 
 #+begin_src scheme
 (yuanxu!
-  :load-modules "./core/modules" mode: explicit rename: Core
+  :load-modules "./core/modules" mode: explicit mount: Core
   (json-schema)
   (funflow)
   :load-modules "./modules" mode: auto
-  :load-modules "./scenarios" mode: explicit rename: scenarios
+  :load-modules "./scenarios" mode: explicit mount: scenarios
   (null)
   (aws-validation)
   (aws)
-  :load-modules "./profiles" mode: explicit rename: Profiles
+  :load-modules "./profiles" mode: explicit mount: Profiles
   (sandbox))
 #+end_src
 

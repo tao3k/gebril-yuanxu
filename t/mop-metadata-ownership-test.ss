@@ -21,7 +21,7 @@
     (.def Root port: 5432 unused: (error "unselected branch forced"))
     (def roots (record (cut .get Root port)))
     (def reads (object-%reads Root))
-    (def instance (object-%instance Root))
+    (def instance (runtime.slot-ref Root '%instance))
     (def writes 0)
     (for-each
       (lambda (entry)

@@ -2,7 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error?)
-        (only-in :clan/poo/mop TypeError?)
+        (only-in :clan/poo/type TypeError?)
         (only-in :clan/poo/table table-styles)
         (only-in :clan/poo/rationaldict RationalDict)
         :tao3k/yuanxu/modules/funflow/control-plane/api

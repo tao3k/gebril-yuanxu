@@ -61,8 +61,8 @@
                  (string-suffix? ".scm" name) (string=? name "gerbil.pkg"))))))
   (def declaration
     (if (eq? owner 'json-schema)
-      '(yuanxu! mode: explicit source: "./modules" (json-schema))
-      '(yuanxu! mode: explicit source: "./modules" (funflow))))
+      '(yuanxu! :test-dir "./t" mode: explicit source: "./modules" (json-schema))
+      '(yuanxu! :test-dir "./t" mode: explicit source: "./modules" (funflow))))
   (write-forms (path-expand "init.ss" root)
     (list '(import "./module-system/selection/init-syntax.ss") declaration))
   ;; Probe the existing execution library, not a replacement executor. In the
@@ -128,7 +128,7 @@
       (write-forms (path-expand "gerbil.pkg" root)
         '((package: compiled-namespace-client prelude: :tao3k/yuanxu/prelude)))
       (write-forms (path-expand "init.ss" root)
-        '((yuanxu! source: "./modules" mode: explicit (json-schema))))
+        '((yuanxu! :test-dir "./t" source: "./modules" mode: explicit (json-schema))))
       (call-with-output-file (list path: (path-expand "build.ss" root) permissions: #o755)
         (lambda (port)
           (display "#!/usr/bin/env gxi\n" port)

@@ -5,9 +5,10 @@
         (only-in :gerbil/runtime/error RuntimeException? RuntimeException-exception)
         (only-in :clan/poo/object .o .get .slot? .all-slots .ref/cached)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
-        (only-in :gerbil/expander current-expander-context make-top-context
+        (only-in :gerbil/expander current-expander-context current-expander-module-import make-top-context
                  eval-syntax core-import-module expander-context-id)
         (only-in :tao3k/yuanxu/module-system/building/interface yuanxu-init-build)
+        (only-in :tao3k/yuanxu/module-system/building/source-package package-module-source-path)
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
@@ -22,14 +23,25 @@
                   (check-equal? (file-exists? root) #f))))
 (def module-init-import-test
   (test-suite "Init import owns no eager Reader or build execution closure"
+    (test-case "package source checks do not reenter an active Reader import hook"
+      (def expected (package-module-source-path ':clan/poo/object))
+      (def imports 0)
+      (parameterize ((current-expander-module-import
+                       (lambda args
+                         (set! imports (+ imports 1))
+                         (error "package currentness reentered compiler import"))))
+        (check-equal? (package-module-source-path ':clan/poo/object) expected))
+      (check-equal? imports 0))
     (test-case "standard program demand does not require a statically registered Gambit unit"
       (def expected (.o ready: #t))
       (def calls 0)
       (defvalues (exports namespace)
         (yuanxu-init-build "/nonexistent-yuanxu-build-program/init.ss"
-          '(yuanxu! source: "./missing" mode: explicit (missing))
+          '(yuanxu! :test-dir "./t" source: "./missing" mode: explicit (missing))
           (lambda () (set! calls (+ calls 1)) expected)
           'not-a-registered-static-yuanxu-unit))
+      (check-equal? (.slot? exports '.yuanxu-init) #f)
+      (check-equal? (.slot? exports 'std-make-spec) #t)
       (check-equal? calls 0)
       (check-equal? (eq? (namespace) expected) #t)
       (check-equal? (eq? (namespace) expected) #t)
@@ -49,7 +61,7 @@
       (call-with-output-file init
         (lambda (out)
           (pretty-print '(import :tao3k/yuanxu/module-system/selection/init-syntax) out)
-          (pretty-print '(yuanxu! source: "./modules" mode: explicit (missing)) out)))
+          (pretty-print '(yuanxu! :test-dir "./t" source: "./modules" mode: explicit (missing)) out)))
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
         (eval-syntax '(import (only-in :clan/poo/object .get)))
@@ -89,7 +101,7 @@
       (call-with-output-file init
         (lambda (out)
           (pretty-print '(import :tao3k/yuanxu/module-system/selection/init-syntax) out)
-          (pretty-print '(yuanxu! source: "./modules" mode: auto) out)))
+          (pretty-print '(yuanxu! :test-dir "./t" source: "./modules" mode: auto) out)))
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
         (eval-syntax '(import (only-in :clan/poo/object .get)))
@@ -128,7 +140,7 @@
           (lambda (out)
             (pretty-print '(import :tao3k/yuanxu/module-system/selection/init-syntax) out)
             (pretty-print '(yuanxu! :load-modules "./absent" mode: explicit
-                                   rename: Modules (missing)) out)))
+                                   mount: Modules (missing)) out)))
         path)
       (def left-path (prepare! left ':tao3k/yuanxu/prelude))
       (def right-path (prepare! right ':gerbil/core))

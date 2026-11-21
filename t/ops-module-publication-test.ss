@@ -2,7 +2,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :std/source this-source-file)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :tao3k/yuanxu/ops/interface Ops)
@@ -45,7 +45,7 @@
           (def init (path-expand "init.ss" directory))
           (call-with-output-file init
             (lambda (out)
-              (write `(yuanxu! mode: explicit source: ,(path-expand "modules" core-root)
+              (write `(yuanxu! :test-dir "./t" mode: explicit source: ,(path-expand "modules" core-root)
                         (funflow)) out)))
           (def view (yuanxu-load-modules init))
           (check-equal? (.get view selected-graph module-order) '(funflow))

@@ -3,8 +3,6 @@ import YuanxuProof.Admission.CoreBuildHandoff
 import YuanxuProof.Admission.CoreApprovedRecovery
 namespace YuanxuProof.Admission.TestPublicationReuse
 
-def quintSourceDigest : String := "sha256:04533fc29b327fa12d459c745bbda5a6349436fd72c2f77d27aa1c29b62a5b0e"
-
 -- selected! owns a complete selection guard. Repeating that pure predicate
 -- supplies no additional condition. This is NOT a law for arbitrary effectful
 -- checker calls; source/package callbacks inside the retained guard still run.

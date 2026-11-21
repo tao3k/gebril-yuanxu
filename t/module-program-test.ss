@@ -66,7 +66,7 @@
       (def entry-pids (path-expand "entry-pids" root))
       (put root "rootlib.ss" "(def base 41) (export base)")
       (put root "init.ss"
-        (string-append "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! source: \"./modules\" mode: explicit "
+        (string-append "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit "
           (string-join (map (lambda (name) (string-append "(" name ")")) modules) " ")
           " (poison disable: #t))"))
       (put root "modules/poison/interface.ss" "((unselected-source-must-not-be-expanded")
@@ -74,7 +74,7 @@
         (lambda (name)
           (def directory (string-append "modules/" name "/"))
           (put root (string-append directory "types.ss")
-            "(import :clan/poo/object (only-in :clan/poo/mop Type.)) (def Scope (.cc Type. identity: 'oracle/scope .element?: object?)) (export Scope)")
+            "(import :clan/poo/object (only-in :clan/poo/type Type.)) (def Scope (.cc Type. identity: 'oracle/scope .element?: object?)) (export Scope)")
           (put root (string-append directory "objects.ss")
             "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
           (put root (string-append directory "config.ss")
@@ -85,10 +85,10 @@
           (put root (string-append directory "command.ss")
             (string-append "(import \"./library.ss\") (export main) (def (main . args) (displayln \"STD-BUILD-ORACLE " name " \" answer))"))
           (put root (string-append directory "build.ss")
-            (string-append "(def Build '((exe: \"command\" bin: \"" name "-tool\")))"))
+            (string-append "(.def Build defbuild-script: (.o spec: '((exe: \"command\" bin: \"" name "-tool\"))))"))
           (put root (string-append directory "interface.ss")
-            (string-append "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Publication identity: '" name
-              " core: (.o requires: (.o) scope-contract: Scope exports: Defaults projections: (list Build)) features: (.o))"))) modules)
+            (string-append "(import (only-in :clan/poo/object .def .o) \"./types.ss\" \"./objects.ss\") (export Publication) (.def Publication identity: '" name
+              " core: (.o scope-contract: Scope exports: Defaults) features: (.o))"))) modules)
       (def expected
         (append '("rootlib")
           (foldr append '()
@@ -104,7 +104,7 @@
                                   (only-in "./init.ss" ,(string->symbol (string-append package-name ".init.exports")))) out))
           (def spec-expression
             (if generated?
-              `(append (.get ,(string->symbol (string-append package-name ".init.exports")) std-make-spec) '("rootlib"))
+              `(.get ,(string->symbol (string-append package-name ".init.exports")) std-make-spec)
               `(quote ,expected)))
           (pretty-print
             `(defbuild-script
@@ -260,9 +260,9 @@
           (put root "gerbil.pkg" "(package: module-build-program)\n")
           (create-directory (path-expand "empty" root))
           (put root "init.ss"
-            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :load-modules \"./modules\" rename: modules mode: explicit (example) :load-modules \"./empty\" rename: Empty mode: explicit)\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :load-modules \"./modules\" mount: modules mode: explicit (example) :load-modules \"./empty\" mount: Empty mode: auto)\n")
           (put root "modules/example/types.ss"
-            "(import :clan/poo/object (only-in :clan/poo/mop Type.)) (def Scope (.cc Type. identity: 'program/scope .element?: object?)) (export Scope)")
+            "(import :clan/poo/object (only-in :clan/poo/type Type.)) (def Scope (.cc Type. identity: 'program/scope .element?: object?)) (export Scope)")
           (put root "modules/example/objects.ss"
             "(import :clan/poo/object) (def Defaults (.o)) (export Defaults)")
           (put root "modules/example/config.ss"
@@ -270,13 +270,13 @@
               "(call-with-output-file (list path: " (object->string scope-marker)
               " append: #t) (lambda (out) (display \"x\" out))) 42))) (export Config)"))
           (put root "modules/example/build.ss"
-            (string-append "(def Build (begin (call-with-output-file (list path: "
+            (string-append "(.def Build defbuild-script: (.o spec: (begin (call-with-output-file (list path: "
               (object->string build-marker)
-              " append: #t) (lambda (out) (display \"x\" out))) '((exe: \"command\" bin: \"module-program\"))))"))
+              " append: #t) (lambda (out) (display \"x\" out))) '((exe: \"command\" bin: \"module-program\")))))"))
           (put root "modules/example/interface.ss"
-            "(import (only-in :clan/poo/object .o) (only-in :tao3k/yuanxu/module-system/source/declaration .def)) (.def Example identity: 'example core: (.o requires: (.o) scope-contract: Scope exports: Config projections: (list Build)) features: (.o))")
+            "(import (only-in :clan/poo/object .def .o) \"./types.ss\" \"./config.ss\") (export Example) (.def Example identity: 'example core: (.o scope-contract: Scope exports: Config) features: (.o))")
           (put root "modules/example/command.ss"
-            "(import :clan/poo/object (only-in \"../../init.ss\" module-build-program.init.exports)) (export main) (def (main . args) (unless (null? (.all-slots (.get module-build-program.init.exports Empty))) (error \"compiled empty namespace changed\")) (displayln \"MODULE-PROGRAM-OK \" (list (.get module-build-program.init.exports modules example value) (.get module-build-program.init.exports modules example value))))")
+            "(import :clan/poo/object (only-in \"../../init.ss\" module-build-program.init.exports)) (export main) (def (main . args) (unless (and (.slot? (.get module-build-program.init.exports Empty) '__std-make-spec) (not (.slot? (.get module-build-program.init.exports Empty) 'example))) (error \"compiled empty namespace changed\")) (displayln \"MODULE-PROGRAM-OK \" (list (.get module-build-program.init.exports modules example value) (.get module-build-program.init.exports modules example value))))")
           (call-with-output-file
             (list path: (path-expand "build.ss" root) permissions: #o755)
             (cut display
@@ -305,7 +305,7 @@
         (lambda (root)
           (put root "gerbil.pkg" "(package: build-library-fixture)\n")
           (put root "init.ss"
-            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (example))\n")
           (def source "(export answer) (def answer 42)\n")
           (put root "probe.ss" source)
           (put root "unrelated.ss" "(export spare) (def spare #t)\n")
@@ -329,7 +329,7 @@
         (lambda (root)
           (put root "gerbil.pkg" "(package: cached-build-consumer)\n")
           (put root "init.ss"
-            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (example))\n")
           (def manifest "(package: cached-build-foreign)\n")
           (put root "foreign/gerbil.pkg" manifest)
           (put root "foreign/sub/helper.ss" "(export answer) (def answer 42)\n")
@@ -372,7 +372,7 @@
           ;; never a package boundary below the repository's test directory.
           (put root "gerbil.pkg" "(package: program-fixture)\n")
           (put root "init.ss"
-            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! mode: explicit source: \"./modules\" (example))\n")
+            "(import :tao3k/yuanxu/module-system/selection/init-syntax) (yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (example))\n")
           (def source
             (string-append
               "(import (only-in :clan/poo/object .o .get))\n"

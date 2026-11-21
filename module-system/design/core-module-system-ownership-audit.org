@@ -16,7 +16,7 @@ compatibility import aliases: consumers import the single owner directly.
 
 This audit records parent commit =deca0fb= and Core gitlink =3c42394=.
 At that commit, =src/module-system/= had 49 Scheme files (9,925 lines). Core already
-owns =module-system/schema/=, =object-family/=, =graph/=, =contribution/=,
+owns =module-system/schema/=, =family/=, =graph/=, =contribution/=,
 =composition/lineage.ss=, generic =observability/=, and =poo-clos/=.
 No current Core Scheme source imports =:agentic-ai-lab/=.  Twelve checked-out
 Lambda-episteme Scheme files directly import the current module-system path;

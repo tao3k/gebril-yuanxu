@@ -3,8 +3,6 @@ import YuanxuProof.Admission.ArtifactClosure
 
 namespace YuanxuProof.Admission.IssuedLoading
 
-def quintSourceDigest : String := "sha256:d1036aea0277e5511a6b5f444f8f079abf01a73c86bd92df05c0f1b285014bd6"
-
 -- The first component of each pair comes from retained compiler-pipe
 -- observations. This does not authenticate an arbitrary compiler executable.
 def allows (sourceExpected sourceChecked unitsExpected unitsChecked

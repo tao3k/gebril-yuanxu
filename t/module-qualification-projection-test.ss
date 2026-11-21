@@ -1,10 +1,13 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Init-owned qualification discovery uses the existing selected test source.
 (import :std/test :clan/poo/object
+        (only-in :std/error Error? Error-message)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
-        (only-in :tao3k/yuanxu/module-system/building/test-projection module-test-projection)
-        (only-in :clan/poo/mop Type.)
+        (only-in :tao3k/yuanxu/module-system/source/directory module-directory-context)
+        (only-in :tao3k/yuanxu/module-system/building/test-projection
+                 module-test-projection admit-module-test-layout!)
+        (only-in :clan/poo/type Type.)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture))
 (export module-qualification-projection-test)
 
@@ -29,11 +32,49 @@
   (unless (memq owner '(json-schema funflow team/json-schema))
     (error "unselected publication must stay cold"))
   (.o identity: owner features: (.o)
-      core: (.o requires: (.o) scope-contract: ScopeContract
-                link: (lambda (_deps) (error "test discovery must not link scope")))))
+      core: (.o scope-contract: ScopeContract
+                exports: (error "test discovery must not construct scope"))))
 
 (def module-qualification-projection-test
   (test-suite "Init-owned qualification source projection"
+    (yuanxu-test-fixture "complete layout refuses misplaced suites, unknown owners and omissions"
+      (root Workspace)
+      (def init (path-expand "init.ss" root))
+      (write-source init
+        "(yuanxu! :load-modules \"./modules\" mode: explicit mount: Test :test-dir \"./t\" (json-schema))\n")
+      (write-source (path-expand "modules/json-schema/interface.ss" root)
+        "(.def Published identity: 'json-schema)\n")
+      (def suite (path-expand "t/yanxu/Test/json-schema/value-test.ss" root))
+      (write-source suite "(error \"layout checks must not import a test\")\n")
+      (def (admit published)
+        (def context (module-directory-context init
+                       (lambda (_) (error "layout checks must not load a publication"))
+                       publication-prepares-source?: #t))
+        (admit-module-test-layout! context published require-owner-tests?: #t))
+      (def (refusal-as expected)
+        (lambda (failure) (and (Error? failure) (equal? (Error-message failure) expected))))
+      (check-equal? (admit (list suite)) (list suite))
+      (check-exception (admit '()) (refusal-as "Loader test publication does not match the test tree"))
+      (def misplaced (path-expand "t/modules/json-schema/value-test.ss" root))
+      (write-source misplaced "")
+      (check-exception (admit (list suite)) (refusal-as "module test is outside the Loader test tree"))
+      (delete-file misplaced)
+      (write-source (path-expand "t/yanxu/Test/undeclared/value-test.ss" root) "")
+      (check-exception (admit (list suite)) (refusal-as "no Loader owner for test directory")))
+    (yuanxu-test-fixture "an empty Loader still owns its declared test directory"
+      (root Workspace)
+      (def init (path-expand "init.ss" root))
+      (write-source init
+        "(yuanxu! :load-modules \"./modules\" mode: auto :test-dir \"./t\")\n")
+      (create-directory (path-expand "modules" root))
+      (write-source (path-expand "t/unassigned-test.ss" root) "")
+      (def context (module-directory-context init
+                     (lambda (_) (error "empty Loader must not read a publication"))
+                     publication-prepares-source?: #t))
+      (check-exception (admit-module-test-layout! context '())
+        (lambda (failure)
+          (and (Error? failure)
+               (equal? (Error-message failure) "module test is outside the Loader test tree")))))
     (yuanxu-test-fixture "multi-owner guards isolate changes and preserve requested order"
       (root Workspace)
       (for-each
@@ -45,19 +86,21 @@
             (write-source (path-expand "interface.ss" directory)
               (string-append "(.def Published identity: '" (symbol->string owner) ")\n"))))
         '(json-schema funflow))
-      (def init (path-expand "init.ss" root))
+      (def init (path-expand "yuanxu-init.ss" root))
       (write-source init
-        "(yuanxu! :load-modules \"./modules\" mode: explicit rename: Libraries (json-schema) (funflow) (poison disable: #t))\n")
-      ;; The group follows rename:, not a hard-coded Modules folder.
-      (def json (path-expand "t/Libraries/json-schema/value-test.ss" root))
-      (def flow (path-expand "t/Libraries/funflow/job-test.ss" root))
-      (def helper (path-expand "t/Libraries/json-schema/fixtures.ss" root))
+        "(yuanxu! :load-modules \"./modules\" mode: explicit mount: Libraries :test-dir \"./checks/t\" (json-schema) (funflow) (poison disable: #t))\n")
+      (def json (path-expand "checks/t/yanxu/Libraries/json-schema/value-test.ss" root))
+      (def flow (path-expand "checks/t/yanxu/Libraries/funflow/job-test.ss" root))
+      (def helper (path-expand "checks/t/yanxu/Libraries/json-schema/fixtures.ss" root))
+      (def outside (path-expand "checks/t/yanxu/Other/json-schema/wrong-test.ss" root))
+      (def flat (path-expand "checks/t/Libraries/json-schema/legacy-test.ss" root))
       (for-each (lambda (file) (write-source file "(error \"discovery stays inert\")\n"))
-        (list json flow helper))
+        (list json flow helper outside flat))
       (def view (yuanxu-load-modules init read-publication: read-publication))
       (def json-tests (module-test-projection view '(json-schema) 'qualification))
       (def flow-tests (module-test-projection view '(funflow) 'qualification))
       (def both (module-test-projection view '(json-schema funflow) 'qualification))
+      (check-equal? (.get both spec) (list json flow))
       (check-equal? (.get both spec) (append (.get json-tests spec) (.get flow-tests spec)))
       (check-equal? (eq? (.get json-tests selected-graph) (.get both selected-graph)) #t)
       (check-equal? (eq? (.get flow-tests selected-graph) (.get both selected-graph)) #t)
@@ -73,21 +116,26 @@
       (write-source flow "(error \"changed Funflow test\")\n")
       (check-exception ((.get flow-tests admit-current)) error?)
       (check-exception ((.get fresh admit-current)) error?)
-      ;; A changed mount invalidates the old epoch. Auto discovery uses the
-      ;; new mount without a second test registry or legacy flat fallback.
+      ;; Removing rename invalidates the old epoch. Auto discovery then uses
+      ;; the loader directory name.
       (write-source init
-        "(yuanxu! :load-modules \"./modules\" mode: auto rename: Tools)\n")
+        "(yuanxu! :load-modules \"./modules\" mode: auto :test-dir \"./t\")\n")
       (check-exception ((.get fresh admit-current)) error?)
-      (def auto-file (path-expand "t/Tools/json-schema/auto-test.ss" root))
+      (def auto-file (path-expand "t/yanxu/modules/json-schema/auto-test.ss" root))
       (write-source auto-file "(error \"discovery stays inert\")\n")
+      (write-source (path-expand "modules/facade/interface.ss" root)
+        "(import \"ordinary.ss\") (export (import: \"ordinary.ss\"))\n")
       (def auto-view (yuanxu-load-modules init read-publication: read-publication))
       (check-equal?
-        (.get (module-test-projection auto-view '(json-schema) 'qualification) spec)
-        (list auto-file)))
+        (.get (module-test-projection auto-view #f 'qualification) spec)
+        (list auto-file))
+      (check-equal? (.get auto-view selected-graph module-order)
+        '(qualification-projection/modules/funflow/interface
+          qualification-projection/modules/json-schema/interface)))
     (yuanxu-test-fixture "bounded discovery, helper guards, rename and selection rejection"
       (root Workspace)
-      ;; This single-root init has no rename mount, hence no group segment.
-      (def module-root (path-expand "modules/json-schema" root))
+      ;; A single-root loader uses its directory name when rename is absent.
+      (def module-root (path-expand "libraries/json-schema" root))
       (for-each
         (lambda (name) (write-source (path-expand name module-root) "(def Config #t)\n"))
         '("types.ss" "objects.ss" "config.ss"))
@@ -97,14 +145,14 @@
         "(error \"discovery must not evaluate atomic test\")\n")
       (def init (path-expand "init.ss" root))
       (write-source init
-        "(yuanxu! mode: explicit source: \"./modules\" (json-schema) (poison disable: #t))\n")
-      (def owner (path-expand "t/json-schema" root))
+        "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./libraries\" (json-schema) (poison disable: #t))\n")
+      (def owner (path-expand "t/yanxu/libraries/json-schema" root))
       (def file (path-expand "first-test.ss" owner))
       (def helper (path-expand "fixtures.ss" owner))
       (write-source file "(error \"discovery must not execute qualification\")\n")
       (write-source helper "(error \"helper must not be imported\")\n")
       ;; A non-directory unselected owner would fail if discovery traversed it.
-      (write-source (path-expand "t/poison" root) "poison")
+      (write-source (path-expand "t/yanxu/libraries/poison" root) "poison")
       (def view (yuanxu-load-modules init read-publication: read-publication))
       (def atomic (module-test-projection view))
       (def selected (module-test-projection view '(json-schema) 'qualification))
@@ -112,7 +160,7 @@
       (check-equal? (.ref/cached selected 'selected-graph) #f)
       (check-equal? (.ref/cached view 'selected-graph) #f)
       (check-exception (module-test-projection view '(poison) 'qualification) error?)
-      (write-source (path-expand "t/poison" root) "changed unselected")
+      (write-source (path-expand "t/yanxu/libraries/poison" root) "changed unselected")
       ((.get selected admit-current))
       (write-source helper "(error \"changed helper\")\n")
       ((.get atomic admit-current))
@@ -138,11 +186,11 @@
       (write-source (path-expand "interface.ss" module-root)
         "(.def Published identity: 'json-schema)\n")
       (def init (path-expand "init.ss" root))
-      (write-source init "(yuanxu! mode: explicit source: \"./modules\" (json-schema))\n")
+      (write-source init "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (json-schema))\n")
       (def view (yuanxu-load-modules init read-publication: read-publication))
       (def selected (module-test-projection view #f 'qualification))
       (check-equal? (.get selected spec) '())
-      (write-source (path-expand "t/json-schema/new-test.ss" root)
+      (write-source (path-expand "t/yanxu/modules/json-schema/new-test.ss" root)
         "(error \"new qualification\")\n")
       (check-exception ((.get selected admit-current)) error?))
 
@@ -156,15 +204,15 @@
         "(.def Published identity: 'team/json-schema)\n")
       (def init (path-expand "init.ss" root))
       (write-source init
-        "(yuanxu! mode: explicit source: \"./modules\" :team (json-schema @ \"./modules/json-schema\"))\n")
-      (def namespace (path-expand "t/team" root))
+        "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" :team (json-schema @ \"./modules/json-schema\"))\n")
+      (def namespace (path-expand "t/yanxu/modules/team" root))
       (def file (path-expand "json-schema/nested-test.ss" namespace))
       (write-source file "(error \"selected namespace body remains cold\")\n")
       (def view (yuanxu-load-modules init read-publication: read-publication))
       (def selected (module-test-projection view '(team/json-schema) 'qualification))
       (check-equal? (.get selected spec) (list file))
-      (rename-file namespace (path-expand "t/moved" root))
-      (create-symbolic-link (path-expand "t/moved" root) namespace)
+      (rename-file namespace (path-expand "t/yanxu/modules/moved" root))
+      (create-symbolic-link (path-expand "t/yanxu/modules/moved" root) namespace)
       (check-exception ((.get selected admit-current)) error?)
       (check-exception (module-test-projection view '(team/json-schema) 'qualification) error?))
 
@@ -177,7 +225,7 @@
       (write-source (path-expand "interface.ss" module-root)
         "(.def Published identity: 'json-schema)\n")
       (def init (path-expand "init.ss" root))
-      (write-source init "(yuanxu! mode: explicit source: \"./modules\" (json-schema))\n")
+      (write-source init "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" (json-schema))\n")
       (create-directory (path-expand "outside" root))
       (create-symbolic-link (path-expand "outside" root) (path-expand "t" root))
       (def view (yuanxu-load-modules init read-publication: read-publication))

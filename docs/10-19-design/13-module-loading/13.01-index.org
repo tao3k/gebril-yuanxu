@@ -3,6 +3,7 @@
 #+language: en
 
 - [[file:13.36-std-make-spec-projection-and-performance.org][Native Make spec projection and performance gates]]
+- [[file:13.38-module-leaves-and-build-slots.org][Module leaves and build slots]]
   separates target discovery from compiler preparation and defines lifecycle
   parity, bounded work and end-to-end acceptance.
 
@@ -22,7 +23,7 @@
   configuration to Interface and lazy application access to init.exports/.get,
   removing direct-import and private-role-inventory alternatives.
 
-- [[file:13.31-native-prelude-staging-and-source-view.org][Native Prelude staging and source view]] refines canonical syntax ownership,
+- [[file:13.31-gerbil-prelude-staging-and-source-view.org][Native Prelude staging and source view]] refines canonical syntax ownership,
   emitted compiler edges, physical output collisions and incremental descriptor
   ordering, separating native probes from downstream acceptance.
 

@@ -13,7 +13,7 @@
                  source-location-path? source-location-path)
         (only-in :clan/poo/object .def .o .get .ref .put! .slot? .call object?
                  replay-slot-reads! object-read-issued?)
-        (only-in :clan/poo/mop Type.)
+        (only-in :clan/poo/type Type.)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
                  slot-read-key slot-read-dependencies)
         (only-in :gerbil/expander eval-syntax datum->syntax current-expander-context make-top-context
@@ -24,10 +24,10 @@
         (only-in :tao3k/yuanxu/module-system/building/source-closure
                  for-each-build-module yuanxu-bootstrap-contexts)
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
-        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
+        (only-in :tao3k/yuanxu/module-system/source/build-binding current-module-build-phase?)
         (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :tao3k/yuanxu/module-system/building/artifacts current-build-output-directory)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-checkpoint yuanxu-test-observe)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         :tao3k/yuanxu/module-system/source/objects
@@ -62,7 +62,7 @@
     (yuanxu-test-case "publication normalization cannot carry a source mutation into the Graph"
       (with-publication-source
         (lambda (root module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def original (.get ModulePublicationContract .validate))
           (def calls 0)
@@ -93,8 +93,8 @@
               (def marker (path-expand "must-not-execute" root))
               (write-file (path-expand "init.ss" root)
                 (if (eq? boundary 'declaration)
-                  "(yuanxu! mode: explicit :custom (example) (other))"
-                  "(yuanxu! mode: explicit :custom (example +ci))"))
+                  "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example) (other))"
+                  "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example +ci))"))
               (if (eq? boundary 'declaration)
                 (let (other (path-expand "modules/custom/other" root))
                   (for-each
@@ -106,10 +106,10 @@
                     (string-append "(call-with-output-file " (object->string marker)
                       " (lambda (port) (display \"unexpected\" port))) (def Greeting \"other\") (export Greeting)"))
                   (write-file (path-expand "interface.ss" other)
-                    "(.def Fixture identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope) features: (.o))"))
+                    "(.def Fixture identity: 'custom/other core: (.o scope-contract: FixtureContract exports: FixtureScope) features: (.o))"))
                 (write-file (path-expand "interface.ss" module-root)
                   (string-append
-                    "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: FixtureScope) features: (.o ci: (begin (call-with-output-file "
+                    "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: FixtureScope) features: (.o ci: (begin (call-with-output-file "
                     (object->string marker)
                     " (lambda (port) (display \"unexpected\" port))) (error \"Feature executed before source refusal\"))))")))
               (def view (yuanxu-load-modules (path-expand "init.ss" root)))
@@ -150,7 +150,7 @@
                        (call-with-output-file (list path: ,config truncate: #t)
                          (lambda (out) (display ,replacement out)))
                        'custom/example)
-                     core: (.o requires: (.o) scope-contract: FixtureContract
+                     core: (.o scope-contract: FixtureContract
                                exports: FixtureScope)
                      features: (.o)) port))))
           ;; Use a fresh reader after writing the declaration. The mutation
@@ -187,7 +187,7 @@
     (yuanxu-test-case "paired location admits authoring once before declaration evaluation"
       (with-publication-source
         (lambda (root _module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
           (def original (.get yuanxu-default-module-style-policy validate))
           (def calls 0)
           (dynamic-wind
@@ -210,14 +210,14 @@
       (check-equal? (current?) #f)
       (with-publication-source
         (lambda (root _module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def row (car (.get view context intent decisions)))
           (.put! (.get row selection) 'selection-flags '(+unexpected))
           (check-exception (.get view selected-graph) error?)))
       (with-publication-source
         (lambda (root _module-root _source _view)
-          (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+          (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def source (.call (.get view context) locate 'custom/example))
           (def original (.get source value))
@@ -229,7 +229,7 @@
       (with-publication-source
         (lambda (root module-root _source _view)
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! mode: explicit :custom (example) (other))")
+            "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example) (other))")
           (def other (path-expand "modules/custom/other" root))
           (for-each
             (lambda (role)
@@ -240,7 +240,7 @@
             (string-append "(call-with-output-file " (object->string marker)
               " (lambda (port) (display \"unexpected\" port))) (def Greeting \"other\") (export Greeting)"))
           (write-file (path-expand "interface.ss" other)
-            "(.def Fixture identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
+            "(.def Fixture identity: 'custom/other core: (.o scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
           (def view (yuanxu-load-modules (path-expand "init.ss" root)))
           (def context (.get view context))
           (def locate (.get context locate))
@@ -276,36 +276,57 @@
           (check-equal? calls 1)
           (check-equal? (file-exists? marker) #f))))
     (yuanxu-test-case "interfaces share the POO prelude without per-module alias copies"
+      (for-each
+        (lambda (explicit?)
+          (with-publication-source
+            (lambda (_root module-root source _view)
+              (when explicit?
+                (let (path (path-expand "interface.ss" module-root))
+                  (write-file path
+                    (string-append "(import (only-in :clan/poo/object .def))\n"
+                                   (module-source-read path)))))
+              (def reader (module-publication-reader))
+              (def prelude
+                (core-module->prelude-context
+                  (core-import-module ':tao3k/yuanxu/module-system/source/config-prelude)))
+              (def gerbil-eval (current-expander-eval))
+              (def interfaces (make-hash-table-eq))
+              (parameterize
+                  ((current-expander-eval
+                     (lambda (program)
+                       (def context (current-expander-context))
+                       (call-with-values (cut gerbil-eval program)
+                         (lambda results
+                           (when (and (module-context? context)
+                                      (string? (module-context-path context))
+                                      (string-suffix? "-interface.ss" (module-context-path context)))
+                             (hash-put! interfaces context #t))
+                           (apply values results))))))
+                (.call reader read source)
+                (.call reader read source))
+              (check-equal? (hash-length interfaces) 2)
+              (hash-for-each
+                (lambda (context _seen)
+                  (check-equal? (eq? (core-context-prelude context) prelude) #t)
+                  ;; An authored .def is local; weak prelude bindings stay shared.
+                  (check-equal? (hash-key? (expander-context-table context) '.o) #f)
+                  (check-equal? (hash-key? (expander-context-table context) '.def) explicit?))
+                interfaces))))
+        '(#f #t)))
+
+    (yuanxu-test-case "authored imports retain native binding identity in the stock frame"
       (with-publication-source
-        (lambda (_root _module-root source _view)
-          (def reader (module-publication-reader))
-          (def prelude
-            (core-module->prelude-context
-              (core-import-module ':tao3k/yuanxu/module-system/source/config-prelude)))
-          (def gerbil-eval (current-expander-eval))
-          (def interfaces (make-hash-table-eq))
-          (parameterize
-              ((current-expander-eval
-                 (lambda (program)
-                   (def context (current-expander-context))
-                   (call-with-values (cut gerbil-eval program)
-                     (lambda results
-                       (when (and (module-context? context)
-                                  (string? (module-context-path context))
-                                  (string-suffix? "-interface.ss" (module-context-path context)))
-                         (hash-put! interfaces context #t))
-                       (apply values results))))))
-            (.call reader read source)
-            (.call reader read source))
-          (check-equal? (hash-length interfaces) 2)
-          (hash-for-each
-            (lambda (context _seen)
-              (check-equal? (eq? (core-context-prelude context) prelude) #t)
-              ;; .o remains available through the shared runtime weak prelude;
-              ;; its import alias is not copied into either local table.
-              (check-equal? (hash-key? (expander-context-table context) '.o) #f)
-              (check-equal? (hash-key? (expander-context-table context) '.def) #t))
-            interfaces))))
+        (lambda (_root module-root source _view)
+          (write-file (path-expand "interface.ss" module-root)
+            "(import (only-in :clan/poo/object object?))
+             (.def Fixture identity: 'custom/example
+               core: (.o scope-contract: FixtureContract exports: (.o value: 42))
+               features: (.o))")
+          (defvalues (publication counts)
+            (call-with-module-source-operation-measurement
+              (lambda () (.call (module-publication-reader) read source)) accounting?: #f))
+          (check-equal? (hash-ref counts '(calls reader-direct-frame) 0) 1)
+          (check-equal? (.get publication core exports value) 42))))
 
     (register-reader-root-collection-cases!)
     (yuanxu-test-fixture "public source preparation is unique but admission remains fresh"
@@ -325,7 +346,7 @@
             (string-append
               (call-with-output-string
                 (cut write `(import (only-in ,(.get library path) ExternalValue)) <>))
-              "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o value: ExternalValue)) features: (.o))"))
+              "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: (.o value: ExternalValue)) features: (.o))"))
           (def requests 0)
           (def preparations 0)
           (def reader (module-publication-reader))
@@ -358,7 +379,7 @@
             (string-append
               (call-with-output-string
                 (cut write `(import (only-in ,(.get library path) ExternalValue)) <>))
-              "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o value: ExternalValue)) features: (.o))"))
+              "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: (.o value: ExternalValue)) features: (.o))"))
           (def reader (module-publication-reader))
           (.call reader read source)
           (set-load-path! (cons (.get library shadow) (load-path)))
@@ -573,7 +594,7 @@
     (yuanxu-test-case "default reader selects and builds source roles without compiled selected modules"
       (with-publication-source
        (lambda (root module-root _source _view)
-         (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+         (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
          (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                 (graph (.get view build-graph)))
            (check-equal? (.get view selected-graph module-order) '(custom/example))
@@ -583,10 +604,10 @@
     (yuanxu-test-case "metadata selection never invokes domain exports or unselected source"
       (with-publication-source
        (lambda (root module-root _source _view)
-         (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example) (bomb disable: #t))")
+         (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example) (bomb disable: #t))")
          (write-file (path-expand "modules/custom/bomb/interface.ss" root) "(((not readable")
          (write-file (path-expand "interface.ss" module-root)
-           "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (error \"domain scope must remain deferred\")) features: (.o cold: (error \"unselected feature forced\")))")
+           "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: (error \"domain scope must remain deferred\")) features: (.o cold: (error \"unselected feature forced\")))")
          (let ((view (yuanxu-load-modules (path-expand "init.ss" root)))
                (output (path-expand "generated" root)))
            (check-equal? (.get view selected-graph module-order) '(custom/example))
@@ -594,7 +615,7 @@
     (yuanxu-test-case "publication reader refuses bootstrap self imports and mismatched source identity"
       (with-publication-source
        (lambda (root module-root _source _view)
-         (write-file (path-expand "init.ss" root) "(yuanxu! mode: explicit :custom (example))")
+         (write-file (path-expand "init.ss" root) "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example))")
          (let* ((path (path-expand "interface.ss" module-root))
                 (original (module-source-read path)))
            (write-file path (string-append "(import \"./interface.ss\") " original))
@@ -603,7 +624,7 @@
                                  (exception-message (lambda () (.get view selected-graph)))
                                  "bootstrap cannot import its own interface") #t #f) #t))
            (write-file path
-             "(.def Fixture identity: 'wrong/owner core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o)) features: (.o))")
+             "(.def Fixture identity: 'wrong/owner core: (.o scope-contract: FixtureContract exports: (.o)) features: (.o))")
            (let (view (yuanxu-load-modules (path-expand "init.ss" root)))
              (check-exception (.get view build-graph) error?))))))
 
@@ -627,7 +648,7 @@
                            (.o retained: 'upstream))) port)
                (newline port) (write '(export FixtureScope) port))))
          (write-file (path-expand "init.ss" root)
-           "(yuanxu! mode: explicit source: \"./modules\" :custom (example))")
+           "(yuanxu! :test-dir \"./t\" mode: explicit source: \"./modules\" :custom (example))")
          (def view (yuanxu-load-modules (path-expand "init.ss" root)))
          (def source (.call (.get view context) locate 'custom/example))
          (let* ((prepared ((.get view prepare-publication) 'custom/example))
@@ -638,16 +659,16 @@
            (yuanxu-write-module-publication prepared wrapper)
            (write-file (path-expand "build.ss" root) "(void)")
            (def projection (yuanxu-project-source-spec view '() root (path-expand "build.ss" root)))
-           (check-equal? (pair? (.get projection spec)) #t)
+           (check-equal? (pair? (.get projection std-make-spec)) #t)
            (def lib (path-expand "lib" root))
            (yuanxu-test-checkpoint 'compiler-projection-prepared)
            (with-compiler-progress
              (lambda ()
                (.call projection .compile lib
                  (lambda ()
-                   (make (.get projection spec) srcdir: root
+                   (make (.get projection std-make-spec) srcdir: root
                      libdir: (or (current-build-output-directory) lib) optimize: #f)))))
-           (yuanxu-test-checkpoint 'native-compilation-complete)
+           (yuanxu-test-checkpoint 'gerbil-compilation-complete)
            (def previous-path (load-path))
            (dynamic-wind
             (lambda () (set-load-path! (cons lib previous-path)))
@@ -663,7 +684,7 @@
                              (admit-module-publication! source 'custom/example publication (.o))) #t)
                (check-equal? (file-exists? config-marker) #f)
                (check-equal? (file-exists? objects-marker) #f)
-               (let (scope ((.get publication core link) (.o)))
+               (let (scope (.get publication core exports))
                  (check-equal? (.get scope greeting) "hello")
                  (check-equal? (.get scope retained) 'upstream)
                  (check-equal? (.get scope greeting) "hello")
@@ -693,7 +714,7 @@
               (write-file file (string-append (module-source-read file) extra)))
             (let (message (exception-message (lambda () (yuanxu-prepare-module-publication source))))
               (check-equal? (if (string-contains message "interface.ss must contain one Module .def") #t #f) #t)))))
-       '(" (export Fixture)"
+       '(" (export Greeting)"
          " (export (import: \"unimported.ss\"))"
          " (begin (error \"must not evaluate\"))")))
     (yuanxu-test-case "unchanged publication identity is parsed once; changed header and closer package refuse"
@@ -731,7 +752,7 @@
          (let ((prepared ((.get view prepare-publication) 'custom/example))
                (output (path-expand "stale-selection/interface.ss" root)))
            (write-file (path-expand "init.ss" root)
-                       "(yuanxu! mode: auto source: \"./modules\" :custom (example disable: #t))")
+                       "(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\" :custom (example disable: #t))")
            (check-exception (yuanxu-write-module-publication prepared output) error?)
            (check-equal? (module-source-type output) #f)))))
     (yuanxu-test-case "package source edits and disabled Modules refuse compiler preparation"
@@ -742,14 +763,14 @@
            (write-file package (string-append (module-source-read package) "\n; changed generation\n"))
            (check-exception ((.get prepared admit-current)) error?))
          (write-file (path-expand "init.ss" root)
-                     "(yuanxu! mode: auto source: \"./modules\" :custom (example disable: #t))")
+                     "(yuanxu! :test-dir \"./t\" mode: auto source: \"./modules\" :custom (example disable: #t))")
          (let (disabled (yuanxu-load-modules (path-expand "modules" root)))
            (check-exception ((.get disabled prepare-publication) 'custom/example) error?)))))
     (yuanxu-test-case "macro errors retain the original included interface location"
       (with-publication-source
        (lambda (root module-root source view)
          (write-file (path-expand "interface.ss" module-root)
-           "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting:)) features: (.o))")
+           "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: (.o greeting:)) features: (.o))")
          ;; The malformed text belongs to a fresh source generation; a held
          ;; SourceRef from before the edit is expected to refuse as stale.
          (let* ((fresh (yuanxu-load-modules (path-expand "modules" root)))

@@ -169,7 +169,7 @@
     (def refusal (with-catch values
       (cut replay-slot-reads! roots (lambda (_owner _key) (writer spec (lambda (_self) 5440))))))
     (check-equal? (Error-message refusal) "object mutation during read replay")
-    (check-equal? (object-%instance Cold) #f)
+    (check-equal? (object-instantiated? Cold) #f)
     (check-equal? (.get Parent port) 5432)
     (check-equal? (.get Hot port) 5432)
     (check-equal? (.get Cold port) 5432)

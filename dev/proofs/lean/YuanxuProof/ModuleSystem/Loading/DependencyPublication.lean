@@ -5,6 +5,24 @@ import YuanxuProof.ModuleSystem.Loading.IncrementalRoles
 namespace YuanxuProof.ModuleSystem.Loading.DependencyPublication
 open Graph.TestAdmission IncrementalRoles
 
+/-- A producer returning from an effect can stage only against the exact
+snapshot it originally acquired. Snapshot equality here is handle identity,
+not equality of the snapshot's value or dependency graph. -/
+def bindExpectedSnapshot [DecidableEq Snapshot] (expected live : Snapshot) : Option Snapshot :=
+  if live = expected then some expected else none
+
+theorem expected_snapshot_binds_exact_handle [DecidableEq Snapshot]
+    (expected live bound : Snapshot) (staged : bindExpectedSnapshot expected live = some bound) :
+    bound = expected ∧ live = expected := by
+  by_cases current : live = expected
+  · simp [bindExpectedSnapshot, current] at staged
+    exact ⟨staged.symm, current⟩
+  · simp [bindExpectedSnapshot, current] at staged
+
+theorem rival_before_stage_refused [DecidableEq Snapshot] (expected live : Snapshot)
+    (advanced : live ≠ expected) : bindExpectedSnapshot expected live = none := by
+  simp [bindExpectedSnapshot, advanced]
+
 /-- A single immutable publication contains both directions of the dependency
 view and its certificate slots. The runtime correspondence must install this
 view atomically. Functions model point lookups in existing POO structures. -/
@@ -16,6 +34,64 @@ structure Bundle where
 def Bundle.Exact (bundle : Bundle) : Prop :=
   ∀ provider consumer, consumer ∈ bundle.consumers provider ↔
     provider ∈ bundle.dependencies consumer
+
+/-- The reverse buckets of a candidate can inherit unchanged registrations
+from the sealed predecessor. A rewritten consumer instead uses the exact
+successor row, including deletion of its old registrations. The premises
+are pointwise laws for the native index edits, not a roster scan. -/
+theorem exact_of_registration_delta (prior next : Bundle) (rewritten : Nat → Prop)
+    (priorExact : prior.Exact)
+    (forwardFrame : ∀ consumer, ¬ rewritten consumer →
+      next.dependencies consumer = prior.dependencies consumer)
+    (reverseFrame : ∀ provider consumer, ¬ rewritten consumer →
+      (consumer ∈ next.consumers provider ↔ consumer ∈ prior.consumers provider))
+    (reverseEdits : ∀ provider consumer, rewritten consumer →
+      (consumer ∈ next.consumers provider ↔ provider ∈ next.dependencies consumer)) :
+    next.Exact := by
+  intro provider consumer
+  by_cases edited : rewritten consumer
+  · exact reverseEdits provider consumer edited
+  · rw [forwardFrame consumer edited, reverseFrame provider consumer edited]
+    exact priorExact provider consumer
+
+/-- A removed forward edge must be removed from the same generation's
+reverse index. Appending the new registration while leaving the old one
+cannot produce an exact candidate, even if every new read was admitted. -/
+theorem retained_deleted_registration_refuses (next : Bundle) (provider consumer : Nat)
+    (retained : consumer ∈ next.consumers provider)
+    (deleted : provider ∉ next.dependencies consumer) : ¬ next.Exact := by
+  intro exactIndex
+  exact deleted ((exactIndex provider consumer).mp retained)
+
+/-- Membership oracle for the native bucket edits. Removing a rewritten
+consumer and restoring it only for an edge in its new row specifies the
+result independently of the bucket's persistent representation or order. -/
+def registrationMembership (prior : Bundle) (rewritten : List Nat)
+    (nextRow : Nat → List Nat) (provider consumer : Nat) : Bool :=
+  if rewritten.contains consumer then (nextRow consumer).contains provider
+  else (prior.consumers provider).contains consumer
+
+theorem registration_membership_matches_cold (prior : Bundle) (rewritten : List Nat)
+    (nextRow : Nat → List Nat) (priorExact : prior.Exact)
+    (frame : ∀ consumer, consumer ∉ rewritten → nextRow consumer = prior.dependencies consumer)
+    (provider consumer : Nat) :
+    registrationMembership prior rewritten nextRow provider consumer = true ↔
+      provider ∈ nextRow consumer := by
+  by_cases edited : consumer ∈ rewritten
+  · simp [registrationMembership, edited]
+  · simp [registrationMembership, edited, frame consumer edited, priorExact provider consumer]
+
+-- Owner 9999 drops provider 7 and gains provider 8.
+-- The membership oracle preserves the unrelated registration on 7.
+private def registrationFixture : Bundle :=
+  ⟨fun _ => none, fun owner => if owner = 9998 ∨ owner = 9999 then [7] else [],
+    fun provider => if provider = 7 then [9998, 9999] else []⟩
+private def registrationFixtureNext (owner : Nat) : List Nat :=
+  if owner = 9999 then [8] else registrationFixture.dependencies owner
+
+#guard !registrationMembership registrationFixture [9999] registrationFixtureNext 7 9999
+#guard registrationMembership registrationFixture [9999] registrationFixtureNext 8 9999
+#guard registrationMembership registrationFixture [9999] registrationFixtureNext 7 9998
 
 inductive Phase where
   | ready

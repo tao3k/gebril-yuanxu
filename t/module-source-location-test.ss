@@ -4,7 +4,7 @@
 ;;; Gerbil limitation controls: a source path is not an independent target identity.
 (import :std/test
         (only-in :std/make make make-clean)
-        (only-in :tao3k/yuanxu/module-system/building/artifacts clean-build-artifacts!)
+        (only-in "../dev/gerbil/clean-outputs.ss" clean-selected-outputs!)
         (only-in :std/text/pregexp pregexp-match)
         (only-in :std/io/tempfile call-with-temporary-directory))
 (export module-source-location-test)
@@ -114,9 +114,8 @@
           (def unrelated (path-expand "unrelated/keep.txt" lib))
           (write-source unrelated "keep\n")
           (clean-probe spec view #f lib bin)
-          ;; std/make clean removes its declared outputs; existing Core cleanup owns
-          ;; the remaining selected .oN and named runtime output families.
-          (clean-build-artifacts! (map string->symbol identities) lib)
+          ;; The explicit development clean removes the remaining families.
+          (clean-selected-outputs! (map string->symbol identities) lib)
           (check-equal? (ormap file-exists? products) #f)
           (check-equal? (file-exists? unrelated) #t)
           (displayln "SOURCE-VIEW cold=2 hot=0 upstream=unchanged selected-clean=complete unrelated=preserved"))))

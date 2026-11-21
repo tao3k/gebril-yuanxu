@@ -73,6 +73,53 @@ excludes Gerbil's compilation work and the checked preparation of genuinely
 computed targets. No whole-graph traversal per target and no traversal of
 unselected role bodies are needed on that path.
 
+* Build demand on a named mount
+
+=mount:= names a directory in the init namespace. =mode: explicit= requires
+at least one Module row, including rows that record a disabled choice.
+=mode: auto= discovers Module leaves from the directory. =export:= publishes
+a =ModuleSource= for another init's =from:= reference.
+
+#+begin_src scheme
+(yuanxu!
+  :load-modules "./src" mode: explicit mount: Library
+  (compiler) (runtime)
+  :load-modules "./languages" mode: auto mount: Languages)
+#+end_src
+
+The package's =std-make-spec= follows its default roots and the native import
+closure of its optional =:build-roots=. A dedicated build entry can demand the
+mount's Make projection directly. Reading the mount or selecting a business
+leaf does not evaluate the mount's Make specification.
+
+#+begin_src scheme
+(defbuild-script
+  (.get gerbil-parser.init.exports Languages __std-make-spec))
+#+end_src
+
+A package default can select individual leaves from its existing init
+publication. The action takes mount-qualified leaf names and returns one
+admitted Make spec. Reading this spec leaves business scopes cold.
+
+#+begin_src scheme
+(defbuild-script
+  (.call gerbil-parser.init.exports .make-spec-for
+         '(Languages/hcl Languages/gql)))
+#+end_src
+
+The mount slot selects all eligible leaves. Use =.make-spec-for= for a
+subset. Yuanxu resolves
+Module identities and their declared inputs once per selection. A shared
+target contributes once, and conflicting ownership or target options are
+refused by the existing collector. Gerbil owns import closure and Make
+execution. The selected projection retains the ordinary source-currentness
+and compiler-input checks.
+
+Qualify the default build, a single leaf and the whole mount independently.
+Keep an unrelated role outside the selected closure. Verify that a shared
+dependency appears once and that accessing the namespace leaves the Make
+specification lazy.
+
 * Qualification and promotion
 
 The [[file:../../../dev/sysml/20-module-loading/20.21-build-execution-cost.org][build execution cost model]]
@@ -379,7 +426,7 @@ Use the JsonSchema-only bootstrap fixture and retain its ordinary library
 roots. Capture the complete Make list from =build.ss spec=. In the bounded
 fixture, 38 selected rows and six retained rows yield 42 distinct targets.
 The overlaps are =module-system/selection/init-syntax= and
-=object-types/contracts=. The selected projection checks and merges these
+=types/contracts=. The selected projection checks and merges these
 before Gerbil receives the list.
 
 In a disposable copy, compare the original entry, the existing build-script

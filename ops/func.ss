@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object "./types.ss"
         (only-in "./progress.ss" call-with-execution-watchdog copy-process-output)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :std/misc/process run-process)
         (only-in :std/os/signal kill SIGKILL SIGTERM)
         (only-in :std/os/signal-handler add-signal-handler! remove-signal-handler!)

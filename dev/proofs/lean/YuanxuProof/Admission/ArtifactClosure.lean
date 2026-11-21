@@ -3,8 +3,6 @@ import YuanxuProof.Admission.StoreLowering
 
 namespace YuanxuProof.Admission.ArtifactClosure
 
-def quintSourceDigest : String := "sha256:3fd6c0034fe2adbc0af7959aebae961389ccab96681936b71ecda58087ee9811"
-
 -- Facts encode runtime-selected path, emitted/binary/metadata digests and
 -- ordered dependency edges. Equality is not a proof of hash authenticity.
 def admit (issued observed : String) (storesValid inputsCurrent loaded : Bool) : Bool :=

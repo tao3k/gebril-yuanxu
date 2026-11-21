@@ -23,8 +23,8 @@
     (test-suite "Cross-process rebuild in the same compiled and cleaned state"
       (test-case "runtime resolver distinguishes a residual loader from the source module"
         (def lib (path-expand "lib" (getenv "GERBIL_PATH")))
-        (def source (path-expand "object-family/syntax.ss" root))
-        (def loader (path-expand "tao3k/yuanxu/object-family/syntax.scm" lib))
+        (def source (path-expand "object/syntax.ss" root))
+        (def loader (path-expand "tao3k/yuanxu/object/syntax.scm" lib))
         (def original (load-path))
         ;; Run after the first compile/clean. Never delete or quarantine residue.
         (check-equal? (file-exists? loader) #t)
@@ -32,19 +32,19 @@
         (dynamic-wind
           (lambda () (set-load-path! (cons lib (cons root original))))
           (lambda ()
-            (check-equal? (core-resolve-library-module-path ':tao3k/yuanxu/object-family/syntax)
+            (check-equal? (core-resolve-library-module-path ':tao3k/yuanxu/object/syntax)
                           (path-normalize loader)))
           (lambda () (set-load-path! original)))
         ;; The production init entry owns source registration, not the launcher.
         (parameterize ((current-expander-context (make-top-context)))
           (eval-syntax `(import ,(path-expand "init.ss" root))))
-        (check-equal? (core-resolve-library-module-path ':tao3k/yuanxu/object-family/syntax)
+        (check-equal? (core-resolve-library-module-path ':tao3k/yuanxu/object/syntax)
                       (path-normalize source)))
       (test-case "source macro exports and use-site accessor bindings survive clean"
         (parameterize ((current-expander-context (make-top-context)))
-          (eval-syntax '(import :gerbil/core :tao3k/yuanxu/object-family/syntax))
-          (check-equal? (module-context-path (core-import-module ':tao3k/yuanxu/object-family/syntax))
-                        (path-normalize (path-expand "object-family/syntax.ss" root)))
+          (eval-syntax '(import :gerbil/core :tao3k/yuanxu/object/syntax))
+          (check-equal? (module-context-path (core-import-module ':tao3k/yuanxu/object/syntax))
+                        (path-normalize (path-expand "object/syntax.ss" root)))
           (eval-syntax '(defpoo-object-family
                          (prototype Sample. sample? sample?)
                          (constructor make-sample (kind-value kind))
@@ -72,7 +72,7 @@
           ;; Fail before any compile if the fixture is accidentally a full build.
           (def expected-retained
             '("prelude" "module-system/selection/init-syntax" "utilities/algorithms"
-              "object-types/contracts" "object-types/ports" "core-spec"))
+              "types/contracts" "types/ports" "core-spec"))
           (check-equal? retained expected-retained)
           (unless (equal? retained expected-retained)
             (error "same-state regression requires the bounded JsonSchema fixture"))
@@ -92,7 +92,7 @@
           (current!)
           (for-each (lambda (name)
                       (check-equal? (file-exists? (path-expand (string-append name ".ssi") lib)) #f)) names)
-          (check-equal? (file-exists? (path-expand "object-family/syntax.scm" lib)) #t)
+          (check-equal? (file-exists? (path-expand "object/syntax.scm" lib)) #t)
           (check-equal? (file-exists? (path-expand ".gerbil/module-build" root)) #f)
           (displayln "REIMPORT-CYCLE-OK " phase " targets=" (length targets)))))
     (test-suite "Same-state reimport (opt-in)"

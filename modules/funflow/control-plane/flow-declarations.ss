@@ -12,7 +12,7 @@
         :tao3k/yuanxu/modules/funflow/control-plane/roles
         :tao3k/yuanxu/modules/funflow/control-plane/failure
         :tao3k/yuanxu/modules/funflow/control-plane/task
-        :tao3k/yuanxu/object-family/role-syntax)
+        :tao3k/yuanxu/object/role-syntax)
 
 (export make-flow-declaration-descriptor
         flow-declaration-descriptor?

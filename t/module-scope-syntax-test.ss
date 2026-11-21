@@ -4,7 +4,7 @@
 (import (only-in :gerbil/runtime/gambit with-exception-catcher
                  call-with-output-string display-exception)
         :tao3k/yuanxu/profile-composition/selection-syntax
-        :tao3k/yuanxu/object-syntax/path-slots
+        :tao3k/yuanxu/syntax/path-slots
         (rename-in (only-in :tao3k/yuanxu/profile-composition/selection-syntax use-module)
                    (use-module with-module))
         (only-in :tao3k/yuanxu/profile-composition/bindings yuanxu-module-scope)

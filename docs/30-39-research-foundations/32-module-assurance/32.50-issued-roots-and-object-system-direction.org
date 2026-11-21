@@ -291,7 +291,7 @@ route source hashes also matched their pre-test cut.
 The first broad =poo-clos-dispatch-test= attempt failed during initialization
 before cases in the partial Type-only overlay. A default-library control also
 failed before cases for a different reason: its installed closure lacks current
-=object-family/read-projection=. These remain failed receipts. Compiling the
+=object/read-projection=. These remain failed receipts. Compiling the
 complete current CLOS closure with the same installed compiler resolved the
 initialization failure; its 19 cases pass without changing CLOS semantics or
 weakening trace/refusal assertions. The same full overlay is used for the final

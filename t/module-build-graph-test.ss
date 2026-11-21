@@ -11,9 +11,8 @@
         (only-in :clan/poo/object .o .+ .cc .ref .get .call object? NoApplicableMethod?
                  object-slots $constant-slot-spec?)
         (only-in :clan/poo/object-contract ObjectContract.)
-        (only-in :clan/poo/type String)
+        (only-in :clan/poo/type String Type.)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :clan/poo/mop Type.)
         (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor)
         (only-in :tao3k/yuanxu/module-system/feature/capability-model feature-projection-request)
         (only-in :tao3k/yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
@@ -37,21 +36,22 @@
      (lambda ()
        (write-file (path-expand "gerbil.pkg" root) (string-append "(package: " prefix ")"))
        (write-file (path-expand "init.ss" root)
-                   "(yuanxu! mode: explicit :core (schema) :app (web +late +early -off) :unused (bomb disable: #t))")
+                   "(yuanxu! :test-dir \"./t\" mode: explicit :core (schema) :app (web +late +early -off) :unused (bomb disable: #t))")
        (for-each
         (lambda (id)
           (let (directory (path-expand (string-append "modules/" id) root))
             (write-file (path-expand "types.ss" directory)
-             "(import (only-in :clan/poo/object object?) (only-in :clan/poo/mop Type.)) (def Scope (.cc Type. identity: 'fixture .element?: object?)) (export Scope)")
+             "(import (only-in :clan/poo/object object?) (only-in :clan/poo/type Type.)) (def Scope (.cc Type. identity: 'fixture .element?: object?)) (export Scope)")
             (write-file (path-expand "objects.ss" directory)
              "(import (only-in :clan/poo/object .o) \"types.ss\") (def Defaults (.o retained: #t)) (export Defaults)")
             (write-file (path-expand "config.ss" directory) "(import (only-in :std/source this-source-file)) (def Greeting \"ready\") (def Origin (this-source-file)) (export Greeting Origin)")
             (write-file (path-expand "extra/core.ss" directory) "(def CoreExtra #t) (export CoreExtra)")
             (write-file (path-expand "interface.ss" directory)
-             (string-append "(.def Published identity: '" id
+             (string-append
                (if (string=? id "app/web")
-                   " core: (.o requires: (.o Schema: (.o module-id: 'core/schema contract: Scope)) scope-contract: Scope exports: (.o greeting: Greeting)) features: (.o))"
-                   " core: (.o requires: (.o) scope-contract: Scope exports: (.o greeting: Greeting)) features: (.o))")))))
+                 "(import (rename-in (only-in \"../../core/schema/types.ss\" Scope) (Scope ProviderScope))) " "")
+               "(.def Published identity: '" id
+               " core: (.o scope-contract: Scope exports: (.o greeting: Greeting)) features: (.o))"))))
         '("app/web" "core/schema"))
        (write-file (path-expand "modules/app/web/extra/early.ss" root)
                    "(def Early 'early) (export Early)")
@@ -79,10 +79,8 @@
                        (or feature-values (.o early: (optional 'early '("extra/early"))
                                         late: (optional 'late '("extra/late") '(app/web/early))
                                         off: (error "negative Feature forced"))) (.o))
-           core: (.o requires: (if (eq? id 'app/web)
-                                (.o Schema: (.o module-id: 'core/schema contract: Scope)) (.o))
-                     projections: core-projections scope-contract: Scope
-                     link: (lambda (_deps) (error "build must not link domain scopes"))))))))
+           core: (.o projections: core-projections scope-contract: Scope
+                     exports: (error "build must not link domain scopes")))))))
 (def (entry-names graph)
   (map (lambda (entry) (.get entry compiler-identity)) (.get graph entries)))
 (def module-build-graph-test
@@ -162,7 +160,7 @@
            (yuanxu-project-source-spec
              (yuanxu-load-modules (path-expand "init.ss" root)) '() root
              (path-expand "build.ss" root)))
-         (def build-spec (.get projection spec))
+         (def build-spec (.get projection std-make-spec))
          (check-equal? (eq? (.call projection .admit-spec build-spec) build-spec) #t)
          (check-exception (.call projection .admit-spec (map identity build-spec)) error?)
          (def compile-calls 0)
@@ -199,14 +197,12 @@
              (lambda (_source)
                (.o identity: 'app/web features: (.o)
                  core:
-                 (.o requires: (.o) scope-contract: Scope
+                 (.o scope-contract: Scope
                    admissions:
                    (.o Config: (.o export-path: '(config) contract-path: '(types Config))
                        Value: (.o export-path: '(value) contract-path: '(types Value)))
-                   link:
-                   (lambda (_dependencies)
-                     (.o config: candidate-value value: export-value
-                         types: (.o Config: settings-type Value: Scope))))))))
+                   exports: (.o config: candidate-value value: export-value
+                                types: (.o Config: settings-type Value: Scope)))))))
          (check-exception (.get (select (.o message: 123)) modules modules app web) error?)
          (check-equal? bindings 0)
          (check-exception (.get (select (.o message: "ok" typo: #t)) modules modules app web) error?)
@@ -246,9 +242,9 @@
                       (owner (cdr (assq 'module-id metadata)))
                       (declaration (assq 'declaration-id metadata)))
                  (.o identity: (if declaration (cdr declaration) owner) features: (.o)
-                   core: (.o requires: (.o) scope-contract: Scope
+                   core: (.o scope-contract: Scope
                            projections: (if (eq? owner web-id) projection-values '())
-                           link: (lambda (_dependencies) (.o greeting: 'source retained: #t))))))))
+                           exports: (.o greeting: 'source retained: #t)))))))
          (def view (select (list (projection 'web-package))))
          (def graph (.get view build-graph))
          (check-equal? (.get (car (.get graph external-packages)) scope-owner) web-id)
@@ -336,7 +332,7 @@
            (write-file path
             (string-append
              "(import (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor)) "
-             "(.def Published identity: 'app/web core: (.o requires: (.o Schema: (.o module-id: 'core/schema contract: Scope)) scope-contract: Scope exports: (error \"must not link while building\")) features: "
+             "(import (rename-in (only-in \"../../core/schema/types.ss\" Scope) (Scope ProviderScope))) (.def Published identity: 'app/web core: (.o scope-contract: Scope exports: (error \"must not link while building\")) features: "
              "(.o early: (feature-descriptor (.o feature-id: 'app/web/early owner-module-id: 'app/web projections: (list '(\"extra/early\")))) "
              "late: (feature-descriptor (.o feature-id: 'app/web/late owner-module-id: 'app/web requires: '(app/web/early) projections: (list '(\"extra/late\")))) "
              "off: (error \"negative feature must not evaluate\")))")))
@@ -373,7 +369,7 @@
                ((.get graph compiler-current)))
              (check-equal? (ormap (cut string-suffix? "/types.ss" <>) reads) #t)
              (check-exception (.get view modules app web) error?)
-             (let* ((tool (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
+             (let* ((tool (core-import-module ':tao3k/yuanxu/module-system/source/build-binding))
                     (origin (module-context-path tool)))
                (if (string=? (path-extension origin) ".ss")
                  (check-equal? (ormap (cut equal? (path-normalize origin) <>) reads) #t)
@@ -473,7 +469,7 @@
          (write-file (path-expand "build.ss" root) "(export #t)")
          (let* ((v (fixture-view root))
                 (artifact (yuanxu-project-source-spec v '() root (path-expand "build.ss" root)))
-                (names (map (lambda (target) (if (string? target) target (cadr target))) (.get artifact spec))))
+                (names (map (lambda (target) (if (string? target) target (cadr target))) (.get artifact std-make-spec))))
            (check-equal? (eq? (.get artifact build-graph) (.get v build-graph)) #t)
            (check-equal? (length names) 10)
            (check-equal? (andmap (cut string-prefix? "modules/" <>) names) #t)
@@ -505,7 +501,7 @@
          (defvalues (_single single-windows) (project (list (car retained))))
          (defvalues (many many-windows) (project retained))
          (check-equal? many-windows single-windows)
-         (check-equal? (length (.get many spec)) 14)
+         (check-equal? (length (.get many std-make-spec)) 14)
          (write-file (path-expand "retained/d.ss" root) ";; changed after preparation")
          (check-exception ((.get many admit-current)) error?))))
     (yuanxu-test-case "unconsumed generated contributions cannot silently disappear from spec"

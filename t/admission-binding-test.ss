@@ -1,10 +1,9 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/mop Type. define-type TypeError?)
+        (only-in :clan/poo/type Type. define-type TypeError? String)
         (only-in :clan/poo/object-contract ObjectContract.)
-        (only-in :clan/poo/type String)
-        (only-in :tao3k/yuanxu/object-types/contracts
+        (only-in :tao3k/yuanxu/types/contracts
           YuanxuObjectContract. yuanxu-predicate-contract
           yuanxu-contract-admit yuanxu-validation-evidence-accepted?
           yuanxu-validation-evidence->alist))

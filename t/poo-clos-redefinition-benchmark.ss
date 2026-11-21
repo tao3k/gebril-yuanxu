@@ -6,7 +6,9 @@
 ;;; Dependent C4 projection and commit witness for real slot-layout changes.
 
 (import (only-in :gerbil/runtime/gambit current-jiffy jiffies-per-second)
-        :tao3k/yuanxu/poo-clos/interface)
+        (only-in :clan/poo/mop clos-class clos-class-effective-slots
+                 clos-class-generation clos-direct-slot-definition
+                 clos-redefine-class))
 
 (def +dependent-depth+ 16)
 (def +slots-per-class+ 16)
@@ -21,20 +23,20 @@
     (if (= index +slots-per-class+)
       (reverse result)
       (loop (+ index 1)
-            (cons (poo-clos-direct-slot-definition (slot-name owner index))
+            (cons (clos-direct-slot-definition (slot-name owner index))
                   result)))))
 
 (def root-slots (direct-slots 0))
 (def extended-root-slots
-  (append root-slots (list (poo-clos-direct-slot-definition 'extra))))
-(def root (poo-clos-class 'redefinition-benchmark-root
+  (append root-slots (list (clos-direct-slot-definition 'extra))))
+(def root (clos-class 'redefinition-benchmark-root
                           direct-slots: root-slots))
 (def classes
   (let loop ((index 0) (parent root) (result-rev (list root)))
     (if (= index +dependent-depth+)
       (reverse result-rev)
       (let (child
-            (poo-clos-class
+            (clos-class
              (string->symbol
               (string-append "redefinition-benchmark-child-"
                              (number->string index)))
@@ -45,15 +47,15 @@
 
 (def (check-projection generation extra?)
   (unless (and (andmap (lambda (class-value)
-                        (= (poo-clos-class-generation class-value) generation))
+                        (= (clos-class-generation class-value) generation))
                       classes)
-               (= (length (poo-clos-class-effective-slots leaf))
+               (= (length (clos-class-effective-slots leaf))
                   (+ (* (+ +dependent-depth+ 1) +slots-per-class+)
                      (if extra? 1 0))))
     (error "dependent redefinition projection drift" generation extra?)))
 
 ;; Warm the same propagation path before timing; all samples change layout.
-(poo-clos-redefine-class root direct-slots: extended-root-slots)
+(clos-redefine-class root direct-slots: extended-root-slots)
 (check-projection 1 #t)
 
 (display "schema=core.poo-clos-redefinition.v1\n")
@@ -64,7 +66,7 @@
   (let loop ((index 0))
     (when (< index +samples+)
       (let (extra? (odd? index))
-        (poo-clos-redefine-class
+        (clos-redefine-class
          root direct-slots: (if extra? extended-root-slots root-slots))
         (check-projection (+ index 2) extra?)
         (loop (+ index 1)))))

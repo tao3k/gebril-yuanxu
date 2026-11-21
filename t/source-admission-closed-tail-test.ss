@@ -2,7 +2,7 @@
 ;;; Isolation experiment, NOT the production SourceAdmissionContract protocol.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-classification-evidence)
         (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.)
         (only-in :tao3k/yuanxu/configuration/diagnostics config-diagnostic-locator)
         (only-in :tao3k/yuanxu/module-system/source/admission

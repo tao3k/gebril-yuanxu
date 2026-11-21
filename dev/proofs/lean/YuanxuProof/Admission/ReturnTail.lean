@@ -3,8 +3,6 @@ import YuanxuProof.Admission.AdmissionBody
 
 namespace YuanxuProof.Admission.ReturnTail
 
-def quintSourceDigest : String :=
-  "sha256:a0e90f015509482d618dc39a21af247d9542334a07d6ff4fe29ebaaefaf5e062"
 structure Live where
   receiver : Nat
   candidate : Nat

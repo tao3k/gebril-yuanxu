@@ -1,5 +1,18 @@
 // SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 package YuanxuPayloadOwnership {
+    requirement def AdmittedCoreGraphProjection {
+        doc /* A paired admitted owner closure with no Feature flags may pass
+               its ordered Core dependency rows directly to POO Graph. The
+               closure has unique IDs and includes every required owner.
+               Keep the same vertex and dependency order, Graph scheduler and
+               SCC cycle diagnostics. Qualify constructor identity, template
+               support and observer compatibility before omitting synthetic
+               Feature carriers. Open observers and selected Features retain
+               their ordinary evaluation. Source currentness after progress
+               delivery remains independent. Selection.CoreRows proves input
+               equivalence and post-progress refusal. Scheme selected-graph
+               controls establish runtime qualification and diagnostics. */
+    }
     requirement def NamedValueScopeAdmission {
         doc /* Module publication, scope and dependency declarations use named
                Types. Do not retain the predicate-contract wrapper or a
@@ -408,6 +421,9 @@ package YuanxuPayloadOwnership {
                owner and phase order. Observed checks keep their separate
                boundaries. Lean PublicationReads.flatten_root_segments
                preserves the ordered signed input and the first refusal.
+               PublicationReads.join_on_demand_preserves_guard_input
+               preserves capture-time eligibility even when the observer
+               is absent at a later invocation.
                Dependency projection resolves its first three membership
                probes in the original capture. A wider projection builds
                the same temporary eq? index over those roots. Lean
@@ -433,7 +449,11 @@ package YuanxuPayloadOwnership {
                edges before considering a retention projection. A registry
                retirement requires private ownership, absence of future
                demand, and an exact Context comparison that preserves a
-               replacement. The current reader retains both native paths.
+               replacement. Closed Interface delivery retires the expander
+               aliases. The runtime import table can still own the same
+               Context as a strong key after successful initialization.
+               Observe that table under Gerbil's import mutex and distinguish
+               Context retention from the void result of private delivery.
                The 64-owner census and 256-owner heap probe bound these
                candidates independently of the full capacity gate.
                Inspect each live native Context once by identity and
@@ -487,7 +507,10 @@ package YuanxuPayloadOwnership {
                resolution. A shared-prelude experiment
                removed three direct imports without a consistent CPU win.
                Retain the installed reader's native imports and its effect
-               boundaries. The opt-in thousand-owner diagnostic attributes
+               boundaries. A shared binding projection must preserve the
+               ordered demand trace and the first native import refusal,
+               including when the same demand also lacks a binding.
+               The opt-in thousand-owner diagnostic attributes
                CPU and wall time with no source observer. Ordinary capacity
                uses its original measurement and watchdog. */
     }

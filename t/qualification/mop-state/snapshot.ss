@@ -3,7 +3,7 @@
 (import :clan/poo/object
         (prefix-in (only-in :gerbil/runtime/mop slot-ref object-class) runtime.)
         (only-in :clan/poo/mop make-slot-read slot-read-receiver slot-read-key
-                 slot-read-revision slot-read-instance slot-read-value slot-read-dependencies)
+                 slot-read-revision slot-read-dependencies)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer))
 (export capture-state state-current! state-closed? state-reads state-objects
         read-view-checker read-view-record object-view-value selected-ancestors)
@@ -31,7 +31,7 @@
 (def (capture-object value)
   (make-object-view value (object-revision value)
     (list (object-%slots value) (object-%defaults value) (object-%reads value)
-          (object-%layout value) (object-%instance value) (object-%slot-funs value)
+          (runtime.slot-ref value '%layout) (runtime.slot-ref value '%instance) (object-%slot-funs value)
           (object-%all-slots value) (object-%protocol value) (object-%overrides value)
           (object-%declarations value))
     (map values (object-supers value)) (copy-list (object-%precedence-list value))
@@ -41,13 +41,13 @@
   (def receiver (slot-read-receiver read))
   (unless (object? receiver) (error "invalid runtime receiver"))
   (def key (slot-read-key read))
-  (def instance (object-%instance receiver))
+  (def instance (runtime.slot-ref receiver '%instance))
   (def table (object-%reads receiver))
   (make-read-view read (runtime.slot-ref read 'current?)
-    ;; The public value inspector copies `(names)` lists defensively. This
-    ;; raw-state qualification compares the actual payload identity, not the
-    ;; fresh public inspection copy; replacing that payload must still refuse.
-    (list receiver (slot-read-revision read) (slot-read-instance read) (runtime.slot-ref read 'value)
+    ;; Public inspectors copy the store and structural payloads. Qualification
+    ;; observes the record fields to detect replacements by identity.
+    (list receiver (slot-read-revision read) (runtime.slot-ref read 'instance)
+      (runtime.slot-ref read 'value)
       (and table (hash-ref table key absent))
       (if (and instance (symbol? key)) (hash-ref instance key absent) absent))
     (if (pair? key) (map values key) key) (map values (slot-read-dependencies read))))

@@ -3,8 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Workflow composition is a typed value, not a Module kind or a runtime.
 (import (only-in :clan/poo/object .o .ref)
-        (only-in :clan/poo/mop define-type validate Bool)
-        (only-in :clan/poo/type Record Symbol)
+        (only-in :clan/poo/type define-type validate Bool Record Symbol)
         (only-in :tao3k/yuanxu/profile-composition/profile-bundle YuanxuProfileBundle))
 (export Scenario)
 

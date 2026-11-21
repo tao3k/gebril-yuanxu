@@ -5,8 +5,7 @@
 
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .ref .cc .get .mix)
-        (only-in :clan/poo/type Record String)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type Record String validate)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         :tao3k/yuanxu/module-system/config)
 

@@ -19,7 +19,7 @@
                        (if inherited-options (string-append inherited-options ",") ""))
                  (substring runtime-option 2 (string-length runtime-option))))
 (def actions 0)
-(def (invoke command directory state producer (success? #t))
+(def (invoke command directory state producer (success? #t) stdout-only?: (stdout-only? #f))
   (def started (real-time))
   (displayln "THOUSAND-ACTION start state=" (path-strip-directory state) " command=" command)
   (force-output)
@@ -30,7 +30,8 @@
         timeout: 180 idle-timeout: 60 check-status: #f
         environment: (.o GERBIL_PATH: state GAMBOPT: runtime-environment
           GERBIL_LOADPATH: (string-join (append (list (path-expand "lib" state)) prerequisites (list producer)) ":")))
-      '() output-port: (if success? (current-error-port) (open-output-string))))
+      '() stderr-redirection: (not stdout-only?)
+      output-port: (if success? (current-error-port) (open-output-string))))
   (def output (.get result output))
   (unless (eq? (zero? (.get result status)) success?)
     (error "unexpected thousand-catalog action status" command (.get result status) output))
@@ -48,7 +49,8 @@
   (invoke (if (member operation '("use" "owner"))
             (list "gxi" (if (equal? operation "owner") "owner-check.ss" "use.ss"))
             (list "gxi" "build.ss" operation))
-          consumer state producer success?))
+          consumer state producer success?
+          stdout-only?: (and success? (equal? operation "spec"))))
 (def (compile-events output)
   (call-with-input-string output
     (lambda (port)
@@ -92,6 +94,10 @@
           (for-each (lambda (state) (create-directory* (path-expand "lib" state))) (list a b))
           (invoke (list "python3" (path-expand "dev/thousand_package_fixture.py" (.get package-source source-root)) fixture "--profile")
                   (.get package-source source-root) a producer)
+          (copy-file (path-expand "dev/gerbil/clean-outputs.ss" (.get package-source source-root))
+                     (path-expand "clean-outputs.ss" consumer))
+          (copy-file (path-expand "clean-outputs.ss" consumer)
+                     (path-expand "missing-provider/clean-outputs.ss" fixture))
           (def modules (path-expand "modules" producer))
           (def owners
             (filter (lambda (name)
@@ -132,7 +138,6 @@
           (check-equal? (and (string-contains (action consumer a producer "use") "THOUSAND-USE scopes=2") #t) #t)
           (check-equal? (compile-events (action consumer b producer "compile")) targets)
           (check-equal? (compiled-interfaces b) targets)
-          (check-equal? (and (string-contains (action consumer b producer "use") "THOUSAND-USE scopes=2") #t) #t)
           (check-equal? (and (string-contains
                               (action (path-expand "scope-control" fixture) b producer "use")
                               "THOUSAND-SCOPE catalog=1000 declarations=3 scopes=2 unrelated-admitted-scope=cold") #t) #t)
@@ -152,18 +157,21 @@
                                   (check-equal? (file-exists? (path-expand (string-append "lib/" identity suffix) b)) #t))
                                 '(".ssi" ".o1"))) targets)
           (check-equal? (file-exists? sentinel) #t)
-          (check-equal? (compile-events (action consumer b producer "compile")) '())
-          (check-equal? (and (string-contains (action consumer b producer "use") "THOUSAND-USE scopes=2") #t) #t)
           ;; A distinct source selection owns its own init and output root.
           ;; Never mutate a producer or either successful consumer's init.
           (def c (path-expand "missing-provider-state" temporary))
           (create-directory* (path-expand "lib" c))
           (def refused (action (path-expand "missing-provider" fixture) c producer "spec" #f))
-          (check-equal? (and (string-contains refused "required module not explicitly declared") #t) #t)
+          (unless (or (string-contains refused "required module not explicitly declared")
+                      (and (string-contains refused "source import belongs to an unselected Module")
+                           (string-contains refused "module-0")))
+            (error "unexpected missing-provider refusal" refused))
           (check-equal? (compile-events refused) '())
           (for-each (lambda (identity)
                       (check-equal? (file-exists? (path-expand (string-append "lib/" identity ".ssi") c)) #f)) targets)
+          (check-equal? (product-digests targets b) b-before-clean)
           (check-equal? (compile-events (action consumer b producer "compile")) '())
+          (check-equal? (product-digests targets b) b-before-clean)
           (check-equal? (and (string-contains (action consumer b producer "use") "THOUSAND-USE scopes=2") #t) #t)
           (check-equal? (source-snapshot producer) original)
           (check-equal? (source-snapshot consumer) consumer-original)

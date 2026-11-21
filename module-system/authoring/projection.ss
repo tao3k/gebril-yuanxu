@@ -7,7 +7,7 @@
 ;;; Invariant: source datums are discarded before a public receipt is returned.
 
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :tao3k/yuanxu/module-system/authoring/observation
                  yuanxu-scheme-inline-prototype-datum-observations
                  yuanxu-scheme-inline-prototype-port-observations

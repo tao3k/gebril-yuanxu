@@ -3,6 +3,10 @@
 build:
     GERBIL_PATH="${GERBIL_PATH:-$PWD/.gerbil}" GERBIL_BUILD_VERBOSE="${GERBIL_BUILD_VERBOSE:-1}" {{ gerbil_compiler_environment }} gerbil build
 
+# Keep native clean and explicitly remove only the selected library remnants.
+clean:
+    {{ yuanxu_clean_env }} timeout --signal=TERM --kill-after=5s 600s gxi {{ gerbil_test_runtime_options }} build.ss spec | {{ yuanxu_clean_env }} timeout --signal=TERM --kill-after=5s 600s gxi {{ gerbil_test_runtime_options }} dev/gerbil/clean-outputs.ss "$PWD" "{{ yuanxu_clean_path }}/lib" gerbil clean
+
 # Native source-only Core build in an explicit private output environment.
 # Keep the ordinary build.ss dispatcher and its existing 300-second budget.
 build-selected-package-runtime directory:

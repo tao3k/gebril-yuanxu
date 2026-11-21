@@ -71,3 +71,71 @@ POO's scoped protocol-selection change is public at =6446abe=; complete
 Scheme CI =42716076782= passed. Lean proof =55ed9c08= passed complete Lean
 CI =42715365861=. Those producer results do not close Core's 10K gate,
 seconds-scale first business demand, or downstream build qualification.
+
+* PR 22: isolate Interface expansion from Graph and source replay
+
+The existing =module-runtime-attribution-1000-test.ss stages= ran in the
+=dca240a= Scheme cohort with source observer absent, under the 180-second
+process and 4 GiB limits. The Case and Harness passed in 134.67 seconds
+including startup and teardown, with peak process footprint 1.41 GiB.
+
+| Phase | Calls | CPU seconds | Wall seconds |
+|-------+-------+-------------+--------------|
+| First declaration admission | 1 | 49.13 | 99.16 |
+| Selected owner walk | 1 | 48.20 | |
+| Interface wrapper expansion | 1,000 | 28.64 | |
+| Positive-phase compiler hooks | 31,968 | 2.70 | |
+| Positive-phase evaluator hooks | 31,968 | 1.27 | |
+| Module publication admission | 1,000 | 6.28 | |
+| Metadata replay during first admission | 6,004 | 5.31 | |
+| Core graph projection | 1 | 0.056 | |
+| Topological resolution | 1 | 0.030 | |
+| Independent currentness | 1 | 0.359 | 0.442 |
+
+These are inclusive spans. The 28.64 seconds of expansion includes 4.59
+seconds of GC user time. Parsing and rewriting the Interface itself
+cost 0.127 and 0.065 CPU seconds. Native compiler-tool imports cost 0.017
+CPU seconds across 5,000 requests. The expansion span therefore warrants
+finer native attribution before changing parser, replay, or Graph code.
+
+The 10,000-owner =module-runtime-selection-10000-test.ss stages= case
+hit the outer guard in first Graph at 180.45 seconds and 1.66 GiB.
+Fixture materialization was 11.51 seconds, init import 0.45 seconds,
+and namespace demand 3.11 seconds. The guard terminated the child
+before it could emit the end-of-phase counters. The 1,000-owner split
+is evidence about completed work at that size only.
+
+The Ubuntu =dca240a= capacity job for dense selection completed under
+its 650-second Case limit. The downloaded result records 525.79 seconds
+wall for first Graph, including 110.02 seconds of GC wall time, and
+4.99 seconds for the later independent currentness check. This result
+misses the 180-second performance target.
+
+On the same commit, the separate observed declaration Case reached
+913 publications by its 650-second timeout. It recorded 1,696,350
+module file reads in =publication-current=. This Case installs an
+open source callback. Its repeated checks are evidence about the
+observed route and cannot be charged to the callback-free route.
+
+The declaration capacity workload now uses the reader's scalar operation
+accounting. It requires one candidate admission and protected return
+per owner, two native initializer calls per owner (Interface and Types),
+and zero scope factories. Every namespace leaf must remain cold after
+Graph selection. The same Graph must reject an edit to its actual init
+source at the independent currentness boundary. The focused
+=module-deferred-reader-test.ss= and =module-dependency-continuation-test.ss=
+retain open-observer checks, deferred role effects, and source mutation
+controls. The Case and heap limits remain those of the existing workload.
+
+The guarded local 1,000-owner run completed in 58.01 seconds at 1.24 GiB.
+First Graph took 47.31 seconds wall and 40.80 seconds CPU. It recorded
+1,000 wrapper expansions, 2,000 initializers and 5,870,024 issued-read
+visits. The 16-owner calibration also passed with the zero-scope-factory
+assertion enabled.
+
+=PublicationReads.shared_wrapper_projection_keeps_order_and_failure=
+requires exact per-phase binding lookup and preserves the result of the
+original ordered import checks. =wrapper_import_refusal_precedes_missing_binding=
+fixes the refusal order. These lemmas constrain a future optimization of
+binding projection. The reader still uses Gerbil expansion, preserves
+each owner's direct imports, and checks independently around effects.

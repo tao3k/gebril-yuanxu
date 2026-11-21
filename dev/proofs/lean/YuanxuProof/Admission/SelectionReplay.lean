@@ -2,8 +2,6 @@
 import LeanPoo.Functional.CacheLookup
 import YuanxuProof.Admission.IssuerProjection
 namespace YuanxuProof.Admission.SelectionReplay
-def quintSourceDigest : String := "sha256:7bb0c519be1ac029d5e5451f1c6c972b74e5d56170639fd1760545ef4cf88e3e"
-
 -- The runtime owner retains a value, not the verdict of an external-source check.
 theorem cached_graph_keeps_value {Name Value Fault : Type} [DecidableEq Name]
     (entries : Name → Option Value) (key : Name) (value : Value)
@@ -15,6 +13,26 @@ def firstError : List (Option Nat) → Option Nat
   | [] => none
   | none :: rest => firstError rest
   | some error :: _ => some error
+
+/-- The closure consumes edges of the exact admitted record. A private table
+handoff preserves the admission failure and the independent commit check. -/
+theorem admitted_owner_edges_handoff {Record Edge Fault : Type}
+    (admit : Except Fault Record) (edges : Record → List Edge)
+    (lookup : Record → Record) (same : ∀ record, lookup record = record)
+    (commit : List Edge → Except Fault (List Edge)) :
+    (admit >>= fun record => commit (edges (lookup record))) =
+    (admit >>= fun record => commit (edges record)) := by
+  cases admit <;> simp [same]
+
+/-- For the same pure parser, an unchanged source has the initially parsed
+tags. Changed source must still be classified by the original parser. -/
+theorem profile_reclassification_on_change {Source Tags : Type} [DecidableEq Source]
+    (classify : Source → Tags) (original current : Source) :
+    (if current = original then classify original else classify current) =
+      classify current := by
+  split
+  next unchanged => rw [unchanged]
+  next _ => rfl
 
 /-- One runtime private operation, with no callback between the two issuance
 queries. The second predicate's failure spelling is irrelevant: on failure the
@@ -122,8 +140,6 @@ theorem cached_false_is_a_value {Name Fault : Type} [DecidableEq Name]
     (hit : entries key = some false) :
     LeanPoo.Functional.ConstructionCache.ensureLookup entries key build = (.ok false, entries) :=
   LeanPoo.Functional.ConstructionCache.ensureLookup_hit entries key false build hit
-
-def topologySourceDigest : String := "sha256:711666f5afe6d73d34cc59caf536311b2eb9907fa675ef049dd0720e13993773"
 
 -- Runtime dependency ownership belongs to gerbil.pkg; LeanPoo belongs to Lake.
 -- Runtime issued-read, inheritance and declaration-index controls
@@ -268,4 +284,170 @@ def invokesCacheConstructor (hit constructorIdentityMatches : Bool) : Bool :=
   !hit && constructorIdentityMatches
 theorem changed_constructor_uses_uncached_path (hit : Bool) :
     invokesCacheConstructor hit false = false := by simp [invokesCacheConstructor]
+
+/-- Ordered shared metadata checks and their transitive POO write dependencies.
+The support proof includes changes to issuance, route, presence and checker
+identity. External sources and callbacks stay outside this group. -/
+structure SharedChecks where
+  owners : List Nat
+  checks : (Nat → Nat) → List (Option Nat)
+  covered : ∀ before after, (∀ owner ∈ owners, before owner = after owner) →
+    checks before = checks after
+
+/-- The registered POO reverse index maps a changed owner to its dependent
+groups. This transition only visits the affected entries in the runtime model.
+Here the function describes the resulting membership relation. -/
+def affected (reverse : Nat → List Nat) (writes : List Nat) (group : Nat) : Prop :=
+  ∃ owner ∈ writes, group ∈ reverse owner
+
+instance (reverse : Nat → List Nat) (writes : List Nat) (group : Nat) :
+    Decidable (affected reverse writes group) := by
+  unfold affected
+  infer_instance
+
+def revoke (reverse : Nat → List Nat) (writes : List Nat)
+    (valid : Nat → Bool) : Nat → Bool :=
+  fun group => if affected reverse writes group then false else valid group
+
+theorem dependent_group_revoked (reverse : Nat → List Nat) (writes : List Nat)
+    (valid : Nat → Bool) (owner group : Nat)
+    (changed : owner ∈ writes) (registered : group ∈ reverse owner) :
+    revoke reverse writes valid group = false := by
+  simp [revoke, show affected reverse writes group from ⟨owner, changed, registered⟩]
+
+def supportMatches (group : SharedChecks) (issued live : Nat → Nat) : Prop :=
+  ∀ owner ∈ group.owners, issued owner = live owner
+
+/-- A surviving registration has the same read support, even after a callback
+wrote other objects. The transition must publish the revocation with the write.
+Completeness of native write notification remains a runtime premise. -/
+theorem surviving_group_matches (shared : SharedChecks) (index : Nat → List Nat)
+    (writes : List Nat) (valid : Nat → Bool) (group : Nat)
+    (issued before after : Nat → Nat)
+    (registered : ∀ owner ∈ shared.owners, group ∈ index owner)
+    (old : valid group = true → supportMatches shared issued before)
+    (unchanged : ∀ owner, owner ∉ writes → before owner = after owner)
+    (hit : revoke index writes valid group = true) :
+    supportMatches shared issued after := by
+  have live : ¬ affected index writes group := by
+    intro dirty
+    simp [revoke, dirty] at hit
+  have prior : valid group = true := by simpa [revoke, live] using hit
+  intro owner member
+  have outside : owner ∉ writes := by
+    intro edited
+    exact live ⟨owner, edited, registered owner member⟩
+  exact (old prior owner member).trans (unchanged owner outside)
+
+theorem firstError_append (left right : List (Option Nat)) :
+    firstError (left ++ right) = (firstError left).or (firstError right) := by
+  induction left with
+  | nil => rfl
+  | cons head tail ih => cases head <;> simp [firstError, ih, Option.or]
+
+def verifyShared (closed : Bool) (valid : Bool) (shared : SharedChecks) (live : Nat → Nat) :
+    List (Option Nat) :=
+  if closed && valid then [] else shared.checks live
+
+/-- Only an issued successful group with matching live support may disappear.
+Keep both surrounding checks and the first diagnostic, including on a miss.
+For an open window the original replay is used even with a matching group. -/
+theorem indexed_replay_keeps_first_failure (closed valid : Bool)
+    (shared : SharedChecks) (issued live : Nat → Nat)
+    (earlier suffix : List (Option Nat))
+    (approved : firstError (shared.checks issued) = none)
+    (current : valid = true → supportMatches shared issued live) :
+    firstError (earlier ++ verifyShared closed valid shared live ++ suffix) =
+    firstError (earlier ++ shared.checks live ++ suffix) := by
+  cases closed <;> cases valid <;> simp [verifyShared]
+  have fixed : shared.checks issued = shared.checks live := shared.covered _ _ (current rfl)
+  have clean : firstError (shared.checks live) = none := fixed ▸ approved
+  simp [firstError_append, clean]
+
+theorem open_window_keeps_checks (valid : Bool) (shared : SharedChecks) (live : Nat → Nat) :
+    verifyShared false valid shared live = shared.checks live := rfl
+
+theorem post_write_replay_keeps_first_failure (closed : Bool)
+    (shared : SharedChecks) (index : Nat → List Nat) (writes : List Nat)
+    (valid : Nat → Bool) (group : Nat) (issued before after : Nat → Nat)
+    (earlier later : List (Option Nat))
+    (approved : firstError (shared.checks issued) = none)
+    (registered : ∀ owner ∈ shared.owners, group ∈ index owner)
+    (old : valid group = true → supportMatches shared issued before)
+    (unchanged : ∀ owner, owner ∉ writes → before owner = after owner) :
+    firstError (earlier ++ verifyShared closed (revoke index writes valid group) shared after ++ later) =
+      firstError (earlier ++ shared.checks after ++ later) :=
+  indexed_replay_keeps_first_failure closed _ shared issued after earlier later approved
+    (surviving_group_matches shared index writes valid group issued before after
+      registered old unchanged)
+
+/-- Work counts for one successful shared check at issuance and one indexed
+validity lookup at each later replay. Count local checks and revocation
+separately. No elapsed-time claim follows from this count. -/
+def indexedSharedWork (width boundaries : Nat) : Nat := width + boundaries
+
+theorem indexed_shared_work_saves_repeated_visits (width boundaries : Nat)
+    (wide : 2 ≤ width) (repeated : 2 ≤ boundaries) :
+    indexedSharedWork width boundaries ≤ width * boundaries := by
+  unfold indexedSharedWork
+  have row := Nat.mul_le_mul_right boundaries wide
+  have column := Nat.mul_le_mul_left (width - 2) repeated
+  have bound : (2 + (width - 2)) * boundaries = width * boundaries := by
+    congr 1
+    omega
+  rw [Nat.add_mul] at bound
+  omega
+
+example : indexedSharedWork 916 (5 * 10000) = 50916 ∧
+    916 * (5 * 10000) = 45800000 := by decide
+
+-- An affected, effectful write must expose the original stale diagnostic.
+private def mutationControl : SharedChecks where
+  owners := [7]
+  checks := fun versions => [if versions 7 = 0 then none else some 12]
+  covered := by
+    intro before after same
+    rw [same 7 (by simp)]
+
+example :
+    let index := fun owner => if owner = 7 then [1] else []
+    let live := fun owner => if owner = 7 then 1 else 0
+    let valid := revoke index [7] (fun _ => true)
+    firstError (verifyShared true (valid 1) mutationControl live) = some 12 ∧
+    firstError (verifyShared true (valid 2) mutationControl (fun _ => 0)) = none ∧
+    firstError (verifyShared false true mutationControl live) = some 12 ∧
+    firstError ([some 3] ++ verifyShared true (valid 1) mutationControl live) = some 3 ∧
+    firstError (verifyShared true (revoke (fun _ => []) [7] (fun _ => true) 1)
+      mutationControl live) = none := by decide
+
+/-- The native write index currently advances object revisions for registered
+edits. Slot population and edits to the presented token have separate
+observability, so a matching object revision cannot certify these facts. -/
+structure ReadState where
+  revision : Nat
+  occupied : Bool
+  issued : Bool
+
+def readCurrent (capturedRevision : Nat) (expectedOccupied : Bool) (live : ReadState) : Bool :=
+  live.issued && (capturedRevision == live.revision) && (expectedOccupied == live.occupied)
+
+theorem revision_only_cannot_decide_cache_miss
+    (decideCurrent : Nat → Bool) :
+    ¬ ∀ live, decideCurrent live.revision = readCurrent 0 false live := by
+  intro same
+  have cold := same ⟨0, false, true⟩
+  have warm := same ⟨0, true, true⟩
+  change decideCurrent 0 = true at cold
+  change decideCurrent 0 = false at warm
+  simp [cold] at warm
+
+theorem revision_only_cannot_decide_issuance
+    (decideCurrent : Nat → Bool) :
+    ¬ ∀ live, decideCurrent live.revision = readCurrent 0 true live := by
+  intro same
+  have issued := same ⟨0, true, true⟩
+  have changed := same ⟨0, true, false⟩
+  simp [readCurrent] at issued changed
+  simp [issued] at changed
+
 end YuanxuProof.Admission.SelectionReplay

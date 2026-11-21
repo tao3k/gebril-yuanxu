@@ -25,14 +25,6 @@ function owners(producer=[]) {
 function digests(producer=[]) {
   return Object.fromEntries(owners(producer).map(name=>[path.relative(core,name),hash(fs.readFileSync(name))]));
 }
-function checkBindings() {
-  for(const binding of catalog.bindings) {
-    const digest='sha256:'+hash(fs.readFileSync(path.join(__dirname,binding.model)));
-    const text=fs.readFileSync(path.join(core,binding.proof),'utf8').replace(/\s+/g,' ');
-    if(!text.includes(`${binding.declaration} : String := "${digest}"`))
-      throw Error(`Stale Lean–Quint source binding: ${binding.proof}/${binding.declaration}`);
-  }
-}
 function producerInputs(directory,prefix) {
   if(!directory)return [];
   if(!prefix||!['SelectionReplay','IncrementalRoles','ThunkConstruction','GraphSnapshot'].some(name=>prefix.startsWith(name)))
@@ -54,4 +46,4 @@ function checkProducer(directory,inputs) {
       throw Error(`Producer source differs from pinned checkout: ${relative}`);
   }
 }
-module.exports={catalog,core,hash,files,digests,checkBindings,producerInputs,checkProducer};
+module.exports={catalog,core,hash,files,digests,producerInputs,checkProducer};

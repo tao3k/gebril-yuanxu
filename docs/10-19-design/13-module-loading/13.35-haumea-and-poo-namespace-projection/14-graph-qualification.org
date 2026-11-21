@@ -103,6 +103,140 @@ Whole-module EVAL still includes first source admission and demanded scope.
 Measure it through the existing Core entry, independently of SCC microbenchmarks.
 Retain failed evidence and report actual stages if the original budget expires.
 
+On Core PR #22, a real 10,000-owner directory selected one Profile root
+whose native import reached a second owner. The two-case sparse test completed
+locally in 154.2 seconds with 815 MiB peak process-tree footprint. First
+business demand took 50.3 seconds wall and 26.1 seconds CPU. The independent
+case measured 2.90 seconds for directory projection, 5.93 for the selected
+admission, and 26.04 for scope and value demand. Its counters confirmed two
+owner admissions and two scope factories. The local run used an overlay of
+compiled prerequisites. Full-directory certification still has its own
+180-second and 4-GiB gate.
+
+The stage-accounting repeat completed in 83.0 seconds at 933 MiB.
+Its selected admission spent 10.82 seconds in six directory observation
+passes, within 11.06 seconds total. Its scope phase spent 18.95 seconds
+in thirteen directory observation passes, within 19.06 seconds of Link
+checks. Both scope factories took 0.36 seconds combined. The hot read
+returned the same value in 78 microseconds with zero directory passes,
+admissions or scope factories. Stage timings are nested. Both measurements
+use compiled prerequisite overlays and the original resource guard.
+
+The boundary-level repeat completed in 72.0 seconds at 940 MiB. Its
+13 scope-phase checks split into eight checks around scope factories and
+admission predicates, three eligibility checks, and two scope-publication
+checks. The eight effect checks took 8.27 seconds wall. Eligibility took
+3.28 seconds and scope publication took 1.99 seconds. These counts
+distinguish independent effect checks from repeated global directory work.
+
+=omitted_profile_candidate_blocks_global_certification= supplies a
+counterexample to treating selected-closure freshness as global Profile
+freshness. An unchecked Interface can acquire the Profile tag even when
+the entire selected closure stays current. An authenticated change set
+can narrow the next global check only if it covers such previously
+unselected Interfaces. Unknown filesystem edits still require fresh
+global certification at the existing public boundary.
+
+* Graph baseline and remaining admission work
+
+POO PR #17 at =5d7715f= passed Scheme CI. In =generalized-graph.ss=,
+=reschedule= checks every incoming row when its source is unowned. An owned
+revision instead checks its predecessor ticket and passes the captured edits
+to =repair-order=. In =feedback-graph.ss=, SCC repair passes local edits to
+ConstructionCache, while =complete= support rebuilds the quotient schedule.
+The full branch still scans the old roster to retire bases, even when every
+successor program was captured by the edit. The published SCC benchmark covers
+both local and large repair regions and charges explicit roster enumeration
+separately. The retirement-order proof now checks under Lean 4.34 at POO
+=5b1fc3b=.
+
+Ubuntu CI for Core PR #22 at =709b6f6= reported the following results with
+the 4 GiB managed heap. Its two dense capacity Cases ran under the 650-second
+profile, so they leave the 180-second gate open.
+
+| Case | Measured phase | Wall seconds | GC wall seconds | Observed work |
+|------+----------------+--------------+-----------------+---------------|
+| Dense declarations | Full declaration admission | 230.55 | 23.13 | 10,000 wrappers, 20,000 initializers, 58,692,026 metadata replay visits |
+| Dense selection | First complete Graph | 216.83 | 21.17 | Entire selected graph; phase includes admission |
+| Dense selection | Independent currentness | 6.30 | 1.36 | Complete selected graph |
+| Sparse business | Directory projection | 1.74 | 0.23 | 10,000 owners |
+| Sparse business | Selected admission | 3.33 | 0.47 | Two owners |
+| Sparse business | Scope and value | 7.58 | 1.00 | Two scope factories |
+
+The dense declaration case retained 2,977,010,992 live bytes after collection.
+The available report does not provide peak RSS or qualified allocation deltas.
+The first-Graph span includes Interface work, so its elapsed time cannot be
+attributed to SCC or order repair. Use the existing =stages= mode to compare
+expansion, native replay, source guards and selected graph construction on the
+same workload. Preserve effect boundaries and read counts on both sides of
+any optimization.
+
+A local dense-selection repeat at =229606c= stopped inside first Graph
+admission. The incomplete span consumed 599.35 seconds wall, 179.22 seconds
+CPU and 39.43 seconds GC wall before the 650-second Case watchdog fired.
+The sampled stack was in Gerbil =core-bind-syntax!= and =core-expand-module-begin=
+under =reader-read-publication=. This identifies the operation at interruption;
+the stack sample does not attribute the preceding span. The outer command
+returned 137 and the Harness recorded the duration failure.
+
+The instrumented repeat at =3c5ca80= also stopped during owner admission.
+It reached 6,166 candidates and completed 6,165 value admissions. The partial
+Graph span used 633.46 seconds wall and 212.27 seconds CPU, with 52.93 seconds
+of GC wall time. Its nested attribution reported 45.43 seconds of CPU for
+36,994 metadata replays (35,062,185 visited reads) and 22.58 seconds of CPU for
+6,166 Interface wrapper expansions. It had recorded 289,769 source reads and
+no selected topological resolution call. The counts precede the interruption.
+Stage instrumentation and overlapping spans prevent using this run as a
+normal-path timing comparison. The local process timer could not report RSS
+because its =sysctl= access was denied.
+
+The linker still scans =module-ids= in =eligible!= for each selected owner,
+even though =select-module-graph= indexes selection membership for its own
+dependency checks. =MetadataProjection.SelectionIndex= proves that indexed
+membership preserves denial, selection and policy-fallback precedence. The
+same model gives a counterexample to using a captured index after its input
+sequence changes. The Scheme path still uses live membership here. Replacing
+it requires ownership of the list payload across the read window, including
+in-place changes that do not bump the receiver revision. Custom Contexts and
+effectful policy fallback retain their independent checks.
+
+The large init text guard uses the same path observation as the ordinary
+source reader within one pure read window. Each guard still compares its
+own expected text. =MetadataProjection.SourceReadWindow= checks the two
+comparison results and rejection after an effect changes the source. The
+Scheme control demands a guard, a reader and a conflicting guard in that
+order and requires one physical read. It also changes the file in an author
+callback and requires a fresh refusal. Observer delivery keeps its existing
+path. This change does not combine independent Gerbil expansion checkpoints.
+
+The source-observation build at =a765b22= passed the four build-input
+faults and the before/after order and admission checks. Its 10,000-owner
+sparse first business demand took 84.22 seconds wall, 23.93 seconds CPU
+and 5.74 seconds GC wall, with two owner admissions and two scope factories.
+The independent stage Case recorded 8.32 seconds wall for directory
+projection and 26.87 for selected admission. Six directory-currentness
+passes consumed 26.20 seconds of the latter span. Scope and value took
+48.87 seconds wall and 15.95 seconds CPU. Thirteen directory-currentness
+passes consumed 48.50 seconds wall and 15.85 seconds CPU; the two scope
+factories consumed 0.11 seconds wall and 0.04 seconds CPU. The timed spans
+are inclusive, and this repeat ran with a compiled source-observation
+overlay and concurrent POO compilation. Use it for attribution rather
+than a before/after latency claim. The source observation fix eliminates
+duplicate file opens inside one window; each independent effect can still
+change an unselected Interface's eligibility and requires its own check.
+
+=SourceClosureWork.profile_delta_preserves_ordered_selection= proves the
+next boundary for Profile currentness. Given the live ordered directory
+roster and a complete change set for classification inputs, reclassifying
+only changed inputs yields the same ordered roots as classifying all owners.
+Completeness includes the decoder policy and any previously excluded owner.
+The Scheme Profile check still reads all candidates when source provenance
+cannot supply that change set. Its closed tag comparison now reads the
+existing physical path entry directly, avoiding a redundant generic query
+lookup for every Interface. Open observers and alternate readtables keep the
+original decoder route. The 1,000-owner Profile test passes, including the
+unselected-owner tag-change refusal.
+
 * Publication checklist
 
 - [X] POO implementation branch =feat/indexed-graph-algorithms= created from the

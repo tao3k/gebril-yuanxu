@@ -1,7 +1,7 @@
 ;;; Real reader/link consumer: root-owned analysis versus guarded independent admission.
 (import :std/test :std/iter :clan/poo/object
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer)
-        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract.)
+        (only-in :tao3k/yuanxu/types/contracts YuanxuContract.)
         (only-in :std/error Error? Error-message)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/observability/testing-fixture with-yuanxu-fixture)

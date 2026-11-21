@@ -6,7 +6,7 @@
         (only-in :tao3k/yuanxu/ops/progress current-execution-progress execution-progress-status
                  current-execution-progress-check
                  execution-progress-idle-milliseconds execution-progress-limit)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         :gerbil/runtime/gambit
         (only-in :std/error deferror-class)
         (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)

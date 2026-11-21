@@ -16,6 +16,7 @@ import YuanxuProof.ModuleSystem.Building.SourceView
 import YuanxuProof.ModuleSystem.Building.InterfaceRoots
 import YuanxuProof.ModuleSystem.Workflow
 import YuanxuProof.ModuleSystem.Selection.FeatureScopes
+import YuanxuProof.ModuleSystem.Selection.CoreRows
 import YuanxuProof.ModuleSystem.Graph.ImportCorrespondence
 import YuanxuProof.ModuleSystem.Graph.TestAdmission
 import YuanxuProof.ModuleSystem.Graph.SourceClosureWork
@@ -35,6 +36,7 @@ import YuanxuProof.Contribution.Qualification
 import YuanxuProof.Admission.Federation
 import YuanxuProof.Admission.Source
 import YuanxuProof.Admission.SourceWindows
+import YuanxuProof.Admission.PreparedModuleIdentity
 import YuanxuProof.Admission.RootChild
 import YuanxuProof.Admission.ReturnWindows
 import YuanxuProof.Admission.BoundaryComposition
@@ -137,6 +139,12 @@ run_cmd do
       `YuanxuProof.ModuleSystem.Loading.MetadataProjection.publishRequiresBothAndCurrent,
       `YuanxuProof.Admission.IssuedRootForwarding.preserves_issuance,
       `YuanxuProof.Admission.ReadRetention.closure_coverage,
+      `YuanxuProof.Admission.SelectionReplay.dependent_group_revoked,
+      `YuanxuProof.Admission.SelectionReplay.post_write_replay_keeps_first_failure,
+      `YuanxuProof.Admission.SelectionReplay.open_window_keeps_checks,
+      `YuanxuProof.Admission.SelectionReplay.indexed_shared_work_saves_repeated_visits,
+      `YuanxuProof.Admission.SelectionReplay.revision_only_cannot_decide_cache_miss,
+      `YuanxuProof.Admission.SelectionReplay.revision_only_cannot_decide_issuance,
       `YuanxuProof.Admission.RootCollection.callbacks_unchanged,
       `YuanxuProof.Admission.RootCollection.first_diagnostic_unchanged,
       `YuanxuProof.Admission.ReadRetention.omitted_dependency_refused,
@@ -617,6 +625,8 @@ run_cmd do
       `YuanxuProof.ModuleSystem.Selection.FeatureScopes.dependency_order_preserved,
       `YuanxuProof.ModuleSystem.Selection.FeatureScopes.every_selected_obligation,
       `YuanxuProof.ModuleSystem.Selection.FeatureScopes.conflicting_contributions_refuse,
+      `YuanxuProof.ModuleSystem.Selection.CoreRows.schedule_and_scc_agree,
+      `YuanxuProof.ModuleSystem.Selection.CoreRows.refused_after_progress,
       `YuanxuProof.ModuleSystem.Workflow.cached_checks_remain_current,
       `YuanxuProof.ModuleSystem.Workflow.Revision.revision_requires_discharge,
       `YuanxuProof.ModuleSystem.Workflow.Revision.stale_cannot_be_certified,

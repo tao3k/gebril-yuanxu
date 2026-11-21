@@ -27,9 +27,10 @@ do not disable deadlock checking merely to hide an undeclared terminal state.
 * Lean correspondence
 
 Lean proves structural and refinement laws that should not depend on a bounded
-Quint state space.  A Lean theorem binds the same Contract identity, semantic
-revision and projection digest as the Quint receipt.  A Quint source change makes
-the downstream proof-impact gate stale until that binding is refreshed.
+Quint state space. Lean and Quint use the same Contract identity and semantic
+revision. Git versions the local proof and model sources, and the existing
+package locks pin external dependencies. The qualification receipt records its
+actual inputs and rejects changes during the run.
 
 * Current runtime semantic Query obligations
 
@@ -44,4 +45,4 @@ The focused owners are =core/dev/proofs/quint/RuntimeSemanticQuery.qnt= and
 =YuanxuProof.ModuleSystem.Schema.Query=.
 
 Current verifier versions, cases and receipt boundaries are documented in
-=packages/proofs/quint/README.org=.
+=dev/proofs/quint/README.org=.

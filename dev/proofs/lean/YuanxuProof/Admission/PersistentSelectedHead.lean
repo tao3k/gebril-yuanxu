@@ -2,9 +2,6 @@
 import YuanxuProof.Admission.SerialUse
 namespace YuanxuProof.Admission.PersistentSelectedHead
 
-def quintSourceDigest : String :=
-  "sha256:07e0866d4aa274ab26d852d5b0a50e0bb33dff8170ab0edf95798eae4ec8112a"
-
 structure Head where
   revision : Nat
   fence : Nat

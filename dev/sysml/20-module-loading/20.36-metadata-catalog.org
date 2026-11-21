@@ -105,3 +105,79 @@ An isolated fault used the original version bucket to refuse a valid
 reinsertion after that version had been removed from the provisional root.
 The differential Case failed at that conflict with exit 42. The restored
 functional Suite passed through the same Gerbil entry.
+
+* Single-release representation candidate
+
+The prototype candidate stores a name's first release directly in the
+outer tree and builds its ordered version tree when a second distinct
+release arrives. The existing persistent edit path publishes the promoted
+tree in a fresh outer root. =CatalogPublication.promote_singleton_version=
+proves that both release identities resolve independently of insertion
+order. The native functional suite passed. An isolated publication fault
+dropped the first release on promotion. The same suite failed at the valid
+add-then-replace batch because its expected original release had vanished.
+
+The existing Just workload ran reference, candidate, candidate, reference
+on Gerbil =2591dcd=. Both builds used the same compiler options and workload.
+All four invocations passed. Each invocation constructed four independent
+snapshots. The table gives two-run medians in seconds.
+
+| Releases  | Shape  | Wall reference | Wall candidate | CPU reference | CPU candidate | GC CPU reference | GC CPU candidate |
+|-----------+--------+----------------+----------------+---------------+---------------+------------------+------------------|
+|   100,000 | Wide   |          0.254 |          0.188 |         0.254 |         0.185 |            0.085 |            0.032 |
+|   100,000 | Skewed |          0.170 |          0.186 |         0.170 |         0.186 |            0.039 |            0.061 |
+| 1,000,000 | Wide   |          3.566 |          3.041 |         3.507 |         3.032 |            1.219 |            0.981 |
+| 1,000,000 | Skewed |          2.442 |          2.177 |         2.355 |         2.172 |            0.697 |            0.641 |
+
+Median whole-command peak RSS fell from 1,248 MiB to 957 MiB. The workload
+performed one dependency read per shape and still exercised successful
+publication, ordered enumeration, and refusal after a provisional edit.
+For the 100,000-row skewed shape the cold stage performed two collections
+in each candidate run and one in each reference run. The candidate remains
+outside the runtime pending resolution of that regression. This comparison
+measures process RSS and GC, with no attributable allocation-byte result.
+
+The next candidate skips the spelling round trip for already interned
+symbols. Noninterned symbols still use Gerbil interning. It also checks
+duplicate versions directly in the representation being updated. With the
+same four-run comparison the 100,000-row skewed CPU medians were 171.4 ms
+for the reference and 173.9 ms for the candidate. GC still took about 60 ms
+with the candidate, compared with about 40 ms in the reference. The functional
+case checks that an uninterned name and version resolve to the same release
+as the canonical symbols. =CatalogPublication.canonical_symbol_fast_path=
+states the fixed-point condition that justifies the shortcut.
+
+A further candidate carries the current name's version bucket while building
+the private root. It refreshes that bucket when a singleton is promoted.
+A different name reads the original outer index, as modeled by
+=CatalogPublication.current_bucket_lookup_exact=. For the million-row skewed
+fixture this avoids 499,999 outer lookups because the hub releases are adjacent.
+The Scheme functional case interleaves names before adding a third version.
+An isolated fault retained the pre-promotion bucket. Enumeration returned
+=(v2 v3)= instead of =(v1 v2 v3)= and the test refused that result.
+Four more capacity invocations passed. The candidate's million-row skewed
+CPU samples were 1.991 and 2.430 s, and the paired reference samples were
+2.287 and 2.356 s. Peak RSS remained about 958 MiB versus 1,248 MiB. The
+100,000-row skewed candidate still took two collections. The retained CPU
+and wall samples do not establish a consistent improvement for the skewed
+workload. This variant remains an experiment.
+
+* Qualification after the Gerbil-POO alignment
+
+At Core =6818da4=, the functional Catalog suite and all four existing
+capacity workloads passed. The guarded capacity command took 14.83 s
+and peaked at 1.34 GiB process footprint. Each workload consumed exactly
+its declared number of rows and performed one dependency read.
+
+| Releases | Shape | Cold wall | Cold CPU | Cold GC CPU | Two edits CPU |
+|----------+-------+-----------+----------+-------------+---------------|
+| 100,000 | Wide | 0.361 s | 0.320 s | 0.104 s | 9 µs |
+| 100,000 | Skewed | 0.416 s | 0.222 s | 0.043 s | 13 µs |
+| 1,000,000 | Wide | 6.660 s | 4.777 s | 1.786 s | 11 µs |
+| 1,000,000 | Skewed | 2.681 s | 2.406 s | 0.525 s | 32 µs |
+
+At one million releases, 10,000 warm exact resolutions used 3.79 ms
+CPU in the wide shape and 3.40 ms in the skewed shape. Enumerating
+500,000 versions of the skewed hub used 16.71 ms CPU. The stale release
+and conflicting edit controls passed. These are Catalog measurements.
+The independent real-Interface Module admission gate remains separate.

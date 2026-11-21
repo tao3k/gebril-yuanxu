@@ -321,7 +321,8 @@ For example, a fixed-prelude Core consumer now writes:
 
 #+begin_src scheme
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop define-type call-with-slot-read-observer replay-slot-reads!)
+        (only-in :clan/poo/type define-type)
+        (only-in :clan/poo/mop call-with-slot-read-observer replay-slot-reads!)
         (only-in :clan/poo/object-contract diagnose))
 ;; Existing POO expressions still use the package prelude's .get/.o bindings.
 #+end_src
@@ -932,7 +933,7 @@ Do not update the release pin to claim those missing producer APIs are published
 
 ** Concrete consumer repairs
 
-1. =object-family/read-projection.ss= uses =prototype-map-length= for declaration
+1. =object/read-projection.ss= uses =prototype-map-length= for declaration
    membership. =null?= and =pair?= do not describe runtime persistent catalogs.
    Empty catalogs retain closed eligibility; nonempty catalogs retain the open
    boundary before descriptor demand. =configuration/slot-origin.ss= uses the

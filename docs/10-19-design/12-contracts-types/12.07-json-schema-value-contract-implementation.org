@@ -22,7 +22,7 @@ other Core sources available. Public gerbil-poo does not depend on this repo.
 
 #+begin_src scheme
 (import :clan/poo/object :clan/poo/object-contract
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         :yuanxu/modules/json-schema/contracts)
 (def PortContract
   (schema-value-contract 'service/port

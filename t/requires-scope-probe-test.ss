@@ -1,5 +1,5 @@
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/mop Type. validate)
+        (only-in :clan/poo/type Type. validate)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :tao3k/yuanxu/module-system/building/source-closure package-library-spec))
 (export requires-scope-probe-test)

@@ -48,7 +48,7 @@
   (check-equal? (Error-message result) "object mutation during read replay")
   (check-equal? (store-frame-depth) 0)
   (check-equal? forced 0)
-  (check-equal? (object-%instance Cold) #f)
+  (check-equal? (object-instantiated? Cold) #f)
   (check-equal? (eq? ($self-slot-spec-fun spec) original) #t)
   (check-equal? (object-revision Parent) revision)
   (check-equal? (.get Parent port) cached)

@@ -11,9 +11,6 @@ The graph is finite and fixed; callback graph growth is not certified here. -/
 namespace YuanxuProof.Admission.IdentityDFS
 open ReplayBoundary SourceWindows
 
-def quintSourceDigest : String :=
-  "sha256:3f8636bb3201249eb33fa751063ed2fd6c02c2f52481dc755bd84aab5e191586"
-
 abbrev Edges := Nat → List Nat
 structure State where
   pending : List Nat

@@ -85,6 +85,26 @@ The linker test exercises that case with the real scope construction guard.
 A reuse route needs a construction representation whose inputs are enforced
 by the runtime. The existing guard alone only certifies recorded support.
 
+** Candidate eligibility and decision indexes
+
+A directory candidate checks its source location before testing the owner's
+eligibility. A decision index can replace the membership lookups when both
+enabled and denied membership describe the current inputs. Denial takes
+precedence when an owner occurs in both sets.
+
+The Scheme Context currently exposes =module-ids= and =denied-modules= as
+lists. Editing a pair in place can change membership while preserving the
+receiver, the list identity, and its length. An index created before that edit
+could continue to admit a revoked owner. A revision check on the POO receiver
+alone cannot certify the index. A later implementation must bind eligibility
+to sealed decision inputs or record changes to the underlying membership.
+Custom Contexts retain their independent checks. The source and author effect
+boundaries still require currentness checks before Graph publication.
+
+=SourceClosureWork.indexed_candidate_decision= proves the lookup equivalence
+under exact membership. =enabled_head_edit_invalidates_decision= and
+=denied_head_edit_invalidates_decision= prove the two stale-index cases.
+
 ** Native role-context handoff
 
 The source-backed selection's =.refresh= creates a new directory context,

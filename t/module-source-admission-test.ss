@@ -6,19 +6,18 @@
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .cc .get .ref .put! object? replay-slot-reads!
                  call-with-current-slot-reads)
-        (only-in :clan/poo/mop Type. Bool)
-        (only-in :clan/poo/type Enum Record Tuple)
+        (only-in :clan/poo/type Type. Bool Enum Record Tuple)
         (only-in :clan/poo/testing/type check-property report-diagnostics)
         (prefix-in :clan/poo/testing/property/test pbt.)
         (only-in :clan/poo/slot-observation call-with-slot-read-observer
                  slot-read-receiver slot-read-key)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :tao3k/yuanxu/object-family/read-projection
+        (only-in :clan/poo/read-projection
                  call-with-owned-read-projection current-owned-read-open-guard)
         (only-in :tao3k/yuanxu/module-system/authoring/roles make-default-module-authoring-profile)
         (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :tao3k/yuanxu/module-system/types ModuleSourceRoleContract)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?)
         :tao3k/yuanxu/module-system/source/collection
         :tao3k/yuanxu/module-system/source/objects
         :tao3k/yuanxu/module-system/source/admission
@@ -46,13 +45,13 @@
        ;; Publish one object, without importing/re-exporting every private role.
        (write-role root "interface" "(import \"config.ss\") (.def Published identity: 'custom/example) (export Published)")
        (call-with-output-file (path-expand "init.ss" root)
-         (cut display "(yuanxu! source: \"./modules\" mode: explicit :custom (example))\n" <>)))
+         (cut display "(yuanxu! :test-dir \"./t\" source: \"./modules\" mode: explicit :custom (example))\n" <>)))
      (lambda () (test root))
      (lambda () (remove-source root)))))
 (def (publication)
   (.o identity: 'custom/example features: (.o)
-      core: (.o requires: (.o) scope-contract: ScopeContract
-                link: (lambda (_dependencies) (.o ready: #t)))))
+      core: (.o scope-contract: ScopeContract
+                exports: (.o ready: #t))))
 (def (collection-source root)
   (let (collection (make-yuanxu-module-source-collection
                    'fixture 'test root "modules/custom"))
@@ -260,7 +259,7 @@
           (check-exception (module-source-admit-current! (list (cons file text))) error?)
           (module-source-admit-current! (list (cons file "")))
           (def prefix (make-string 8192 #\λ))
-          (def suffix (make-string 32768 #\a))
+          (def suffix (make-string 65536 #\a))
           (def large (string-append prefix "猫" suffix "\n"))
           (def current? (module-source-text-guard file large))
           (def different (string-append prefix "犬" suffix "\n"))
@@ -272,17 +271,44 @@
                 (write-role root "types" changed)
                 (check-equal? (current?) #f))
               (list different
+                    (string-append prefix "猫" (substring suffix 0 65535) "b\n")
                     (string-append prefix "猫" suffix)
                     (string-append large "λ"))))
           (parameterize ((current-module-source-observer #f))
-            (check-large-revisions))
+            (check-large-revisions)
+            (write-role root "types" large)
+            (def other-current? (module-source-text-guard file different))
+            (defvalues (_result counts)
+              (call-with-module-source-operation-measurement
+                (lambda ()
+                  (call-with-module-source-read-cache
+                    (lambda ()
+                      (check-equal? (current?) #t)
+                      (check-equal? (module-source-read file) large)
+                      (check-equal? (other-current?) #f))))
+                accounting?: #f))
+            (check-equal? (hash-ref counts '(source reads) 0) 1)
+            (call-with-module-source-read-cache
+              (lambda ()
+                (check-equal? (current?) #t)
+                (let (view (module-source-read file))
+                  (string-set! view 8192 #\犬)
+                  (check-equal? (current?) #f)
+                  (check-equal? (other-current?) #t))))
+            (check-equal? (current?) #t)
+            (call-with-module-source-read-cache
+              (lambda ()
+                (check-equal? (current?) #t)
+                (call-with-module-source-callback
+                  (lambda () (write-role root "types" different)))
+                (check-equal? (current?) #f))))
           (def reads 0)
           (parameterize ((current-module-source-observer
                           (lambda (key amount)
                             (when (and (pair? key) (eq? (car key) 'file-read))
                               (set! reads (+ reads amount))))))
             (check-large-revisions))
-          (check-equal? reads 4)
+          (check-equal? reads 5)
           (write-role root "types" large)
           (parameterize ((current-module-source-observer
                           (lambda (key amount)
@@ -297,7 +323,7 @@
                 (check-equal? (eq? borrowed (module-source-read file)) #t)
                 (check-equal? (current?) #f)))
             (check-equal? (current?) #t))
-          (check-equal? reads 6)
+          (check-equal? reads 7)
           (write-role root "types" large)
           (parameterize ((current-module-source-observer
                           (lambda (key _amount)
@@ -495,7 +521,17 @@
          (let (collection (make-yuanxu-module-source-collection 'fixture 'test root "modules/custom"))
            (check-exception
             (yuanxu-module-source-collection-locate collection '(custom . ../example)) error?))
-         (create-directory (path-expand "modules/custom/example/func.ss" root))
+         (def config (path-expand "modules/custom/example/config.ss" root))
+         (delete-file config)
+         (check-equal? (length (collection-source root)) 1)
+         (def view (yuanxu-load-modules (path-expand "modules" root)
+                     read-publication: (lambda (_source) (publication))))
+         (check-equal? (.get view modules custom example ready) #t)
+         ((.get view admit-current))
+         (write-role root "config" "(def Config (.o))")
+         (check-exception ((.get view admit-current)) error?)
+         (delete-file config)
+         (create-directory config)
          (both-refuse root))))
     (yuanxu-test-case "explicit integration exclusions preserve strict admission of selected Modules"
       (with-module

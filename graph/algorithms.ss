@@ -7,13 +7,16 @@
 ;;; Boundary: pure graph algorithms over composed POO graph facts.
 ;;; Invariant: algorithms emit analysis facts only; runtime execution is out.
 
-(import (only-in :std/hash/misc hash-ensure-modify!)
-        (only-in :std/struct/queue
+(import (only-in :std/struct/queue
                  dequeue!
                  enqueue!
                  make-Queue
                  queue-empty?)
-        (only-in :std/list/list filter)
+        (only-in :std/list/list filter group-same)
+        (prefix-in :clan/poo/generalized-graph graph.)
+        (prefix-in :clan/poo/strong-components scc.)
+        (only-in :clan/poo/dependency-analysis Computation.)
+        (only-in :clan/poo/object .cc)
         :tao3k/yuanxu/graph/types-core)
 
 (export yuanxu-graph-node-ids
@@ -101,7 +104,7 @@
         (let ((cycle
                (cycle-dfs-neighbors/indexed
                 outgoing-index
-                (or (hash-get outgoing-index id) '())
+                (graph-adjacency-ref outgoing-index id)
                 (cons id stack)
                 states)))
         (hash-put! states id 'visited)
@@ -133,158 +136,44 @@
                                        states)))))
 
 (def (yuanxu-graph-outgoing-index graph-value)
-  (edge-pairs->outgoing-index
-   (reverse (yuanxu-graph-edge-pairs graph-value))
-   (make-hash-table)))
-
-(def (edge-pairs->incoming-index edge-pairs incoming-index)
-  (if (null? edge-pairs)
-    incoming-index
-    (let* ((edge-pair (car edge-pairs))
-           (source (car edge-pair))
-           (target (cadr edge-pair)))
-      (hash-ensure-modify! incoming-index
-                           target
-                           (lambda () '())
-                           (lambda (sources) (cons source sources)))
-      (edge-pairs->incoming-index (cdr edge-pairs) incoming-index))))
+  (edge-pairs->outgoing-index (yuanxu-graph-edge-pairs graph-value)))
 
 (def (yuanxu-graph-incoming-index graph-value)
-  (edge-pairs->incoming-index
-   (reverse (yuanxu-graph-edge-pairs graph-value))
-   (make-hash-table)))
+  (edge-pairs->incoming-index (yuanxu-graph-edge-pairs graph-value)))
 
 (def (graph-adjacency-indexes edge-pairs)
-  (let ((outgoing-index (make-hash-table))
-        (incoming-index (make-hash-table)))
-    (for-each
-     (lambda (edge-pair)
-       (let ((source (car edge-pair))
-             (target (cadr edge-pair)))
-         (hash-ensure-modify! outgoing-index
-                              source
-                              (lambda () '())
-                              (lambda (targets) (cons target targets)))
-         (hash-ensure-modify! incoming-index
-                              target
-                              (lambda () '())
-                              (lambda (sources) (cons source sources)))))
-     (reverse edge-pairs))
-    (values outgoing-index incoming-index)))
+  (values (edge-pairs->outgoing-index edge-pairs)
+          (edge-pairs->incoming-index edge-pairs)))
 
-(def (strong-components-pop! root-id stack on-stack component)
-  (let* ((members (vector-ref stack 0))
-         (member (car members)))
-    (vector-set! stack 0 (cdr members))
-    (hash-put! on-stack member #f)
-    (let ((component* (cons member component)))
-      (if (equal? member root-id)
-        component*
-        (strong-components-pop! root-id
-                                stack
-                                on-stack
-                                component*)))))
-
-(def (strong-components-connect-neighbors!
-      ids outgoing-index indices lowlinks on-stack
-      stack next-index components id)
-  (unless (null? ids)
-    (let ((neighbor (car ids)))
-      (cond
-       ((not (hash-get indices neighbor))
-        (strong-components-connect! neighbor
-                                    outgoing-index
-                                    indices
-                                    lowlinks
-                                    on-stack
-                                    stack
-                                    next-index
-                                    components)
-        (hash-put! lowlinks
-                   id
-                   (min (hash-get lowlinks id)
-                        (hash-get lowlinks neighbor))))
-       ((hash-get on-stack neighbor)
-        (hash-put! lowlinks
-                   id
-                   (min (hash-get lowlinks id)
-                        (hash-get indices neighbor)))))
-      (strong-components-connect-neighbors!
-       (cdr ids)
-       outgoing-index
-       indices
-       lowlinks
-       on-stack
-       stack
-       next-index
-       components
-       id))))
-
-(def (strong-components-connect!
-      id outgoing-index indices lowlinks on-stack
-      stack next-index components)
-  (let ((index (vector-ref next-index 0)))
-    (vector-set! next-index 0 (+ index 1))
-    (hash-put! indices id index)
-    (hash-put! lowlinks id index)
-    (hash-put! on-stack id #t)
-    (vector-set! stack 0 (cons id (vector-ref stack 0)))
-    (strong-components-connect-neighbors!
-     (or (hash-get outgoing-index id) '())
-     outgoing-index
-     indices
-     lowlinks
-     on-stack
-     stack
-     next-index
-     components
-     id)
-    (when (= (hash-get lowlinks id) (hash-get indices id))
-      (let ((component
-             (strong-components-pop! id stack on-stack '())))
-        (vector-set! components
-                     0
-                     (cons component (vector-ref components 0)))))))
-
-(def (strong-components-walk-nodes!
-      ids outgoing-index indices lowlinks on-stack
-      stack next-index components)
-  (unless (null? ids)
-    (unless (hash-get indices (car ids))
-      (strong-components-connect! (car ids)
-                                  outgoing-index
-                                  indices
-                                  lowlinks
-                                  on-stack
-                                  stack
-                                  next-index
-                                  components))
-    (strong-components-walk-nodes! (cdr ids)
-                                   outgoing-index
-                                   indices
-                                   lowlinks
-                                   on-stack
-                                   stack
-                                   next-index
-                                   components)))
-
-(def (graph-strong-components/indexed node-ids outgoing-index)
-  (let ((indices (make-hash-table))
-        (lowlinks (make-hash-table))
-        (on-stack (make-hash-table))
-        (stack (vector '()))
-        (next-index (vector 0))
-        (components (vector '())))
-    (strong-components-walk-nodes!
-     node-ids
-     outgoing-index
-     indices
-     lowlinks
-     on-stack
-     stack
-     next-index
-     components)
-    (reverse (vector-ref components 0))))
+;; Keep workflow equality and declaration order while giving POO an opaque
+;; symbol per vertex. Edge-only vertices participate in structural cycles.
+(def (graph-strong-components/indexed node-ids edge-pairs outgoing-index)
+  (def keys (make-hash-table))
+  (def ids (make-hash-table-eq))
+  (def order-rev '())
+  (def (key-for id)
+    (or (hash-get keys id)
+        (let (key (gensym 'workflow-node))
+          (hash-put! keys id key)
+          (hash-put! ids key id)
+          (set! order-rev (cons key order-rev))
+          key)))
+  (def order
+    (begin
+      (for-each key-for node-ids)
+      (for-each (lambda (edge) (key-for (car edge)) (key-for (cadr edge))) edge-pairs)
+      (reverse order-rev)))
+  (def codes
+    (filter-map
+     (lambda (key)
+       (let (targets (graph-adjacency-ref outgoing-index (hash-ref ids key)))
+         (and (pair? targets)
+              (cons key (.cc Computation. reads: (map (cut hash-ref keys <>) targets))))))
+     order))
+  (def owner (scc.partition-owner (scc.partition (graph.declaration order codes))))
+  ;; Project declared rows, including equal IDs declared more than once.
+  (group-same node-ids key: (lambda (id) (owner (hash-ref keys id)))
+    table: (make-hash-table-eq)))
 
 (def (yuanxu-graph-cycle-path graph-value)
   (find-cycle-from-nodes/indexed
@@ -386,10 +275,8 @@
 ;; : (-> YuanxuGraph [Object] [[Object Object]] HashTable YuanxuGraphLoopAnalysis)
 (def (graph-loop-analysis-receipt/indexed graph-value node-ids edge-pairs
                                           outgoing-index)
-  (let-values (((components component-index)
-                  (order-components/indexed
-                   node-ids
-                   (graph-strong-components/indexed node-ids outgoing-index))))
+  (let* ((components (graph-strong-components/indexed node-ids edge-pairs outgoing-index))
+         (component-index (components->membership components)))
       (let* ((cyclic-components
               (select-cyclic-components components outgoing-index))
              (condensation-edges
@@ -425,8 +312,7 @@
   (let* ((node-ids (yuanxu-graph-node-ids graph-value))
          (edge-pairs (yuanxu-graph-edge-pairs graph-value))
          (outgoing-index
-          (edge-pairs->outgoing-index (reverse edge-pairs)
-                                      (make-hash-table))))
+          (edge-pairs->outgoing-index edge-pairs)))
     (graph-loop-analysis-receipt/indexed
      graph-value node-ids edge-pairs outgoing-index)))
 
@@ -447,33 +333,6 @@
         (index-component-members! (car remaining) membership component-id)
         (loop (cdr remaining) (+ component-id 1))))
     membership))
-
-;; Preserve declared node order without repeatedly scanning every component.
-;; Returns both ordered components and the node -> ordered component projection.
-(def (order-components/indexed node-ids components)
-  (let ((membership (components->membership components))
-        (raw->ordered (make-hash-table))
-        (members-rev (make-hash-table))
-        (component-index (make-hash-table))
-        (raw-order-rev '())
-        (next-ordered-id 0))
-    (for-each
-     (lambda (node-id)
-       (let (raw-id (hash-get membership node-id))
-         (unless (hash-key? raw->ordered raw-id)
-           (hash-put! raw->ordered raw-id next-ordered-id)
-           (set! raw-order-rev (cons raw-id raw-order-rev))
-           (set! next-ordered-id (+ next-ordered-id 1)))
-         (hash-put! component-index node-id (hash-get raw->ordered raw-id))
-         (hash-ensure-modify! members-rev
-                              raw-id
-                              (lambda () '())
-                              (lambda (members) (cons node-id members)))))
-     node-ids)
-    (values
-     (map (lambda (raw-id) (reverse (hash-get members-rev raw-id)))
-          (reverse raw-order-rev))
-     component-index)))
 
 (def (select-cyclic-components components outgoing-index)
   (cond

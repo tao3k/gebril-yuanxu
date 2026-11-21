@@ -3,10 +3,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Maintain exact source preparations and transfer admitted role contexts.
 (import (only-in :clan/poo/object .cc .ref .ref/cached object?
-                 object-%instance object-construction-current?)
-        (only-in :clan/poo/read-route require-read-route!)
+                 object-instantiated? object-construction-current?
+                 require-object-instance-route!)
         (only-in :clan/poo/slot-observation without-observation)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         :tao3k/yuanxu/module-system/source/admission
         :tao3k/yuanxu/module-system/source/preparation
         :tao3k/yuanxu/module-system/source/objects
@@ -48,9 +48,9 @@
     (or (hash-get (reader-session-input-origins session) input)
         (let (path
                (or known-path
-                   (and (object-%instance input)
+                   (and (object-instantiated? input)
                      (begin
-                       (require-read-route! 'source-preparation #f (object-%instance input))
+                       (require-object-instance-route! input 'source-preparation)
                        (.ref/cached input 'path (lambda () #f))))))
           (and (string? path)
             (or (let (origin (hash-get (reader-session-preparations session) (list 'derived (path-normalize path))))
@@ -161,14 +161,14 @@
       (reader-enroll-candidate! session previous)
       (source-preparation-value previous))
     (let* ((binding #f)
-           (input (public-dependency-input path capture: (cut reader-capture-input session <...>)
-                    bind: (lambda (value) (set! binding value)))))
+           (input (public-dependency-input path
+                    capture: (cut reader-capture-input session <...>) bind: (lambda (value) (set! binding value)))))
       (when input
         (let (origin (reader-add-input-guard! session input path))
           (set! (source-preparation-invoke origin)
             (lambda ()
-              (unless (public-dependency-input path input #t binding: binding)
-                (error "public dependency source or runtime identity changed" path))))
+              (public-dependency-input path input #t binding: binding
+                bind: (lambda (current) (set! binding current)))))
           (hash-put! (reader-session-preparations session) key origin)
           (reader-enroll-candidate! session origin)
           (set! (reader-session-public-prepared-count session) (+ (reader-session-public-prepared-count session) 1)))
@@ -198,17 +198,30 @@
 ;; Capture only the existing native Context associations. Capturing the
 ;; session would also keep earlier sessions, preparation origins and the old
 ;; reader's publication guards alive across every refresh.
-(def (reader-role-transfer contexts inputs owners data initializers compiler-contexts)
-  (lambda (path owner-at available? install! tool?)
-    (transfer-role-context (hash-get contexts path)
+(def (reader-role-transfer contexts inputs owners data initializers compiler-contexts native-contexts)
+  (lambda (path owner-at available? install! tool? install-native!)
+    (def native-rows '())
+    (def context (transfer-role-context (hash-get contexts path)
       (cut reader-for-each-kernel-context compiler-contexts <...>)
       (lambda (child)
         (values (hash-get inputs child)
                 (hash-get owners child)
                 (or (hash-get data child) '())
                 (hash-get initializers child)))
-      owner-at tool? available? install!
+      owner-at
+      (lambda (child)
+        (or (tool? child)
+            (let* ((row (hash-get native-contexts child))
+                   (origin (and row (car row))))
+              (and (registered-native-context-current? child origin)
+                   (begin (set! native-rows (cons (cons child origin) native-rows)) #t)))))
+      available? install!
       (lambda (reason)
         (when (current-module-source-observer)
           ((current-module-source-observer)
-            (list 'reader-context-not-transferred path reason) 1))))))
+            (list 'reader-context-not-transferred path reason) 1)))
+      (lambda ()
+        (andmap (lambda (row) (registered-native-context-current? (car row) (cdr row)))
+                native-rows))))
+    (when context (for-each (lambda (row) (install-native! (car row) (cdr row))) native-rows))
+    context))

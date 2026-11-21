@@ -88,6 +88,15 @@ theorem pruning_preserves_current_input (wanted previous : List String) (identit
     identity ∈ pruneView wanted previous := by
   simp [pruneView, selected, present]
 
+/-- The path index supplies exact membership only. Traversal order and the
+independent file-ownership check still belong to the native view walk. -/
+theorem indexed_prune_matches_linear (wanted previous : List String)
+    (present : String → Bool) (exact : ∀ path, present path = wanted.contains path) :
+    previous.filter present = pruneView wanted previous := by
+  apply List.filter_congr
+  intro path _
+  exact exact path
+
 /-- std/make static-path flattens identity separators. This encoding is NOT
 injective; the physical output inventory needs its own collision check. -/
 def staticStem (identity : List String) : String := String.intercalate "__" identity

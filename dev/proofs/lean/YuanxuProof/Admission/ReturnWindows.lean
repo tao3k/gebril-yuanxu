@@ -9,9 +9,6 @@ namespace YuanxuProof.Admission.ReturnWindows
 open SourceWindows LeanPoo.Functional.ConstructionCache
 
 -- Refreshed from the maintained QNT source before qualification.
-def quintSourceDigest : String :=
-  "sha256:372b0455b8226bdbea14d27ecab242227c27d41b98fe4d84ab3b5451b48fdeb3"
-
 def combine (first second : Checked) : Checked :=
   ⟨first.accepted && second.accepted, second.cache, first.reads + second.reads⟩
 

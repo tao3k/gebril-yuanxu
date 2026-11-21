@@ -3,7 +3,7 @@
 import YuanxuProof.Admission.SourceWindows
 import LeanPoo.Functional.DeclarativeMetadata
 
-/-! Ownership-scoped analysis routing is implemented by `object-types/contracts.ss` and
+/-! Ownership-scoped analysis routing is implemented by `types/contracts.ss` and
 `admission/source.ss`. Its one-shot edge is modeled below, separately from the
 finite port/contribution batching reference. An analysis mode is never a source
 certificate. Runtime callbacks and complete interception remain explicit bounds.
@@ -78,9 +78,6 @@ theorem owned_responsibility_uses_child_analysis (root child : Request) :
 #guard consume (some ⟨⟨1, 2, 3⟩, true⟩) ⟨1, 9, 3⟩ == (.independent, none)
 #guard consume (some ⟨⟨1, 2, 3⟩, true⟩) ⟨1, 2, 9⟩ == (.independent, none)
 end Routing
-
-def quintSourceDigest : String :=
-  "sha256:932b83c78816ec85fb6049ac7dda441b88fa95a07d9ab5215bbb032ac36511a2"
 
 open LeanPoo.Proof
 open SourceWindows

@@ -1,34 +1,25 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Make output inventory/completion only; no publication or signing authority.
-(import (only-in :std/string/path path-force-extension)
+(import (only-in :gerbil/expander core-read-module/sexp)
+        (only-in :std/string/path path-force-extension)
         (only-in "./program-products.ss" program-path program-identity?)
         (only-in :std/os/flock open-output-file/lock)
         (only-in :std/os/device device-close)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-type module-source-measure-operation))
-(export artifact-files clean-build-artifacts! repair-build-products! require-build-products! build-output-directory
+(export artifact-files require-build-products! require-build-interface! build-output-directory
         call-with-selected-output-lock selected-output-source-directory
-        current-build-output-directory current-build-source-directory current-build-compiler-options current-build-module-roots invalidate-build-products! static-product-path)
+        current-build-output-directory current-build-source-directory current-build-compiler-options
+        static-product-path)
 
 ;; The output directory is an invocation parameter, not an approval.
 (def current-build-output-directory (make-parameter #f))
 (def current-build-source-directory (make-parameter #f))
 (def current-build-compiler-options (make-parameter '()))
-;; Only the current build invocation can narrow the init owner roots.
-(def current-build-module-roots (make-parameter #f))
 
 ;; Gerbil's public Make entry accepts #f for its default. Only callers
 ;; inspecting output files need the concrete directory used by Make.
 (def (build-output-directory (libdir (current-build-output-directory)))
   (or libdir (path-expand "lib" (gerbil-path))))
-
-(def (clean-build-artifacts! identities libdir)
-  ;; Gerbil clean can leave dynamic generations and named runtime sections.
-  (for-each
-    (lambda (path)
-      (unless (eq? (module-source-type path) 'regular)
-        (error "selected compiler output is not a regular file" path))
-      (delete-file path))
-    (artifact-files identities libdir #f)))
 
 (def (call-with-selected-output-lock libdir action)
   (when (and (module-source-type libdir) (not (eq? (module-source-type libdir) 'directory)))
@@ -53,23 +44,15 @@
 
 (def (numeric? text)
   (and (not (string-empty? text)) (andmap char-numeric? (string->list text))))
+(def (interface-product-path base)
+  (string-append base ".ssi"))
+
 (def (static-product-path identity libdir)
   (path-expand
     (path-force-extension
       (string-append "static/" (string-join (string-split (symbol->string identity) #\/) "__")) ".scm")
     libdir))
 
-;; Ordinary std/make completion is distinct from artifact/publication issuance.
-;; std/make's static marker alone does not cover interrupted dynamic phases.
-(def (invalidate-build-products! identities libdir)
-  ;; Check the existing complete physical-name inventory BEFORE any writes.
-  (artifact-files identities libdir #f)
-  (for-each
-    (lambda (id)
-      (let* ((marker (static-product-path id libdir)) (kind (module-source-type marker)))
-        (when kind
-          (unless (eq? kind 'regular) (error "build marker is not an owned regular file" marker))
-          (delete-file marker)))) identities))
 (def (missing-build-products identities libdir)
   (def markers (map (cut static-product-path <> libdir) identities))
   (def files (artifact-files identities libdir #f))
@@ -83,28 +66,26 @@
       (foldr append '()
         (map (lambda (id)
                (let (base (path-expand (symbol->string id) libdir))
-                 (list (string-append base ".ssi") (string-append base ".o1")))) identities)))
+                 (list (interface-product-path base) (string-append base ".o1")))) identities)))
     (filter (lambda (file) (not (regular? file)))
       (map (cut path-force-extension <> ".o1")
         (filter (lambda (file)
                   (and (string-suffix? ".scm" file) (not (member file markers)))) files)))))
-(def (repair-build-products! identities libdir)
-  ;; Invalidate only the affected unit's owned std/make completion marker. The installed Gerbil
-  ;; recompiles it; no compiler replacement, output copying or approval occurs.
-  (def missing (missing-build-products identities libdir))
-  (for-each
-    (lambda (id)
-      (def base (path-expand (symbol->string id) libdir))
-      (when (ormap (lambda (path)
-                     (or (equal? path (string-append base ".ssi"))
-                         (equal? path (string-append base ".o1"))
-                         (string-prefix? (string-append base "~") path))) missing)
-        (let (marker (static-product-path id libdir))
-          (when (file-exists? marker) (delete-file marker))))) identities))
 (def (require-build-products! identities libdir)
   (let (missing (missing-build-products identities libdir))
     (unless (null? missing)
       (error "build-required: selected runtime products are incomplete" missing))))
+
+;; Read the compiler interface under the selected output. Resolving its
+;; library identity through the source search path can select the input.
+(def (require-build-interface! identity libdir)
+  (require-build-products! (list identity) libdir)
+  (def path (interface-product-path (path-expand (symbol->string identity) libdir)))
+  (let-values (((_prelude actual _namespace _body) (core-read-module/sexp path)))
+    (unless (eq? actual identity)
+      (error "build product identity differs from requested library" identity actual path)))
+  path)
+
 (def (output-stem file)
   (let (suffix (find (cut string-suffix? <> file) '(".gxc-complete" ".ssxi.ss" ".ssi" ".scm" ".c")))
     (if suffix (substring file 0 (- (string-length file) (string-length suffix)))
@@ -125,7 +106,7 @@
     (def base (path-expand (symbol->string identity) libdir))
     (def directory (path-directory base))
     (when (and complete? (not (program-identity? identity programs))
-               (not (and (file-exists? (string-append base ".ssi"))
+               (not (and (file-exists? (interface-product-path base))
                          (file-exists? (string-append base ".o1")))))
       (error "build-required: selected compiler output is missing" identity))
     (unless (hash-key? directories directory)

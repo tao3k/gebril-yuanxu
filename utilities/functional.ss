@@ -8,15 +8,6 @@
 ;;; sandbox, session, proof, or runtime semantics.
 
 (import (only-in :std/list/list
-                 assoc
-                 any
-                 every
-                 filter
-                 filter-map
-                 fold
-                 fold-right
-                 member
-                 remove
                  delete-duplicates/hash
                  duplicates)
         (only-in :std/string/misc
@@ -331,7 +322,7 @@
 ;;       ```
 ;;     %
 (def (yuanxu-alist-merge-right left right)
-  (fold-right
+  (foldr
    (lambda (entry merged)
      (cons entry
            (yuanxu-alist-delete-key (car entry) merged)))

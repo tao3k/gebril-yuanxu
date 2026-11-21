@@ -39,7 +39,7 @@ directory declaration in =agentic-ai-lab/selection.ss= is valid:
 #+begin_src scheme
 ;; selection.ss, inside the agentic-ai-lab package
 (import :yuanxu/module-system/selection/init-syntax)
-(yuanxu! :load-modules "./modules" mode: explicit rename: Services
+(yuanxu! :load-modules "./modules" mode: explicit mount: Services
   (checks))
 
 ;; A consumer imports the owning module, without prefix-in.
@@ -51,7 +51,7 @@ These are separate source-file examples. Loading remains demand-driven; changing
 the declaration filename does not bypass selection, publication or currentness.
 
 The mount names above are owned by the corresponding init declarations.
-=rename:= changes a window slot, not the runtime package identity. A dotted
+=mount:= changes a window slot, not the runtime package identity. A dotted
 binding is one Scheme identifier, not an implicit series of slot reads:
 
 #+begin_src scheme

@@ -1,6 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Installed Gerbil compilation, Core issuance, real service publication.
 (import :std/test :clan/poo/object
+        (only-in "../dev/gerbil/clean-outputs.ss" clean-selected-outputs!)
         (only-in :std/error Error? Error-message)
         (only-in :std/misc/ports read-all-as-u8vector)
         (only-in :std/encoding/json write-json)
@@ -38,6 +39,10 @@
     ;; This is the production completion function used by projection .compile.
     ;; Only the one-unit compiler projection is a fixture; compiler and service
     ;; graph/publication/admission implementations are the installed/real ones.
+    (check-exception
+      (call-with-build-artifact-issuance projection lib (cut run "compile")) Error?)
+    (check-equal? (bytes binary) #u8(0))
+    (clean-selected-outputs! (list identity) lib)
     (call-with-build-artifact-issuance projection lib (cut run "compile"))
     (check-equal? (equal? (bytes binary) #u8(0)) #f)
     (.cc services lib: lib projection: projection runtime-main: run

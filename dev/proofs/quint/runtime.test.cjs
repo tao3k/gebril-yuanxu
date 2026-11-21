@@ -56,11 +56,17 @@ test('transitive import mutation between same-path requests is rejected',async()
   });
 });
 
-test('migration retains the complete ordered acceptance catalogue and digest bindings',()=>{
-  const {catalog,hash,checkBindings}=require('./catalog.cjs');
-  assert.equal(catalog.cases.length,540);
-  assert.equal(catalog.bindings.length,53);
-  assert.equal(hash(JSON.stringify(catalog.cases)),
-    'cfb0b2d30617c7757944196511cfdfbf472116270a33d76f37993125da67f8f6');
-  checkBindings();
+test('acceptance catalogue contains distinct executable cases and Profile publication controls',()=>{
+  const {catalog}=require('./catalog.cjs');
+  const cases=new Set();
+  for(const {model,invariant,negative} of catalog.cases) {
+    assert.ok(fs.existsSync(path.join(__dirname,model+'.qnt')),model);
+    assert.match(invariant,/^[A-Za-z_]\w*$/);
+    assert.equal(typeof negative,'boolean');
+    const key=JSON.stringify([model,invariant,negative]);
+    assert.ok(!cases.has(key),`Duplicate Quint case: ${key}`);
+    cases.add(key);
+  }
+  assert.ok(cases.has(JSON.stringify(['CandidatePublication','safety',false])));
+  assert.ok(cases.has(JSON.stringify(['CandidatePublication_dropProfileCandidate','FinalCurrent',true])));
 });

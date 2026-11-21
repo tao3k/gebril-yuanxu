@@ -60,7 +60,7 @@
     (.def Root port: 5432)
     (def read (port-read Root))
     (def calls 0)
-    (runtime.slot-set! (object-%instance Root) 'ref
+    (runtime.slot-set! (runtime.slot-ref Root '%instance) 'ref
       (lambda (_self _key _default) (set! calls (+ calls 1)) 5432))
     (refuses "changed metadata ref" (cut guarded-current? read))
     (check-equal? calls 0)
@@ -100,6 +100,6 @@
     (def read (car (filter (lambda (r) (equal? (slot-read-key r) '(cache-miss missing))) roots)))
     (check-equal? (guarded-current? read) #t)
     (def forged (make-slot-read Root '(cache-miss missing) (object-revision Root)
-      (object-%instance Root) #f '() object-read-current?))
+      (runtime.slot-ref Root '%instance) #f '() object-read-current?))
     (check-equal? (guarded-current? forged) #f)
     (set! completed (+ completed 1)))))

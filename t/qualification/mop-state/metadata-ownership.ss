@@ -27,7 +27,7 @@
         (associate read owner)
         (associate (object-%state owner) owner)
         (table (object-%reads owner) owner)
-        (table (object-%instance owner) owner))
+        (table (runtime.slot-ref owner '%instance) owner))
       (for-each visit (slot-read-dependencies read))))
   (for-each visit roots)
   (parameterize ((metadata-frames (cons owners (metadata-frames))))

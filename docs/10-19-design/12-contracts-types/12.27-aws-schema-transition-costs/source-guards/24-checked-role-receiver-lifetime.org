@@ -69,7 +69,7 @@ API: its receiver provenance comes from that exact runtime producer invocation.
 
 * Borrowed ancestors remain policy support
 
-[[file:../../../../../object-family/read-projection.ss][The existing owned-read region]] now also records the FIRST runtime revision
+[[file:../../../../../object/read-projection.ss][The existing owned-read region]] now also records the FIRST runtime revision
 of each transitive ancestor of this factory-produced receiver. Parent identity
 is never inferred from a Contract name. The temporary instance can become weak;
 its borrowed ancestors remain strongly retained policy support. Their revisions

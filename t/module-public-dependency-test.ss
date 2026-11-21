@@ -16,15 +16,15 @@
 (def (prepare! root)
   (write-source (path-expand "project/gerbil.pkg" root) "(package: dependency-test)\n")
   (write-source (path-expand "project/modules/app/types.ss" root)
-    "(import :clan/poo/object (only-in :clan/poo/mop Type.)\n (prefix-in :clan/poo/declarative-metadata metadata.))\n(export Scope)\n(def Scope (.cc Type. identity: 'app .element?: object?))\n")
+    "(import :clan/poo/object (only-in :clan/poo/type Type.)\n (prefix-in :clan/poo/declarative-metadata metadata.))\n(export Scope)\n(def Scope (.cc Type. identity: 'app .element?: object?))\n")
   (write-source (path-expand "project/modules/app/objects.ss" root)
     "(import :clan/poo/object) (export Value) (.def Value number: 42)\n")
   (write-source (path-expand "project/modules/app/config.ss" root)
     "(import :clan/poo/object) (export Config) (.def Config)\n")
   (write-source (path-expand "project/modules/app/interface.ss" root)
-    "(.def App identity: 'app core: (.o requires: (.o) scope-contract: Scope exports: Value) features: (.o))\n")
+    "(.def App identity: 'app core: (.o scope-contract: Scope exports: Value) features: (.o))\n")
   (def init (path-expand "project/scenarios/init.ss" root))
-  (write-source init "(yuanxu! mode: explicit source: \"../modules\" (app))\n")
+  (write-source init "(yuanxu! :test-dir \"./t\" mode: explicit source: \"../modules\" (app))\n")
   init)
 (def module-public-dependency-test
   (test-suite "Canonical public dependencies and declared package kernels"

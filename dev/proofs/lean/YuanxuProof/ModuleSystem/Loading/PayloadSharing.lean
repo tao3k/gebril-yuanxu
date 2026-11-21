@@ -6,6 +6,43 @@ import LeanPoo.Prototype.Representation
 
 namespace YuanxuProof.ModuleSystem.Loading.PayloadSharing
 
+-- A completed preparation exposes the same ordered role rows that its guard
+-- needs. An absent role is a row with none, and retains its own refusal.
+def roleObservations (roles : List String) (sample : String → Option String) :=
+  roles.map (fun path => (path, sample path))
+
+def checkRoles (current : String → Option String) :
+    List (String × Option String) → Except String Unit
+  | [] => .ok ()
+  | (path, value) :: rest =>
+    if current path = value then checkRoles current rest else .error path
+
+theorem role_rows_preserve_first_refusal
+    (roles : List String) (sample current : String → Option String) :
+    checkRoles current (roleObservations roles sample) =
+      (match roles.find? (fun path => decide (current path ≠ sample path)) with
+       | none => .ok ()
+       | some path => .error path) := by
+  induction roles with
+  | nil => rfl
+  | cons path tail ih =>
+    change (if current path = sample path then
+      checkRoles current (roleObservations tail sample) else .error path) = _
+    by_cases same : current path = sample path <;>
+      simp [List.find?, same, ih]
+
+-- A lookup by a retired alias is still observable whenever a caller can
+-- demand that alias. Clearing a source file does not itself discharge this
+-- premise; the runtime owner must know which lookups remain possible.
+theorem retire_unrequested_alias {Context : Type}
+    (registry : String → Option Context) (alias request : String)
+    (different : request ≠ alias) :
+    (if request = alias then none else registry request) = registry request := by
+  simp [different]
+
+example :
+    (if ("init" : String) = "init" then none else some 1) ≠ some 1 := by decide
+
 -- Diagnostic retention projection, not admission and not a collector model.
 -- A weak-key value is conditional on independent key liveness; the installed
 -- collector correspondence must be established before using this as a heap bound.
@@ -147,8 +184,6 @@ theorem privateCatalogFoldOrder {Value : Type} (roots : List (List Value)) :
     change entries.foldr List.cons
       (tail.foldr (fun entries rest => entries.foldr List.cons rest) []) = entries ++ tail.flatten
     rw [rows, ih]
-
-def thunkConstructionDigest : String := "sha256:892e2ba2a76188b126fca8286be57c90fc17a2dfb81e2fd575464b322e0ee46c"
 
 -- Identifiers denote binding identity, not spelling or a user purity label.
 def inject (original : Nat → Option Nat) (fresh binding : Nat) (name : Nat) : Option Nat :=

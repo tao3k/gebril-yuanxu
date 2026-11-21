@@ -4,4 +4,4 @@
 (export module-declaration-10000-test)
 (def module-declaration-10000-test
   (test-suite "Ten thousand real module declarations"
-    (declaration-scale-case "ten thousand real module declarations" 10000 DeclarationFixture #f)))
+    (declaration-scale-case "ten thousand real module declarations" 10000 DeclarationFixture capacity-diagnostics)))
