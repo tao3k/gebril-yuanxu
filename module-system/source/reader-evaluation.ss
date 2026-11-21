@@ -192,7 +192,10 @@
                   (lambda () (gerbil-compile form)))
                 (observe-reader-work 'reader-compile-start 'reader-compile-end
                   (lambda () (gerbil-compile form)))))
-        (when (and (pair? program) origin)
+        ;; __compile-top returns a Gambit source object in an embedded VM;
+        ;; gxi's __compile-top-source adds an outer pair. Ownership is issued
+        ;; by the exact context/body above, not by the evaluator's carrier.
+        (when origin
           (body-event 'reader-body-compiled context)
           (hash-put! pending program (list context form origin (import-parts program))))
         program)))

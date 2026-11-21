@@ -876,3 +876,21 @@ wall/CPU time. Do not infer a speedup from these single local samples.
 The dynamic-load control exposed an idle-budget failure during this repair.
 A later complete run passed after recompilation, without a budget change. The
 cause is not isolated; retain the failure and require a fresh cohort replay.
+
+* Embedded evaluator carrier regression
+
+The private publication reader must observe initialization for both Gerbil
+compiler carriers. In a linked VM, =__compile-top= returns a Gambit source
+object; gxi's =__compile-top-source= adds an outer pair. Testing =pair?= before
+recording a compiled owned body loses the embedded initializer's delivery and
+subsequently evaluates an unbound declaration name. Track the program issued
+for the already authenticated context/body regardless of carrier shape; keep
+the exact program identity and all source/return guards. No interpreter hook,
+fallback loader or Gambit change is needed.
+
+=t/module-publication-compiler-test.ss= reproduces the unbound =Fixture=
+failure under the embedded compiler/evaluator combination while its gxi
+control succeeds. Both cases pass after the correction with complete
+CASE/SUITE/MODULE/HARNESS markers. This focused regression does not stand for
+the full publication/admission/mutation campaign or downstream linked-image
+qualification; those remain independent gates for the updated dependency cohort.
