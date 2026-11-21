@@ -160,7 +160,7 @@
                 ;; A reached public library is a product when the selected
                 ;; Graph's native import closure already declares its target.
                 ;; Root facades may live outside individual Module directories.
-                (and (local-entry? entry) make-target-index (hash-key? make-target-index path))
+                (and make-target-index (hash-key? make-target-index path))
                 (ormap (lambda (directory) (string-prefix? directory path)) module-roots)
                 ;; Selected Module roots above retain their source products.
                 ;; Other foreign libraries remain prerequisites even when pkg

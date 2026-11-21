@@ -201,6 +201,7 @@
         (executable-targets (make-hash-table))
         (library-sources (make-hash-table))
         (package-values '()) (package-demands '()) (library-demands '()) (package-refused? #f)
+        (selected-library-packages '())
         (package-ids (make-hash-table-eq))
         (cores (make-hash-table-eq)) (owned-graph #f) (graph-policy #f) (entry-construction-intact? (object-construction-current?)))
     ;; Index the selected Core nodes for the build-publication lookup.
@@ -308,6 +309,24 @@
         (and (symbol? identity)
              (or (eq? identity language)
                  (string-prefix? prefix (symbol->string identity)))))
+      (def local-package
+        (.o (package := package) (prefix := prefix) (root := package-root)
+            (owner := owner) (contributor := contributor)))
+      (def (context-package context)
+        (def identity (expander-context-id context))
+        (and (symbol? identity)
+          (let ((selected
+                 (find (lambda (candidate)
+                         (string-prefix? (.ref candidate 'prefix) (symbol->string identity)))
+                       selected-library-packages)))
+            (cond ((and selected (not (eq? package (.ref selected 'package)))) selected)
+                  ((owned? identity) local-package)
+                  (else selected)))))
+      (def (context-source context native-package)
+        (confined-build-path (.ref native-package 'root)
+          (build-target-name (expander-context-id context)
+            (symbol->string (.ref native-package 'package))
+            (and (eq? native-package local-package) language))))
       (for-each
         (lambda (entry)
           (def path (confined-build-path package-root entry))
@@ -320,9 +339,9 @@
       (def (admit-context context)
         (when program-source (set! borrowed-contexts (cons context borrowed-contexts)))
         (def identity (expander-context-id context))
-        (when (owned? identity)
-          (let* ((relative (build-target-name identity (symbol->string package) language))
-                 (path (confined-build-path package-root relative))
+        (let (native-package (context-package context))
+         (when native-package
+          (let* ((path (context-source context native-package))
                  (actual (module-context-path context)))
             (unless (and (string? actual) (equal? path (path-normalize actual)))
               (error "public library compiler source differs from declared package" identity path actual))
@@ -335,16 +354,20 @@
                           (and existing
                                (eq? 'publication (.ref existing 'kind))
                                (eq? identity (.ref existing 'compiler-identity)))))
-              (add-source! path owner contributor)))))
+              (add-source! path (.ref native-package 'owner) (.ref native-package 'contributor))
+              ;; Reached selected-package libraries are actual products even
+              ;; when an installed copy exists. Preserve explicit FFI/options.
+              (unless (hash-key? make-targets path)
+                (hash-put! make-targets path (list gxc: (symbol->string identity)))))))))
       (def (declared-source-context context)
         (let ((identity (expander-context-id context))
               (actual (module-context-path context)))
-          (if (and (owned? identity) (string? actual)
+          (def native-package (context-package context))
+          (if (and native-package (string? actual)
                    (string=? (path-extension actual) ".ssi"))
             ;; A compiled dependency may be this consumer's hot product.
             ;; Expand the confined source before traversing its imports.
-            (let* ((relative (build-target-name identity (symbol->string package) language))
-                   (path (confined-build-path package-root relative))
+            (let* ((path (context-source context native-package))
                    (source (core-import-module path)))
               (unless (eq? identity (expander-context-id source))
                 (error "public library compiler identity differs from declared package" identity path))
@@ -487,6 +510,35 @@
                               (add! 'source input owner contributor)))
                           inputs))
               (add! 'publication publication owner contributor))))) nodes)
+    ;; Only packages already represented by selected publications may acquire
+    ;; source outputs. Ordinary dependency facades do not end that closure;
+    ;; unselected packages remain Gerbil prerequisites. This index lives for
+    ;; this projection only and grants no Module selection or runtime scope.
+    (let (packages (make-hash-table-eq))
+      (for-each
+        (lambda (node)
+          (when (and (eq? (.ref node 'kind) 'module-core)
+                     (hash-key? prepared (.ref node 'owner)))
+            (let* ((publication (hash-ref prepared (.ref node 'owner)))
+                   (binding (module-source-package-info (path-directory (.ref publication 'path)))))
+             (when binding
+              (let ((package (pgetq package: (cadr binding) #f))
+                    (root (path-normalize (car binding))))
+               (when (symbol? package)
+                (let (existing (hash-get packages package))
+                  (if existing
+                    (unless (equal? root (.ref existing 'root))
+                      (error "selected native package has different source roots" package))
+                    (let (candidate
+                           (.o (package := package) (root := root)
+                               (prefix := (string-append (symbol->string package) "/"))
+                               (owner := (.ref node 'owner)) (contributor := (.ref node 'identity))))
+                      (hash-put! packages package candidate)
+                      (set! selected-library-packages (cons candidate selected-library-packages)))))))))))
+        (.ref selected-value 'nodes))
+      (set! selected-library-packages
+        (list-sort (lambda (a b) (> (string-length (.ref a 'prefix)) (string-length (.ref b 'prefix))))
+                   selected-library-packages)))
     (for-each (lambda (request) (apply add-library! request)) (reverse library-demands))
     (set! library-demands '())
     (def entry-policy

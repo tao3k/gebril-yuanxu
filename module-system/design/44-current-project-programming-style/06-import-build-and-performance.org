@@ -27,6 +27,15 @@ Gerbil Make prepends its own source directory. Each native compile dispatch
 admits that exact path transition and restores the compiler path before the
 next source check. A different resulting path refuses the init epoch.
 
+An ordinary facade does not end the native import closure of an already
+selected package. Reached libraries in those packages retain their confined
+source, identity and publication owner, even when a prerequisite SSI exists.
+They are owned Make products; preserve explicit target options and the native
+=gxc:= target form. This does not select another Module or claim an unrelated
+package's libraries. =module-selected-library-closure-test.ss= challenges the
+foreign facade edge, an unreached source and mutation after preparation;
+native consumer A/B output and cleanup checks remain separate obligations.
+
 Do not repair this invariant by changing downstream =GERBIL_LOADPATH= flags,
 warming business scopes, bypassing canonical Context checks, or increasing a
 watchdog. =build-input-context-test.ss= covers input order, output fallback,
