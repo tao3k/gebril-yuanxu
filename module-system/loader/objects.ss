@@ -7,7 +7,8 @@
 ;;; Invariant: this owner returns data and never activates product modules.
 
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop make-instance validate)
+        (only-in :clan/poo/type validate)
+        (only-in :clan/poo/mop make-instance)
         (only-in :std/list/list find)
         (only-in :tao3k/yuanxu/module-system/source/types ModuleSourceBinding)
         "types.ss"

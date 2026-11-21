@@ -14,7 +14,7 @@
                  current-build-output-directory)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/source/build retained-build-entries BuildSpecContract)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :tao3k/yuanxu/module-system/source/admission module-source-read call-with-module-source-callback
                  call-with-module-source-operation-measurement)
         (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec))
@@ -67,13 +67,41 @@
             (((gxc: "library" "-O")) ((gxc: "library" "-debug")))
             (((exe: "first" bin: "tool")) ((exe: "second" bin: "tool")))))
         (check-equal? (checked '("first") '("second")) '("first" "second")))
+      (test-case "native Make prerequisites remain part of a guarded projection"
+        (call-with-temporary-directory "make-prerequisites"
+          (lambda (root)
+            (def entry (path-expand "build.ss" root))
+            (def header (path-expand "include/probe.h" root))
+            (write-source (path-expand "gerbil.pkg" root) "(package: make-prerequisites)\n")
+            (write-source entry "(export #t)\n")
+            (write-source (path-expand "probe.ss" root) "(export #t)\n")
+            (write-source header "/* first */\n")
+            (def graph
+              (.o entries: '() compiler-inputs: '() other-projections: '()
+                  selected-graph: #f compiler-current: void))
+            (def (project input)
+              (yuanxu-project-source-spec (.o build-graph: graph)
+                `((gxc: "probe" (extra-inputs: (,input)) "-cc-options" "-DPROBE"))
+                root entry))
+            (def projection (project "include/probe.h"))
+            (check-equal? (.get projection std-make-spec)
+              `((gxc: "probe" (extra-inputs: (,(path-normalize header))) "-cc-options" "-DPROBE")))
+            (check-equal? (cdr (assoc (path-normalize header) (.get projection source-inputs)))
+                          "/* first */\n")
+            (check-exception (project "../probe.h") Error?)
+            (check-exception (project header) Error?)
+            (check-exception (project "missing.h") Error?)
+            (create-symbolic-link header (path-expand "linked.h" root))
+            (check-exception (project "linked.h") Error?)
+            (write-source header "/* second */\n")
+            (check-exception ((.get projection admit-current)) Error?))))
       (test-case "a retained executable preserves its options; duplicate sources are refused"
         (call-with-temporary-directory "build-product-boundary"
           (lambda (temporary)
             (write-source (path-expand "gerbil.pkg" temporary) "(package: build-products)\n")
             (write-source (path-expand "build.ss" temporary) "(export #t)\n")
             (write-source (path-expand "entry.ss" temporary)
-              "(def (main . args) (void)) (export main)\n")
+              "(import :clan/poo/object) (def (main . args) (void)) (export main)\n")
             (def graph
               (.o entries: '() compiler-inputs: '() other-projections: '()
                   selected-graph: #f compiler-current: void))
@@ -83,9 +111,13 @@
             (def library '(gxc: "entry" "-O"))
             (def program '(exe: "entry" bin: "entry-tool" "-debug"))
             (def selected-product (project (list program)))
-            (check-equal? (.get selected-product spec) (list program))
+            (check-equal? (.get selected-product std-make-spec) (list program))
             (check-equal? (.get selected-product compiler-identities) '(build-products/entry))
-            (check-equal? (.call selected-product .admit-spec (.get selected-product spec)) (list program))
+            (check-equal? (and (member "clan__poo__object.scm"
+                                   (map (lambda (input) (.get input name))
+                                        (.get selected-product static-inputs))) #t)
+                          #t)
+            (check-equal? (.call selected-product .admit-spec (.get selected-product std-make-spec)) (list program))
             (for-each
               (lambda (spec)
                 (check-equal? (rejects? "duplicate retained compiler target" (lambda () (project spec))) #t))
@@ -97,7 +129,7 @@
             (def conflicting-products
               (yuanxu-project-source-spec (.o build-graph: selected-graph) (list program)
                 temporary (path-expand "build.ss" temporary)))
-            (check-exception (.call conflicting-products .admit-spec (.get conflicting-products spec)) Error?)
+            (check-exception (.call conflicting-products .admit-spec (.get conflicting-products std-make-spec)) Error?)
             (write-source (path-expand "entry.ss" temporary)
               "(def (main . args) (void)) (export main)\n;; changed\n")
             (check-exception ((.get selected-product admit-current)) Error?))))
@@ -136,12 +168,12 @@
                 (def previous checks)
                 ((.get projection admit-current))
                 (check-equal? (- checks previous) 1)
-                (check-equal? (length (.get projection spec)) width)
+                (check-equal? (length (.get projection std-make-spec)) width)
                 (check-equal? (.slot? projection '.make-groups) #f)
-                (check-equal? (.call projection .admit-spec (.get projection spec)) (.get projection spec))
+                (check-equal? (.call projection .admit-spec (.get projection std-make-spec)) (.get projection std-make-spec))
                 ;; A well-shaped standard target still cannot be substituted for
                 ;; the init-owned merge; structural typing alone is insufficient.
-                (check-exception (.call projection .admit-spec (cons "not-selected" (.get projection spec))) Error?)
+                (check-exception (.call projection .admit-spec (cons "not-selected" (.get projection std-make-spec))) Error?)
                 ;; Merging the standard specs must not relocate ordinary library
                 ;; inputs or give them a generated role source identity.
                 ((.get projection .with-compiler-inputs)
@@ -153,7 +185,7 @@
                 ;; The parent's method is already cached. A derived receiver
                 ;; cannot use it to run with a substituted final standard spec.
                 (def entered? #f)
-                (def substituted (.cc projection 'spec (cons "not-selected" (.get projection spec))))
+                (def substituted (.cc projection 'std-make-spec (cons "not-selected" (.get projection std-make-spec))))
                 (check-exception (.call substituted .with-compiler-inputs
                                    (lambda () (set! entered? #t))) Error?)
                 (check-equal? entered? #f)
@@ -196,11 +228,11 @@
             (check-equal? (.get artifact source-root) root)
             (check-equal? (file-exists? (path-expand ".gerbil/module-build" root)) #f)
             (check-equal? (length (filter (lambda (row) (equal? (if (string? row) row (cadr row)) overlap-name))
-                                        (.get artifact spec))) 1)
+                                        (.get artifact std-make-spec))) 1)
             (check-equal? (rejects? "conflicting retained compiler options"
                             (lambda () (project (list (append overlap-spec '("-debug")))))) #t)
             (check-equal? (rejects? "duplicate retained compiler target"
-                            (lambda () (project '("object-types/contracts" "object-types/contracts")))) #t)
+                            (lambda () (project '("types/contracts" "types/contracts")))) #t)
             (check-equal? (rejects? "retained build entries require"
                             (lambda () (project #t))) #t)
             (let (original (module-source-read entry))
@@ -211,15 +243,15 @@
                 (lambda () (write-source entry original))))
             ((.get artifact admit-current))
             (let* ((links (path-expand "links" temporary))
-                   (link (path-expand "object-types/contracts.ss" links))
+                   (link (path-expand "types/contracts.ss" links))
                    (build (path-expand "build.ss" links)))
-              (create-directory* (path-expand "object-types" links))
+              (create-directory* (path-directory link))
               (write-source (path-expand "gerbil.pkg" links) "(package: tao3k/yuanxu)\n")
               (write-source build "(export #t)")
               (dynamic-wind
-                (lambda () (create-symbolic-link (path-expand "object-types/contracts.ss" root) link))
+                (lambda () (create-symbolic-link (path-expand "types/contracts.ss" root) link))
                 (lambda () (check-equal? (rejects? "non-regular or a symlink"
-                                          (lambda () (project '("object-types/contracts") links build))) #t))
+                                          (lambda () (project '("types/contracts") links build))) #t))
                 (lambda () (delete-file link))))
             (let* ((foreign (path-expand "foreign" temporary))
                    (build (path-expand "build.ss" foreign)))
@@ -227,7 +259,7 @@
               (write-source build "(export #t)")
               (write-source (path-expand "owned.ss" foreign) "(export #t)")
               (def consumer-projection (project '("owned") foreign build))
-              (check-equal? (and (member '(gxc: "other/owned") (.get consumer-projection spec)) #t) #t)
+              (check-equal? (and (member '(gxc: "other/owned") (.get consumer-projection std-make-spec)) #t) #t)
               (check-equal? (and (member 'other/owned (.get consumer-projection compiler-identities)) #t) #t)
               (for-each (lambda (entry)
                           (check-equal? (and (memq (.get entry compiler-identity)

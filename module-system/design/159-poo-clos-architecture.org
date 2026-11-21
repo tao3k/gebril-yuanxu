@@ -7,6 +7,9 @@
 
 * Scope and acceptance
 
+Gerbil-POO owns the runtime and conformance suites. Yuanxu imports
+=:clan/poo/clos= for roles requiring multiple dispatch.
+
 This document defines the stable architecture and acceptance boundary for the
 POO CLOS extension.  It is not a delivery plan.  Implementation order,
 temporary slices, and historical test-run identifiers are deliberately absent.
@@ -37,16 +40,10 @@ makes an artifact-provenance claim.
 
 * Ownership boundary
 
-The POO CLOS owner is =src/module-system/poo-clos/=.  Public values are
-Gerbil POO objects, and declarations lower hygienically to those objects
-plus functional dispatch operations.  No second method-combination module is
-part of the active Loader, profile, Funflow, or user-interface graph.
-
-This owner is a POO CLOS metaprotocol extension, not an ANSI
-compatibility layer.  Its lightweight descriptor participates in the kernel
-selection, while the runtime interface is lazy and opt-in. Importing an ordinary
-Module owner must not load CLOS dispatch, lifecycle generics, declaration IR, or
-method-combination code.
+Gerbil-POO owns the runtime under =clos/= and exposes =:clan/poo/clos=.
+Its declarations lower to POO metaobjects and functional dispatch. Yuanxu
+uses narrow imports for generic authoring when it only needs dispatch
+and method bundles. Class lifecycle remains opt-in for those consumers.
 
 POO owns object identity, Type/Class/Slot metaobjects, prototype
 inheritance, slots, and C4.  The CLOS extension owns only the semantics that
@@ -88,7 +85,7 @@ flowchart LR
 | MOP-EXTENDED | sealed read-only portable profile outside the POO CLOS core acceptance denominator |
 
 The executable clause and operator manifests live in
-=t/qualification/poo-clos/clause-ledger.ss=.  Ledger rows contain semantic
+=gerbil-poo/t/methods/clause-ledger.ss=.  Ledger rows contain semantic
 identity, profile, owner, and positive/negative evidence.  They intentionally
 contain no project-management stage or delivery-sequence field.
 

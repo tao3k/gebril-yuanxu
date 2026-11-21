@@ -2,8 +2,6 @@
 import YuanxuProof.Admission.CoreBuildPublication
 namespace YuanxuProof.Admission.CoreBuildHandoff
 
-def quintSourceDigest : String := "sha256:c0abdbbe07cd7d9c487ca927be9691a2735c8a73c01121064e7533d5ec558c5d"
-
 -- Projection of the retained parent result, NOT a deserialized disk issuer.
 structure Issuance where
   selection : String

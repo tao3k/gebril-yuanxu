@@ -9,36 +9,38 @@
                  module-feature-declaration?)
         (only-in :tao3k/yuanxu/module-system/selection/objects yuanxu-user-module-selection))
 (export module-init-intent module-init-export-name module-interface-tags module-init-source-root
-        module-init-compiler-source-roots
         module-interface-declaration?)
 
-;; A source window reads Gerbil's installed checkout tree. Keep the package
-;; base fixed after first use, as Gerbil does, without initializing its CLI or
-;; creating package and output directories during source discovery.
-(def native-package-root
-  (delay (path-expand "pkg" (gerbil-path))))
-(def (native-package-checkout package)
-  (and package (path-expand package (force native-package-root))))
 (def (module-init-source-root intent source-path)
-  (def package (and (.slot? intent 'package) (.ref intent 'package)))
-  (path-expand (.ref intent 'root)
-    (or (native-package-checkout package) (path-directory source-path))))
-
-(def (module-init-compiler-source-roots declaration source-path)
-  (let-values (((windows _) (parse-module-init (list declaration) source-path)))
-    (filter-map (lambda (window)
-                  (with ([_ _ _ _ _ _ package] window)
-                    (native-package-checkout package)))
-                windows)))
+  (path-expand (.ref intent 'root) (path-directory source-path)))
 
 ;; A filename is not a Module declaration. Native public library facades can
 ;; also be named interface.ss; they remain ordinary compiler import edges.
 (def (module-interface-declaration? path text)
   (def forms (call-with-input-string text read-all))
-  (unless (and (pair? forms) (andmap (cut module-interface-form? <> forms) forms))
-    (error "invalid Interface configuration or library facade" path))
-  (any (lambda (form)
-         (and (eq? (car form) '.def) (not (module-feature-declaration? path form)))) forms))
+  (def declaration?
+    (any (lambda (form)
+           (and (pair? form) (eq? (car form) '.def)
+                (not (module-feature-declaration? path form)))) forms))
+  ;; Gerbil owns native library definitions and exports. A managed declaration
+  ;; still requires the full declaration grammar and cannot fall back to a
+  ;; library when a companion form is malformed or computed.
+  (when (and declaration? (not (andmap (cut module-interface-form? <> forms) forms)))
+    (error "invalid Interface configuration" path))
+  ;; Native facades may declare bindings and functions. Standalone effects and
+  ;; computed declaration wrappers remain inadmissible at an Interface boundary;
+  ;; this preserves the cold unselected-boundary controls. Gerbil checks each
+  ;; admitted declaration's internal grammar; this is not a purity proof.
+  (unless declaration?
+    (unless (and (pair? forms)
+                 (andmap (lambda (form)
+                           (and (pair? form) (list? form)
+                                (or (memq (car form)
+                                          '(import export def defvalues defalias defsyntax defrule defrules))
+                                    (module-feature-declaration? path form))))
+                         forms))
+      (error "invalid native Interface facade" path)))
+  declaration?)
 
 ;; A declaration belongs to its runtime module identity, not its prelude, Git
 ;; remote or the caller's filesystem spelling. init.ss is a convention, not a
@@ -87,8 +89,9 @@
           selection: (.+ (yuanxu-user-module-selection group module flags)
                           (.o enabled?: (not disabled?))))))
   (def (intent window)
-    (with ([mode root mount profile root-explicit? rows package] window)
-      (.o mode root mount profile root-explicit? package init-source: source-path
+    (with ([mode root mount profile root-explicit? rows test-dir source-export] window)
+      (.o mode root mount profile root-explicit? init-source: source-path
+          test-dir source-export
           decisions: (map decision rows))))
   (let-values (((windows mounted?) (parse-module-init forms source-path)))
     (def intents (map intent windows))

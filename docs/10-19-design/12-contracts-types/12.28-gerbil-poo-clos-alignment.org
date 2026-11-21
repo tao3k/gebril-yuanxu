@@ -1,5 +1,39 @@
 #+title: gerbil-poo and Core CLOS Alignment
 
+* Current ownership
+
+Core consumes CLOS from Gerbil POO PR 17, pinned in =gerbil.pkg=. Gerbil
+POO owns declaration expansion, method specificity, combination, invocation
+frames and atomic bundle publication. Module Authoring declares its own
+roles and methods with =.defgeneric=, =.defmethod= and =.defmethod-bundle=.
+Its normal generic call uses the function bound by =.defgeneric=. The
+contribution site uses =.generic-object= to obtain the same owner for bundle
+composition. The guarded stock SourceRole path still uses POO issued reads
+and the two maintained method declarations. Its cost and semantic coverage
+must be compared against the ordinary upstream call before retiring it.
+
+** Paired SourceRole comparison at POO =6ed403d=
+
+One process alternated stock and upstream dispatch over the same parsed
+Types, Objects, Config and Interface sources from Funflow and Lab Nix.
+It used the same Interface, result Type, receipt and POO read collector.
+Both accepted all eight source files. Adding =(stage build)= to Nix Config
+produced the same =poo-config-must-compose-maintained-values= refusal.
+Neither dispatch opened a source callback for these inert inputs. An
+overridden diagnostics validator ran three times on both routes, matching
+the three Nix Types forms. The initial run observed the callbacks without
+their open guards. With POO method-read checks installed, both routes ran
+one open guard immediately before each callback.
+
+After installing the method-read checks, alternating four-pass samples
+including the refusal took roughly 18 ms CPU for stock and 175–179 ms
+CPU for the ordinary CLOS call.
+Upstream retained more distinct read roots. Keep the guarded stock route
+until the upstream call meets the performance gate and passes the effect
+controls. The test-only route switch was confined to the measurement overlay.
+
+The audit below records the earlier ownership split at PR 13.
+
 * Source boundary
 
 This is a source audit, not a dependency upgrade or an implementation receipt.

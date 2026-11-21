@@ -262,8 +262,8 @@ The caller chooses the public names at its own init.
 
 #+begin_src scheme
 (yuanxu!
-  :load-modules "./modules" mode: explicit rename: Modules (engine)
-  :load-modules "./scenarios" mode: explicit rename: "Scenarios" (release))
+  :load-modules "./modules" mode: explicit mount: Modules (engine)
+  :load-modules "./scenarios" mode: explicit mount: "Scenarios" (release))
 #+end_src
 
 With that declaration, application code uses

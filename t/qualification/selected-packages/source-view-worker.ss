@@ -7,7 +7,7 @@
                  yuanxu-prepare-module-retained-source call-with-module-compiler-inputs)
         (only-in :tao3k/yuanxu/module-system/building/products
                  current-build-output-directory current-build-source-directory
-                 repair-build-products! require-build-products! call-with-selected-output-lock))
+                 require-build-products! call-with-selected-output-lock))
 
 (def (main root lib operation selection)
   (add-load-path! lib)
@@ -47,7 +47,6 @@
          (else
           (call-with-module-compiler-inputs entries
             (lambda ()
-              (repair-build-products! identities lib)
               (def make-source (current-build-source-directory))
               (call-with-build-input-path lib
                 (lambda ()

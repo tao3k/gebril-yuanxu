@@ -88,10 +88,25 @@
               (display line output)
               (force-output output)
               (loop (read-line reader #\newline #t))))))))
-  (thread-start! drain)
-  (dynamic-wind void
-    (lambda () (parameterize ((current-output-port writer)) (action)))
+  ;; The Case watchdog interrupts the caller. Keep Make's executor join on
+  ;; its own thread, so that fixture cleanup cannot remove a live worker's cwd.
+  (def build
+    (make-thread
+      (lambda ()
+        (with-catch
+          (lambda (failure) (cons #f failure))
+          (lambda ()
+            (parameterize ((current-output-port writer)
+                           (current-error-port writer))
+              (cons #t (call-with-values action list))))))))
+  (dynamic-wind
+    (lambda () (thread-start! drain) (thread-start! build))
     (lambda ()
-      (close-output-port writer)
-      (dynamic-wind void (lambda () (thread-join! drain))
-        (lambda () (close-input-port reader))))))
+      (let (result (thread-join! build))
+        (if (car result) (apply values (cdr result)) (raise (cdr result)))))
+    (lambda ()
+      (dynamic-wind void (lambda () (thread-join! build))
+        (lambda ()
+          (close-output-port writer)
+          (dynamic-wind void (lambda () (thread-join! drain))
+            (lambda () (close-input-port reader))))))))

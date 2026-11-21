@@ -18,7 +18,7 @@
       (with-other-source
         (lambda (root first _other)
           (write-file (path-expand "init.ss" root)
-            "(yuanxu! mode: explicit :custom (example) (other))")
+            "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example) (other))")
           ;; Real runtime construction, not a fake evidence/currentness closure.
           ;; The old whole-interpreter replay incorrectly retained this query.
           (write-file (path-expand "config.ss" first)
@@ -44,7 +44,7 @@
               (with-other-source
                 (lambda (root _first other)
                   (write-file (path-expand "init.ss" root)
-                    "(yuanxu! mode: explicit :custom (example) (other))")
+                    "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example) (other))")
                   (write-file (path-expand "config.ss" other)
                     (if (eq? kind 'policy)
                       "(import (only-in :clan/poo/object .ref .put!) (only-in :tao3k/yuanxu/module-system/source/admission yuanxu-default-module-style-policy)) (.put! yuanxu-default-module-style-policy 'validate (.ref yuanxu-default-module-style-policy 'validate)) (def Greeting \"other\") (export Greeting)"

@@ -3,7 +3,7 @@
 (import :std/test :clan/poo/object
         (only-in "../objects.ss" application-scope)
         (only-in "../gitea/objects.ss" gitea-application)
-        (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
+        (only-in :tao3k/yuanxu/testing yuanxu-test-case))
 (export config-test)
 ;; Minimal dependency scopes supply the actual public constructor's input shape.
 ;; Only Scenario is demanded; admission/publication metadata is not simulated.

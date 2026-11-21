@@ -12,12 +12,10 @@ The init-owned =std-make-spec= establishes =call-with-build-input-path= around
 source projection and Make dispatch. Prerequisites retain their order. The
 invocation's output directory is the native fallback, including when an
 explicit output is absent from the caller's path. A generated compiler source
-view goes before prerequisites within the same guarded boundary. A =package:=
-window contributes its native checkout from the bound init declaration ahead
-of ordinary prerequisites, so
-installed copies cannot hide selected source dependencies. The source
-reader still admits each reached library through its native identity and
-source guards. Native Make separately owns its output
+view goes before prerequisites within the same guarded boundary. Declared
+module directories supply source fallbacks after the existing prerequisites.
+Gerbil imports identify the reached libraries, and the source reader checks
+their native identity and source guards. Native Make owns the output
 directory and hot/currentness checks. Restore the caller's exact path on every
 exit. If a callback changes the input path, reject the prepared result and
 latch refusal for this init build epoch, including when the callback throws
@@ -28,6 +26,15 @@ recovery contract.
 Gerbil Make prepends its own source directory. Each native compile dispatch
 admits that exact path transition and restores the compiler path before the
 next source check. A different resulting path refuses the init epoch.
+
+An ordinary facade does not end the native import closure of an already
+selected package. Reached libraries in those packages retain their confined
+source, identity and publication owner, even when a prerequisite SSI exists.
+They are owned Make products; preserve explicit target options and the native
+=gxc:= target form. This does not select another Module or claim an unrelated
+package's libraries. =module-selected-library-closure-test.ss= challenges the
+foreign facade edge, an unreached source and mutation after preparation;
+native consumer A/B output and cleanup checks remain separate obligations.
 
 Do not repair this invariant by changing downstream =GERBIL_LOADPATH= flags,
 warming business scopes, bypassing canonical Context checks, or increasing a
@@ -52,16 +59,20 @@ every action. It checks stable compiler prerequisite Context paths, zero
 business scopes during source projection, and native B product initialization
 in an independent qualification harness. First =.get= and selected owner suites
 execute in that process without warming scopes in the parent.
-Lab's runtime CI invokes the deployment file separately through its 240-second
+Lab's runtime CI invokes the deployment file separately through its 120-second
 aggregate =just test-file= gate, validates its complete receipt, and retains its
 output. Its action and idle limits are 120 and 60 seconds, respectively.
 The broad runtime unit batch cannot substitute its longer aggregate deadline.
 
 ** Source and native imports
 
+An enrolled package's native language entry retains its compiler forms in the
+unified source view: Gerbil resolves that prelude directly, outside ordinary
+import redirection. It must not become an ordinary library's metadata-only stamp.
+
 Managed Module consumers use the owning =init.exports= namespace and ordinary
 POO =.get= demand. =modules/<name>/interface.ss= is the Module System's loading
-configuration, not a second native-import application API. Ordinary library
+configuration, not a second compiled-import application API. Ordinary library
 facades remain native Gerbil imports, including built-ins such as Ops. Backend
 compiler imports and explicit authoring inspection do not replace scope linking.
 Module roles use relative imports for their own owners. Cross-domain implementations import a
@@ -155,6 +166,14 @@ both facade and internals, or production and test owners, as independent roots.
 Profiles, Scenarios, contribution modules and advanced authoring owners remain
 lazy until an explicit consumer demands them.
 
+Optional compiled libraries can publish metadata with
+=define-yuanxu-module-declaration=. The compiler supplies the declaring module
+identity. =yuanxu-module-declaration= uses Gerbil's =load-module= and validates
+the registered value against the consumer's contract. Initialize an optional
+implementation from a separate module so consumers can inspect the metadata
+without loading it. Use =yuanxu-autoload= with =contract:= to defer invocation
+of a declared procedure until first use.
+
 Use the existing import-closure projection and upstream =std/make=. ASP remains
 a development policy dependency, not a production build prerequisite. Do not add a scheduler,
 currentness cache, source expander or duplicate graph.  Diagnose root count,
@@ -173,9 +192,9 @@ and semantic result; an optimization without a receipt is not project style.
 Ops is an ordinary Core library, not an optional Module selected through root
 init. Import its published Ops object from =:yuanxu/ops/interface=; functions
 and runtime Script methods share one executor. Core owns compilation through
-its ordinary library roots. Module =core.requires= lists selectable Module
-publications, not built-in library imports. No bootstrap selection or second
-interface registry is required to execute an explicitly declared Script.
+its ordinary library roots. Yuanxu orders selected Module publications using
+the owners of native Gerbil imports. Built-in library imports retain their
+Gerbil identity and an explicitly declared Script can use Ops directly.
 
 A Module must publish the inert vocabulary that its public consumers need.
 Funflow's runtime vocabulary is part of its default object facade; consumers

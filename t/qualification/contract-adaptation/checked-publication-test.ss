@@ -3,13 +3,12 @@
 ;;; Isolated integration fixture: public validation, real Core producer and
 ;;; public publication. No module association resolver or runtime Loader.
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/mop validate Fun TypeError?)
-        (only-in :clan/poo/type String Symbol)
+        (only-in :clan/poo/type validate Fun TypeError? String Symbol)
         :clan/poo/object-contract
         (prefix-in :clan/poo/declarative-metadata metadata.)
         :tao3k/yuanxu/modules/json-schema/contracts
         (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
-        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-classification-evidence))
+        (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence))
 (export checked-publication-test test-cleanup!
         make-scenario make-admission allow
         WebContract ConfigContract ScenarioContract)

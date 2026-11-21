@@ -5,8 +5,6 @@ import YuanxuProof.ModuleSystem.Graph.TestAdmission
 namespace YuanxuProof.ModuleSystem.Loading.IncrementalRoles
 open LeanPoo.Functional
 
-def quintSourceDigest : String := "sha256:65fd2801a0f71c041598d825e3cb720ed54254122019c8412d327dbea66ba1cd"
-
 -- Keys denote role identity, not just a module name. Instantiate compile-import
 -- and value-read closure separately; neither relation denotes execution order.
 inductive Dirty (reads : Key → List Key) (changed : Key → Prop) : Key → Prop

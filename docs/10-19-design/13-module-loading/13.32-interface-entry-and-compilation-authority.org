@@ -111,7 +111,7 @@ No new lookup/cache algorithm is modeled or implemented. Native cold-namespace,
 plain-get value and repeated-object identity controls establish the focused
 Scheme correspondence; the Lean laws retain their source/observation premises.
 
-[[file:13.29-prelude-ecosystem-and-selected-package-builds.org][13.29]], [[file:13.30-selected-package-build-refinement.org][13.30]] and [[file:13.31-native-prelude-staging-and-source-view.org][13.31]] retain the compilation ownership, source/phase
+[[file:13.29-prelude-ecosystem-and-selected-package-builds.org][13.29]], [[file:13.30-selected-package-build-refinement.org][13.30]] and [[file:13.31-gerbil-prelude-staging-and-source-view.org][13.31]] retain the compilation ownership, source/phase
 and output correspondence requirements. SourceView input data is not a cached
 approval. Existing guarded role/source preparation, native imports/Make and
 artifact management remain the sole implementation route.

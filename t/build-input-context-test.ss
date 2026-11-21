@@ -3,7 +3,8 @@
 (import :std/test
         (only-in :gerbil/runtime/loader load-path set-load-path!)
         (only-in :std/io/tempfile call-with-temporary-directory)
-        (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path))
+        (only-in :tao3k/yuanxu/module-system/building/source-package call-with-build-input-path
+                 call-with-build-source-fallbacks))
 (export build-input-context-test)
 (def (with-input-path paths action)
   (def previous (load-path))
@@ -52,6 +53,19 @@
                   make-source: checkout)
                 error?)
               (check-equal? (load-path) (list one two)))))))
+    (test-case "declared source fallbacks keep the first native prerequisite"
+      (call-with-temporary-directory "build-source-fallbacks-"
+        (lambda (root)
+          (def library (path-expand "lib" root))
+          (def checkout (path-expand "checkout" root))
+          (def fallback (path-expand "fallback" root))
+          (for-each create-directory* (list library checkout fallback))
+          (def paths (list library checkout library))
+          (with-input-path paths
+            (lambda ()
+              (call-with-build-source-fallbacks (list fallback checkout)
+                (lambda () (check-equal? (load-path) (list library checkout fallback))))
+              (check-equal? (load-path) paths))))))
     (test-case "path mutation refuses admission and restores the caller"
       (call-with-temporary-directory "build-input-refusal-"
         (lambda (root)

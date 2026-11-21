@@ -10,9 +10,12 @@
         (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!
                  slot-read-receiver slot-read-value without-observation)
-        (only-in :clan/poo/mop Type. define-type element? validate)
-        (only-in :clan/poo/type List)
-        (only-in :std/list/list any delete-duplicates/hash filter-map find)
+        (only-in :clan/poo/type Type. define-type element? validate List)
+        (only-in :clan/poo/mop prototype-instance? object-precedence-ready?
+                 object-find-in-precedence clos-generic-protocol clos-compose-method-bundle
+                 clos-compute-applicable-methods clos-call-carrier-policy-guard .defgeneric
+                 .defmethod .generic-object .defmethod-bundle)
+        (only-in :std/list/list any delete-duplicates/hash filter-map find map-in-order)
         (only-in :tao3k/yuanxu/utilities/algorithms
                  yuanxu-read-datums/append-map
                  yuanxu-scheme-datum-find)
@@ -24,19 +27,16 @@
         (only-in :tao3k/yuanxu/module-system/observability/presentation
                  yuanxu-poo-slot-authoring-datum-bindings
                  yuanxu-poo-slot-authoring-self-reference?)
-        ;; Role admission needs dispatch and immutable method declarations, not
-        ;; the aggregate class evolution/reflection/load-form publication.
-        (only-in :tao3k/yuanxu/poo-clos/objects
-                 poo-clos-generic-protocol
-                 poo-clos-generic-binding-current poo-clos-compose-method-bundle
-                 clos-call-carrier-policy-guard)
-        (only-in :tao3k/yuanxu/object-family/read-projection call-with-owned-read-projection
+        (only-in :clan/poo/read-projection call-with-owned-read-projection
                  owned-read-function-scope? owned-read-method! owned-read-derived!
-                 owned-read-fields-present?)
-        (only-in :tao3k/yuanxu/poo-clos/generic-syntax .defgeneric .defmethod)
-        (only-in :tao3k/yuanxu/poo-clos/dispatch poo-clos-call poo-clos-compute-applicable-methods)
-        (only-in :tao3k/yuanxu/poo-clos/method-bundle-syntax .defmethod-bundle)
-        (only-in :tao3k/yuanxu/module-system/authoring/roles ModuleAuthoringExecutor. ModuleSourceRole. ConfigSourceRole.))
+                 owned-read-fields-present? make-owned-method-check call-with-owned-read-method-checks)
+        (only-in :tao3k/yuanxu/module-system/source/observations
+                 module-source-object-policy current-module-source-observer
+                 module-source-measure-operation)
+        (only-in :tao3k/yuanxu/module-system/authoring/roles
+                 ModuleAuthoringExecutor. ModuleSourceRole. ConfigSourceRole.
+                 TypesSourceRole. ObjectsSourceRole. FunsSourceRole.
+                 InterfaceSourceRole. BuildSourceRole.))
 
 (export ModuleAuthoringAnalysisProtocol
         ModuleAuthoringAnalysisGeneric
@@ -100,6 +100,13 @@
 ;; Analysis validates every datum's result, including contributed results.
 ;; Admission validates the POO receipt only where that receipt is constructed.
 (def YuanxuModuleAuthoringDiagnostics (List YuanxuModuleAuthoringDiagnostic))
+(def diagnostics-validation-checks
+  (list (make-owned-method-check YuanxuModuleAuthoringDiagnostics '.validate
+          (.ref YuanxuModuleAuthoringDiagnostics '.validate))))
+(def (validate-authoring-diagnostics value)
+  ;; POO checks the actual selected method read before calling a replacement.
+  (call-with-owned-read-method-checks diagnostics-validation-checks
+    (cut validate YuanxuModuleAuthoringDiagnostics <>) value))
 
 (def (yuanxu-module-authoring-admission-shape? value)
   (and (object? value)
@@ -374,7 +381,7 @@
 ;;; packages can contribute a method bundle for a refined executor/role pair
 ;;; without extending a central role switch.
 (def ModuleAuthoringAnalysisProtocol
-  (poo-clos-generic-protocol 'module-system/authoring-analysis))
+  (clos-generic-protocol 'module-system/authoring-analysis))
 
 (.defgeneric module-authoring-analyze (executor role interface datum)
   (protocol ModuleAuthoringAnalysisProtocol))
@@ -382,7 +389,7 @@
 ;; Keep the exported generic object: contributor bundles compose with this
 ;; exact protocol owner, rather than a separately constructed lookalike.
 (def ModuleAuthoringAnalysisGeneric
-  (poo-clos-generic-binding-current module-authoring-analyze$poo-clos-generic))
+  (.generic-object module-authoring-analyze))
 
 ;; One source-level rule owns the shared crossing; normal .defmethod lowering
 ;; supplies the specializers, lexical frame and lambda-list contract.
@@ -405,7 +412,7 @@
   (authoring-method ModuleSourceRole. yuanxu-module-authoring-diagnostics/common)
   (authoring-method ConfigSourceRole. yuanxu-module-authoring-diagnostics/config))
 
-(poo-clos-compose-method-bundle
+(clos-compose-method-bundle
  ModuleAuthoringAnalysisGeneric
  ModuleAuthoringCoreMethods)
 
@@ -440,7 +447,7 @@
       (map
         (lambda (role)
           (let (methods
-                 (poo-clos-compute-applicable-methods ModuleAuthoringAnalysisGeneric
+                 (clos-compute-applicable-methods ModuleAuthoringAnalysisGeneric
                    ModuleAuthoringExecutor. role yuanxu-module-interface-prototype #f))
             (cons role (and (pair? methods) (car methods)))))
         (list ConfigSourceRole. ModuleSourceRole.)))
@@ -465,7 +472,7 @@
 (def (plain-dispatch-argument? value)
   ;; Inspect only warm runtime metadata. No cold getter or logical class bridge
   ;; may open a callback before ordinary Generic fallback owns that operation.
-  (and (object? value) (object-%precedence-list value) (not (object-protocol value))))
+  (and (object-precedence-ready? value) (not (object-protocol value))))
 ;; Two fixed access sites over the two maintained descriptors, NOT one layout
 ;; per selected Module. Runtime .ref/inline retains revision/receiver guards,
 ;; original read delivery and its ordinary lazy miss path.
@@ -475,17 +482,31 @@
 ;; Open/changed carriers retain the Generic branch below.
 (def authoring-body-site (make-slot-cache 'body))
 (def authoring-primary-site (make-slot-cache '%direct-primary))
+(def stock-source-roles
+  (list TypesSourceRole. ObjectsSourceRole. FunsSourceRole.
+        ConfigSourceRole. InterfaceSourceRole. BuildSourceRole.))
+(def stock-role-policy-current?
+  (module-source-object-policy
+    (append stock-source-roles
+            (list YuanxuModuleAuthoringDiagnostics YuanxuModuleAuthoringDiagnostic
+                  ModuleAuthoringDiagnostic yuanxu-module-interface-prototype))))
+(def (invoke-function-method method interface role datum)
+  (let ((body (.ref/inline method authoring-body-site))
+        (primary (.ref/inline method authoring-primary-site)))
+    ;; Capture the body before the open guard can retarget the invocation.
+    (owned-read-method! body method)
+    (primary interface role datum)))
 (def (default-function-method executor role interface)
   ;; The authenticated default methods have identical executor/interface/any
   ;; axes. Only the role's native C4 position distinguishes their specificity.
   ;; Walking C4, rather than profile declaration order, retains multiple-parent
   ;; precedence. Unknown axes/method state still use the public Generic below.
-  (and (memq ModuleAuthoringExecutor. (object-%precedence-list executor))
-       (memq yuanxu-module-interface-prototype (object-%precedence-list interface))
-       (any (lambda (parent)
-              (let (profile (assq parent default-function-profiles))
-                (and profile (cdr profile))))
-            (object-%precedence-list role))))
+  (and (prototype-instance? ModuleAuthoringExecutor. executor)
+       (prototype-instance? yuanxu-module-interface-prototype interface)
+       (object-find-in-precedence role
+         (lambda (parent)
+           (cond ((assq parent default-function-profiles) => cdr)
+                 (else #f))))))
 (def (current-default-method executor role interface)
   (and (plain-dispatch-argument? executor)
        (plain-dispatch-argument? role)
@@ -551,7 +572,7 @@
   ;; Only this actual Generic branch requests carrier support. Nested calls
   ;; share the first guard and its return check in the enclosing dynamic scope.
   ((current-authoring-carrier-demand))
-  (poo-clos-call ModuleAuthoringAnalysisGeneric executor role interface datum))
+  (module-authoring-analyze executor role interface datum))
 (def (authoring-call executor role interface datum (source? #f))
   (cond
    ((and (owned-read-function-scope?)
@@ -560,13 +581,7 @@
          ;; Source datums are inert pairs/scalars; object data stays Generic.
          (not (object? datum))
          (observe-default-method! executor role interface source?))
-    => (lambda (method)
-         (let ((body (.ref/inline method authoring-body-site))
-               (primary (.ref/inline method authoring-primary-site)))
-           ;; Like ordinary invoke, capture the selected body BEFORE the open
-           ;; ownership guard. Its callback cannot retarget this invocation.
-           (owned-read-method! body method)
-           (primary interface role datum))))
+    => (lambda (method) (invoke-function-method method interface role datum)))
    (else (authoring-generic-call executor role interface datum))))
 
 (def (call-with-module-authoring-read-scope action)
@@ -592,15 +607,20 @@
 
 ;; Resolve the actual arguments once. A contributed method may rebind the
 ;; Profile; admission must describe the role dispatched for THIS datum.
-(def (with-authoring-analysis interface role-name datum consume (source? #f))
+(def (with-authoring-analysis interface role-name datum consume
+                              (source? #f) (stock-method #f))
   (let* ((authoring (yuanxu-module-interface-authoring interface))
          (executor (.ref authoring 'executor))
          (role (yuanxu-module-authoring-role interface role-name)))
     (call-with-module-authoring-read-scope
       (lambda ()
         (consume role
-          (validate YuanxuModuleAuthoringDiagnostics
-            (authoring-call executor role interface datum source?)))))))
+          (validate-authoring-diagnostics
+            (if stock-method
+              (begin
+                (%record-slot-reads! (car default-method-trace))
+                (invoke-function-method stock-method interface role datum))
+              (authoring-call executor role interface datum source?))))))))
 
 ;; One typed functional result per datum, through the SAME extensible Generic.
 (def (yuanxu-module-authoring-analyze-datum interface role-name datum)
@@ -618,6 +638,69 @@
                 (with-authoring-analysis interface role-name datum
                   (lambda (_role diagnostics) diagnostics) source?))
               datums)))
+
+(def (stock-role-diagnostics interface role-name datums)
+  (def (individual) (authoring-datum-diagnostics interface role-name datums #t))
+  ;; Only a warm Interface and a maintained role can reach the protected
+  ;; path. A changed result Type may execute author code on the first row.
+  (if (not (and (pair? datums) (pair? (cdr datums))
+                default-method-trace (not (current-module-source-observer))
+                (owned-read-function-scope?) (object-construction-current?)
+                (stock-role-policy-current?) (plain-dispatch-argument? interface)
+                (not (ormap object? datums))))
+    (individual)
+    (let* ((profile (without-observation (lambda () (.ref/cached interface 'authoring))))
+           (role (and (plain-dispatch-argument? profile)
+                      (without-observation (lambda () (.ref/cached profile role-name)))))
+           (executor (and role (without-observation (lambda () (.ref/cached profile 'executor))))))
+      (def method
+        (and (memq role stock-source-roles)
+             (without-observation
+               (lambda ()
+                 (and (eq? (.ref/cached interface 'module-interface?) #t)
+                      (string? (.ref/cached interface 'id)))))
+             (andmap plain-dispatch-argument? (cdr default-method-trace))
+             (current-default-method executor role interface)))
+      (if (not method) (individual)
+        (let ((entered? #f) (result #f) (delivered '()) (failed? #f) (failure #f))
+          (def (run!)
+            (unless entered?
+              (set! entered? #t)
+              (let-values (((value reads)
+                            (%call-with-recorded-slot-reads
+                              (lambda ()
+                                (with-catch
+                                  (lambda (cause) (set! failed? #t) (set! failure cause) #f)
+                                  (lambda ()
+                                    (foldr append '()
+                                      (map-in-order
+                                        (lambda (datum)
+                                          ;; Keep every original read occurrence in
+                                          ;; its datum's position in the outer trace.
+                                          (with-authoring-analysis interface role-name datum
+                                            (lambda (_role diagnostics) diagnostics)
+                                            #t
+                                            method))
+                                        datums))))))))
+                (set! result value)
+                (set! delivered reads))))
+          (def completed?
+            (with-catch
+              (lambda (cause)
+                (if entered? (begin (%record-slot-reads! delivered)
+                                     (if failed? (raise failure) (raise cause))) #f))
+              (lambda ()
+                (module-source-measure-operation 'source-authoring-role-checkpoint
+                  (lambda ()
+                    ;; Native re-observation retains the caller's read scope and
+                    ;; owns both read sweeps. Isolate its checkpoint deliveries.
+                    (%call-with-recorded-slot-reads
+                      (lambda () (reobserve-slot-reads! default-method-reads run!)))
+                    #t)))))
+          (if completed?
+            (begin (%record-slot-reads! delivered)
+                   (if failed? (raise failure) result))
+            (individual)))))))
 
 ;; : (-> PooModuleInterface Symbol [SchemeDatum] PooModuleAuthoringAdmission)
 (def (yuanxu-module-authoring-admit-datums interface role-name datums)
@@ -639,8 +722,8 @@
        (zero? (object-revision ModuleAuthoringAdmission))
        (plain-dispatch-argument? interface)
        (plain-dispatch-argument? role)
-       (object-%instance interface)
-       (object-%instance role)
+       (object-instantiated? interface)
+       (object-instantiated? role)
        ;; Do not run a new owner callback while deciding whether to use the
        ;; stock result. Source/role validation already demanded these fields.
        (without-observation
@@ -657,9 +740,7 @@
 
 (def (yuanxu-module-authoring-source-admit interface role-name datums)
   (def role (yuanxu-module-authoring-role interface role-name))
-  ;; Each datum resolves its own live arguments and authenticates the
-  ;; maintained method support before using its original delivery trace.
-  (def diagnostics (authoring-datum-diagnostics interface role-name datums #t))
+  (def diagnostics (stock-role-diagnostics interface role-name datums))
   ;; Source admission consumes only a refusal diagnostic. All datum and
   ;; diagnostic Type work has completed before the stock receipt decision.
   (if (and (null? diagnostics) (stock-empty-authoring-receipt? interface role))

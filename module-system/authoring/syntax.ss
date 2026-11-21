@@ -9,7 +9,7 @@
 ;;; Parser policy should treat this file as syntax over the public POO API.
 
 (import (runtime: :clan/poo/object)
-        :tao3k/yuanxu/object-family/role-syntax
+        :tao3k/yuanxu/object/role-syntax
         :tao3k/yuanxu/module-system/catalog/values)
 
 (export defyuanxu-module-object-block

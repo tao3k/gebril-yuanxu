@@ -14,18 +14,47 @@
         (only-in :std/list/list find)
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
+        (only-in :tao3k/yuanxu/prelude yuanxu-autoload yuanxu-module-export yuanxu-build-autoloads)
+        (only-in :tao3k/yuanxu/module-system/building/program-products ModuleBuildContract)
+        (only-in :tao3k/yuanxu/module-system/module-hooks ModuleHook. make-module-hooks)
+        (only-in :clan/poo/type element?)
+        (for-syntax (only-in :clan/poo/object object<-alist))
         (only-in :tao3k/yuanxu/module-system/source/admission call-with-module-source-operation-measurement)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in :std/source this-source-file)
         (only-in :clan/poo/object .get .call .o .cc)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules))
 (export module-bootstrap-test)
+(begin-syntax
+  (def AutoloadBuild
+    (let* ((exports (object<-alist '((repeat-on-demand . repeat))))
+           (group (object<-alist (list (cons 'module ':std/func) (cons 'exports exports))))
+           (groups (object<-alist (list (cons 'repetition group)))))
+      (object<-alist (list (cons 'autoload groups))))))
+(yuanxu-build-autoloads AutoloadBuild repetition)
+
 (def root (path-expand ".." (path-directory (this-source-file))))
 (def module-bootstrap-test
   (test-suite "Source tool consumes uncompiled JsonSchema publication"
+    (yuanxu-test-case "module hooks run only the selected scene in depth and declaration order"
+      (def hooks
+        (make-module-hooks
+          (.o last: (.o (:: @ ModuleHook.) on: '(open) depth: 20
+                        .run: (lambda (_ result) (cons 'last result)))
+              first: (.o (:: @ ModuleHook.) on: '(open resume) depth: -20
+                         .run: (lambda (_ result) (cons 'first result)))
+              next: (.o (:: @ ModuleHook.) on: '(open)
+                        .when: (lambda (active?) active?)
+                        .run: (lambda (_ result) (cons 'next result)))
+              peer: (.o (:: @ ModuleHook.) on: '(open)
+                        .run: (lambda (_ result) (cons 'peer result))))))
+      (check-equal? (.call hooks .run 'open #t '()) '(last peer next first))
+      (check-equal? (.call hooks .run 'open #f '()) '(last peer first))
+      (check-equal? (.call hooks .run 'resume #t '()) '(first))
+      (check-equal? (.call hooks .run 'idle #t '()) '()))
     (yuanxu-test-fixture "role preludes retain old bindings and complete only weak runtime language exports"
       (directory DirectoryFixture)
       ;; Actual former source forms, expanded by Gerbil in the same process as
@@ -98,19 +127,9 @@
               (check-equal? (eq? (resolve-identifier (datum->syntax #f name) 0 actual)
                                 (resolve-identifier (datum->syntax #f name) 0 poo)) #t))
             '(object? make-object))
-          (when (string=? name "module-prelude")
-            (let* ((declaration (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
-                   (declared (find (lambda (entry)
-                                     (and (eq? (module-export-name entry) '.def)
-                                          (= (module-export-phi entry) 0)))
-                                   (module-context-export declaration))))
-              ;; Export renaming does not rename the prelude module's private
-              ;; lexical .def (the complete POO import). Test the real consumer
-              ;; language, retaining exact identity with the published role API.
-              (check-equal? (not (not declared)) #t)
-              (def consumer (make-top-context (core-module->prelude-context actual)))
-              (check-equal? (eq? (resolve-identifier (datum->syntax #f '.def) 0 consumer)
-                                (resolved declared)) #t)))
+          (let (consumer (make-top-context (core-module->prelude-context actual)))
+            (check-equal? (eq? (resolve-identifier (datum->syntax #f '.def) 0 consumer)
+                              (resolve-identifier (datum->syntax #f '.def) 0 poo)) #t))
           (parameterize ((current-expander-context
                           (make-top-context (core-module->prelude-context actual))))
             (check-equal? (eval-syntax '(let ((make-object 'local-constructor)
@@ -141,7 +160,7 @@
         '(("config-prelude"
            "prelude: :tao3k/yuanxu/prelude\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) :clan/poo/object)\n(export (import: :gerbil/core :clan/poo/object))\n")
           ("module-prelude"
-           "prelude: :gerbil/core\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) (except-in :clan/poo/object .def) (only-in :tao3k/yuanxu/module-system/source/declaration .def) (phi: +1 :gerbil/core) (phi: +2 :gerbil/core))\n(export (import: :gerbil/core :clan/poo/object) (phi: +1 (import: :gerbil/core)) (phi: +2 (import: :gerbil/core)) (phi: 1 load-module) .def)\n"))))
+           "prelude: :gerbil/core\npackage: prelude-audit\n(import (except-in :gerbil/core object? make-object) :clan/poo/object (phi: +1 :gerbil/core) (phi: +2 :gerbil/core))\n(export (import: :gerbil/core :clan/poo/object) (phi: +1 (import: :gerbil/core)) (phi: +2 (import: :gerbil/core)) (phi: 1 load-module))\n"))))
     (yuanxu-test-case "binding factories share the runtime language frame without copying aliases"
       (def before (current-expander-context))
       ;; A real higher-order library function observes the active factory
@@ -191,6 +210,35 @@
           ((module-binding-action "std/func" 'repeat) (list (lambda () 42) 2))
           '(42 42)))
       (check-equal? (and (memq 'std/func imports) #t) #t))
+    (yuanxu-test-case "public autoload resolves the binding on first use"
+      (def import-owner (current-expander-module-import))
+      (def imports 0)
+      (parameterize ((current-expander-module-import
+                       (lambda arguments
+                         (let (context (apply import-owner arguments))
+                           (when (eq? (expander-context-id context) 'std/func)
+                             (set! imports (1+ imports)))
+                           context))))
+        (def action (yuanxu-autoload ':std/func 'repeat))
+        (check-equal? imports 0)
+        (check-equal? (action (lambda () 42) 2) '(42 42))
+        (def after-first imports)
+        (check-equal? (> after-first 0) #t)
+        (check-equal? (action (lambda () 43) 1) '(43))
+        (check-equal? imports after-first)
+        (check-equal? (procedure? (yuanxu-module-export ':std/func 'repeat)) #t)))
+    (yuanxu-test-case "Build autoloads resolve native exports without entering the expander"
+      (parameterize ((current-expander-module-import
+                       (lambda _ (error "compiled autoload entered the expander"))))
+        (check-equal? (repeat-on-demand (lambda () 42) 2) '(42 42))
+        (check-equal? (repeat-on-demand (lambda () 43) 1) '(43))))
+    (yuanxu-test-case "Build refuses non-symbol autoload exports"
+      (check-equal?
+        (element? ModuleBuildContract
+          (.o defbuild-script: (.o spec: '())
+              autoload: (.o repetition: (.o module: ':std/func
+                                            exports: (.o repeat-on-demand: "repeat")))))
+        #f))
     (yuanxu-test-case "direct Gerbil preludes retain their complete module association"
       (def language (core-import-module ':gerbil/core))
       ;; The Gerbil constructor is valid independently of its registry-caching
@@ -284,7 +332,7 @@
             '(.o .get .ref)))
         '("module-system/building/interface.ss" "module-system/building/build-projection.ss"
           "module-system/source/build.ss" "admission/source.ss"
-          "object-types/contracts.ss" "poo-clos/dispatch.ss")))
+          "types/contracts.ss")))
     (yuanxu-test-case "runtime imports preserve deliberate constructor and predicate shadows"
       (for-each
         (lambda (row)

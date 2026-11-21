@@ -2,9 +2,6 @@
 import YuanxuProof.Admission.SerialUse
 namespace YuanxuProof.Admission.IssuedRootForwarding
 
-def quintSourceDigest : String :=
-  "sha256:cff23745d63d20dc0817918828cf8bb965641b45fd35e105e63cc7834ffeb80f"
-
 -- Tokens denote original registry identities, not reconstructed record payloads.
 def forward (roots : List Nat) : List Nat := roots.eraseDups
 

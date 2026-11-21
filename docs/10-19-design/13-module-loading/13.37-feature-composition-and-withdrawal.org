@@ -16,7 +16,7 @@ it does not run a second Feature selector or decorate accepted selections.
 This refines [[file:13.28-managed-dependency-and-activation-policy.org][13.28]] and the separation in
 [[file:../../../module-system/design/136-gerbil-module-feature-layering.org][RFC 136]]. Historical standalone Profile syntax and plugin-loader adapters
 are not a second public entry. Profiles and Scenarios use the same =yuanxu!=
-directory windows; =rename:= changes their access namespace, not their authority.
+directory windows; =mount:= changes their access namespace, not their authority.
 
 * What the current source establishes
 

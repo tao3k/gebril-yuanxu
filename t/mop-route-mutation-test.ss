@@ -68,7 +68,7 @@
                   (set! changes (+ changes 2))
                   ;; Only reads and the vector shape index are raw hash tables.
                   ;; The value wrapper has the producer's standard layout backend.
-                  (unless (eq? table (object-%instance Root))
+                  (unless (eq? table (runtime.slot-ref Root '%instance))
                     (change-and-restore (cut &raw-table-hash backend)
                       (cut &raw-table-hash-set! backend <>) (lambda (_key) 0))
                     (change-and-restore (cut &raw-table-test backend)
@@ -76,9 +76,9 @@
                     (change-and-restore (cut &raw-table-seed backend)
                       (cut &raw-table-seed-set! backend <>) (+ 1 (&raw-table-seed backend)))
                     (set! changes (+ changes 3))))
-                (list (object-%reads Root) (object-%instance Root)
+                (list (object-%reads Root) (runtime.slot-ref Root '%instance)
                   (runtime.slot-ref
-                    (runtime.slot-ref (runtime.slot-ref (object-%instance Root) 'object) 'shape)
+                    (runtime.slot-ref (runtime.slot-ref (runtime.slot-ref Root '%instance) 'object) 'shape)
                     'indices))))))
         #t)
       unused: (error "unselected branch forced"))

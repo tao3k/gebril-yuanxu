@@ -9,7 +9,7 @@
 
 The historical runtime probes below remain unchanged. Core now also executes
 actual dotted-path authoring through
-[[file:../../object-syntax/path-slots.ss][object-syntax/path-slots.ss]] and
+[[file:../../syntax/path-slots.ss][syntax/path-slots.ss]] and
 [[file:../../t/path-slots-test.ss][path-slots-test.ss]]. Eleven cases pass using the same pinned POO source in an
 isolated package load path. Unlike the historical probe, this suite exercises
 the actual macro binding, prefix trie, source-preserving payloads and diagnostics.

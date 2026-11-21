@@ -25,21 +25,16 @@
 
 (def prelude-test
   (test-suite "Yuanxu package prelude"
-    (test-case "grouped role imports preserve public binding identity and dedicated declaration"
+    (test-case "the role prelude preserves native POO binding identity"
       (def language (core-import-module ':tao3k/yuanxu/module-system/source/module-prelude))
       (def poo (core-import-module ':clan/poo/object))
-      (def declaration (core-import-module ':tao3k/yuanxu/module-system/source/declaration))
       (for-each
         (lambda (entry)
           (def name (module-export-name entry))
           (def phi (module-export-phi entry))
-          (unless (eq? name '.def)
-            (check-equal? (eq? (language-binding language name phi)
-                              (language-binding poo name phi)) #t)))
+          (check-equal? (eq? (language-binding language name phi)
+                            (language-binding poo name phi)) #t))
         (module-context-export poo))
-      (check-equal? (eq? (language-binding language '.def 0)
-                        (language-binding declaration '.def 0)) #t)
-      (check-equal? (language-binding language 'role-.def 0) #f)
       ;; Whole-owner import replaces per-name aliases in the local prelude.
       ;; The callback/source owner remains the same actual runtime context.
       (check-equal?
@@ -62,13 +57,12 @@
             (lambda (port)
               (for-each (lambda (form) (write form port) (newline port))
                 '(prelude: :gerbil/core
-                  (import :gerbil/core (except-in :clan/poo/object .def)
-                    (only-in :tao3k/yuanxu/module-system/source/declaration .def)
+                  (import :gerbil/core :clan/poo/object
                     (phi: +1 :gerbil/core) (phi: +2 :gerbil/core))
                   (export (except-out (import: :gerbil/core) object? make-object)
                     (import: :clan/poo/object)
                     (phi: +1 (import: :gerbil/core))
-                    (phi: +2 (import: :gerbil/core)) (phi: 1 load-module) .def)))))
+                    (phi: +2 (import: :gerbil/core)) (phi: 1 load-module))))))
           (def (trace context)
             (def result '())
             (for-each-build-module context
@@ -80,8 +74,6 @@
           (def grouped (core-import-module ':tao3k/yuanxu/module-system/source/module-prelude))
           (def expected (trace former))
           (check-equal? expected (trace grouped))
-          (check-equal? (> (length (module-context-import former))
-                           (length (module-context-import grouped))) #t)
           (displayln "ROLE-PRELUDE imports-before=" (length (module-context-import former))
                      " imports-after=" (length (module-context-import grouped))
                      " ordered-source-owners=" (length expected)))))

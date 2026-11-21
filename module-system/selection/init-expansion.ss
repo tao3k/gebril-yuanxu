@@ -7,17 +7,18 @@
 ;;; Invariant: the common init.ss path lowers only to declarative module data.
 
 (import (for-syntax
+          (only-in :std/list/list filter-map)
           (only-in :gerbil/expander current-expander-context core-context-top
                    module-context? expander-context-id module-context-path current-expander-compiling? stx-car datum->syntax
                    make-top-context current-expander-phi current-import-expander-phi
                    current-export-expander-phi current-expander-marks)
-          (only-in :tao3k/yuanxu/module-system/source/role-forms module-init-mounts module-init-export-name)
+          (only-in :tao3k/yuanxu/module-system/source/role-forms parse-module-init module-init-export-name)
           (only-in :gerbil/compiler/base module-id->path-string)
-          (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)))
+          (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)))
 (import (only-in :clan/poo/object .ref .o .+)
         (only-in :std/source this-source-file)
         (only-in :tao3k/yuanxu/module-system/building/interface yuanxu-init-build)
-)
+        (only-in :tao3k/yuanxu/module-system/source/types make-module-source))
 (export expand-yuanxu-declaration expand-yuanxu-program-declaration)
 
 ;;; Every named window uses the same module protocol. Profiles and Scenarios
@@ -26,13 +27,17 @@
   (def (expand-declaration stx (program #f) (origin #f))
   (syntax-case stx ()
     ((ctx option value init-clause ...)
-     (memq (syntax->datum (syntax option)) '(mode: source: :load-modules))
+     (memq (syntax->datum (syntax option)) '(mode: source: :load-modules :test-dir :build-roots))
      ;; Normalize literal data only. One private getter is shared by all mounts;
      ;; expansion does not demand a Module scope or a test executor.
-     (let* ((mounts
-             (module-init-mounts
-               (list (cons 'yuanxu! (cdr (syntax->datum stx))))))
-            (owner (core-context-top (current-expander-context) module-context?))
+     (let* ((owner (core-context-top (current-expander-context) module-context?))
+            (windows
+             (let-values (((parsed mounted?)
+                           (parse-module-init
+                             (list (cons 'yuanxu! (cdr (syntax->datum stx))))
+                             (or (and origin (syntax->datum origin)) (and owner (module-context-path owner))))))
+               (if mounted? parsed '())))
+            (mounts (if (null? windows) '(#f) (map (lambda (window) (with ([_ _ mount _ _ _ _ _] window) mount)) windows)))
             (getter (genident 'init-modules-getter))
             (base-exports (genident 'init-exports))
             ;; An exported identifier transformer needs a stable private runtime
@@ -48,11 +53,28 @@
        (unless owner
          (raise-syntax-error #f "init declaration requires a module context" stx))
        (def (namespace-slot mount)
-         (with-syntax ((key (datum->syntax (syntax ctx) (or mount 'modules)))
-                       (get getter))
-           (if mount
-             (syntax (key (.ref (get) 'key)))
+         (if mount
+           (with-syntax ((key (datum->syntax (syntax ctx) mount)) (get getter))
+             (syntax (key (get 'key))))
+           (with-syntax ((key (datum->syntax (syntax ctx) 'modules)) (get getter))
              (syntax (key (get))))))
+       (def (mount-binding mount)
+         (let (name (datum->syntax (syntax ctx) mount))
+           (with-syntax ((name name) (value exports-value-id))
+             #'(begin
+                 (defsyntax name
+                   (identifier-rules ()
+                     (id (identifier? #'id) (.ref value 'name))))
+                 (export name)))))
+       (def (source-export window)
+         (with ([_ _ name _ _ _ _ binding] window)
+           (and binding
+                (with-syntax ((binding (datum->syntax (syntax ctx) binding))
+                              (id (datum->syntax (syntax ctx) (expander-context-id owner)))
+                              (mount (datum->syntax (syntax ctx) name)))
+                  #'(begin
+                      (def binding (make-module-source 'id 'mount))
+                      (export binding))))))
        (when (ormap (lambda (mount)
                       (memq mount '(tests std-make-spec admit-current))) mounts)
          (raise-syntax-error #f "mount conflicts with an init export" stx))
@@ -63,13 +85,16 @@
           (make-spec-binding (datum->syntax (syntax ctx) 'std-make-spec))
           (exports-base base-exports)
           (compiled-program (or program #'#f))
+          (compiled-selection? (if program #'#t #'#f))
           (source-origin (or origin #'(this-source-file ctx)))
-          (native-unit
+          (program-unit
             (datum->syntax (syntax ctx)
               (string->symbol
                 (string-join (string-split (module-id->path-string (expander-context-id owner)) #\/) "__"))))
           (exports-value exports-value-id)
           ((mount-slot ...) (map namespace-slot mounts))
+          ((mount-export ...) (map mount-binding (filter identity mounts)))
+          ((source-export-form ...) (filter-map source-export windows))
           (module-source-getter getter))
          (syntax
            (begin
@@ -78,7 +103,7 @@
                (yuanxu-init-build
                  source-origin
                  '(yuanxu! option value init-clause ...)
-                 compiled-program 'native-unit))
+                 compiled-program 'program-unit compiled-selection?))
              (def exports-value (.+ exports-base (.o mount-slot ...)))
              (defsyntax exports-binding
                (identifier-rules ()
@@ -90,10 +115,12 @@
                  (id (identifier? #'id)
                      (.ref exports-value 'std-make-spec))))
              (export exports-binding make-spec-binding)
+             mount-export ...
+             source-export-form ...
              ;; Runtime runtime modules have one result, not projection values.
              (void))))))
     (_ (raise-syntax-error #f
-         "yuanxu! requires a module source/window declaration; use rename: for Profiles or Scenarios"
+         "yuanxu! requires a module source/window declaration; use mount: to name a window"
          stx)))))
 
 (defsyntax (expand-yuanxu-declaration stx)

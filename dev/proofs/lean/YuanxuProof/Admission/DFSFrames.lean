@@ -8,8 +8,6 @@ This correspondence excludes callbacks changing the dependency graph. -/
 namespace YuanxuProof.Admission.DFSFrames
 open IdentityDFS
 
-def quintSourceDigest : String := IdentityDFS.quintSourceDigest
-
 structure Frames where
   frames : List (List Nat)
   seen : Std.HashSet Nat

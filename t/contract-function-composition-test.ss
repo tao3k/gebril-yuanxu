@@ -4,13 +4,12 @@
 (import :std/test
         (only-in :std/error Error?)
         :clan/poo/object
-        (only-in :clan/poo/mop Type. Function element? validate TypeError?)
+        (only-in :clan/poo/type Type. Function element? validate TypeError? Record String)
         (only-in :clan/poo/number Integer)
-        (only-in :clan/poo/type Record String)
         (only-in :clan/poo/object-contract checked-action)
         (prefix-in :clan/poo/declarative-metadata metadata.)
         :tao3k/yuanxu/module-system/schema/slot-contracts
-        (only-in :tao3k/yuanxu/object-types/contracts YuanxuContract. yuanxu-contract-admit yuanxu-value-admit
+        (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-contract-admit yuanxu-value-admit
                  yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/ops/func validate-script preview-script)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))

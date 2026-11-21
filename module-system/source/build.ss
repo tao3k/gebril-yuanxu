@@ -12,28 +12,26 @@
                  current-expander-path current-expander-marks current-expander-phi
                  current-import-expander-phi current-export-expander-phi raise-syntax-error)
         (only-in :tao3k/yuanxu/module-system/building/source-closure for-each-build-module package-library-spec/source-context)
-        (only-in :tao3k/yuanxu/module-system/building/source-package package-prelude-identity)
-        (only-in :tao3k/yuanxu/module-system/building/program-products make-target-spec program-targets)
-        (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-binding-action)
-        (only-in :std/crypto/digest sha256)
-        (only-in :std/encoding/hex hex-encode)
+        (only-in :tao3k/yuanxu/module-system/building/source-package
+                 package-prelude-identity call-with-build-source-fallbacks)
+        (only-in :tao3k/yuanxu/module-system/building/program-products make-target-spec program-targets make-target? resolve-make-target-inputs StdMakeRowContract)
+        (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
         (only-in :std/string/path path-absolute? path-default-extension subpath?)
         (only-in :std/list/list find foldl)
         (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
         (only-in :clan/poo/read-route require-read-route!)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop define-type Type.)
-        (only-in :clan/poo/type List)
+        (only-in :clan/poo/type define-type Type. List)
         (only-in :clan/poo/object-contract ObjectContract.)
         (only-in :tao3k/yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? module-source-admit-current! call-with-module-source-read-cache module-source-observe module-source-object-policy current-module-source-phase current-module-source-observer module-source-measure-operation call-with-module-source-callback)
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source
                  build-target-name yuanxu-prepare-module-retained-source module-compiler-source-owner?
                  module-source-package-info)
         (only-in :tao3k/yuanxu/module-system/source/objects yuanxu-module-source-ref-metadata)
-        (only-in :tao3k/yuanxu/module-system/source/publication requirement-option)
         (only-in :tao3k/yuanxu/module-system/feature/capability-model feature-projection-request?)
-        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
+        (only-in :tao3k/yuanxu/module-system/source/build-binding
+                 current-module-build-phase? current-module-build-selection)
         (only-in :tao3k/yuanxu/module-system/building/package write-selected-package))
 (export module-test-source-spec module-build-graph module-build-graph/linked unique-build-inputs retained-build-entries ExternalPackageContributionContract BuildSpecContract
         BuildPublicationContract module-build-admit-context!
@@ -44,32 +42,14 @@
   .element?: (lambda (value)
                (and (object? value) (.slot? value '.restore-build)
                     (procedure? (.ref value '.restore-build)))))
-(def (build-root? value)
-  (or (and (string? value) (> (string-length value) 0))
-      (and (list? value) (>= (length value) 2) (eq? (car value) 'gxc:)
-           (string? (cadr value)) (> (string-length (cadr value)) 0)
-           (andmap string? (cddr value)))))
-;; Executables are native Make products, not test-only demands. Their source
-;; ownership and currentness are checked by the enclosing projection.
-(def (make-target? value)
-  (or (build-root? value)
-      (and (list? value) (>= (length value) 2) (eq? (car value) 'exe:)
-           (string? (cadr value)) (> (string-length (cadr value)) 0)
-           (let (options (cddr value))
-             (if (and (pair? options) (eq? (car options) 'bin:))
-               (and (pair? (cdr options)) (string? (cadr options))
-                    (module-source-name? (cadr options)) (andmap string? (cddr options)))
-               (andmap string? options))))))
-(define-type (MakeTargetContract @ Type.)
-  identity: 'module/make-target .element?: make-target?)
-;; Pure native-spec shape and composition. Source/publication authentication
+;; Pure make-spec shape and composition. Source/publication authentication
 ;; remains in the enclosing init-owned boundary, never in a claimed origin tag.
 (def BuildSpecContract
   (.cc ObjectContract. identity: 'module/build-spec
     responsibilities:
-    (.o module-spec: (List MakeTargetContract)
-        retained-spec: (List MakeTargetContract)
-        spec: (List MakeTargetContract))
+    (.o module-spec: (List StdMakeRowContract)
+        retained-spec: (List StdMakeRowContract)
+        spec: (List StdMakeRowContract))
     obligations:
     (lambda (candidate location)
       ;; Count actual obligation execution, not just its caller's wrapper.
@@ -147,10 +127,10 @@
          (lambda ()
            (without-observation
              (lambda ()
-               (and (object? graph) (object-%instance graph) (object-%precedence-list graph)
+               (and (object? graph) (object-instantiated? graph) (object-precedence-ready? graph)
                     (not (object-protocol graph))
                     (begin
-                      (require-read-route! 'admission-context #f (object-%instance graph))
+                      (require-object-instance-route! graph 'admission-context)
                       (let (value (.ref/cached graph '%admission-frame (lambda () #f)))
                         (and (build-context-frame? value)
                              (eq? graph (build-context-frame-owner value))
@@ -192,10 +172,10 @@
            (lambda ()
              (without-observation
                (lambda ()
-                 (and (object? result) (object-%instance result)
-                      (object-%precedence-list result) (not (object-protocol result))
+                 (and (object? result) (object-instantiated? result)
+                      (object-precedence-ready? result) (not (object-protocol result))
                       (begin
-                        (require-read-route! 'package-sources #f (object-%instance result))
+                        (require-object-instance-route! result 'package-sources)
                         (let ((check (.ref/cached result '%package-source-check (lambda () #f)))
                               (invoke (.ref/cached result 'sources-current (lambda () #f)))
                               (frame (current-build-context-frame graph)))
@@ -207,7 +187,8 @@
 (def (module-build-graph selected-value prepare-publication (source-window #f) (source-state #f))
   (module-build-graph/linked selected-value prepare-publication source-window source-state #f))
 (def (module-build-graph/linked selected-value prepare-publication source-window source-state support)
-  (parameterize ((current-module-build-phase? #t))
+  (parameterize ((current-module-build-phase? #t)
+                 (current-module-build-selection selected-value))
     (module-build-graph/phase selected-value prepare-publication source-window source-state support)))
 (def (module-build-graph/phase selected-value prepare-publication source-window source-state support)
   (parameterize ((current-module-source-phase 'build-entry))
@@ -215,14 +196,15 @@
   (let ((entry-values '()) (by-path (make-hash-table)) (by-id (make-hash-table-eq))
         (prepared (make-hash-table)) (checks '()) (check-inputs '()) (other '())
         (asset-values '()) (asset-paths (make-hash-table))
-        (native-targets (make-hash-table))
-        (native-binaries (make-hash-table))
+        (make-targets (make-hash-table))
+        (make-inputs '()) (borrowed-contexts '())
+        (executable-targets (make-hash-table))
         (library-sources (make-hash-table))
         (package-values '()) (package-demands '()) (library-demands '()) (package-refused? #f)
+        (selected-library-packages '())
         (package-ids (make-hash-table-eq))
         (cores (make-hash-table-eq)) (owned-graph #f) (graph-policy #f) (entry-construction-intact? (object-construction-current?)))
-    ;; Index the already-selected Core nodes once; dependency edges select
-    ;; configuration builders, never a second directory/provider scan.
+    ;; Index the selected Core nodes for the build-publication lookup.
     (for-each (lambda (node)
                 (when (eq? (.ref node 'kind) 'module-core)
                   (hash-put! cores (.ref node 'owner) (.ref (.ref node 'publication) 'core))))
@@ -258,7 +240,7 @@
       (let* ((path (if (eq? kind 'publication)
                       (.ref (.ref input 'source) 'value) (.ref input 'path)))
              (compiler-identity (.ref input 'compiler-identity))
-             (target (hash-get native-targets path))
+             (target (hash-get make-targets path))
              (options (if (and (pair? target) (eq? (car target) gxc:)) (cddr target) '())))
         (when library? (hash-put! library-sources path #t))
         (cond
@@ -282,11 +264,17 @@
             (set! entry-values (cons entry entry-values)))))))
     (def (add-asset! input-value owner-id)
       (def file (.ref input-value 'path))
-      (when (hash-key? asset-paths file)
-        (error "duplicate selected configuration asset" file owner-id))
-      (hash-put! asset-paths file #t)
-      (add-check! input-value)
-      (set! asset-values (cons (.cc input-value owner: owner-id) asset-values)))
+      (def owner (if (.slot? input-value 'owner) (.ref input-value 'owner) owner-id))
+      (cond ((hash-get asset-paths file)
+             => (lambda (previous)
+                  (unless (and (eq? owner (.ref previous 'owner))
+                               (equal? (.ref input-value 'source-inputs) (.ref previous 'source-inputs)))
+                    (error "conflicting selected configuration asset" file owner))))
+            (else
+             (def asset (.cc input-value 'owner owner))
+             (hash-put! asset-paths file asset)
+             (add-check! input-value)
+             (set! asset-values (cons asset asset-values)))))
     ;; current! validates the selected context once before these local guards.
     ;; Capturing it again per entry makes each check recursively rewalk all Modules.
     ;; Local guards still re-read bytes/package identity on every boundary.
@@ -321,63 +309,84 @@
         (and (symbol? identity)
              (or (eq? identity language)
                  (string-prefix? prefix (symbol->string identity)))))
+      (def local-package
+        (.o (package := package) (prefix := prefix) (root := package-root)
+            (owner := owner) (contributor := contributor)))
+      (def (context-package context)
+        (def identity (expander-context-id context))
+        (and (symbol? identity)
+          (let ((selected
+                 (find (lambda (candidate)
+                         (string-prefix? (.ref candidate 'prefix) (symbol->string identity)))
+                       selected-library-packages)))
+            (cond ((and selected (not (eq? package (.ref selected 'package)))) selected)
+                  ((owned? identity) local-package)
+                  (else selected)))))
+      (def (context-source context native-package)
+        (confined-build-path (.ref native-package 'root)
+          (build-target-name (expander-context-id context)
+            (symbol->string (.ref native-package 'package))
+            (and (eq? native-package local-package) language))))
       (for-each
         (lambda (entry)
           (def path (confined-build-path package-root entry))
           (def input (prepare-source path))
           (unless (string-prefix? prefix (symbol->string (.ref input 'compiler-identity)))
             (error "public library entry belongs to another runtime package" path))
-          (when (hash-get native-targets path)
+          (when (hash-get make-targets path)
             (add-source! path owner contributor input (not (equal? path program-source)))))
         entries)
       (def (admit-context context)
+        (when program-source (set! borrowed-contexts (cons context borrowed-contexts)))
         (def identity (expander-context-id context))
-        (when (owned? identity)
-          (let* ((relative (build-target-name identity (symbol->string package) language))
-                 (path (confined-build-path package-root relative))
+        (let (native-package (context-package context))
+         (when native-package
+          (let* ((path (context-source context native-package))
                  (actual (module-context-path context)))
             (unless (and (string? actual) (equal? path (path-normalize actual)))
               (error "public library compiler source differs from declared package" identity path actual))
             ;; The executable root was enrolled above. Its imports are
             ;; libraries unless they were independently declared as programs.
-            (unless (equal? path program-source)
-              (add-source! path owner contributor)))))
+            ;; The selected Module already owns and guards its publication.
+            ;; An import of that same source adds a dependency, not a Build target.
+            (unless (or (equal? path program-source)
+                        (let (existing (hash-get by-path path))
+                          (and existing
+                               (eq? 'publication (.ref existing 'kind))
+                               (eq? identity (.ref existing 'compiler-identity)))))
+              (add-source! path (.ref native-package 'owner) (.ref native-package 'contributor))
+              ;; Reached selected-package libraries are actual products even
+              ;; when an installed copy exists. Preserve explicit FFI/options.
+              (unless (hash-key? make-targets path)
+                (hash-put! make-targets path (list gxc: (symbol->string identity)))))))))
       (def (declared-source-context context)
         (let ((identity (expander-context-id context))
               (actual (module-context-path context)))
-          (if (and (owned? identity) (string? actual)
+          (def native-package (context-package context))
+          (if (and native-package (string? actual)
                    (string=? (path-extension actual) ".ssi"))
             ;; A compiled dependency may be this consumer's hot product.
             ;; Expand the confined source before traversing its imports.
-            (let* ((relative (build-target-name identity (symbol->string package) language))
-                   (path (confined-build-path package-root relative))
+            (let* ((path (context-source context native-package))
                    (source (core-import-module path)))
               (unless (eq? identity (expander-context-id source))
                 (error "public library compiler identity differs from declared package" identity path))
               source)
             context)))
-      (package-library-spec/source-context package-root package
-        (map (cut path-default-extension <> ".ss") entries)
-        admit-context declared-source-context))
-    (def (add-package! owner contributor projection (provider #f))
+      (call-with-build-source-fallbacks (list package-root)
+        (lambda ()
+          (package-library-spec/source-context package-root package
+            (map (cut path-default-extension <> ".ss") entries)
+            admit-context declared-source-context))))
+    (def (add-package! owner contributor projection)
       (admit-module-value! ExternalPackageContributionContract projection selected-value)
       (let* ((publication (owner-preparation owner))
              (metadata (yuanxu-module-source-ref-metadata (.ref publication 'source)))
              (root (or (assq 'module-root metadata) (assq 'module-tree-root metadata)))
-             (id (.ref projection 'identity))
-             ;; Bound filesystem names even for deep module identities. The
-             ;; tuple remains in readable provenance; duplicate/digest collisions
-             ;; reject below, never alias two consumer requests or caches.
-             (key (if provider
-                    (string->symbol
-                     (string-append "configuration-"
-                       (hex-encode (sha256 (string->utf8
-                         (call-with-output-string (cut write (list provider owner id) <>)))))))
-                    id)))
-        (unless root (error "external package has no admitted configuration root" owner provider))
-        (when (hash-key? package-ids key)
-          (error "conflicting external package contributions" id owner provider contributor))
-        (when provider (owner-preparation provider))
+             (id (.ref projection 'identity)))
+        (unless root (error "external package has no admitted configuration root" owner))
+        (when (hash-key? package-ids id)
+          (error "conflicting external package contributions" id owner contributor))
         (let (request ((.ref projection '.prepare) (cdr root) (.ref selected-value 'admit-current) publication))
           (unless (and (object? request)
                        (andmap (cut .slot? request <>) '(identity source-inputs input-files admit-current .realize))
@@ -386,28 +395,13 @@
                        (list? (.ref request 'input-files))
                        (procedure? (.ref request 'admit-current))
                        (procedure? (.ref request '.realize)))
-            (error "malformed prepared external package" id owner provider))
-          (hash-put! package-ids key #t)
-          (def bound
-            (if provider
-              (.cc request 'identity key 'package-identity id
-                   'build-owner provider 'configuration-owner owner 'dependency-alias contributor)
-              (.cc request 'scope-owner owner)))
+            (error "malformed prepared external package" id owner))
+          (hash-put! package-ids id #t)
+          (def bound (.cc request 'scope-owner owner))
           (when (.slot? bound '%configuration-check)
             (.ref bound '%configuration-check)
             (.ref bound 'admit-current))
           (set! package-values (cons bound package-values)))))
-    (def (add-configuration-builds! owner requirements)
-      (for-each
-       (lambda (alias)
-         (let* ((requirement (.ref requirements alias))
-                (provider ((.ref selected-value 'resolve-module-id) owner (.ref requirement 'module-id)))
-                (baseline (hash-ref cores provider)))
-           (when (and (not (requirement-option requirement 'view)) (.slot? baseline 'configuration-build))
-             (set! package-demands
-               (cons (lambda () (add-package! owner alias (.ref baseline 'configuration-build) provider))
-                     package-demands)))))
-       (.all-slots requirements)))
     (def (add-projections! owner contributor-value projections)
       (unless (list? projections) (error "module projections must be a list" contributor-value))
       (for-each
@@ -432,18 +426,21 @@
                         (kind (if (string? spec) gxc: (car spec)))
                         (options (if (string? spec) '() (cddr spec)))
                         (path (confined-build-path (cdr root) name))
-                        (program? (eq? kind exe:)))
-                   (cond ((hash-get native-targets path)
+                        (program? (eq? kind exe:))
+                        (spec (resolve-make-target-inputs spec
+                                (car (module-source-package-info (path-directory (.ref publication 'path))))
+                                (lambda (input) (set! make-inputs (cons input make-inputs))))))
+                   (cond ((hash-get make-targets path)
                           => (lambda (previous)
                                (if (equal? previous spec)
                                  (error "duplicate Module Make target" owner contributor-value spec)
                                  (error "conflicting Module Make targets" previous spec)))))
                    (when program?
                      (let* ((binary (pgetq bin: options (path-strip-directory name)))
-                            (old (hash-get native-binaries binary)))
+                            (old (hash-get executable-targets binary)))
                        (when old (error "programs share one binary output" binary old path))
-                       (hash-put! native-binaries binary path)))
-                   (hash-put! native-targets path spec)
+                       (hash-put! executable-targets binary path)))
+                   (hash-put! make-targets path spec)
                    ;; Traverse actual imports after explicit selected options
                    ;; are known, using the existing native source graph walker.
                    (set! library-demands
@@ -464,9 +461,21 @@
        (let ((owner (.ref node 'owner)) (contributor (.ref node 'identity)))
          (case (.ref node 'kind)
            ((module-core)
-            (let (core (.ref (.ref node 'publication) 'core))
-              (when (.slot? core 'projections)
-                (add-projections! owner contributor (.ref core 'projections)))))
+            (let* ((publication (.ref node 'publication))
+                   (core (.ref publication 'core))
+                   (explicit (if (.slot? core 'projections) (.ref core 'projections) '())))
+              (when (.slot? publication '__std-make-spec)
+                (let (spec (.ref publication '__std-make-spec))
+                  (when (and (list? explicit) (ormap list? explicit))
+                    (error "Module Make targets must use only Build.defbuild-script" owner))
+                  ;; Plain library roots describe the module's own build.
+                  ;; An imported owner contributes its actual import closure,
+                  ;; including any explicit compiler options on those inputs.
+                  (add-projections! owner contributor
+                    (list (if (memq owner (.ref selected-value 'roots))
+                            spec (filter pair? spec))))))
+              (unless (null? explicit)
+                (add-projections! owner contributor explicit))))
            ((feature)
             (when (.ref node 'interface)
               (set! library-demands
@@ -500,8 +509,36 @@
                               (add-asset! input owner)
                               (add! 'source input owner contributor)))
                           inputs))
-              (add! 'publication publication owner contributor)
-              (add-configuration-builds! owner (.ref core 'requires)))))) nodes)
+              (add! 'publication publication owner contributor))))) nodes)
+    ;; Only packages already represented by selected publications may acquire
+    ;; source outputs. Ordinary dependency facades do not end that closure;
+    ;; unselected packages remain Gerbil prerequisites. This index lives for
+    ;; this projection only and grants no Module selection or runtime scope.
+    (let (packages (make-hash-table-eq))
+      (for-each
+        (lambda (node)
+          (when (and (eq? (.ref node 'kind) 'module-core)
+                     (hash-key? prepared (.ref node 'owner)))
+            (let* ((publication (hash-ref prepared (.ref node 'owner)))
+                   (binding (module-source-package-info (path-directory (.ref publication 'path)))))
+             (when binding
+              (let ((package (pgetq package: (cadr binding) #f))
+                    (root (path-normalize (car binding))))
+               (when (symbol? package)
+                (let (existing (hash-get packages package))
+                  (if existing
+                    (unless (equal? root (.ref existing 'root))
+                      (error "selected native package has different source roots" package))
+                    (let (candidate
+                           (.o (package := package) (root := root)
+                               (prefix := (string-append (symbol->string package) "/"))
+                               (owner := (.ref node 'owner)) (contributor := (.ref node 'identity))))
+                      (hash-put! packages package candidate)
+                      (set! selected-library-packages (cons candidate selected-library-packages)))))))))))
+        (.ref selected-value 'nodes))
+      (set! selected-library-packages
+        (list-sort (lambda (a b) (> (string-length (.ref a 'prefix)) (string-length (.ref b 'prefix))))
+                   selected-library-packages)))
     (for-each (lambda (request) (apply add-library! request)) (reverse library-demands))
     (set! library-demands '())
     (def entry-policy
@@ -527,7 +564,7 @@
                     (and source-window graph-policy entry-policy
                          (eq? importer core-import-module) (string? target)
                          (object-construction-current?) (graph-policy) (entry-policy)
-                         (object? entry) (object-%instance entry) (object-%precedence-list entry)
+                         (object? entry) (object-instantiated? entry) (object-precedence-ready? entry)
                          (not (object-protocol entry))
                          (let (path (.ref/cached entry 'path (lambda () #f)))
                            (and (string? path) (eq? entry (hash-get by-path path))
@@ -565,10 +602,10 @@
         (with-catch (lambda (_unsupported) #f)
          (lambda () (without-observation
           (lambda ()
-            (and (object? entry) (object-%instance entry) (object-%precedence-list entry)
+            (and (object? entry) (object-instantiated? entry) (object-precedence-ready? entry)
                  (not (object-protocol entry))
                  (begin
-                   (require-read-route! 'compiler-entry #f (object-%instance entry))
+                   (require-object-instance-route! entry 'compiler-entry)
                    (let (path (.ref/cached entry 'path (lambda () #f)))
                      (and (string? path) (eq? entry (hash-get by-path path)))))))))))
       (def (run segment)
@@ -632,7 +669,7 @@
                     (admit-request!)))))
             (loop (cdr requests) (+ position 1))))
         (current! 'build-admit-after))
-      (def (native-checks (midpoint-ready? #f))
+      (def (gerbil-checks (midpoint-ready? #f))
         (and support (eq? graph owned-graph) graph-policy (graph-policy)
              (object-construction-current?) (owned-read-function-scope?)
              (not (or (current-module-source-observer) (%slot-read-active?)))
@@ -644,10 +681,10 @@
                      ;; discover whether its closed half can be used.
                      (let/cc unavailable
                        (def (cached receiver key)
-                         (unless (and (object? receiver) (object-%instance receiver)
-                                      (object-%precedence-list receiver) (not (object-protocol receiver)))
+                         (unless (and (object? receiver) (object-instantiated? receiver)
+                                      (object-precedence-ready? receiver) (not (object-protocol receiver)))
                            (unavailable #f))
-                         (require-read-route! 'configuration-request #f (object-%instance receiver))
+                         (require-object-instance-route! receiver 'configuration-request)
                          (.ref/cached receiver key (lambda () (unavailable #f))))
                        (when midpoint-ready? (midpoint-ready? cached unavailable))
                        (def requests (cached graph 'external-packages))
@@ -659,15 +696,15 @@
                                            context (cached request 'admit-current))
                                          (unavailable #f)))
                                    requests))))))))))
-      (def native (native-checks midpoint-ready?))
+      (def configuration-checks (gerbil-checks midpoint-ready?))
       (def (check-request! check!)
-        (module-source-measure-operation 'native-configuration-request
+        (module-source-measure-operation 'gerbil-configuration-request
           (lambda ()
             (parameterize ((current-module-source-phase 'build-admit-before)) (check!))
-            (for-each (lambda (admit!) (admit!)) native)
+            (for-each (lambda (admit!) (admit!)) configuration-checks)
             (parameterize ((current-module-source-phase 'build-admit-after)) (check!)))))
       (def (fallback!) (if fallback (fallback) (ordinary!)))
-      (if native
+      (if configuration-checks
         (call-with-linked-prepared-guards support selected-value check-inputs checks bound-input-state
           (lambda (check!)
             (check-request! check!)
@@ -707,7 +744,7 @@
       (def value
         (.o (:: graph) compiler-inputs:
           (unique-build-inputs
-           (append init-inputs
+           (append init-inputs make-inputs
                    (foldr append '() (map (cut .ref <> 'source-inputs) asset-values))
                    (foldr append '()
                           (map (lambda (entry) (.ref (.ref entry 'input) 'source-inputs))
@@ -726,13 +763,14 @@
           assets: (reverse asset-values)
           .package: (lambda (directory) (write-selected-package graph directory))
           entries: (reverse entry-values) other-projections: (reverse other)
+          link-contexts: (reverse borrowed-contexts)
           ;; A compiler input can appear only once in STD Make. A source
           ;; required as a library cannot also be an executable target.
           std-make-targets:
           (filter-map
             (lambda (entry)
               (def path (.ref entry 'path))
-              (def target (hash-get native-targets path))
+              (def target (hash-get make-targets path))
               (cond
                (target
                 (when (and (pair? target) (eq? (car target) exe:)
@@ -816,7 +854,7 @@
                            (and (pair? (cdr raw-options)) (cadr raw-options))
                            (and (string? name) (path-strip-directory name)))))
               (options (if explicit-bin? (and bin-name (cddr raw-options)) raw-options)))
-         (unless (and (string? name) (list? options) (andmap string? options)
+         (unless (and (make-target? spec) (list? options)
                       (andmap module-source-name? (string-split name #\/))
                       (not (string-suffix? ".ss" name)))
            (error "invalid retained Scheme target" spec))
@@ -898,7 +936,15 @@
   (def entries '())
   (def support-contexts '())
   (def compiler-observations (.ref entry 'source-inputs))
-  (def compiler-targets (retained-build-entries retained root package-prefix '() programs?: #t))
+  (def compiler-targets
+    (retained-build-entries
+      (map (lambda (target)
+             (resolve-make-target-inputs target root
+               (lambda (input)
+                 (set! observations (cons input observations))
+                 (set! compiler-observations (cons input compiler-observations)))))
+           retained)
+      root package-prefix '() programs?: #t))
   (def targets-by-identity (make-hash-table-eq))
   (def static-inputs-api
     (module-binding-action "tao3k/yuanxu/module-system/source/static-inputs" 'module-static-compiler-inputs))

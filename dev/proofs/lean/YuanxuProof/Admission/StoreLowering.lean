@@ -4,8 +4,6 @@ import YuanxuProof.Admission.IdentityDFS
 
 namespace YuanxuProof.Admission.StoreLowering
 
-def quintSourceDigest : String := "sha256:39a415db6886b7f87f237750dcc9f517e70657bb74e559611aba235b013a07b3"
-
 inductive Route where
   | generated | reflective | inlined
   | precompiledGenerated | precompiledReflective | precompiledInlined | unlowered

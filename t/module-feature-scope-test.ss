@@ -6,7 +6,7 @@ prelude: :gerbil/core
 
 (import (only-in :std/test test-suite check-equal? check-exception)
         (only-in :clan/poo/object .o .cc .get .ref .slot? .call .put!)
-        (only-in :clan/poo/mop validate)
+        (only-in :clan/poo/type validate)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/source/admission call-with-module-source-operation-measurement)
@@ -19,8 +19,7 @@ prelude: :gerbil/core
 (def (scope-roles root)
   (.o
     types:
-    '((import (only-in :clan/poo/mop Bool)
-              (only-in :clan/poo/type Record Exactly True)
+    '((import (only-in :clan/poo/type Record Exactly True Bool)
               (only-in :clan/poo/number Integer))
       (def FixtureContract (.cc (Record port: [Integer] memory: [Bool]) identity: 'feature/base))
       (def MemoryContract (.cc (Record memory: [True]) identity: 'feature/memory))
@@ -43,7 +42,7 @@ prelude: :gerbil/core
     config: '((def Config (.o port: 5432)))
     interface:
     `((.def Fixture identity: 'custom/example
-        core: (.o requires: (.o) scope-contract: FixtureContract
+        core: (.o scope-contract: FixtureContract
                   exports: (.o (:: self FixtureScope) port: (.get Config port)))
         features:
         (.o
@@ -189,16 +188,14 @@ prelude: :gerbil/core
                     objects: '((def ReviewBase (.o)) (export ReviewBase))
                     config: '((def Config (.o)))
                     interface:
-                    `((.def Review identity: ',(string->symbol (string-append "custom/" (symbol->string name)))
-                        core:
-                        (.o requires:
-                            (.o Source:
-                              (.o module-id: 'custom/example
-                                  refine: (lambda (scope)
-                                            ,(if (cadr entry) 'scope
-                                               '(.o (:: self scope) memory: #f)))))
-                            scope-contract: ReviewContract
-                            exports: (.o observed: (.get Source memory)))
+                    `((import (only-in "../example/types.ss" MemoryContract))
+                      (.def Review identity: ',(string->symbol (string-append "custom/" (symbol->string name)))
+                        core: (.o scope-contract:
+                                  (begin
+                                    (unless (eq? (.get MemoryContract identity) 'feature/memory)
+                                      (error "wrong provider Contract"))
+                                    ReviewContract)
+                                  exports: (.o observed: ,(cadr entry)))
                         features: ',(if (eq? name 'review) '(audit exclusive) '())))))
               (for-each
                 (lambda (role)
@@ -211,7 +208,8 @@ prelude: :gerbil/core
           (def review-feature (path-expand "modules/custom/review/features/audit" root))
           (create-directory* review-feature)
           (write-file (path-expand "interface.ss" review-feature)
-            "(import (only-in :tao3k/yuanxu/module-system/source/declaration .def))
+            "(import (only-in :clan/poo/object .def) \"./types.ss\" \"./objects.ss\")
+             (export Feature)
              (.def Feature requires: '(custom/example/memory)
                            refine: enable-audit contract: AuditContract)")
           (write-file (path-expand "objects.ss" review-feature)
@@ -224,18 +222,20 @@ prelude: :gerbil/core
              (def AuditContract (.cc (Record audited: [True]) identity: 'feature/audit))
              (export AuditContract)")
           (write-file (path-expand "modules/custom/review/features/exclusive/interface.ss" root)
-            "(import (only-in :tao3k/yuanxu/module-system/source/declaration .def))
+            "(import (only-in :clan/poo/object .def))
+             (export Feature)
              (.def Feature conflicts: '(custom/example/memory))")
           (write-file (path-expand "review.ss" root)
-            "(yuanxu! mode: explicit :custom (example +memory) (review +audit))")
+            "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example +memory) (review +audit))")
           (write-file (path-expand "conflict.ss" root)
-            "(yuanxu! mode: explicit :custom (example +memory) (review +exclusive))")
+            "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example +memory) (review +exclusive))")
           (write-file (path-expand "withdrawn.ss" root)
-            "(yuanxu! mode: explicit :custom (example -memory) (review +audit))")
+            "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example -memory) (review +audit))")
           (write-file (path-expand "override.ss" root)
-            "(yuanxu! mode: explicit :custom (example +memory) (override))")
+            "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example +memory) (override))")
           (def good (yuanxu-load-modules (path-expand "review.ss" root)))
           (def bad (yuanxu-load-modules (path-expand "override.ss" root)))
+          (check-equal? (.get good selected-graph module-order) '(custom/example custom/review))
           (defvalues (provider provider-counts)
             (call-with-module-source-operation-measurement
               (lambda () (.get good modules custom example))))
@@ -254,8 +254,9 @@ prelude: :gerbil/core
           (check-equal?
             (hash-get review-counts '(calls (feature-admission custom/review custom/review/audit))) 1)
           (def message (exception-message (lambda () (.get bad modules custom override))))
-          (check-equal? (and (string-contains message "feature/memory") #t) #t)
+          (check-equal? (and (string-contains message "feature/review") #t) #t)
           (check-exception ((.get bad admit-current)) error?)
+          (check-equal? (.get provider memory) #t)
           (for-each
             (lambda (entry)
               (def rejected (yuanxu-load-modules (path-expand (car entry) root)))

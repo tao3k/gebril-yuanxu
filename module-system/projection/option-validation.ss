@@ -25,27 +25,28 @@
         schemas))
 
 (def (yuanxu-module-missing-schema-receipt config)
-  (def option-id (.ref config 'id))
-  (def contributor (.ref config 'source-module))
+  (missing-schema-receipt (.ref config 'id) (.ref config 'source-module)))
+
+(def (missing-schema-receipt option-id contributor)
   (.o id: option-id
       source-module: contributor
-        valid?: #f
-        code: 'missing-schema
-        messages: '("option schema is not declared")
-        metadata: '()))
+      valid?: #f
+      code: 'missing-schema
+      messages: '("option schema is not declared")
+      metadata: '()))
 
 (def (yuanxu-module-option-schema-validation-receipt schema config)
+  (validate-option schema config (.ref config 'id) (.ref config 'source-module)))
+
+(def (validate-option schema config option-id contributor)
   (def issues
     (checked-issues
       (diagnose-value
         (yuanxu-module-option-schema-contract schema)
         (object<-alist
-          (list (cons (string->symbol (.ref config 'id))
+          (list (cons (string->symbol option-id)
                       (.ref config 'value))))
         '())))
-  ;; Preserve attribution/annotation observation at production, not first reporting.
-  (def option-id (.ref config 'id))
-  (def contributor (.ref config 'source-module))
   (def annotations (yuanxu-module-option-schema-metadata schema))
   ;; This is a diagnostic projection, not accepted Contract/publication evidence.
   (.o id: option-id
@@ -62,53 +63,57 @@
     (if (null? remaining)
       (reverse receipts-rev)
       (let* ((config (car remaining))
-             (schema (schema-ref (.ref config 'id))))
+             ;; Keep routing and diagnostic attribution together across callbacks.
+             (option-id (.ref config 'id))
+             (contributor (.ref config 'source-module))
+             (schema (schema-ref option-id)))
         (loop (cdr remaining)
               (cons (if schema
-                      (yuanxu-module-option-schema-validation-receipt
-                       schema config)
-                      (yuanxu-module-missing-schema-receipt config))
+                      (validate-option schema config option-id contributor)
+                      (missing-schema-receipt option-id contributor))
                     receipts-rev))))))
 
-;; Diagnose the actual Record once, preserving missing fields and whole-object
-;; membership. schema-ref is the owner's existing effective-Slot index, not a
-;; second field declaration. The tables below only group the returned issues.
+;; Read input names before author diagnostics can change the candidate's shape.
+;; The owner supplies effective Slot metadata after diagnostics are grouped.
 (def (yuanxu-module-config-validation-receipts declaration schema-ref config owner)
-  (def issues (checked-issues (diagnose-value declaration config '())))
   (def names (if (object? config) (.all-slots config) '()))
+  (def issues (checked-issues (diagnose-value declaration config '())))
   (def seen (make-hash-table))
   (def grouped (make-hash-table))
   (def absent-rev '())
-  (def root-rev '())
   (for-each (lambda (name) (hash-put! seen name #t)) names)
   (for-each
     (lambda (issue)
       (def path (.ref issue 'path))
-      (if (and (pair? path) (symbol? (car path)))
-        (let (name (car path))
-          (unless (hash-get seen name)
-            (hash-put! seen name #t)
-            (set! absent-rev (cons name absent-rev)))
-          (hash-update! grouped name (cut cons issue <>) '()))
-        (set! root-rev (cons issue root-rev))))
+      (def name (and (pair? path) (symbol? (car path)) (car path)))
+      (when (and name (not (hash-get seen name)))
+        (hash-put! seen name #t)
+        (set! absent-rev (cons name absent-rev)))
+      ;; Each group keeps its first code and the original issues in reverse order.
+      ;; #f owns whole-Record issues.
+      (hash-update! grouped name
+        (lambda (group)
+          (if group
+            (cons (car group) (cons issue (cdr group)))
+            (list (.ref issue 'kind) issue)))
+        #f))
     issues)
   (append
     (map (lambda (name)
            (def option-id (symbol->string name))
            (def field (schema-ref option-id))
-           (def failures (reverse (hash-ref grouped name '())))
-           (if (and (not field) (null? failures))
-             (yuanxu-module-missing-schema-receipt
-               (.o id: option-id source-module: owner))
-             (let (annotations (yuanxu-module-object-ref/default field 'metadata '()))
+           (def group (hash-get grouped name))
+           (if (and (not field) (not group))
+             (missing-schema-receipt option-id owner)
+             (let ((annotations (yuanxu-module-object-ref/default field 'metadata '()))
+                   (failures (if group (reverse (cdr group)) '())))
                (.o id: option-id source-module: owner
-                   valid?: (null? failures)
-                   code: (if (null? failures) 'ok (.ref (car failures) 'kind))
+                   valid?: (not group)
+                   code: (if group (car group) 'ok)
                    messages: failures metadata: annotations))))
          (append names (reverse absent-rev)))
-    (if (null? root-rev) '()
-      (let (failures (reverse root-rev))
-        ;; No invented field name for a whole-value refusal.
+    (if (hash-key? grouped #f)
+      (let* ((group (hash-ref grouped #f)) (failures (reverse (cdr group))))
         (list (.o id: #f source-module: owner valid?: #f
-                  code: (.ref (car failures) 'kind)
-                  messages: failures metadata: '()))))))
+                  code: (car group) messages: failures metadata: '())))
+      '())))

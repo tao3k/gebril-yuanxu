@@ -6,7 +6,8 @@
 ;; visit walks Gerbil's actual import graph. support exposes only the reader's
 ;; recorded source association, not preparations or old selection guards.
 ;; No destination context is installed before the complete support is checked.
-(def (transfer-role-context context visit support resolve-owner tool? available? install! refuse)
+(def (transfer-role-context context visit support resolve-owner tool? available? install! refuse
+                               (native-current? (lambda () #t)))
   (and context
     (let ((rows '()) (compatible? #t))
       (visit context
@@ -37,6 +38,7 @@
             #t))
         ;; Source guards can run callbacks. Check destination bindings after
         ;; those callbacks and before installing any private context.
+        (native-current?)
         (andmap (lambda (row)
                   (let (path (.ref (cadr row) 'path))
                     (or (available? path (car row))

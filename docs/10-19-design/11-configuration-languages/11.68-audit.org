@@ -103,7 +103,7 @@ remove boundaries that merely relay values or repeat existing admission.
   dependency or proof of the installed package revision.
 - Actual Core: [[file:../../../types.ss][types.ss]], [[file:../../../poo-clos/objects.ss][CLOS bundle composition]],
   [[file:../../../poo-clos/syntax.ss][CLOS declarations]], [[file:../../../t/poo-clos-method-bundle-test.ss][existing bundle controls]],
-  [[file:../../../profile-composition/selection-syntax.ss][bounded use-module]] and [[file:../../../object-syntax/path-slots.ss][path-slot lowering]].
+  [[file:../../../profile-composition/selection-syntax.ss][bounded use-module]] and [[file:../../../syntax/path-slots.ss][path-slot lowering]].
 
 This is static source review. No Scheme example, Terraform deployment or Loader
 was executed. In the inspected Omnibus checkout, aws/tf-ncl-schema.ncl is not

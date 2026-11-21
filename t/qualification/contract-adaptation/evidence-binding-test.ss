@@ -2,11 +2,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Public binding and actual Core producer; no module adapter or receipt wrapper.
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/mop element?)
+        (only-in :clan/poo/type element?)
         :clan/poo/object-contract
         (prefix-in :clan/poo/declarative-metadata metadata.)
         :tao3k/yuanxu/modules/json-schema/contracts
-        (only-in :tao3k/yuanxu/object-types/contracts
+        (only-in :tao3k/yuanxu/types/contracts
           YuanxuContract. yuanxu-contract-admit
           yuanxu-classification-evidence
           yuanxu-validation-evidence-accepted?))

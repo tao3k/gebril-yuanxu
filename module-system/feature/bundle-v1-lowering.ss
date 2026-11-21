@@ -61,7 +61,6 @@
 
 (import (only-in :std/list/list map find)
         (only-in :std/crypto/digest sha256)
-        (only-in :std/list/list fold-right)
         (runtime: :clan/poo/object)
         :tao3k/yuanxu/utilities/functional)
 
@@ -216,7 +215,7 @@
 ;; : (-> [PooFeatureBundleV1RuntimeSymbol] U8Vector)
 (def (symbol-metadata-image symbols)
   (list->u8vector
-   (fold-right
+   (foldr
     (lambda (symbol bytes)
       (append (u8vector->list (.ref symbol 'value-bytes)) bytes))
     '()

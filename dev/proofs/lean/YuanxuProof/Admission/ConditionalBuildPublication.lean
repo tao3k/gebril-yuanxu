@@ -4,9 +4,6 @@ import YuanxuProof.Admission.SerialUse
 
 namespace YuanxuProof.Admission.ConditionalBuildPublication
 
-def quintSourceDigest : String :=
-  "sha256:794c379c0391656d2cc81b81abb6c98f723bd3fd9746f23dc26ca243c28336db"
-
 -- Reuse the existing recovery gates and external-owner version relation.
 def eligible (restored approval source files a b : Bool) (expected live : Nat) : Bool :=
   CoreApprovedRecovery.finish restored approval source files a b &&

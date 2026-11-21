@@ -56,7 +56,7 @@ Configuration packages may select the common language in =gerbil.pkg=:
 #+begin_src scheme
 (package: example prelude: :tao3k/yuanxu/prelude depend: (...))
 ;; init.ss has no import of an internal selection implementation.
-(yuanxu! :load-modules "./modules" mode: explicit rename: Features (example))
+(yuanxu! :load-modules "./modules" mode: explicit mount: Features (example))
 #+end_src
 
 The native prelude Suite covers an ordinary consumer in a separate process,
@@ -249,8 +249,8 @@ matched faults, source-cut hashes and end-of-run drift refusal are unchanged.
 Each receipt records its shard index/count. A passing shard is not a complete
 catalog qualification. Lean remains a separate aggregate gate.
 
-Type fact projection now belongs to =object-types/facts.ss= and is imported as
-=:yuanxu/object-types/facts=. JSON Schema consumers and the build inventory
+Type fact projection now belongs to =types/facts.ss= and is imported as
+=:yuanxu/types/facts=. JSON Schema consumers and the build inventory
 reference this owner directly; there is no forwarding type-facts module.
 Gerbil installation and the Nix store probe are inline steps in the shared
 GitHub composite action. The downloaded immutable gerbil-bazel release supplies

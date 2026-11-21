@@ -1,4 +1,4 @@
-(import :yuanxu/object-syntax/path-slots
+(import :yuanxu/syntax/path-slots
         :yuanxu/profile-composition/selection-syntax
         (only-in :yuanxu/scenarios/funflow/scope Funflow)
         (only-in :clan/poo/object .get .+ .slot?))

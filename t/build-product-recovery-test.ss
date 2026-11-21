@@ -1,22 +1,24 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-;;; Filesystem controls only; marker repair never issues artifact authority.
+;;; Explicit clean and read-only product checks never issue artifact authority.
 (import :std/test
+        (only-in "../dev/gerbil/clean-outputs.ss" clean-selected-outputs!)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/make make-clean)
         (rename-in (only-in :std/build-script defbuild-script)
                    (defbuild-script gerbil-defbuild-script))
         (only-in :tao3k/yuanxu/module-system/building/products
-                 build-output-directory current-build-output-directory current-build-source-directory)
+                 build-output-directory current-build-output-directory current-build-source-directory
+                 require-build-interface!)
         (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-retained-source)
         (only-in :tao3k/yuanxu/module-system/building/artifacts
-                 repair-build-products! require-build-products! test-build-publication)
+                 require-build-products! test-build-publication)
         :clan/poo/object)
 (export build-product-recovery-test)
-(def (write-product root relative)
+(def (write-product root relative (contents "fixture\n"))
   (def path (path-expand relative root))
   (create-directory* (path-directory path))
-  (call-with-output-file path (cut display "fixture\n" <>)))
+  (call-with-output-file path (cut display contents <>)))
 (def (publication-at projection prefix)
   (def previous (getenv "GERBIL_PATH" #f))
   (dynamic-wind
@@ -53,8 +55,8 @@
           (write-product libdir "unrelated/unit.ssi")
           (parameterize ((current-build-output-directory libdir))
             (def entered? #f)
-            (def substituted (.cc projection 'spec '("unrelated/unit")))
-            (check-equal? (.get substituted spec) '("unrelated/unit"))
+            (def substituted (.cc projection 'std-make-spec '("unrelated/unit")))
+            (check-equal? (.get substituted std-make-spec) '("unrelated/unit"))
             (check-exception
               (.call substituted .with-clean-outputs
                 (lambda () (set! entered? #t))) error?)
@@ -68,7 +70,7 @@
                 (def directory (current-build-source-directory))
                 (check-equal? (directory-files (list path: directory ignore-hidden: 'dot-and-dot-dot)) '())
                 (def (this-source-file) (path-expand "build.ss" directory))
-                (gerbil-defbuild-script (.get projection spec) libdir: libdir)
+                (gerbil-defbuild-script (.get projection std-make-spec) libdir: libdir)
                 (main "clean"))))
           (check-equal? (file-exists? (path-expand "clean-producer/unit.ssi" libdir)) #f)
           (check-equal? (file-exists? (path-expand "unrelated/unit.ssi" libdir)) #t)
@@ -91,16 +93,22 @@
                         other-projections: '() selected-graph: #f compiler-current: void))
           (def projection
             (yuanxu-project-source-spec (.o build-graph: graph) '("prelude" "owned") root build))
-          (check-equal? (.get projection spec) '("prelude" "owned"))
+          (check-equal? (.get projection std-make-spec) '("prelude" "owned"))
           (write-product libdir "tao3k/yuanxu/prelude.ssi")
           (write-product libdir "tao3k/yuanxu/owned.ssi")
+          (write-product libdir "tao3k/yuanxu/owned.o1")
+          (write-product libdir "tao3k/yuanxu/owned~0.o3")
+          (write-product libdir "tao3k/yuanxu/unselected.o1")
           (write-product libdir "unselected/prelude.ssi")
           (parameterize ((current-build-output-directory libdir))
             (.call projection .with-clean-outputs
               (lambda ()
-                (make-clean (.get projection spec) srcdir: root libdir: libdir))))
+                (make-clean (.get projection std-make-spec) srcdir: root libdir: libdir))))
           (check-equal? (file-exists? (path-expand "tao3k/yuanxu/prelude.ssi" libdir)) #f)
           (check-equal? (file-exists? (path-expand "tao3k/yuanxu/owned.ssi" libdir)) #f)
+          (check-equal? (file-exists? (path-expand "tao3k/yuanxu/owned.o1" libdir)) #f)
+          (check-equal? (file-exists? (path-expand "tao3k/yuanxu/owned~0.o3" libdir)) #f)
+          (check-equal? (file-exists? (path-expand "tao3k/yuanxu/unselected.o1" libdir)) #t)
           (check-equal? (file-exists? (path-expand "unselected/prelude.ssi" libdir)) #t)
           (check-equal? (file-exists? (path-expand ".yuanxu-source.lock" libdir)) #t)
           (write-product libdir "tao3k/yuanxu/owned.ssi")
@@ -133,7 +141,7 @@
               (make-clean '("unit") srcdir: root prefix: "fixture")
               (check-equal? (file-exists? (path-expand relative default)) #f))
             (cut setenv "GERBIL_PATH" previous)))))
-    (test-case "a missing dynamic phase invalidates only its own marker"
+    (test-case "explicit cleanup of an incomplete module preserves unselected products"
       (call-with-temporary-directory "product-recovery"
         (lambda (root)
           (for-each (cut write-product root <>)
@@ -141,22 +149,32 @@
               "fixture/unit~1.scm" "static/fixture__unit.scm"
               "static/fixture__unselected.scm"))
           (check-exception (require-build-products! '(fixture/unit) root) error?)
-          (repair-build-products! '(fixture/unit) root)
+          (clean-selected-outputs! '(fixture/unit) root)
           (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #f)
           (check-equal? (file-exists? (path-expand "static/fixture__unselected.scm" root)) #t)
-          ;; Completed phases leave an ordinary Gerbil marker reusable.
-          (write-product root "fixture/unit~1.o1")
-          (write-product root "static/fixture__unit.scm")
+          ;; A complete rebuild passes the read-only product check.
+          (for-each (cut write-product root <>)
+            '("fixture/unit.ssi" "fixture/unit.o1" "fixture/unit.scm"
+              "fixture/unit~1.scm" "fixture/unit~1.o1" "static/fixture__unit.scm"))
           (require-build-products! '(fixture/unit) root)
-          (repair-build-products! '(fixture/unit) root)
           (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #t))))
+    (test-case "the selected compiler interface requires runtime output and the library identity"
+      (call-with-temporary-directory "selected-interface"
+        (lambda (root)
+          (def relative "fixture/unit.ssi")
+          (write-product root relative "package: fixture\n(%#begin)\n")
+          (check-exception (require-build-interface! 'fixture/unit root) error?)
+          (write-product root "fixture/unit.o1")
+          (check-equal? (require-build-interface! 'fixture/unit root) (path-expand relative root))
+          (write-product root relative "package: other\n(%#begin)\n")
+          (check-exception (require-build-interface! 'fixture/unit root) error?))))
     (test-case "non-regular runtime products refuse without deleting a marker"
       (call-with-temporary-directory "product-refusal"
         (lambda (root)
           (for-each (cut write-product root <>)
             '("fixture/unit.ssi" "static/fixture__unit.scm"))
           (create-directory* (path-expand "fixture/unit.o1" root))
-          (check-exception (repair-build-products! '(fixture/unit) root) error?)
+          (check-exception (clean-selected-outputs! '(fixture/unit) root) error?)
           (check-equal? (file-exists? (path-expand "static/fixture__unit.scm" root)) #t))))
     (test-case "Gerbil directory aliases share one publication identity without crossing prefixes"
       (call-with-temporary-directory "publication-prefix"

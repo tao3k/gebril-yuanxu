@@ -15,6 +15,19 @@ Private positional traversal state may use a small =defstruct=.  Public
 extension state remains POO.  Alists are allowed only at a final wire,
 receipt or diagnostic projection after the owning object is known.
 
+Read the routing key and contributor before invoking author-supplied schema
+lookup or diagnostic methods. Use those values for the check and its receipt.
+Force the option payload only after finding its declared Slot. Admission
+still performs its own currentness checks across effect boundaries.
+[[file:../../../t/module-option-objects-test.ss][Module option tests]] exercise these rules.
+
+For a whole Record, enumerate candidate field names before author diagnostics
+run. Emit those fields in input order, then fields found only in diagnostics
+in first-issue order, then the Record-level receipt. Within each receipt,
+retain the original diagnostic objects in their returned order. Read the
+first code when grouping diagnostics. Ask the consumer for effective Slot
+metadata after grouping.
+
 * Runtime boundary
 
 The direction is fixed:

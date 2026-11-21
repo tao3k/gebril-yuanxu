@@ -63,7 +63,7 @@ second runtime or a compatibility entry.
 
 =module-windows-test.ss= exercises two native roots with an =engine= leaf,
 separate scope values, repeated-read identity, explicit cross-root requirements,
-missing-local refusal, duplicate native-root refusal and forged owner metadata.
+missing-local refusal, duplicate compiled-root refusal and forged owner metadata.
 Its existing unvisited-sibling and mutation controls remain active. No
 =weaver-governance= rename is required or retained.
 
@@ -75,9 +75,9 @@ package checkout and keeps its existing local names:
 #+begin_src scheme
 (yuanxu!
   :load-modules "modules" package: "github.com/tao3k/agentic-ai-lab"
-  mode: explicit rename: Lab
+  mode: explicit mount: Lab
   (governance)
-  :load-modules "./scheme" mode: explicit rename: Weaver
+  :load-modules "./scheme" mode: explicit mount: Weaver
   (governance)
   (policy)
   (gateway))

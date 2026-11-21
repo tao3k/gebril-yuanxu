@@ -7,9 +7,6 @@ namespace YuanxuProof.ModuleSystem.Graph.OwnedReads
 open SemanticReads
 open TestAdmission
 
-def witnessReplayQuintDigest : String :=
-  "sha256:d63443a9854613d63b9c63a1a3634def528bdcb6997d436936434bd2069e8e2c"
-
 -- The runtime batch pins live receivers and resolves their original tokens
 -- BEFORE replay. This equivalence is at one stable query epoch; arbitrary
 -- effectful validators are not proved interchangeable by this law.

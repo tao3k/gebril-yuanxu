@@ -1,12 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import (only-in :tao3k/yuanxu/module-system/source/declaration .def))
+(import (only-in :clan/poo/object .def))
 (.def Gitea
   identity: 'services/gitea
   core:
-  (.o requires: (.o)
-      scope-contract: GiteaScopeContract
-      exports:
-      (.o config: Config document: Document application: gitea-application
-          policy: (gitea-policy Config Document)
-          types: (.o Application: ApplicationContract Config: GiteaConfigContract)))
+  (.o scope-contract: GiteaScopeContract
+      exports: GiteaScope)
   features: (.o))

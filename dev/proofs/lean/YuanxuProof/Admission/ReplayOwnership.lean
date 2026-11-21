@@ -3,8 +3,6 @@ import YuanxuProof.Admission.RouteMutation
 
 namespace YuanxuProof.Admission.ReplayOwnership
 
-def quintSourceDigest : String := "sha256:c9ac0ade273e4c602f97ff12c626d8b26ec4e64efbc5ed1f8d4c27bd99b6d336"
-
 -- Runtime eq? identities project to Nat; each frame is built from authenticated
 -- selected-read receivers. affected is the existing invalidation closure.
 def guarded (frames : List (List Nat)) (affected : List Nat) : Prop :=

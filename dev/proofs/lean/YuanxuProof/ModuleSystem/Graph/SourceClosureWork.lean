@@ -492,41 +492,35 @@ theorem flat_guard_checks_every_frame (frames : List (List Node)) (current : Nod
   | nil => simp
   | cons roots rest ih => simp [ih]
 
-def toolOriginQuintDigest : String :=
-  "sha256:3b8e1e15e0f5a4af7b07636353cefa9283468b23ab68a318d6aa078c0e68de31"
+/-- Two location checkpoints can share the same physical observations within
+one closed window. Across an effect boundary the second window supplies its
+own values, so a refusal in the second window remains observable. -/
+theorem repeated_location_guard_in_closed_window
+    (support : List Node) (observed : Node → Bool) :
+    (support.all observed && support.all observed) = support.all observed := by
+  cases support.all observed <;> rfl
 
-def checkpointQuintDigest : String :=
-  "sha256:d14b132d42c27484614e33eee373bce77c998e6eef023f3584549af8be5d1247"
+/-- Only identity with this guard's own immutable capture supplies equality.
+Another guard's capture and a mutable view must use value comparison. -/
+theorem captured_text_identity_preserves_guard {Text : Type} [DecidableEq Text]
+    (captured observed : Text) (sameCapture : Bool)
+    (sound : sameCapture = true → captured = observed) :
+    (sameCapture || decide (captured = observed)) = decide (captured = observed) := by
+  cases hit : sameCapture
+  · rfl
+  · simp [sound hit]
 
-def quintSourceDigest : String :=
-  "sha256:eb42dcbeca6e0f871c2458a91540571c20f0e6bc9b0db1e957ca0cbb4cdb5586"
-
-def sourcePrefixQuintDigest : String :=
-  "sha256:05e06b4b0765600a5b121fe585284ec6505061efc0c54db3036fb167c695b48c"
-
-def dependencyContinuationQuintDigest : String :=
-  "sha256:6577ed33a88f9979b15586492de9abb75a2a77ac2cffc6f66357e54cc6caf850"
-
-def readerEffectSupportQuintDigest : String :=
-  "sha256:a0e9cad7aee1ac46c01a700d292a91096c0b3d1497b7c5d11e3b351db7407ac7"
-
-def candidatePublicationQuintDigest : String :=
-  "sha256:8e1ae570aad1decd445d9447fd4e047cfa1b40c8f7bb5ce61accedef92a681ff"
-
-def candidateLocationQuintDigest : String :=
-  "sha256:531c33fa1ed0fe79873f5897446fa6569e713026d77e5fb4b794b9a55a40af86"
-
-def compilerEnrollmentQuintDigest : String :=
-  "sha256:b0fe90bfc66761c668193d987a26a18258b9bc74bd852047cf311e85b101c898"
-
-def authoringStageQuintDigest : String :=
-  "sha256:17f703653d33e59f7271dbb5be310d4a5c97a57e914e1d5f444e72fd79af3699"
-
-def carrierReturnQuintDigest : String :=
-  "sha256:b447ebd6770d8ca3fb9c311989522cdb31bff681cd167791a3c0b877a76ceb52"
-
-def carrierAdmissionQuintDigest : String :=
-  "sha256:5880421305bd18369237ac7ab2fa71f745707d26f0e9bfa6b9a2dd5638eea4f0"
+theorem location_guard_after_effect_refuses
+    (support : List Node) (before after : Node → Bool)
+    (current : support.all before = true)
+    (owner : Node) (required : owner ∈ support) (changed : after owner = false) :
+    (support.all before && support.all after) = false := by
+  simp only [current, Bool.true_and]
+  cases checked : support.all after with
+  | false => rfl
+  | true =>
+    have accepted := List.all_eq_true.mp checked owner required
+    simp [changed] at accepted
 
 structure Work (Node : Type) where
   discovery : Discovery Node
@@ -775,6 +769,84 @@ theorem universally_sound_guard_iff_coverage [DecidableEq Node]
       exact False.elim (changed (sound before now current node demanded))
   · intro coverage before now current
     exact covered_guard_preserves_currentness required checked before now coverage current
+
+/-- A Profile root certificate includes every owner whose tag can affect
+selection. Selected closure checks cannot certify an omitted candidate. -/
+theorem omitted_profile_candidate_blocks_global_certification [DecidableEq Node]
+    (candidates checked : List Node) (owner : Node)
+    (eligible : owner ∈ candidates) (omitted : owner ∉ checked) :
+    ∃ before after : Node → Nat,
+      (∀ node, node ∈ checked → before node = after node) ∧
+      ¬ (∀ node, node ∈ candidates → before node = after node) := by
+  obtain ⟨before, after, same, changed⟩ :=
+    omitted_support_can_escape checked owner omitted
+  exact ⟨before, after, same, fun all => changed (all owner eligible)⟩
+
+/-- A Profile certificate records the classification of every candidate, in
+directory order. A tracked edit can restrict classification to changed
+inputs only when it covers every changed classification input. The input
+includes the file and its decoder policy. Unknown changes need a full check. -/
+theorem profile_delta_preserves_ordered_selection [DecidableEq Node]
+    {Input Tag : Type} (candidates changed : List Node)
+    (before after : Node → Input) (classify : Input → Tag) (select : Tag → Bool)
+    (complete : ∀ owner ∈ candidates, owner ∉ changed → before owner = after owner) :
+    candidates.filter (fun owner =>
+      select (classify (if owner ∈ changed then after owner else before owner))) =
+      candidates.filter (fun owner => select (classify (after owner))) := by
+  apply List.filter_congr
+  intro owner member
+  by_cases edited : owner ∈ changed
+  · simp [edited]
+  · simp [edited, complete owner member edited]
+
+/-- Content edits with unchanged tags do not change Profile roots. The
+selected owner's independent source guard still observes the content edit. -/
+theorem profile_same_classification_preserves_selection
+    {Input Tag : Type} (candidates : List Node) (before after : Node → Input)
+    (classify : Input → Tag) (select : Tag → Bool)
+    (same : ∀ owner ∈ candidates, classify (before owner) = classify (after owner)) :
+    candidates.filter (fun owner => select (classify (before owner))) =
+      candidates.filter (fun owner => select (classify (after owner))) := by
+  apply List.filter_congr
+  intro owner member
+  rw [same owner member]
+
+def candidateDecision [DecidableEq Node] (enabled denied : List Node)
+    (owner : Node) : Option Bool :=
+  if owner ∈ denied then some false
+  else if owner ∈ enabled then some true else none
+
+/-- An index can supply eligibility if it projects the current membership of
+both lists. Separate predicates preserve denial priority even on overlap. -/
+theorem indexed_candidate_decision [DecidableEq Node]
+    (enabled denied : List Node) (allows refuses : Node → Bool)
+    (owner : Node)
+    (allowExact : (allows owner = true) ↔ owner ∈ enabled)
+    (refuseExact : (refuses owner = true) ↔ owner ∈ denied) :
+    (if refuses owner then some false
+      else if allows owner then some true else none) =
+    candidateDecision enabled denied owner := by
+  simp only [candidateDecision, allowExact, refuseExact]
+
+/-- Replacing the head of an exposed enabled list can revoke a previously
+indexed owner while leaving the receiver and list length unchanged. -/
+theorem enabled_head_edit_invalidates_decision [DecidableEq Node]
+    (oldOwner newOwner : Node) (rest denied : List Node)
+    (distinct : oldOwner ≠ newOwner) (absent : oldOwner ∉ rest)
+    (permitted : oldOwner ∉ denied) :
+    candidateDecision (oldOwner :: rest) denied oldOwner = some true ∧
+    candidateDecision (newOwner :: rest) denied oldOwner = none := by
+  simp [candidateDecision, permitted, distinct, absent]
+
+/-- Replacing the head of an exposed denied list can add a denial even when
+the owner continues to appear in the enabled list. -/
+theorem denied_head_edit_invalidates_decision [DecidableEq Node]
+    (oldOwner newOwner : Node) (enabled rest : List Node)
+    (distinct : newOwner ≠ oldOwner) (absent : newOwner ∉ rest)
+    (permitted : newOwner ∈ enabled) :
+    candidateDecision enabled (oldOwner :: rest) newOwner = some true ∧
+    candidateDecision enabled (newOwner :: rest) newOwner = some false := by
+  simp [candidateDecision, permitted, distinct, absent]
 
 -- A certified operation's cost is its real support width. The theorem does
 -- not manufacture the certification from runtime import edges or object names.
@@ -1136,6 +1208,23 @@ theorem nonempty_frame_refines_advance [DecidableEq Node] (deps : Node → List 
       advance deps (project ⟨seen, (node :: siblings) :: rest, pops⟩) := by
   by_cases visited : node ∈ seen <;>
     simp [next, project, advance, visited]
+
+-- Hold the current sibling cursor in a loop argument. Save a continuation
+-- only when there are both children to visit and siblings to resume.
+def descend (children siblings : List Node) (saved : List (List Node)) :
+    List Node × List (List Node) :=
+  if children.isEmpty then (siblings, saved)
+  else if siblings.isEmpty then (children, saved)
+  else (children, siblings :: saved)
+
+theorem descend_preserves_pending_order (children siblings : List Node)
+    (saved : List (List Node)) :
+    let (cursor, stack) := descend children siblings saved
+    (cursor :: stack).flatten = (children :: siblings :: saved).flatten := by
+  cases children <;> cases siblings <;> simp [descend]
+
+theorem descend_leaf_allocates_no_frame (siblings : List Node) (saved : List (List Node)) :
+    descend [] siblings saved = (siblings, saved) := rfl
 
 -- One initial root frame; exactly one new frame for each first expansion.
 -- Hence housekeeping does not hide another scan of every selected module.

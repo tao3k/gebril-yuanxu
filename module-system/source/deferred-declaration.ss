@@ -4,22 +4,26 @@
 ;;; purity flag or an alternate cache. POO owns all delayed role values.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/prototype-map prototype-map)
-        (only-in :gerbil/expander datum->syntax eval-syntax core-expand import-module resolve-identifier
+        (only-in :gerbil/expander datum->syntax eval-syntax resolve-identifier
                  current-expander-context expander-context-id
                  module-context? module-context-path make-top-context
-                 current-expander-module-import core-import-module core-module->prelude-context
-                 module-context-export module-export-name)
+                 current-expander-module-import core-import-module)
+        (rename-in (only-in "./module-binding.ss" module-binding-action)
+                   (module-binding-action resolve-module-binding))
         (only-in :clan/poo/io module-action)
-        (only-in :tao3k/yuanxu/module-system/source/compiled-role compiled-role-values)
+        (only-in :tao3k/yuanxu/module-system/source/compiled-role
+                 bind-program-interfaces compiled-role-values)
         (only-in :std/list/list delete-duplicates/hash append-map)
-        (rename-in (only-in :tao3k/yuanxu/module-system/source/declaration .def)
-                   (.def publication-.def))
         (for-syntax :gerbil/expander (only-in :std/list/list append-map)
                     (only-in :tao3k/yuanxu/module-system/source/observations
                              module-source-measure-operation)))
 (export module-deferred-role-exports include-deferred-declaration module-role-values
         current-module-role-resolver module-entry-action module-binding-action deferred-role-values
         wrapper-delivery? wrapper-delivery-value)
+
+;; Compiled callers of the original export still refer to this runtime binding.
+(def module-binding-action resolve-module-binding)
+
 (def current-module-role-resolver (make-parameter #f))
 (defstruct wrapper-delivery (value) final: #t)
 
@@ -44,31 +48,6 @@
       (eval-syntax `(import ,specifier)))
     (apply (eval binding) arguments)))
 
-;; Platform value factories need a public binding, not eager initialization of
-;; every runtime dependency in a whole facade. Runtime import owns the defining
-;; context and its errors; resolve anew so reloads never retain an old procedure.
-;; This is not the runtime-entry/publication admission boundary above.
-(def (module-binding-action module binding)
-  (def specifier (string->symbol (string-append ":" module)))
-  (lambda (arguments)
-    ;; Gerbil owns the shared weak language frame. A factory needs one strong
-    ;; public binding, not a fresh copy of every gerbil/core alias. Resolve the
-    ;; runtime owner on each invocation; retain no function or approval here.
-    (let* ((language (core-import-module ':gerbil/core))
-           ;; A colliding name must retain the original strong-import rules,
-           ;; including runtime duplicate-binding errors. Actual export metadata,
-           ;; not a caller flag, determines this conservative fallback.
-           (collision? (ormap (lambda (entry) (eq? binding (module-export-name entry)))
-                              (module-context-export language))))
-      (parameterize ((current-expander-context
-                      (make-top-context (and (not collision?)
-                                          (core-module->prelude-context language)))))
-        ;; Preserve the invoking reader's import owner. Replacing its hook with
-        ;; core-import-module loses dependency provenance on cached imports.
-        (when collision? (core-expand '(import :gerbil/core)))
-        (core-expand `(import (only-in ,specifier ,binding)))
-        (import-module specifier #f #t)
-        (apply (eval-syntax binding) arguments)))))
 (def (closed-rows body)
   (let loop ((rest body) (seen '()) (rows '()))
     (match rest
@@ -144,22 +123,28 @@
       (def declarations
         (let loop ((forms (or interface-forms (call-with-input-string interface-text read-all))))
           (if (and (pair? forms) (pair? (car forms)) (eq? (caar forms) 'import))
-            (loop (cdr forms)) forms)))
+            (begin
+              (when (ormap (lambda (spec)
+                             (and (string? spec)
+                                  (member (path-strip-directory spec)
+                                    '("types.ss" "objects.ss" "config.ss" "func.ss"))))
+                           (cdar forms))
+                (error "explicit role imports use native expansion"))
+              (loop (cdr forms)))
+            forms)))
       (match declarations
         ([['.def (? symbol?) . body]]
          (def rows (closed-rows body))
          (closed-symbol (closed-field rows 'identity:))
-         (match (closed-field rows 'features:)
-           (['quote (? list? names)]
-            (unless (andmap symbol? names) (error "invalid Feature names" names)))
-           (value (closed-object value)))
+         (when (assq 'features: rows)
+           (match (closed-field rows 'features:)
+             (['quote (? list? names)]
+              (unless (andmap symbol? names) (error "invalid Feature names" names)))
+             (value (closed-object value))))
          (def baseline (closed-object (closed-field rows 'core:)))
          (closed-field baseline 'scope-contract:)
          (closed-field baseline 'exports:)
-         (for-each
-           (lambda (entry)
-             (closed-symbol (closed-field (closed-object (cdr entry)) 'module-id:)))
-           (closed-object (closed-field baseline 'requires:)))
+         (when (assq 'requires: baseline) (error "removed Module core field"))
          (def roles (map (lambda (row)
                            (cons (car row)
                              (role-exports (car row) (cdr row) observe-private-import)))
@@ -212,34 +197,12 @@
 (def (stock-interface-scoped recipe core private)
   (stock-interface-value (cdr recipe) (and (car recipe) (.ref core private))))
 
-(def (stock-interface-requirements rows core private)
-  (deferred-payload-object '()
-    (map (lambda (row)
-           (cons (car row)
-             (lambda (_self)
-               (deferred-payload-object '()
-                 (map (lambda (field)
-                        (cons (car field)
-                          (lambda (_self)
-                            (if (eq? (car field) 'contract)
-                              (stock-interface-scoped (cdr field) core private)
-                              (stock-interface-value (cdr field) #f)))))
-                      (cdr row))))))
-         rows)))
-
 (def (stock-interface-core rows private role-specs resolver)
   (deferred-payload-object '()
     (append
       (map (lambda (field)
              (def value (cdr field))
-             (cons (car field)
-               (case (car field)
-                 ((requires) (lambda (core) (stock-interface-requirements value core private)))
-                 ((scope-contract) (lambda (core) (stock-interface-scoped value core private)))
-                 ((link) (lambda (core)
-                           (lambda (dependencies)
-                             (for-each (lambda (alias) (.ref dependencies alias)) (car value))
-                             (stock-interface-scoped (cdr value) core private)))))))
+             (cons (car field) (lambda (core) (stock-interface-scoped value core private))))
            rows)
       (list (cons private (lambda (_self) (deferred-role-values resolver role-specs)))))))
 
@@ -268,6 +231,11 @@
        (def frame-constructor (quote-syntax deferred-payload-object))
        (def specifications (syntax->list #'((role exports ...) ...)))
        (def names (append-map (lambda (spec) (cdr (syntax->list spec))) specifications))
+       (def (source-binding=? identifier binding)
+         ;; The continuation after authored imports receives already rewrapped
+         ;; syntax. Only the direct include still carries raw reader marks.
+         (free-identifier=? (if rewrap? (syntax-local-rewrap identifier) identifier)
+                           binding))
        (def (map-fields rows transform)
          (syntax-case rows ()
            (() #'())
@@ -308,7 +276,7 @@
            (and (identifier? identifier)
                 (not (memq (stx-e identifier) shadows))
                 (not (memq (stx-e identifier) aliases))
-                (free-identifier=? (syntax-local-rewrap identifier) native)))
+                (source-binding=? identifier native)))
          (def (stock-object expression fields parents self shadows)
            (let (rows (plain-fields fields))
              (and parents rows (not (assq self rows))
@@ -382,12 +350,6 @@
                                (map (lambda (name) (datum->syntax context (stx-e name))) needed)))
                    (syntax/loc #'value
                      (with-slots (alias ...) (.get receiver private) value)))))))))
-       (def (wrap-requires value receiver (shadowed '()))
-         (map-object value
-           (lambda (_alias spec)
-             (map-object spec
-               (lambda (key value)
-                 (if (eq? (stx-e key) 'contract:) (wrap value receiver shadowed) value))))))
        (def (role-values)
          (with-syntax ((constructor constructor) (loader loader))
            #'(constructor loader '((role exports ...) ...))))
@@ -397,7 +359,7 @@
            (else #f)))
        (def (stock-publication form direct?)
          ;; A fully known frame requires no synthesized lexical slot
-         ;; transformers. All unknown source still uses declaration .def.
+         ;; transformers. Other source expands with the original POO .def.
          (call/cc
            (lambda (open)
              (def (known value) (or value (open #f)))
@@ -405,7 +367,7 @@
                (syntax-case value ()
                  ((head . slots)
                   (and (identifier? #'head)
-                       (free-identifier=? (syntax-local-rewrap #'head) (quote-syntax .o)))
+                       (source-binding=? #'head (quote-syntax .o)))
                   (known (plain-fields #'slots)))
                  (_ (open #f))))
              (def (field rows key)
@@ -426,7 +388,7 @@
              (syntax-case form ()
                ((head binding . slots)
                 (and (identifier? #'binding) (identifier? #'head)
-                     (free-identifier=? (syntax-local-rewrap #'head) (quote-syntax publication-.def)))
+                     (source-binding=? #'head (quote-syntax .def)))
                 (let* ((root-rows (known (plain-fields #'slots)))
                        (root-names (map car root-rows))
                        (root-self (genident 'publication-self))
@@ -434,54 +396,21 @@
                        (core-rows (object-fields core))
                        (core-names (map car core-rows))
                        (core-self (genident 'core-self))
-                       (core-shadows (append core-names root-names))
-                       (requires (field core-rows 'requires))
-                       (require-rows (object-fields requires))
-                       (alias-names (map car require-rows)))
+                       (core-shadows (append core-names root-names)))
                   (known (and (andmap (cut memq <> '(identity core features tags)) root-names)
-                              (assq 'features root-rows)
-                              ;; The declaration macro captures the owner-bound
-                              ;; Feature reader for named source entrypoints.
-                              (not (named-features? (field root-rows 'features)))
-                              (andmap (cut memq <> '(requires scope-contract exports)) core-names)
+                              (not (and (assq 'features root-rows)
+                                        (named-features? (field root-rows 'features))))
+                              (andmap (cut memq <> '(scope-contract exports)) core-names)
                               (assq 'scope-contract core-rows)
                               (assq 'exports core-rows)))
                   (def role-receiver
                     (with-syntax ((self root-self)) #'(.get self core)))
-                  (def (requirement row)
-                    (def value (cdr row))
-                    (def specs (object-fields value))
-                    (def shadows (append (map car specs) alias-names core-shadows))
-                    (known (and (assq 'module-id specs)
-                                (andmap (cut memq <> '(module-id contract)) (map car specs))))
-                    (cons (car row)
-                          (base-frame value
-                            (map (lambda (slot)
-                                   (cons (car slot)
-                                     (if (eq? (car slot) 'contract)
-                                       (scoped-value (cdr slot) core-self shadows)
-                                       (stock-value (cdr slot) shadows)))) specs)
-                            (genident 'requirement-self))))
-                  (def (link-value value)
-                    (def payload (scoped-value value core-self (append alias-names core-shadows)))
-                    (if direct? (cons alias-names payload)
-                      (with-syntax ((payload payload)
-                                    ((alias ...) (map (lambda (name) (datum->syntax (stx-car requires) name)) alias-names))
-                                    ((unused ...) (map (lambda (_) (genident 'dependency)) alias-names))
-                                    (dependencies (genident 'dependencies)))
-                        (syntax/loc value
-                          (lambda (dependencies)
-                            (let ((unused (.ref dependencies 'alias)) ...) payload))))))
                   (def core-body
                     (base-frame core
                       (append
                         (map (lambda (row)
-                               (case (car row)
-                                 ((requires) (cons 'requires
-                                   (base-frame requires (map requirement require-rows) (genident 'requires-self))))
-                                 ((scope-contract) (cons 'scope-contract
-                                   (scoped-value (cdr row) core-self core-shadows)))
-                                 ((exports) (cons 'link (link-value (cdr row)))))) core-rows)
+                               (cons (car row) (scoped-value (cdr row) core-self core-shadows)))
+                             core-rows)
                         (if direct? '() (list (cons (stx-e private) (role-values)))))
                       core-self))
                   (def root-body
@@ -513,24 +442,10 @@
                  (if (null? rest) '()
                    (cons (string->symbol (keyword->string (stx-e (car rest))))
                          (loop (cddr rest))))))))
-           (def aliases
-             (let* ((row (let loop ((rest field-list))
-                           (if (eq? (stx-e (car rest)) 'requires:) (cadr rest)
-                               (loop (cddr rest)))))
-                    (specs (cdr (syntax->list row))))
-               (let loop ((rest specs))
-                 (if (null? rest) '()
-                   (cons (string->symbol (keyword->string (stx-e (car rest))))
-                         (loop (cddr rest)))))))
            (with-syntax ((head head) (options options) (private private)
                          (roles (role-values))
                          ((field ...) (syntax->list
-                           (map-fields fields
-                             (lambda (key value)
-                               (if (eq? (stx-e key) 'requires:)
-                                 (wrap-requires value self shadows)
-                                 (wrap value self (if (eq? (stx-e key) 'exports:)
-                                                    (append aliases shadows) shadows))))))))
+                           (map-fields fields (lambda (_key value) (wrap value self shadows))))))
              (syntax/loc core (head options field ... (private roles)))))
          (syntax-case core ()
            ((head (:: self parents) . fields) (build #'head #'(:: self parents) #'self #'fields))
@@ -555,7 +470,7 @@
                   ((features:)
                    (if (named-features? value) value (wrap value core-reference shadows)))
                   (else (wrap value core-reference shadows)))))))
-              (syntax/loc form (head name . slots)))))))
+              (syntax/loc form (begin (head name . slots) (export name))))))))
        (def private? (and (eq? (stx-e #'resolver) #f) (pair? forms) (null? (cdr forms))))
        (def direct #f)
        (def definitions
@@ -564,9 +479,25 @@
              (map (lambda (form)
                     (let (stock (stock-publication form private?))
                       (if stock
-                        (module-source-measure-operation 'reader-shared-frame
-                          (lambda () (set! direct private?) stock))
-                        (rewrite form)))) forms))))
+                        (begin
+                          (module-source-measure-operation
+                            (if private? 'reader-direct-frame 'reader-lexical-frame) void)
+                          (module-source-measure-operation 'reader-shared-frame
+                            (lambda () (set! direct private?) stock)))
+                        (module-source-measure-operation 'reader-lexical-fallback
+                          (lambda () (rewrite form)))))) forms))))
+       (def link-dependencies
+         (syntax-case #'resolver ()
+           ((kind (role owner names) ...)
+            (eq? (stx-e #'kind) 'compiled)
+            (with-syntax ((bind (quote-syntax bind-program-interfaces))
+                          ((path ...) (map (lambda (_) #f) (syntax->list #'(owner ...))))
+                          ((identity ...)
+                           (map (lambda (owner)
+                                  (string->symbol (string-append ":" (symbol->string (stx-e owner)))))
+                                (syntax->list #'(owner ...)))))
+              #'(bind (path ...) (identity ...))))
+           (_ #'(begin))))
        (def resolver-expression
          (syntax-case #'resolver ()
            ((kind (role owner (name ...)) ...)
@@ -587,7 +518,8 @@
          (let (expanded
                 (stx-wrap-source
                   (core-cons 'begin
-                    (if direct definitions (cons #'(def loader (resolver)) definitions)))
+                    (if direct definitions
+                      (cons link-dependencies (cons #'(def loader (resolver)) definitions))))
                   (stx-source input)))
            (if rewrap? (syntax-local-rewrap expanded) expanded)))))))
 
@@ -612,8 +544,7 @@
            ;; Preserve the original reader marks and direct private delivery.
            (rewrite-deferred-declaration input #'roles #'resolver forms #t))
           (else
-           ;; Only authored imports need a continuation: Gerbil establishes
-           ;; their bindings and phases before expanding the declaration.
+           ;; Establish authored native imports before expanding the declaration.
            (with-syntax (((import-form ...) (map syntax-local-rewrap (reverse imports)))
                          ((declaration ...) (map syntax-local-rewrap forms)))
              #'(begin import-form ...

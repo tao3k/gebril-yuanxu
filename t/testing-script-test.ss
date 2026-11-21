@@ -10,6 +10,7 @@
                  admit-testing-process-result make-compiler-progress-reader)
         (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress
                  execution-progress-idle-milliseconds))
+(import (only-in "./qualification/module-init/fixture.ss" with-compiler-progress))
 (export testing-script-test)
 ;; Synthetic wire receipts exercise policy, not runtime-harness qualification.
 (def files '("fixture-test.ss"))
@@ -18,6 +19,31 @@
 (def (synthetic-source (guard void)) (.o spec: files admit-current: guard))
 (def testing-script-test
   (test-suite "Testing policy over Ops"
+    (test-case "an interrupted Case waits for its compiler before cleanup"
+      (def owner (current-thread))
+      (def abandoned 'test-interrupt)
+      (def returned? #f)
+      (def trigger
+        (thread-start!
+          (make-thread
+            (lambda ()
+              (def build (thread-receive))
+              (thread-interrupt! owner
+                (lambda ()
+                  (thread-send build 'finish)
+                  (raise abandoned)))))))
+      (def failure
+        (with-catch identity
+          (lambda ()
+            (with-compiler-progress
+              (lambda ()
+                (thread-send trigger (current-thread))
+                (thread-receive)
+                (set! returned? #t)))
+            #f)))
+      (thread-terminate! trigger)
+      (check-equal? failure abandoned)
+      (check-equal? returned? #t))
     (test-case "successive compilers advance one enclosing idle window independently"
       (def now 0)
       (call-with-execution-progress 60000 600000

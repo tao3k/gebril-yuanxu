@@ -1,8 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; CI metadata only: no process execution, Harness or verdict interpretation.
+prelude: :gerbil/base
 (import (only-in :std/encoding/json json->string)
-        (only-in :clan/poo/object .get)
-        (only-in "../init.ss" tao3k/yuanxu.init.exports))
+        (only-in :std/list/list filter-map))
 (export main)
 
 (def test-groups
@@ -93,15 +93,7 @@
           (cons "heap" (if (null? large) "2G" "4G"))
           (cons "batch" (and (member group '("ops" "workflow")) #t))
           (cons "deadline" (if (member group '("dense-declarations" "dense-selection"))
-                             "750s" "600s")))))
-
-(def (published-files)
-  (def tests (.get tao3k/yuanxu.init.exports tests))
-  ((.get tests admit-current))
-  (def files (.get tests spec))
-  (unless (and (pair? files) (andmap string? files))
-    (error "published Module tests must be explicit and nonempty"))
-  files)
+                             "730s" "600s")))))
 
 (def (main action . arguments)
   (cond ((string=? action "--matrix")
@@ -111,6 +103,5 @@
              (list (cons "include" (list->vector (map matrix-row test-groups))))))))
         ((string=? action "--list") (for-each displayln (apply discovered-files arguments)))
         ((string=? action "--check") (check-partition))
-        ((string=? action "--published") (for-each displayln (published-files)))
         (else (error "unknown CI inventory operation" action)))
   (force-output))

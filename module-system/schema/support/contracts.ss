@@ -7,10 +7,9 @@
 
 (import (runtime: :gerbil/core)
         (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop
-                 .defgeneric Any Bool Object Type element? raise-type-error)
-        (only-in :clan/poo/type List String Symbol)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-predicate-type)
+        (only-in :clan/poo/type Any Bool Object Type element? raise-type-error List String Symbol)
+        (only-in :clan/poo/mop .defgeneric)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-predicate-type)
         :tao3k/yuanxu/graph/interface)
 
 (export yuanxu-module-object-kind

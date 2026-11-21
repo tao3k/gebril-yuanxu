@@ -102,8 +102,7 @@
 
 (def (yuanxu-graph-root-children value)
   (let* ((outgoing
-           (edge-pairs->outgoing-index
-            (reverse (yuanxu-graph-edge-pairs value)) (make-hash-table)))
+           (edge-pairs->outgoing-index (yuanxu-graph-edge-pairs value)))
          (children (graph-adjacency-ref outgoing (yuanxu-graph-id value))))
     (if (null? children)
       '()

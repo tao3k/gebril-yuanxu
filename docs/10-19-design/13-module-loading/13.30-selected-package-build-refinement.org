@@ -11,7 +11,7 @@ Implementation follow-up: [[file:13.32-interface-entry-and-compilation-authority
 that production Scheme is unchanged. It distinguishes the delivered subset,
 native receipts and remaining package installation/publication obligations.
 
-The subsequent [[file:13.31-native-prelude-staging-and-source-view.org][13.31 refinement]] chooses native staged syntax for the declaration
+The subsequent [[file:13.31-gerbil-prelude-staging-and-source-view.org][13.31 refinement]] chooses native staged syntax for the declaration
 handoff and adds physical-output, timestamp and interrupted-preparation controls.
 Its mechanism probe and remaining native obligations are recorded separately.
 
@@ -83,7 +83,7 @@ silently accepted as identical to the original declaration binding.
 | DownstreamProductOwnership | =install_identity_preserved=, =install_other_environment=, =clean_other_environment=, =clean_unowned_product= | Environment IDs correspond to nonaliasing canonical directories; native output paths match identities and cleanup has confined scope |
 | CompletePublication | =publication_sources_current=, =missing_realization_refused=, =refused_plan_cannot_publish=, =admitted_build_contains_foreign_source= | Observations include every compiler/resource/tool input; realization observations are authentic; existing issuer covers all products |
 | PreludeEntry | =eager_path_descends=, =eager_cycle_refused=, =admitted_binding_exact=, =phase_substitution_refused=, =reference_substitution_refused=, =one_declaration_interpreter= | Gerbil supplies actual eager phase graph, terminal references, weak/strong binding precedence and hygienic expansion |
-| NativeHandoff | Reuses =Building.Inputs= conflict laws and existing source admission; no Make theorem claimed | Original/prepared/generated paths, product names and std/make timestamp behavior correspond on cold/hot builds |
+| GerbilBuildHandoff | Reuses =Building.Inputs= conflict laws and existing source admission; no Make theorem claimed | Original/prepared/generated paths, product names and std/make timestamp behavior correspond on cold/hot builds |
 
 Input paths and prepared forms are observed data, not a filesystem authority
 certificate. An arbitrary source could satisfy the pure data checks. Existing

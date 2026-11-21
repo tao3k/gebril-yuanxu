@@ -2,8 +2,6 @@
 import YuanxuProof.Admission.IssuedLoading
 namespace YuanxuProof.Admission.SourceLoader
 
-def quintSourceDigest : String := "sha256:b77d2376db705d5902be2fbf0c3cf566d9a448b790ef42831ab902c5877beba6"
-
 -- These are compiled call edges, not the current value of a mutable SDK binding.
 inductive Edge where
   | saved | direct | reload | retry

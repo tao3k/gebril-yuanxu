@@ -2,8 +2,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :clan/poo/object
-        (only-in :clan/poo/mop Type. define-type Function Any Bool element?)
-        (only-in :clan/poo/type Record String List OrFalse Union Unit)
+        (only-in :clan/poo/type Type. define-type Function Any Bool element? Record String List
+                 OrFalse Union Unit)
         (only-in :clan/poo/number Integer Real))
 (export ProcessScriptContract ProcessResultContract ScriptBatchContract OpsConfigContract OpsScopeContract OpsEnvironmentContract)
 (def ProcessResultContract

@@ -9,7 +9,7 @@
         (only-in :gerbil/runtime/loader load-path set-load-path!)
         (only-in :clan/poo/object .def .o .get .ref .put! .slot? .call object?
                  replay-slot-reads! object-read-issued?)
-        (only-in :clan/poo/mop Type.)
+        (only-in :clan/poo/type Type.)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
                  slot-read-key slot-read-dependencies)
         (only-in :gerbil/expander eval-syntax datum->syntax current-expander-context make-top-context
@@ -21,9 +21,8 @@
                  for-each-build-module yuanxu-bootstrap-contexts)
         (only-in :tao3k/yuanxu/module-system/building/source-package module-build-source-path)
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source)
-        (rename-in (only-in :tao3k/yuanxu/module-system/source/declaration .def) (.def publication-definition))
-        (only-in :tao3k/yuanxu/module-system/source/declaration current-module-build-phase?)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?)
+        (only-in :tao3k/yuanxu/module-system/source/build-binding current-module-build-phase?)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case yuanxu-test-observe)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         :tao3k/yuanxu/module-system/source/objects
@@ -184,7 +183,7 @@
          (write-file (path-expand "build.ss" module-root)
            "(import (only-in :tao3k/yuanxu/module-system/building/build-projection yuanxu-project-source-spec)) (.def Build function: yuanxu-project-source-spec)")
          (write-file (path-expand "interface.ss" module-root)
-           "(.def Fixture identity: 'custom/example core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o (:: @ FixtureScope) greeting: Greeting) configuration-build: Build) features: (.o))")
+           "(.def Fixture identity: 'custom/example core: (.o scope-contract: FixtureContract exports: (.o (:: @ FixtureScope) greeting: Greeting) configuration-build: Build) features: (.o))")
          (def demanded (module-publication-reader))
          (def published (.call demanded read source))
          (check-equal? (hash-key? (observed-paths demanded) projection) #f)

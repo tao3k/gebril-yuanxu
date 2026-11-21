@@ -2,7 +2,7 @@
 ;;; Production return-currentness events; known misses remain expected witnesses.
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-classification-evidence)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-classification-evidence)
         (only-in :tao3k/yuanxu/admission/source SourceAdmissionContract.)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  current-module-source-phase module-source-read module-source-admit-current!)

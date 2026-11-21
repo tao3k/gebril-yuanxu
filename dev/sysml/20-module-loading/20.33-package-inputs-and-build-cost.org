@@ -37,7 +37,7 @@ those cohorts or infer a production speedup from their difference.
 
 Production uses the existing invocation-local operation measurement facility
 to distinguish =build-projection=, =build-current=, =native-make=,
-=compiler-make=, =compiler-native-import=, =compiler-role-import= and
+=compiler-make=, =compiler-compiled-import=, =compiler-role-import= and
 =compiler-role-restore=. Measurement stores scalar timings only. It is not an
 observer, a build verdict or a new source cache. Temporary profiling scripts
 are local diagnostics, not committed build/test entrypoints.

@@ -8,6 +8,42 @@ namespace YuanxuProof.ModuleSystem.Loading.CatalogPublication
 abbrev Key := Nat × Nat
 abbrev Snapshot := Key → Option Nat
 
+def singletonVersion (version stamp : Nat) (query : Nat) : Option Nat :=
+  if query = version then some stamp else none
+
+/-- The single-release representation projects exactly the same point reads
+as promotion to the version index. A duplicate version is rejected before
+either representation can replace the issued stamp. -/
+theorem promote_singleton_version (first firstStamp second secondStamp : Nat)
+    (distinct : second ≠ first) (query : Nat) :
+    (if query = second then some secondStamp else singletonVersion first firstStamp query) =
+      (if query = first then some firstStamp else singletonVersion second secondStamp query) := by
+  by_cases hit : query = second
+  · simp [hit, distinct, singletonVersion]
+  · simp [hit, singletonVersion]
+
+/-- Gerbil's interned symbol is the canonical representative of its spelling.
+Skipping its spelling round trip preserves the lookup key. Symbols outside
+that domain still go through the interning operation. -/
+theorem canonical_symbol_fast_path {Symbol Spelling : Type}
+    (interned : Symbol → Bool) (spelling : Symbol → Spelling) (intern : Spelling → Symbol)
+    (fixed : ∀ symbol, interned symbol = true → intern (spelling symbol) = symbol)
+    (symbol : Symbol) :
+    (if interned symbol then symbol else intern (spelling symbol)) = intern (spelling symbol) := by
+  cases known : interned symbol
+  · rfl
+  · simpa using (fixed symbol known).symm
+
+/-- The current version bucket can serve consecutive rows of its own name.
+Interleaved names still read the complete outer index. -/
+theorem current_bucket_lookup_exact {Name Bucket : Type} [DecidableEq Name]
+    (outer : Name → Bucket) (owner : Name) (bucket : Bucket)
+    (current : outer owner = bucket) (query : Name) :
+    (if query = owner then bucket else outer query) = outer query := by
+  by_cases hit : query = owner
+  · simp [hit, current]
+  · simp [hit]
+
 structure Edit where
   key : Key
   expected : Option Nat

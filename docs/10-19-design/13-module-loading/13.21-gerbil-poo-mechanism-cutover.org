@@ -31,8 +31,8 @@ effects. Changing a REV or adding another facade is not architectural closure.
 
 * Runtime declaration and object families
 
-=object-family/syntax.ss= generates marker predicates, positional constructors
-and individual accessors. =object-family/role-syntax.ss= adds a second syntax
+=object/syntax.ss= generates marker predicates, positional constructors
+and individual accessors. =object/role-syntax.ss= adds a second syntax
 for constant slot rows. The migration target is ordinary prototypes, runtime
 Class/Slot declarations and direct lexical slot reads. Contracts apply to the
 resulting object; a marker alone is not structural admission.
@@ -246,7 +246,7 @@ invalidation transitions. SysML assigns those duties without duplicate models.
    changing the installed compiler. Preserve failed command/build receipts.
 2. Delete exact functional aliases and migrate consumers. This is safe library
    convergence, not completion of the object-system refactor.
-3. Replace one object-family/role vertical slice, validating declaration timing,
+3. Replace one family/role vertical slice, validating declaration timing,
    hooks, identity, reflection and parent-cached child values.
 4. Retire duplicate dispatch/combination and publication paths only after their
    actual identity/registration/source guarantees have runtime correspondences.

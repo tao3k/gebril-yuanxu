@@ -60,22 +60,28 @@
       ;; Narrow only fixture selection and retained roots, never build.ss.
       (call-with-output-file (list path: (path-expand "init.ss" fixture-root) truncate: #t)
         (lambda (port)
-          (write `(yuanxu! mode: explicit source: "./modules" (,selected)) port)))
+          (write `(yuanxu! :test-dir "./t" mode: explicit source: "./modules" (,selected)) port)))
       (call-with-output-file (list path: (path-expand "core-spec.ss" fixture-root) truncate: #t)
         (lambda (port)
+          (display "prelude: :gerbil/core\n" port)
           (write '(export core-spec) port) (newline port)
-          ;; These package libraries are separate from the selected Module.
-          ;; Keep their compiled interfaces in the cold fixture too, so Make
-          ;; can distinguish a hot build from one with missing imports.
-          (write '(def core-spec '("prelude" "core-spec"
-                                  "module-system/selection/init-syntax"
-                                  "module-system/bootstrap/body-inclusion"
-                                  "module-system/schema/slot-contracts"
-                                  "module-system/source/declaration" "module-system/source/role-forms"
-                                  "object-family/read-projection" "object-family/syntax"
-                                  "object-types/contracts" "object-types/facts" "object-types/ports"
-                                  "observability/funcs" "observability/objects" "observability/types"
-                                  "utilities/algorithms" "utilities/functional")) port)))
+          ;; Both fixtures compile the prelude and its local imports. Gerbil
+          ;; orders those targets before checking fresh-process reuse.
+          (def bootstrap
+            '("prelude" "core-spec" "module-system/selection/init-syntax"
+              "module-system/source/module-binding"
+              "module-system/source/autoload-declarations"))
+          (def targets
+            (if sample bootstrap
+              (append bootstrap
+                '("module-system/bootstrap/body-inclusion"
+                  "module-system/schema/slot-contracts"
+                  "module-system/source/build-binding" "module-system/source/role-forms"
+                  "object/syntax"
+                  "types/contracts" "types/facts" "types/ports"
+                  "observability/funcs" "observability/objects" "observability/types"
+                  "utilities/algorithms" "utilities/functional"))))
+          (write `(def core-spec ',targets) port)))
       (.o root: fixture-root state: fixture-state cold: #t))))
 
 (def (link-fixture-dependencies source target)

@@ -14,21 +14,21 @@
 ;; every Scheme exit; its finalizer also protects interrupted acquisition.
 (C-ffi-macrology)
 (C-include "<stdlib.h>")
-(def-C-type/pointer NativePath "char" release: "ffi_free")
-(def-C-lambda native-path-acquire (nonnull-char-string) NativePath*
+(def-C-type/pointer CanonicalInputPath "char" release: "ffi_free")
+(def-C-lambda canonical-path-acquire (nonnull-char-string) CanonicalInputPath*
   "___result = realpath(___arg1, NULL);")
-(def-C-lambda native-path-text (NativePath*) nonnull-char-string
+(def-C-lambda canonical-path-text (CanonicalInputPath*) nonnull-char-string
   "___result = ___arg1;")
-(def (native-input-path path)
-  (def pointer (native-path-acquire path))
+(def (canonical-input-path path)
+  (def pointer (canonical-path-acquire path))
   (unless pointer (error "native static compiler input cannot be resolved" path))
   (dynamic-wind void
-    (lambda () (native-path-text pointer))
+    (lambda () (canonical-path-text pointer))
     (lambda () (foreign-release! pointer))))
 
 ;; Gerbil's Module ID encoding determines the producer's static product role.
 ;; The imported interface supplies its actual library root, not a disk catalog.
-(def (native-static-input identity path)
+(def (program-static-input identity path)
   (def relative (module-id->path-string identity))
   (def suffix (string-append relative ".ssi"))
   (unless (string-suffix? suffix path)
@@ -44,7 +44,7 @@
   (def info (file-info source #t))
   (unless (eq? (file-info-type info) 'regular)
     (error "native static compiler input must resolve to a regular file" identity source))
-  (def canonical (native-input-path source))
+  (def canonical (canonical-input-path source))
   ;; Expected bytes stay private. Public compiler projections must not alias
   ;; the text against which original evidence is admitted.
   (def text (string-copy (module-source-read canonical)))
@@ -61,7 +61,7 @@
                  (string=? (.get witness name) leaf))
       (error "native static compiler projection changed" identity source))
     (unless (and (eq? (module-source-type source) kind)
-                 (equal? (native-input-path source) canonical)
+                 (equal? (canonical-input-path source) canonical)
                  (let (actual (file-info source #t))
                    (and (eq? (file-info-type actual) 'regular)
                         (equal? (file-info-device actual) (file-info-device info))
@@ -86,7 +86,7 @@
                  ;; Imported user libraries need private writable inputs.
                  (not (string-prefix? "gerbil/" name))
                  (not (string-prefix? "std/" name)))
-        (let* ((input (native-static-input identity path))
+        (let* ((input (program-static-input identity path))
                (leaf (.get input name))
                (source (.get input path))
                (previous (hash-get selected leaf)))

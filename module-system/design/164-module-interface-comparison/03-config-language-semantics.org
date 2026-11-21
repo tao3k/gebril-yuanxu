@@ -154,7 +154,7 @@ place to validate the resulting data; our runtime inheritance alone does not.
 ** POO: the actual runtime relationship
 
 #+begin_src scheme
-(import :yuanxu/object-syntax/path-slots
+(import :yuanxu/syntax/path-slots
         (only-in :clan/poo/object .get))
 (.def Base
   build: (.o command: '("gerbil" "build") artifacts: '(build-log))

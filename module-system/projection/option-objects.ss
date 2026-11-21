@@ -7,8 +7,8 @@
 ;;; Product descriptors decide how these values are projected and presented.
 
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/type Record String Symbol Or)
-        (only-in :clan/poo/mop define-type Slot))
+        (only-in :clan/poo/type Record String Symbol Or define-type)
+        (only-in :clan/poo/mop Slot))
 
 (export ModuleOptionSchema
         yuanxu-module-option-schema-contract

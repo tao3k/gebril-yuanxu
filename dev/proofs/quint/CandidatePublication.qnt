@@ -5,6 +5,10 @@ module CandidatePublicationModel {
   // One Graph, not independent source epochs. A candidate owns its actual
   // role/import/Schema support; unrelated selected support stays at commit.
   pure val selected = Set(0, 1, 2, 3)
+  // An excluded Interface can acquire the Profile tag after local admission.
+  // Its revision is required for root selection, outside the owner closure.
+  pure val profileCandidate = 5
+  pure val globalSupport = selected.union(Set(profileCandidate))
   pure val actual = Set(0, 1, 2)
   pure val local = if (BUG == "dropImport") actual.exclude(Set(1)) else actual
   pure def current(dirty: Set[int], support: Set[int]): bool =
@@ -14,7 +18,7 @@ module CandidatePublicationModel {
     visible: bool, held: bool, previous: int}
   var s: State
   action init = {
-    nondet changed = selected.union(Set(-1)).oneOf()
+    nondet changed = globalSupport.union(Set(-1)).oneOf()
     nondet open = Set(false, true).oneOf()
     s' = {phase: 0, dirty: if (changed == -1) Set() else Set(changed),
       open: open, enteredDirty: false, openDirty: false, returnedDirty: false, falseRefusal: false,
@@ -26,7 +30,7 @@ module CandidatePublicationModel {
       .with("enteredDirty", allowed and not(current(s.dirty, actual)))
   }
   action runtimeRoles = {
-    nondet changed = selected.union(Set(-1)).oneOf()
+    nondet changed = globalSupport.union(Set(-1)).oneOf()
     all { s.phase == 1,
       // Node 4 is initializer-local scratch, not an enduring policy or
       // producer requirement. Real SDK construction may invalidate its reads.
@@ -34,31 +38,32 @@ module CandidatePublicationModel {
       s' = s.with("phase", 2).with("dirty", dirty.union(Set(4))) }
   }
   action beforeAdmission = all { s.phase == 2,
-    val demanded = if (s.open and BUG != "openBefore") selected else local
+    val demanded = if (s.open and BUG != "openBefore") globalSupport else local
     val support = if (BUG == "retainScratch") demanded.union(Set(4)) else demanded
     val allowed = current(s.dirty, support)
     s' = s.with("phase", if (allowed) 3 else 5).with("held", allowed)
-      .with("openDirty", s.open and allowed and not(current(s.dirty, selected)))
-      .with("falseRefusal", not(allowed) and current(s.dirty, selected))
+      .with("openDirty", s.open and allowed and not(current(s.dirty, globalSupport)))
+      .with("falseRefusal", not(allowed) and current(s.dirty, globalSupport))
   }
   action admission = {
-    nondet changed = selected.union(Set(-1)).oneOf()
+    nondet changed = globalSupport.union(Set(-1)).oneOf()
     all { s.phase == 3,
       val dirty = if (changed == -1) s.dirty else s.dirty.union(Set(changed))
-      val support = if (s.open and BUG != "openAfter") selected else local
+      val support = if (s.open and BUG != "openAfter") globalSupport else local
       val allowed = current(dirty, support)
       s' = s.with("phase", if (allowed) 4 else 5).with("dirty", dirty)
         .with("held", allowed)
-        .with("returnedDirty", s.open and allowed and not(current(dirty, selected)))
+        .with("returnedDirty", s.open and allowed and not(current(dirty, globalSupport)))
         .with("visible", BUG == "earlyVisible" and allowed) }
   }
   action commit = {
     // A real input may change after local admission. No approval crosses this
     // boundary: selected source support is checked afresh before visibility.
-    nondet changed = selected.union(Set(-1)).oneOf()
+    nondet changed = globalSupport.union(Set(-1)).oneOf()
     all { s.phase == 4,
       val dirty = if (changed == -1) s.dirty else s.dirty.union(Set(changed))
-      val support = if (BUG == "dropSchema") selected.exclude(Set(2)) else selected
+      val support = if (BUG == "dropSchema") globalSupport.exclude(Set(2))
+        else if (BUG == "dropProfileCandidate") selected else globalSupport
       val allowed = BUG == "skipCommit" or current(dirty, support)
       s' = s.with("phase", 5).with("dirty", dirty).with("visible", allowed)
         .with("previous", if (allowed) 2 else if (BUG == "replaceOnFailure") 0 else 1)
@@ -71,7 +76,7 @@ module CandidatePublicationModel {
   val LocalEntry = not(s.enteredDirty)
   val OpenEntry = not(s.openDirty)
   val OpenReturn = not(s.returnedDirty)
-  val FinalCurrent = not(s.visible) or current(s.dirty, selected)
+  val FinalCurrent = not(s.visible) or current(s.dirty, globalSupport)
   val CommitOnly = not(s.visible) or s.phase == 5
   val KeepPrevious = s.phase != 5 or s.visible or s.previous == 1
   val Cleanup = s.phase != 5 or not(s.held)

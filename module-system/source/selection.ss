@@ -4,18 +4,17 @@
 ;;; Module Core remains mandatory. Internal Core nodes let the existing Feature
 ;;; resolver check one selected dependency Graph without another ordering policy.
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/slot-layout make-slot-cache)
         (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
-        (only-in :tao3k/yuanxu/object-family/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/read-projection owned-read-function-scope?)
         (only-in :tao3k/yuanxu/ops/progress current-execution-progress execution-progress!)
         (only-in :tao3k/yuanxu/module-system/graph/funs module-closure)
         (only-in :tao3k/yuanxu/module-system/source/observations
-                 call-with-module-source-callback module-source-measure-operation)
+                 call-with-module-source-callback module-source-measure-operation current-module-source-observer)
         (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor feature-selection feature-profile)
-        (only-in :tao3k/yuanxu/module-system/feature/resolver resolve-feature-profile)
+        (only-in :tao3k/yuanxu/module-system/feature/resolver resolve-feature-profile schedule-core-rows)
         (only-in :tao3k/yuanxu/module-system/feature/feature-manifest feature-manifest-bundle)
         (only-in :tao3k/yuanxu/module-system/feature/composition feature-composition-plan))
-(export select-module-graph module-feature-declaration)
+(export select-module-graph module-feature-declaration module-selected-feature?)
 
 ;; One complete value from the EXISTING Feature publisher. Runtime .cc copies
 ;; direct persistent specifications, never this prototype's evaluated cells.
@@ -39,12 +38,12 @@
                               (.all-slots core-feature-prototype)))
                   unique-roots?: #t)))
       reads)))
+(def (core-feature-template-current?)
+  (and core-feature-prototype (owned-read-function-scope?) (runtime-construction-current?)
+       (with-catch (lambda (_changed-template) #f)
+         (lambda () (reobserve-slot-reads! core-feature-reads) #t))))
 (def (core-feature-descriptor id owner required)
-  (def closed?
-    (and core-feature-prototype (owned-read-function-scope?) (runtime-construction-current?)
-         (with-catch (lambda (_changed-template) #f)
-           (lambda () (reobserve-slot-reads! core-feature-reads) #t))))
-  (if closed?
+  (if (core-feature-template-current?)
     (.cc core-feature-prototype feature-id: id owner-module-id: owner
       requires: (map values required))
     ;; Unknown observers/initializers keep the original specification reads
@@ -55,6 +54,20 @@
   (string->symbol (string-append (symbol->string id) "/:core")))
 (def (feature-node-id owner-id name)
   (string->symbol (string-append (symbol->string owner-id) "/" (symbol->string name))))
+;; Find the authored leaf in this selection. Relative leaf names may recur
+;; across package windows, so a compiler request must resolve unambiguously.
+(def (module-selected-feature? graph leaf feature)
+  (def owners
+    (filter-map
+      (lambda (node)
+        (and (eq? (.ref node 'kind) 'module-core)
+             (eq? (.ref (.ref node 'publication) 'identity) leaf)
+             (.ref node 'identity)))
+      (.ref graph 'nodes)))
+  (match owners
+    ([] #f)
+    ([owner] (and (memq (feature-node-id owner feature) (.ref graph 'feature-order)) #t))
+    (else (error "Feature request has ambiguous Module leaves" leaf feature owners))))
 (def (signed-feature flag)
   (let (text (symbol->string flag))
     (values (string->symbol (substring text 1 (string-length text)))
@@ -81,7 +94,8 @@
     value))
 
 (def (select-module-graph context root-values read-publication current!
-                          (read-dependencies #f))
+                          (imported-owners (lambda (_id) '()))
+                          owner-record: (read-owner-record #f))
   (def (module-key owner required)
     (if (.slot? context 'resolve-module-id)
       ((.ref context 'resolve-module-id) owner required) required))
@@ -94,18 +108,13 @@
                (target (if (eq? owner-name declared) owner (module-key owner owner-name))))
           (string->symbol (string-append (symbol->string target)
                             (substring text separator (string-length text))))))))
-  ;; Candidate-owned sites cannot retain its last publication in a global root.
-  ;; Runtime shared shapes remain reusable; optional payloads stay demand-filled.
-  (def publication-core-site (make-slot-cache 'core))
-  (def core-requires-site (make-slot-cache 'requires))
-  ;; Resolve each selected declaration once for this candidate Graph. Reuse the
-  ;; actual publication object for Core/Feature edges, not a source observation
-  ;; or an admission result across declaration expansion/initialization.
   (def publications (make-hash-table-eq))
+  (def imports (make-hash-table-eq))
   (def (publication-for id)
-    (if (hash-key? publications id) (hash-ref publications id)
-      (let (value (read-publication id))
-        (hash-put! publications id value) value)))
+    (or (hash-get publications id)
+        (let (value (read-publication id))
+          (hash-put! publications id value)
+          value)))
   (let* ((intent (and (.slot? context 'intent) (.ref context 'intent)))
          (decision-values (if intent (.ref intent 'decisions) '()))
          (origin (and (.slot? context 'init-source) (.ref context 'init-source)))
@@ -116,32 +125,25 @@
           (module-source-measure-operation 'selected-owner-closure
            (lambda () (module-closure root-values identity
            (lambda (id)
-             (let (required-ids
-                    (if read-dependencies
-                      (call-with-values (lambda () (read-dependencies id))
-                        (lambda (value ids)
-                          ;; Populate the SAME publication index as the normal
-                          ;; reader. Core/Feature resolution must not reread it.
-                          (hash-put! publications id value)
-                          ids))
-                      (let (requirements (.ref/inline
-                              (.ref/inline (publication-for id) publication-core-site)
-                              core-requires-site))
-                        (map (lambda (alias) (.ref (.ref requirements alias) 'module-id))
-                             (.all-slots requirements)))))
-               (map (lambda (reference)
-                      (def required (module-key id reference))
-                      (when (hash-get denied-index required)
-                        (error "required module disabled" id required origin (.ref context 'generation)))
-                      (when (and explicit? (not (hash-get selected-index required)))
-                        (error "required module not explicitly declared" id required origin
-                               (.ref context 'generation)))
-                      required)
-                    required-ids)))))))
-         ;; Dependency projection can leave a private candidate pending. Close
-         ;; it BEFORE decision slots, Feature construction or any open resolver
-         ;; callback. Generic readers keep their independent publication tails.
-         (_closure-current (when read-dependencies (current!)))
+             (let (owners
+                    (if read-owner-record
+                      ;; The Linker supplies both fields from one admitted
+                      ;; record without an intervening callback.
+                      (let-values (((publication owners) (read-owner-record id)))
+                        (hash-put! publications id publication)
+                        owners)
+                      (begin (publication-for id) (imported-owners id))))
+               (for-each
+                 (lambda (required)
+                   (when (hash-get denied-index required)
+                     (error "required module disabled" id required origin (.ref context 'generation)))
+                   (when (and explicit? (not (hash-get selected-index required)))
+                     (error "required module not explicitly declared" id required origin
+                            (.ref context 'generation))))
+                 owners)
+               (hash-put! imports id owners)
+               owners))))))
+         (_closure-current (current!))
          (nodes (make-hash-table))
          (decision-index (make-hash-table))
          (negative
@@ -155,6 +157,9 @@
     (for-each (lambda (row) (hash-put! decision-index (.ref row 'identity) row)) decision-values)
     (def (row-for id)
       (and (hash-key? decision-index id) (hash-ref decision-index id)))
+    (def (register-core! key id owners)
+      (hash-put! nodes key (.o kind: 'module-core identity: id owner: id
+                              publication: (publication-for id) imports: owners)))
     (def (feature-interface owner id name)
       (and (.slot? context 'collect-entrypoint)
            ((.ref context 'collect-entrypoint)
@@ -205,20 +210,30 @@
                 'optional-requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'optional-requires))
                 'conflicts (map (cut feature-key owner-id <>) (.ref descriptor-value 'conflicts))))
             descriptor-value)))
-    (let* ((core-selections
+    (let* ((core-only?
+            ;; Decision flags have already been demanded. Inspect the prepared
+            ;; values without running an author getter to qualify the shortcut.
+            (and read-owner-record (not (current-module-source-observer))
+                 (core-feature-template-current?)
+                 (with-catch (lambda (_changed-route) #f)
+                   (lambda ()
+                     (andmap (lambda (row)
+                               (null? (object-cached-value
+                                        (object-cached-value row 'selection) 'selection-flags)))
+                             decision-values)))))
+           (core-selections
             (module-source-measure-operation 'selected-core-projection
              (lambda () (map (lambda (id)
                    (let* ((key (core-node-id id))
-                          (requirements (.ref/inline
-                            (.ref/inline (publication-for id) publication-core-site)
-                            core-requires-site))
-                          (required (map (lambda (alias)
-                                           (core-node-id (module-key id (.ref (.ref requirements alias) 'module-id))))
-                                         (.all-slots requirements)))
-                          (descriptor-value (core-feature-descriptor key id required)))
-                     (hash-put! nodes key (.o kind: 'module-core identity: id owner: id
-                                             publication: (publication-for id)))
-                     (feature-selection descriptor-value))) modules))))
+                          (owners (hash-ref imports id))
+                          (required (map core-node-id owners)))
+                     (if core-only?
+                       (begin
+                         (register-core! key id owners)
+                         (cons key required))
+                       (let (descriptor-value (core-feature-descriptor key id required))
+                         (register-core! key id owners)
+                         (feature-selection descriptor-value))))) modules))))
            (feature-selections
             (foldr append '()
              (map
@@ -230,8 +245,10 @@
                        (let-values (((name enabled?) (signed-feature flag)))
                          ;; Negative decisions validate the name, but do not force
                          ;; its descriptor or contribution payload.
-                         (let ((id (feature-node-id owner-id name))
-                               (features (.ref (publication-for owner-id) 'features)))
+                         (let* ((id (feature-node-id owner-id name))
+                               (publication (publication-for owner-id))
+                               (features (if (.slot? publication 'features)
+                                           (.ref publication 'features) '())))
                            (unless (if (list? features) (memq name features) (.slot? features name))
                              (error "unknown init feature" owner-id name origin (.ref context 'generation)))
                            (if enabled?
@@ -250,11 +267,19 @@
               ;; Independent Features follow init declaration order, not DFS or
               ;; publication slot enumeration order. Dependencies still win.
               ;; The closure populated publications for each visited Module.
-              (filter (lambda (id) (hash-key? publications id))
-                      (map (cut .ref <> 'identity) decision-values)))))
+              (if core-only? '()
+                (filter (lambda (id) (hash-key? publications id))
+                        (map (cut .ref <> 'identity) decision-values))))))
            (resolution (module-source-measure-operation 'selected-topological-resolution
-                         (lambda () (resolve-feature-profile
-                           (feature-profile 'module-selection (append core-selections feature-selections))))))
+                         (lambda ()
+                           (if core-only?
+                             (let-values (((order cycle-diagnostics)
+                                           (module-source-measure-operation 'selected-core-rows
+                                             (lambda () (schedule-core-rows core-selections)))))
+                               (.o status: (if (null? cycle-diagnostics) 'ready 'rejected)
+                                   feature-ids: order diagnostics: cycle-diagnostics))
+                             (resolve-feature-profile
+                               (feature-profile 'module-selection (append core-selections feature-selections)))))))
            (diagnostics (.ref resolution 'diagnostics)))
       (unless (eq? (.ref resolution 'status) 'ready)
         (error "selected Graph rejected" origin (.ref context 'generation)

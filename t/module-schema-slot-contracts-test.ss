@@ -20,7 +20,7 @@
   (test-suite "module-schema-slot-contracts-test"
     (yuanxu-test-case "validates the runtime contract"
       (eval '(import "./module-system/schema/slot-contracts.ss"))
-      (eval '(import :clan/poo/object :clan/poo/mop))
+      (eval '(import :clan/poo/object (only-in :clan/poo/type Type element?)))
       (contract-schema-eval
  '(begin
     (def +contract-schema-fixture-slot+

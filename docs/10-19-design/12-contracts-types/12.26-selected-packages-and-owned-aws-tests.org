@@ -11,7 +11,7 @@ historical; the mounted-root integration has its own completion gate.
 
 The intended architecture is one repository root =init.ss= selecting directory
 windows through the Module System. The =scenarios/= directory is mounted under
-the name =Scenarios= using =rename:=; it does not require an independent
+the name =Scenarios= using =mount:=; it does not require an independent
 =scenarios/init.ss= which repeats the Module dependency selection. Scenario
 owners and their tests use that mounted namespace and the same selected Graph.
 See the [[file:../13-module-loading/13.13-root-directory-windows.org][implemented root-window boundary]] for grammar and identity rules.

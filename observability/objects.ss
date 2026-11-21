@@ -8,9 +8,10 @@
 ;;; runtime manifests and proof rows are projections, not semantic owners.
 
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/mop .defgeneric validate)
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-contract-admit)
-        (only-in :tao3k/yuanxu/object-family/syntax defpoo-object-family)
+        (only-in :clan/poo/type validate)
+        (only-in :clan/poo/mop .defgeneric)
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-contract-admit)
+        (only-in :tao3k/yuanxu/object/syntax defpoo-object-family)
         :tao3k/yuanxu/observability/funcs
         (only-in :tao3k/yuanxu/observability/types
                  YuanxuObservationIdentityContract YuanxuObservationProvenanceContract

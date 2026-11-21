@@ -1,6 +1,6 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :tao3k/yuanxu/object-syntax/path-slots
+(import :std/test :tao3k/yuanxu/syntax/path-slots
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/object .get .+ .cc .all-slots .put! object-slots with-slots
                  object-%declarations)

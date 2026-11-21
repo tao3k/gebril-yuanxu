@@ -1,10 +1,11 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Local closed schemas exercise existing compilation; not live AWS schemas.
-(import :std/test :clan/poo/object :clan/poo/mop
+(import :std/test :clan/poo/object
+        (only-in :clan/poo/type element?)
         :clan/poo/object-contract ./fixture-schema ./receipt-fixture ./fixture-core
         :tao3k/yuanxu/modules/json-schema/contracts
-        (only-in :tao3k/yuanxu/object-types/contracts yuanxu-validation-evidence-accepted?))
+        (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?))
 (export schema-test)
 
 (def vpc-schema

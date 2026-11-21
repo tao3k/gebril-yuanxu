@@ -1,6 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :clan/poo/object o?/slots)
-        (only-in :clan/poo/mop define-type Type.))
+        (only-in :clan/poo/type define-type Type.))
 (export ServiceScopeContract ApplicationScopeContract)
 (define-type (ServiceScopeContract @ Type.)
   identity: 'application/service-scope .element?: (o?/slots '(config document types)))

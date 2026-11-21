@@ -38,6 +38,13 @@ theorem indexed_directory_child_does_not_authorize_stale_path
   rw [Std.HashSet.contains_ofList, listed]
   simp [checkedDirectoryChild, changed]
 
+/-- A path walk already checked the terminal kind. The publication handoff
+can consume that observation in a closed interval. A fresh observation is
+still required at any later currentness boundary. -/
+theorem closed_terminal_kind_handoff (directory : Bool) :
+    (directory && directory) = directory := by
+  cases directory <;> rfl
+
 #guard
   let names := (List.range 10000).map toString
   let children := Std.HashSet.ofList names

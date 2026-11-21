@@ -110,13 +110,16 @@
                     (append (list name 'disable: #t) flags)
                     (append (list name '@ (string-append "./" relative)) flags)))))))))
     ordered)
-  (stage! "init.ss" (datum-text (append '(yuanxu! mode: explicit) init-rows)))
+  (stage! "init.ss"
+    (datum-text (append '(yuanxu! :test-dir "./t" mode:)
+                        (cons (if (null? init-rows) 'auto 'explicit) init-rows))))
   ((.get graph admit-current))
   (create-directory* (path-directory destination))
   (def staging (make-temporary-file-name (string-append destination ".staging-")))
   (dynamic-wind void
     (lambda ()
       (for-each (lambda (row) (write-text (path-expand (car row) staging) (cdr row))) (reverse writes))
+      (when (null? init-rows) (create-directory* (path-expand "modules" staging)))
       ((.get graph admit-current))
       (when (module-source-type destination) (error "package output appeared during staging" destination))
       (rename-file staging destination))

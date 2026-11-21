@@ -10,7 +10,7 @@
                  prelude-context-path __module-registry
                  module-import? module-import-source module-export? module-export-context
                  import-set? import-set-source)
-        (only-in "./source-package.ss" module-build-source-path package-prelude-identity))
+        (only-in "./source-package.ss" module-build-source-path module-build-library-source-path module-build-import-identity package-prelude-identity))
 (export yuanxu-bootstrap-spec for-each-build-module build-module-dependencies
         yuanxu-bootstrap-contexts yuanxu-reader-contexts
         package-library-spec package-library-spec/source-context
@@ -73,7 +73,17 @@
   (library-spec root package entries admit-context excluded identity))
 
 (def (package-library-spec/source-context root package entries admit-context source-context)
-  (library-spec root package entries admit-context '() source-context))
+  (def importer (current-expander-module-import))
+  ;; Resolve this package before expansion can execute an obsolete native
+  ;; initializer. The normal resolver authenticates the source header; the
+  ;; caller's admission and import hook remain active.
+  (parameterize
+      ((current-expander-module-import
+        (lambda (path (reload? #f))
+          (def identity (module-build-import-identity path))
+          (def source (and identity (module-build-library-source-path identity root)))
+          (importer (or source path) reload?))))
+    (library-spec root package entries admit-context '() source-context)))
 
 (def (library-spec root package entries admit-context excluded source-context)
   (def prefix (string-append (symbol->string package) "/"))
@@ -201,17 +211,10 @@
 (def shared-library-roots
   '(:tao3k/yuanxu/graph/types-core
     :tao3k/yuanxu/graph/algorithms
-    ;; Task/Flow and Scenario Record identities cross the library/Module
-    ;; boundary. Only actual imports enroll their source support.
-    :tao3k/yuanxu/modules/funflow/control-plane/flow
-    :tao3k/yuanxu/modules/funflow/scenario
     :tao3k/yuanxu/profile-composition/module-prototype-syntax
-    ;; Schema results, diagnostics, and field Types cross admission.
-    :tao3k/yuanxu/modules/json-schema/json-schema-receipt
-    :tao3k/yuanxu/modules/json-schema/json-schema-validate
     :tao3k/yuanxu/admission/source
     :tao3k/yuanxu/configuration/diagnostics
-    :tao3k/yuanxu/object-types/ports))
+    :tao3k/yuanxu/types/ports))
 (def bootstrap-roots
   (append '(:tao3k/yuanxu/module-system/building/build-projection)
           role-language-roots
@@ -220,8 +223,6 @@
           shared-library-roots))
 (def reader-roots
   (append '(:tao3k/yuanxu/module-system/source/reader) role-language-roots shared-library-roots))
-;; Flow imports role-syntax. The reader and diagnostics import configuration/json.
-;; Their native dependency edges supply both Contexts to the same catalog walk.
 (def (yuanxu-bootstrap-contexts (observe-context void))
   (collect-bootstrap-contexts bootstrap-roots observe-context))
 (def (yuanxu-reader-contexts observe-context)

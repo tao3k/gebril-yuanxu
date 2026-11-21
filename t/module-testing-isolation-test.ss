@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Real module qualifications share init selection and source guards; no executor.
-(import :std/test :tao3k/yuanxu/object-syntax/path-slots
+(import :std/test :tao3k/yuanxu/syntax/path-slots
         (only-in :clan/poo/object .get .call .ref/cached)
         (only-in "../init.ss" tao3k/yuanxu.init.exports)
         (only-in :std/io/tempfile make-temporary-file-name clear-temporary-file!)

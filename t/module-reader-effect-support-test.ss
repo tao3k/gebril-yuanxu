@@ -14,9 +14,9 @@
         (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/types ModuleSourceRoleContract)
-        (only-in :tao3k/yuanxu/object-family/read-projection
+        (only-in :clan/poo/read-projection
                  call-with-owned-read-projection current-owned-read-open-guard)
-        (only-in :tao3k/yuanxu/object-types/contracts
+        (only-in :tao3k/yuanxu/types/contracts
                  yuanxu-classification-evidence yuanxu-validation-evidence)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export module-reader-effect-support-test)
@@ -57,7 +57,7 @@
                   " (lambda (p) (display \"initialized\" p))) "
                   "(def Greeting \"other\") (export Greeting)"))
               (write-file (path-expand "interface.ss" second-root)
-                "(.def Module identity: 'custom/other core: (.o requires: (.o) scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
+                "(.def Module identity: 'custom/other core: (.o scope-contract: FixtureContract exports: (.o greeting: Greeting)) features: (.o))")
               (def view (yuanxu-load-modules (path-expand "modules" root)))
               (def locate (.get view context locate))
               (def reader (module-publication-reader))
@@ -88,9 +88,9 @@
           (def receipt
             (find-issued-read (list profile)
               (lambda (read)
-                (let (slots (object-%instance (slot-read-receiver read)))
-                  (and slots (eq? (slot-read-key read) 'accepted?)
-                       (eq? (hash-get slots 'kind) 'yuanxu.contract.validation-evidence))))))
+                (let (kind (object-cached-value (slot-read-receiver read) 'kind))
+                  (and (eq? (slot-read-key read) 'accepted?)
+                       (eq? kind 'yuanxu.contract.validation-evidence))))))
           (check-equal? (if receipt #t #f) #t)
           ;; Change only the issued token's route, leaving the receiver
           ;; revision and every external role unchanged.

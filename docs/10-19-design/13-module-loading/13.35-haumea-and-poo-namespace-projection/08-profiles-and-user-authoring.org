@@ -89,8 +89,8 @@ consumes that source's file list against the downstream compiled products.
 The real Lab deployment consumer declares only categories:
 #+begin_src scheme
 (yuanxu!
-  :load-modules "../../../modules" rename: Lab mode: auto profile: deployment
-  :load-modules "../../../core/modules" rename: Core mode: auto profile: deployment)
+  :load-modules "../../../modules" mount: Lab mode: auto profile: deployment
+  :load-modules "../../../core/modules" mount: Core mode: auto profile: deployment)
 (.get yuanxu-deployment-consumer.init.exports Lab services opentofu)
 #+end_src
 These paths belong to Lab's downstream test package, not to Yuanxu's package

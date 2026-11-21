@@ -98,7 +98,7 @@
     (refuses (cut replay-slot-reads! roots
       (lambda (_owner _key) (.put! Root 'port 5440))))
     (check-equal? (object-revision Root) revision)
-    (check-equal? (hash-key? (object-%instance Root) 'missing) #f)
+    (check-equal? (not (eq? (object-cached-value Root 'missing absent-value) absent-value)) #f)
     (set! completed (+ completed 1)))
   (yuanxu-test-case "raw runtime mutation and restoration remains an explicit negative control"
     (.def Root port: 5432)
