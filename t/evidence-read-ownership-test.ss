@@ -1,13 +1,13 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads replay-slot-reads!
+        (only-in :clan/poo/object/slot-observation %call-with-recorded-slot-reads replay-slot-reads!
                  slot-read-key slot-read-receiver slot-read-dependencies call-with-slot-read-observer)
-        (only-in :clan/poo/read-projection call-with-owned-read-projection
+        (only-in :clan/poo/object/read-projection call-with-owned-read-projection
                  owned-read-copy! owned-read-derived! owned-read-leaf! owned-read-fields-present?
                  current-owned-read-open-guard)
-        (only-in :clan/poo/prototype-map prototype-map)
-        (only-in :clan/poo/validation-rebinding rebind-validation)
+        (only-in :clan/poo/object/prototype-map prototype-map)
+        (only-in :clan/poo/types/validation-rebinding rebind-validation)
         (only-in :clan/poo/type Type. define-type validate)
         (only-in :clan/poo/mop Slot object-read-issued?)
         (only-in :tao3k/yuanxu/module-system/types ModuleSourceRoleContract)

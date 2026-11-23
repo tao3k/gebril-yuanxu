@@ -4,15 +4,15 @@
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :std/error Error-message)
         (only-in :clan/poo/mop lens-of-get-set .lens)
-        (only-in :clan/poo/component-closure component-group-builder)
-        (only-in :clan/poo/lens-laws lens-check)
-        (only-in :clan/poo/feedback-graph
+        (only-in :clan/poo/graph/feedback/builder component-group-builder)
+        (only-in :clan/poo/mop/lens-laws lens-check)
+        (only-in :clan/poo/graph/feedback
           publish-feedback-graph graph-cache-values)
-        (prefix-in :clan/poo/component-publication publication.)
-        (prefix-in :clan/poo/component-revision revision.)
-        (prefix-in :clan/poo/construction-cache cache.)
-        (prefix-in :clan/poo/generalized-graph graph.)
-        (prefix-in :clan/poo/dependency-analysis code.)
+        (prefix-in :clan/poo/graph/component/publication publication.)
+        (prefix-in :clan/poo/graph/component/revision revision.)
+        (prefix-in :clan/poo/graph/construction cache.)
+        (prefix-in :clan/poo/graph/schedule graph.)
+        (prefix-in :clan/poo/graph/computation code.)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/module-system/source/admission
           module-source-read module-source-admit-current!))

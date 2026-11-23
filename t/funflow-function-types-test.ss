@@ -4,7 +4,7 @@
         (only-in :std/error Error?)
         (only-in :clan/poo/type TypeError?)
         (only-in :clan/poo/table table-styles)
-        (only-in :clan/poo/rationaldict RationalDict)
+        (only-in :clan/poo/table/rationaldict RationalDict)
         :tao3k/yuanxu/modules/funflow/control-plane/api
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export funflow-function-types-test)

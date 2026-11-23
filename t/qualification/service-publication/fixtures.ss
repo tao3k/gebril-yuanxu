@@ -11,7 +11,7 @@
         (only-in "../testing/directory.ss" DirectoryFixture write-source)
         (only-in :std/test check-equal?)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-checkpoint)
-        (prefix-in :clan/poo/declarative-metadata metadata.)
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.)
         (only-in :gerbil/expander eval-syntax current-expander-context make-top-context
                  read-syntax-from-file syntax->list)
         (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)

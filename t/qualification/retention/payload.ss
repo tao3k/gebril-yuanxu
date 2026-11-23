@@ -4,10 +4,10 @@
         :clan/poo/object
         (only-in :std/list/list take)
         (only-in :std/string/symbol symbol<?)
-        (only-in :clan/poo/slot-observation slot-read-key slot-read-receiver slot-read-value)
+        (only-in :clan/poo/object/slot-observation slot-read-key slot-read-receiver slot-read-value)
         (only-in :clan/poo/type Type.)
         (only-in :clan/poo/mop Class. Slot.)
-        (only-in :clan/poo/method-combination Contribution.)
+        (only-in :clan/poo/mop/methods/combination Contribution.)
         (only-in :tao3k/yuanxu/types/contracts YuanxuClassificationEvidence YuanxuValidationEvidence)
         (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :gerbil/expander expander-context? expander-context-id expander-context-table)
@@ -16,7 +16,7 @@
         (only-in :gerbil/runtime/interface interface-instance? interface-instance-object)
         (rename-in (only-in :gerbil/runtime/gambit table?) (table? gambit-table?)))
 (export report-retained-reads)
-(extern namespace: clan/poo/method-combination registered-contribution)
+(extern namespace: clan/poo/mop/methods/combination registered-contribution)
 
 ;; Installed runtime metadata, not a guessed positional table layout. Unknown
 ;; fields remain unknown. These reads invoke no table hashing or iteration.

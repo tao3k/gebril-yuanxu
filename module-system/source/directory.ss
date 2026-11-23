@@ -12,8 +12,8 @@
                  module-source-package-prefix module-source-package-info)
         (only-in :tao3k/yuanxu/module-system/source/collection yuanxu-module-source-collection-optional-entrypoint)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-publication-role-imports)
-        (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
-        (only-in :clan/poo/slot-observation slot-read-observers-compatible?)
+        (only-in :clan/poo/object/prototype-map prototype-map prototype-map-ref prototype-map-put)
+        (only-in :clan/poo/object/slot-observation slot-read-observers-compatible?)
         :tao3k/yuanxu/module-system/source/objects
         :tao3k/yuanxu/module-system/source/admission
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-object-policies

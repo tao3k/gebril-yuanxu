@@ -10,15 +10,15 @@
         (only-in :clan/poo/mop with-inheritance-hooks)
         (only-in :clan/poo/object .ref/inline)
         (only-in :clan/poo/object .putslot! $constant-slot-spec)
-        (only-in :clan/poo/slot-layout make-slot-cache)
-        (only-in :clan/poo/slot-observation
+        (only-in :clan/poo/object/slot-layout make-slot-cache)
+        (only-in :clan/poo/object/slot-observation
                  call-with-slot-read-observer slot-read-key slot-read-receiver
                  %call-with-recorded-slot-reads slot-read-observers-compatible? without-observation)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/observability/output yuanxu-write-observation-line!)
         (only-in :tao3k/yuanxu/module-system/source/observations
                  current-module-source-observer call-with-module-source-operation-measurement)
-        (only-in :clan/poo/read-projection
+        (only-in :clan/poo/object/read-projection
                  call-with-owned-source-reads owned-read-function-scope? current-owned-read-open-guard)
         (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :tao3k/yuanxu/module-system/authoring/admission

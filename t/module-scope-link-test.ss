@@ -7,7 +7,7 @@
         (prefix-in (only-in :clan/poo/testing/property check-property make-specification) property.)
         (prefix-in (only-in :clan/poo/testing/property/generator generator-integer) generator.)
         (only-in :clan/poo/testing/property/test require-passed)
-        (only-in :clan/poo/slot-observation call-with-slot-read-observer slot-read-key
+        (only-in :clan/poo/object/slot-observation call-with-slot-read-observer slot-read-key
                  %call-with-recorded-slot-reads)
         (only-in :clan/poo/object .o .ref .get .call .put! .all-slots object<-fun object? object-slots $constant-slot-spec?)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)

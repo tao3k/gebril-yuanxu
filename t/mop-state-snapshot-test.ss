@@ -2,7 +2,7 @@
 (import (prefix-in (only-in :gerbil/runtime/mop slot-ref) poo-fixture.)
         :std/test :clan/poo/object
         (only-in :clan/poo/mop call-with-slot-read-observer slot-read-key make-slot-read replay-slot-reads!)
-        (only-in :clan/poo/meta-prototype bootstrap-protocol)
+        (only-in :clan/poo/mop/meta-prototype bootstrap-protocol)
         (only-in :std/error Error? Error-message)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer module-source-read)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)

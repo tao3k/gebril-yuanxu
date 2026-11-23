@@ -8,7 +8,7 @@
         (only-in :clan/poo/mop prototype-instance?)
         (only-in :clan/poo/number Number Integer)
         (only-in :clan/poo/types/relation subtype-expression? capture-type-catalog type-refusal? type-refusal-kind type-work)
-        (only-in :clan/poo/optional-validation catalog-type? catalog-descriptor)
+        (only-in :clan/poo/types/optional-validation catalog-type? catalog-descriptor)
         :tao3k/yuanxu/modules/funflow/control-plane/failure)
 (export OperationSignature operation-input operation-output admit-operation-signature
         type-flows? require-type-flow! type-description PairValue TryValue

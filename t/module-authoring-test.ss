@@ -8,7 +8,7 @@
         (prefix-in (only-in :clan/poo/testing/property check-property make-specification) property.)
         (prefix-in (only-in :clan/poo/testing/property/generator generator-integer) generator.)
         (only-in :clan/poo/testing/property/test require-passed)
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
+        (only-in :clan/poo/object/slot-observation %call-with-recorded-slot-reads
                  slot-read-key slot-read-value slot-read-receiver)
         (only-in :std/test test-suite check-equal? check-exception)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)

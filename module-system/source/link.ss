@@ -3,10 +3,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Generation-local linking over admitted source capabilities. The filesystem source adapter remains separate from runtime loading.
 (import (only-in :std/list/list delete-duplicates/hash foldl)
-        (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
-        (only-in :clan/poo/slot-observation without-observation %slot-read-active?
+        (only-in :clan/poo/object/prototype-map prototype-map prototype-map-ref prototype-map-put)
+        (only-in :clan/poo/object/slot-observation without-observation %slot-read-active?
                  slot-read-observers-compatible?)
-        (only-in :clan/poo/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/object/read-projection owned-read-function-scope?)
         (runtime: :clan/poo/object)
         :tao3k/yuanxu/module-system/source/objects
         :tao3k/yuanxu/module-system/source/publication

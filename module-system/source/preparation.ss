@@ -11,9 +11,9 @@
         (only-in :clan/poo/object .o .ref .ref/cached .slot? object? object-protocol
                  object-instantiated? object-precedence-ready? object-construction-current?
                  require-object-instance-route!)
-        (only-in :clan/poo/slot-observation without-observation)
-        (only-in :clan/poo/read-projection owned-read-function-scope?)
-        (only-in :clan/poo/read-route require-read-route!)
+        (only-in :clan/poo/object/slot-observation without-observation)
+        (only-in :clan/poo/object/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/object/read-route require-read-route!)
         (only-in :tao3k/yuanxu/module-system/source/deferred-declaration module-deferred-role-exports)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-publication-role-imports module-interface-form? module-role-file
                  module-build-role-kind)

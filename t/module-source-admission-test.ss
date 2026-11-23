@@ -9,10 +9,10 @@
         (only-in :clan/poo/type Type. Bool Enum Record Tuple)
         (only-in :clan/poo/testing/type check-property report-diagnostics)
         (prefix-in :clan/poo/testing/property/test pbt.)
-        (only-in :clan/poo/slot-observation call-with-slot-read-observer
+        (only-in :clan/poo/object/slot-observation call-with-slot-read-observer
                  slot-read-receiver slot-read-key)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
-        (only-in :clan/poo/read-projection
+        (only-in :clan/poo/object/read-projection
                  call-with-owned-read-projection current-owned-read-open-guard)
         (only-in :tao3k/yuanxu/module-system/authoring/roles make-default-module-authoring-profile)
         (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)

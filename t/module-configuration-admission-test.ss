@@ -1,7 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Generic declared configuration admission uses the existing POO Types.
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/object-contract ObjectContract.)
+        (only-in :clan/poo/types/object-contract ObjectContract.)
         (only-in :clan/poo/type String Function)
         (only-in :tao3k/yuanxu/types/contracts YuanxuContract.)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)

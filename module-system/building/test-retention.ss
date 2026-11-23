@@ -4,8 +4,8 @@
         (rename-in (only-in :clan/poo/object slot-read-native-instance-values object-native-instance-keys)
                    (slot-read-native-instance-values slot-read-instance-storage-values)
                    (object-native-instance-keys object-instance-storage-keys))
-        (only-in :clan/poo/prototype-map prototype-map-length)
-        (only-in :clan/poo/slot-observation call-with-slot-read-observer
+        (only-in :clan/poo/object/prototype-map prototype-map-length)
+        (only-in :clan/poo/object/slot-observation call-with-slot-read-observer
                  slot-read-key slot-read-receiver slot-read-instance slot-read-value slot-read-dependencies)
         (only-in :clan/poo/mop ClosEffectiveMethod ClosInvocationFrame)
         (only-in :gerbil/runtime/interface interface-instance? interface-instance-object)
@@ -295,7 +295,7 @@
                (or (##closure? value)
                  (and (##structure? value)
                    (not (memq (##type-id (##structure-type value))
-                     '(clan/poo/prototype-map#specifications::t
+                     '(clan/poo/object/prototype-map#specifications::t
                        std/struct/rbtree#RBTree::t std/struct/rbtree#Tree::t
                        std/struct/rbtree#Empty::t))))))
              (hash-put! frontiers value #t) (walk tail))

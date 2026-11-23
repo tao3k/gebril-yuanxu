@@ -7,7 +7,7 @@
         (only-in :clan/poo/mop call-with-slot-read-observer
                  clos-generic-function clos-method clos-any-specializer clos-add-method
                  clos-call)
-        (only-in :clan/poo/slot-observation slot-read-key slot-read-receiver)
+        (only-in :clan/poo/object/slot-observation slot-read-key slot-read-receiver)
         (only-in :tao3k/yuanxu/module-system/building/test-observation ModuleTestingProfile.)
         (only-in :tao3k/yuanxu/ops/progress call-with-execution-progress
                  execution-progress-status)

@@ -60,7 +60,7 @@ checking and delegated external schema checking remain distinct policies.
 
 * Schema adapter stays outside the public library
 
-The qualification now imports =:clan/poo/object-contract= directly. It no longer
+The qualification now imports =:clan/poo/types/object-contract= directly. It no longer
 generates a generic object-contract fixture or forwarding module, and no longer
 extracts generic Type/object implementation from the discussion document.
 The JsonSchema-owned blocks

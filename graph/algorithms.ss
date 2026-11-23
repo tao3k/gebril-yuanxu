@@ -13,9 +13,9 @@
                  make-Queue
                  queue-empty?)
         (only-in :std/list/list filter group-same)
-        (prefix-in :clan/poo/generalized-graph graph.)
-        (prefix-in :clan/poo/strong-components scc.)
-        (only-in :clan/poo/dependency-analysis Computation.)
+        (prefix-in :clan/poo/graph/schedule graph.)
+        (prefix-in :clan/poo/graph/scc scc.)
+        (only-in :clan/poo/graph/computation Computation.)
         (only-in :clan/poo/object .cc)
         :tao3k/yuanxu/graph/types-core)
 

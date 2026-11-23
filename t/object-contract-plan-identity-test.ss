@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Runtime receiver/normalization qualification, without Loader or publication.
-(import :std/test :clan/poo/object :clan/poo/object-contract
+(import :std/test :clan/poo/object :clan/poo/types/object-contract
         (only-in :clan/poo/type define-type validate Object Bool Function List)
         (only-in :clan/poo/number IntegerRange)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)

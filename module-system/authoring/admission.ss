@@ -7,8 +7,8 @@
 ;;; Invariant: source is read as inert data; this owner never expands or runs it.
 
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/slot-layout make-slot-cache)
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!
+        (only-in :clan/poo/object/slot-layout make-slot-cache)
+        (only-in :clan/poo/object/slot-observation %call-with-recorded-slot-reads %record-slot-reads!
                  slot-read-receiver slot-read-value without-observation)
         (only-in :clan/poo/type Type. define-type element? validate List)
         (only-in :clan/poo/mop prototype-instance? object-precedence-ready?
@@ -27,7 +27,7 @@
         (only-in :tao3k/yuanxu/module-system/observability/presentation
                  yuanxu-poo-slot-authoring-datum-bindings
                  yuanxu-poo-slot-authoring-self-reference?)
-        (only-in :clan/poo/read-projection call-with-owned-read-projection
+        (only-in :clan/poo/object/read-projection call-with-owned-read-projection
                  owned-read-function-scope? owned-read-method! owned-read-derived!
                  owned-read-fields-present? make-owned-method-check call-with-owned-read-method-checks)
         (only-in :tao3k/yuanxu/module-system/source/observations

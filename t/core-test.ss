@@ -8,7 +8,7 @@
                  $constant-slot-spec? object-protocol-set!)
         (only-in :tao3k/yuanxu/types/ports Port valid-port?)
         (only-in :clan/poo/type define-type element?)
-        (only-in :clan/poo/slot-observation call-with-slot-read-observer)
+        (only-in :clan/poo/object/slot-observation call-with-slot-read-observer)
         (only-in :tao3k/yuanxu/ops/progress execution-progress!)
         (only-in :tao3k/yuanxu/observability/memory
                  call-with-yuanxu-debug-memory-case-watchdog

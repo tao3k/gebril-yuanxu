@@ -15,7 +15,7 @@
         (only-in :gerbil/expander core-import-module core-read-module/sexp expander-context-id)
         (only-in :std/list/list filter-map delete-duplicates/hash)
         (runtime: :clan/poo/object)
-        (only-in :clan/poo/slot-layout make-slot-cache)
+        (only-in :clan/poo/object/slot-layout make-slot-cache)
         (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
         (only-in :tao3k/yuanxu/module-system/building/source-closure
                  call-with-build-expansion-accounting)

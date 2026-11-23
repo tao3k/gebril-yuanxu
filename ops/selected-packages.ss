@@ -4,7 +4,7 @@
 ;;; Operational consumer of Core's selected external-package contributions.
 ;;; It does not compile Module sources or generate a defbuild-script.
 (import :clan/poo/object
-        (only-in :clan/poo/slot-observation %slot-read-active?)
+        (only-in :clan/poo/object/slot-observation %slot-read-active?)
         (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?)
         (only-in :tao3k/yuanxu/module-system/source/build unique-build-inputs
                  module-build-package-inputs-current! module-build-package-source-check

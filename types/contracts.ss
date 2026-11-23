@@ -14,11 +14,11 @@
                  object-precedence-ready? object-find-in-precedence
                  object-direct-slot-specification
                  object-direct-protocol?)
-        (only-in :clan/poo/slot-observation %slot-read-active?)
-        (only-in :clan/poo/object-contract checked-action)
+        (only-in :clan/poo/object/slot-observation %slot-read-active?)
+        (only-in :clan/poo/types/object-contract checked-action)
         (only-in :std/error Error-irritants)
         (only-in :std/list/list every)
-        (only-in :clan/poo/read-projection
+        (only-in :clan/poo/object/read-projection
                  owned-read-leaf! owned-read-copy! owned-read-open!
                  current-owned-read-open-guard
                  make-owned-method-check call-with-owned-read-method-checks)

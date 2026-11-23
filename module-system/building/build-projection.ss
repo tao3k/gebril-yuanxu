@@ -17,7 +17,7 @@
         (only-in :tao3k/yuanxu/module-system/source/build-binding
                  current-module-build-phase? current-module-build-selection)
         (runtime: :clan/poo/object)
-        (only-in :clan/poo/slot-layout make-slot-cache)
+        (only-in :clan/poo/object/slot-layout make-slot-cache)
         (only-in :tao3k/yuanxu/module-system/interface yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/source/build unique-build-inputs module-test-source-spec retained-build-entries BuildSpecContract)
         (only-in :tao3k/yuanxu/module-system/building/program-products resolve-make-target-inputs)

@@ -50,7 +50,7 @@
   (def root (.get fixture root))
   ;; Source-only dependency fallbacks are copied from the current qualified
   ;; package resolver, never from a mutable reference corpus or another Core.
-  (def dependency (core-resolve-library-module-path ':clan/poo/object-state))
+  (def dependency (core-resolve-library-module-path ':clan/poo/object/state))
   (when (string-suffix? ".ss" dependency)
     (copy-fixture-tree (path-directory dependency)
       (path-expand "../../clan/poo" root)

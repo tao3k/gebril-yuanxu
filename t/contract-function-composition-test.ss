@@ -6,8 +6,8 @@
         :clan/poo/object
         (only-in :clan/poo/type Type. Function element? validate TypeError? Record String)
         (only-in :clan/poo/number Integer)
-        (only-in :clan/poo/object-contract checked-action)
-        (prefix-in :clan/poo/declarative-metadata metadata.)
+        (only-in :clan/poo/types/object-contract checked-action)
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.)
         :tao3k/yuanxu/module-system/schema/slot-contracts
         (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-contract-admit yuanxu-value-admit
                  yuanxu-validation-evidence-accepted?)

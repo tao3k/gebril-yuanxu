@@ -10,7 +10,7 @@
 
 =modules/json-schema/contracts.ss= now owns =SchemaContract.=,
 =ProjectionContract.= and =schema-value-contract=. It imports the public
-=:clan/poo/object-contract= protocol from the locally updated gerbil-poo PR 13
+=:clan/poo/types/object-contract= protocol from the locally updated gerbil-poo PR 13
 checkout at =308e67f31273df6892ef55d3dfdc2b01ddb4c886=. The public contract
 implementation remains uncommitted there; the installed dependency is unchanged.
 
@@ -21,7 +21,7 @@ source path exposes only JsonSchema/OpenTofu and public gerbil-poo, with no
 other Core sources available. Public gerbil-poo does not depend on this repo.
 
 #+begin_src scheme
-(import :clan/poo/object :clan/poo/object-contract
+(import :clan/poo/object :clan/poo/types/object-contract
         (only-in :clan/poo/type validate)
         :yuanxu/modules/json-schema/contracts)
 (def PortContract

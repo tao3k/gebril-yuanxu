@@ -1,7 +1,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Runtime cache boundaries, not a replacement module evaluator or build cache.
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
+        (only-in :clan/poo/object/slot-observation %call-with-recorded-slot-reads)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export module-incremental-cache-test)
 ;; Standard with-slot-dependencies owns capture, issuance admission and weak edge

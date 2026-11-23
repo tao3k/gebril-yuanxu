@@ -63,7 +63,7 @@ This audit must not turn either escape into receiver-aware configuration.
 ** Installed inline entry is a separate source-identity gate
 
 The current host's generated object.ssi exports .ref/inline and imports
-clan/poo/slot-layout. The generated object~0.scm implements an inline hit with
+clan/poo/object/slot-layout. The generated object~0.scm implements an inline hit with
 slot-cache-read, bypassing .ref. Its miss delegates to .ref. Neither that entry
 nor slot-layout.ss exists in the fixed Core source above. The old local .data
 reference copy and package-directory symlink are not authoritative substitutes.

@@ -3,7 +3,7 @@
 prelude: :gerbil/core
 ;;; Export resolution belongs to compilation; runtime demand uses Gerbil loading.
 (import (only-in :clan/poo/object object<-alist .ref)
-        (only-in :clan/poo/slot-observation without-observation)
+        (only-in :clan/poo/object/slot-observation without-observation)
         (only-in :gerbil/runtime/loader load-module)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-measure-operation)
         (for-syntax :gerbil/expander

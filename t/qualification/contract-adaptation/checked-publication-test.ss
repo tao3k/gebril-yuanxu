@@ -4,8 +4,8 @@
 ;;; public publication. No module association resolver or runtime Loader.
 (import :std/test :clan/poo/object
         (only-in :clan/poo/type validate Fun TypeError? String Symbol)
-        :clan/poo/object-contract
-        (prefix-in :clan/poo/declarative-metadata metadata.)
+        :clan/poo/types/object-contract
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.)
         :tao3k/yuanxu/modules/json-schema/contracts
         (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
         (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence))

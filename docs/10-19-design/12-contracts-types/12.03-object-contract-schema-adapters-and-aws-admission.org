@@ -9,7 +9,7 @@
 
 The local ObjectContract. definition below is a superseded discussion prototype,
 not an instruction to redeclare the public gerbil-poo binding. Current code imports
-:clan/poo/object-contract; its ObjectContract. is a value Type, not the older Core
+:clan/poo/types/object-contract; its ObjectContract. is a value Type, not the older Core
 evidence-producing object admission descriptor. Historical API-review statements
 below describe that earlier revision. Start with
 [[file:12.20-aws-alignment-and-dynamic-typing.org][current AWS alignment]] for implemented ownership and timing boundaries.
@@ -24,7 +24,7 @@ the APIs used here. The installed package remains a separate version.
 Update: [[file:12.06-public-object-contract-implementation.org][the public-library implementation record]] describes the local implementation
 on gerbil-poo head =ebe17df=. The first two blocks below retain the discussion
 design; they no longer generate the test implementation. The qualification
-imports =:clan/poo/object-contract= instead. In particular, the public Type adapter
+imports =:clan/poo/types/object-contract= instead. In particular, the public Type adapter
 also delegates =.validate= and validates diagnostic callback results at object
 composition boundaries. The public source is authoritative for its exact API.
 

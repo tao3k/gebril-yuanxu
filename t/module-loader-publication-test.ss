@@ -3,7 +3,7 @@
 ;;; Actual reader/link/publication; only module roles and destructive edits are fixtures.
 (import :std/test :clan/poo/object
         (only-in :std/source this-source-file)
-        (prefix-in :clan/poo/declarative-metadata metadata.)
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture write-source)
         (only-in "./qualification/service-publication/fixtures.ss" refused)

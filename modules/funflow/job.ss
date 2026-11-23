@@ -4,8 +4,8 @@
 (import :clan/poo/object
         (only-in :std/list/list delete-duplicates/hash)
         (only-in :tao3k/yuanxu/graph/types-core yuanxu-graph yuanxu-graph-node yuanxu-graph-edge)
-        (only-in :clan/poo/dependency-analysis Computation.)
-        (prefix-in :clan/poo/generalized-graph schedule.)
+        (only-in :clan/poo/graph/computation Computation.)
+        (prefix-in :clan/poo/graph/schedule schedule.)
         (only-in :tao3k/yuanxu/ops/types ProcessScriptContract ProcessResultContract)
         (only-in "control-plane/signatures.ss" Fun Function Record String Symbol List validate)
         (only-in "control-plane/runtime-protocol.ss" AdapterResult)

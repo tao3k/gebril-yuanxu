@@ -8,7 +8,7 @@
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/type validate)
         (only-in :std/list/list append-map)
-        (only-in :clan/poo/read-projection
+        (only-in :clan/poo/object/read-projection
                  make-owned-method-check call-with-owned-read-method-checks)
         (only-in :tao3k/yuanxu/module-system/types ModuleAuthoringProfileContract
                  ModuleSourceRoleContract))
