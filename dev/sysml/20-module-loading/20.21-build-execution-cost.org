@@ -323,7 +323,7 @@ For example, a fixed-prelude Core consumer now writes:
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/type define-type)
         (only-in :clan/poo/mop call-with-slot-read-observer replay-slot-reads!)
-        (only-in :clan/poo/object-contract diagnose))
+        (only-in :clan/poo/types/object-contract diagnose))
 ;; Existing POO expressions still use the package prelude's .get/.o bindings.
 #+end_src
 

@@ -3,7 +3,7 @@
 (import (only-in :clan/poo/type Record)
         :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :clan/poo/slot-observation
+        (only-in :clan/poo/object/slot-observation
                  %call-with-recorded-slot-reads slot-read-key slot-read-dependencies
                  slot-read-receiver call-with-slot-read-observer)
         (only-in "./module-candidate-stage-test" with-other-source)
@@ -12,7 +12,7 @@
         (only-in :tao3k/yuanxu/module-system/source/interface yuanxu-module-interface)
         (only-in :tao3k/yuanxu/module-system/types ModuleAuthoringProfileContract)
         (only-in :tao3k/yuanxu/module-system/authoring/roles yuanxu-default-module-authoring-profile)
-        (only-in :clan/poo/read-projection call-with-owned-read-projection
+        (only-in :clan/poo/object/read-projection call-with-owned-read-projection
                  current-owned-read-open-guard)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))
 (export module-authoring-stage-test)

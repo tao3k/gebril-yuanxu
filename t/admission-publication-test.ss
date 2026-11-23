@@ -2,11 +2,11 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :clan/poo/type Object)
-        (only-in :clan/poo/slot-observation call-with-slot-read-observer
+        (only-in :clan/poo/object/slot-observation call-with-slot-read-observer
                  slot-read-receiver slot-read-key)
         (only-in :std/io/tempfile make-temporary-file-name)
         (only-in :std/error Error? Error-message)
-        (prefix-in :clan/poo/declarative-metadata metadata.)
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.)
         (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence
                  yuanxu-predicate-contract yuanxu-contract-admit
                  yuanxu-validation-evidence yuanxu-validation-evidence-accepted?)
@@ -24,7 +24,7 @@
           yuanxu-json-schema-contract-artifact-normalization)
         (only-in :tao3k/yuanxu/modules/json-schema/json-schema-ir yuanxu-json-schema-normalization-schema)
         :tao3k/yuanxu/modules/json-schema/contracts
-        (only-in :clan/poo/object-contract diagnose))
+        (only-in :clan/poo/types/object-contract diagnose))
 (export admission-publication-test)
 
 (def SchemaText

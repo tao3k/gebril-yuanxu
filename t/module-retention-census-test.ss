@@ -7,7 +7,7 @@
                  module-context-import module-context-export module-context-ns module-context-path)
         (only-in :gerbil/runtime/loader list-modules)
         (only-in :gerbil/runtime/gambit unbound-global-exception?)
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads slot-read-dependencies slot-read-receiver)
+        (only-in :clan/poo/object/slot-observation %call-with-recorded-slot-reads slot-read-dependencies slot-read-receiver)
         (only-in "./qualification/retention/payload.ss" report-retained-reads)
         (only-in :clan/poo/mop ClosEffectiveMethod ClosInvocationFrame)
         (only-in :tao3k/yuanxu/t/qualification/module-scale/fixture DeclarationFixture)

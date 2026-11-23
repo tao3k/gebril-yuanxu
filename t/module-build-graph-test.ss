@@ -10,7 +10,7 @@
                  core-import-module module-context-path)
         (only-in :clan/poo/object .o .+ .cc .ref .get .call object? NoApplicableMethod?
                  object-slots $constant-slot-spec?)
-        (only-in :clan/poo/object-contract ObjectContract.)
+        (only-in :clan/poo/types/object-contract ObjectContract.)
         (only-in :clan/poo/type String Type.)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor)

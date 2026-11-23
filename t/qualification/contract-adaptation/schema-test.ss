@@ -3,7 +3,7 @@
 ;;; Local closed schemas exercise existing compilation; not live AWS schemas.
 (import :std/test :clan/poo/object
         (only-in :clan/poo/type element?)
-        :clan/poo/object-contract ./fixture-schema ./receipt-fixture ./fixture-core
+        :clan/poo/types/object-contract ./fixture-schema ./receipt-fixture ./fixture-core
         :tao3k/yuanxu/modules/json-schema/contracts
         (only-in :tao3k/yuanxu/types/contracts yuanxu-validation-evidence-accepted?))
 (export schema-test)

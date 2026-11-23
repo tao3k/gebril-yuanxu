@@ -11,8 +11,8 @@
         (only-in :gerbil/expander module-import? module-import-source module-export-context
                  module-import-phi import-set? import-set-source import-set-phi)
         (only-in :std/list/list append-map)
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads %record-slot-reads!)
-        (only-in :clan/poo/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/object/slot-observation %call-with-recorded-slot-reads %record-slot-reads!)
+        (only-in :clan/poo/object/read-projection owned-read-function-scope?)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  module-source-measure-operation module-source-type)
         (only-in :gerbil/runtime/loader list-modules))

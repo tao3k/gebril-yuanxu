@@ -3,9 +3,9 @@
 ;;; Source preparation shared by publication suites; no test suite is imported.
 (import (only-in :std/test test-suite check-equal?)
         (only-in :clan/poo/object .o .get replay-slot-reads!)
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
+        (only-in :clan/poo/object/slot-observation %call-with-recorded-slot-reads
                  call-with-slot-read-observer slot-read-key slot-read-receiver)
-        (only-in :clan/poo/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/object/read-projection owned-read-function-scope?)
         (only-in :tao3k/yuanxu/module-system/source/reader call-with-publication-reads)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)

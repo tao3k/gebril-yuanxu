@@ -7,7 +7,7 @@
 (import (only-in :gerbil/core/contract using)
         (only-in :clan/poo/object .o .cc .ref)
         (only-in :clan/poo/type Type. define-type raise-type-error)
-        (only-in :clan/poo/object-contract diagnose as-value-contract)
+        (only-in :clan/poo/types/object-contract diagnose as-value-contract)
         (only-in "./functional.ss" yuanxu-contract-object-ref)
         (only-in "./json-schema-normalize.ss" yuanxu-json-schema-normalize)
         (only-in "./json-schema-ir.ss"

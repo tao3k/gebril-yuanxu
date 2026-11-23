@@ -1,9 +1,9 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
+        (only-in :clan/poo/object/slot-observation %call-with-recorded-slot-reads
         %deliver-slot-read slot-read-dependencies slot-read-receiver make-slot-read)
-        (only-in :clan/poo/read-projection call-with-owned-read-projection
+        (only-in :clan/poo/object/read-projection call-with-owned-read-projection
                  owned-read-value! owned-read-derived!)
         (only-in :clan/poo/mop clos-call-carrier-policy-guard)
         (only-in :clan/poo/mop ClosInvocationFrame)

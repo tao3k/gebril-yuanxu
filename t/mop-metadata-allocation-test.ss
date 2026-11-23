@@ -1,8 +1,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Default-runtime isolation. No producer patch or replacement MOP dispatcher.
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/slot-observation call-with-slot-read-observer)
-        (only-in :clan/poo/slot-layout make-slot-cache slot-layout-shape)
+        (only-in :clan/poo/object/slot-observation call-with-slot-read-observer)
+        (only-in :clan/poo/object/slot-layout make-slot-cache slot-layout-shape)
         (only-in :gerbil/expander current-expander-context make-top-context
                  core-import-module module-context-export module-export-name)
         (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set!) runtime.)

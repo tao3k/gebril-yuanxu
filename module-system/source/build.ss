@@ -18,12 +18,12 @@
         (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
         (only-in :std/string/path path-absolute? path-default-extension subpath?)
         (only-in :std/list/list find foldl)
-        (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
-        (only-in :clan/poo/read-route require-read-route!)
-        (only-in :clan/poo/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/object/slot-observation without-observation %slot-read-active?)
+        (only-in :clan/poo/object/read-route require-read-route!)
+        (only-in :clan/poo/object/read-projection owned-read-function-scope?)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/type define-type Type. List)
-        (only-in :clan/poo/object-contract ObjectContract.)
+        (only-in :clan/poo/types/object-contract ObjectContract.)
         (only-in :tao3k/yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? module-source-admit-current! call-with-module-source-read-cache module-source-observe module-source-object-policy current-module-source-phase current-module-source-observer module-source-measure-operation call-with-module-source-callback)
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source
                  build-target-name yuanxu-prepare-module-retained-source module-compiler-source-owner?

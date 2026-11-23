@@ -5,8 +5,8 @@
 (import (only-in :clan/poo/object .cc .ref .ref/cached object?
                  object-instantiated? object-construction-current?
                  require-object-instance-route!)
-        (only-in :clan/poo/slot-observation without-observation)
-        (only-in :clan/poo/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/object/slot-observation without-observation)
+        (only-in :clan/poo/object/read-projection owned-read-function-scope?)
         :tao3k/yuanxu/module-system/source/admission
         :tao3k/yuanxu/module-system/source/preparation
         :tao3k/yuanxu/module-system/source/objects

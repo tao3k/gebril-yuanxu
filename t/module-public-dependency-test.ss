@@ -16,7 +16,7 @@
 (def (prepare! root)
   (write-source (path-expand "project/gerbil.pkg" root) "(package: dependency-test)\n")
   (write-source (path-expand "project/modules/app/types.ss" root)
-    "(import :clan/poo/object (only-in :clan/poo/type Type.)\n (prefix-in :clan/poo/declarative-metadata metadata.))\n(export Scope)\n(def Scope (.cc Type. identity: 'app .element?: object?))\n")
+    "(import :clan/poo/object (only-in :clan/poo/type Type.)\n (prefix-in :clan/poo/mop/declarative-metadata metadata.))\n(export Scope)\n(def Scope (.cc Type. identity: 'app .element?: object?))\n")
   (write-source (path-expand "project/modules/app/objects.ss" root)
     "(import :clan/poo/object) (export Value) (.def Value number: 42)\n")
   (write-source (path-expand "project/modules/app/config.ss" root)

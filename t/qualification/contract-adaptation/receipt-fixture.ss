@@ -1,8 +1,8 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; TEST ONLY: an explicit immutable-context receipt, not Core admission.
-(import :clan/poo/object :clan/poo/object-contract
-        (prefix-in :clan/poo/declarative-metadata metadata.))
+(import :clan/poo/object :clan/poo/types/object-contract
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.))
 (export #t)
 
 (def invocation-contract

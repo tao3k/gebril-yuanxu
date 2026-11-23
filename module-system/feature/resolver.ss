@@ -5,9 +5,9 @@
 ;;; Boundary: resolves feature-profile selections into deterministic feature sets.
 ;;; Invariant: dependency closure cannot introduce an undeclared feature identity.
 (import (runtime: :clan/poo/object)
-        (prefix-in :clan/poo/generalized-graph graph.)
-        (prefix-in :clan/poo/strong-components scc.)
-        (only-in :clan/poo/dependency-analysis Computation.)
+        (prefix-in :clan/poo/graph/schedule graph.)
+        (prefix-in :clan/poo/graph/scc scc.)
+        (only-in :clan/poo/graph/computation Computation.)
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-measure-operation)
         :tao3k/yuanxu/module-system/feature/model
         :tao3k/yuanxu/utilities/functional)

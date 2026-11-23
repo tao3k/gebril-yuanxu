@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import (only-in :clan/poo/object .o .cc)
         (only-in :clan/poo/type Type Type. Function Any Record String Symbol)
-        (only-in :clan/poo/object-contract ObjectContract.)
+        (only-in :clan/poo/types/object-contract ObjectContract.)
         (only-in "functional.ss" yuanxu-contract-json-object?)
         (only-in "json-schema-ir.ss" yuanxu-json-schema-normalization?)
         (only-in "json-schema-receipt.ss" yuanxu-json-schema-contract-artifact?)

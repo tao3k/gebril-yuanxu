@@ -8,7 +8,7 @@
 
 (import (only-in :clan/poo/object .@ .o .cc .ref .get .call .slot? object?
                  compute-precedence-list!)
-        (only-in :clan/poo/object-contract ObjectContract. refine)
+        (only-in :clan/poo/types/object-contract ObjectContract. refine)
         (only-in :clan/poo/type Pair.)
         (only-in :clan/poo/fun Observation.)
         :tao3k/yuanxu/modules/funflow/control-plane/signatures

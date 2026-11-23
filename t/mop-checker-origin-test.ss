@@ -3,8 +3,8 @@
 (import :std/test :clan/poo/object
         (only-in :std/error Error? Error-message)
         (prefix-in (only-in :gerbil/runtime/mop slot-ref slot-set!) runtime.)
-        (only-in :clan/poo/meta-prototype bootstrap-protocol)
-        (only-in :clan/poo/slot-layout make-slot-cache)
+        (only-in :clan/poo/mop/meta-prototype bootstrap-protocol)
+        (only-in :clan/poo/object/slot-layout make-slot-cache)
         (only-in :clan/poo/mop make-slot-read slot-read-receiver slot-read-key
                  slot-read-revision slot-read-instance slot-read-value
                  slot-read-dependencies replay-slot-reads! %deliver-slot-read)

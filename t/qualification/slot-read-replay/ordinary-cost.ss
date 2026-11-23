@@ -1,8 +1,8 @@
 ;;; Matched public-read control; use the same file before and after MOP recording.
 ;;; Measurement excludes imports and emits raw samples, never timing assertions.
 (import :std/test :std/iter
-        :clan/poo/object :clan/poo/slot-layout
-        (only-in :clan/poo/t/closure-measure measure))
+        :clan/poo/object :clan/poo/object/slot-layout
+        (only-in :clan/poo/benchmarks/closure-measure measure))
 (export slot-read-cost-test)
 
 (def (sample-read phase action repetitions)

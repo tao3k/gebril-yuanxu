@@ -1,6 +1,6 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (prefix-in :clan/poo/declarative-metadata metadata.)
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.)
         (only-in :std/error Error? Error-message)
         (only-in :tao3k/yuanxu/observability/testing-fixture yuanxu-test-fixture)
         (only-in "./qualification/testing/directory.ss" write-source)

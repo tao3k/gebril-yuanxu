@@ -2,7 +2,7 @@
 (import :std/test :clan/poo/object
         (only-in :clan/poo/type Type.)
         (only-in :clan/poo/mop NoApplicableMethod?)
-        (only-in :clan/poo/object-contract ObjectContract. diagnose)
+        (only-in :clan/poo/types/object-contract ObjectContract. diagnose)
         (only-in :std/io/tempfile call-with-temporary-directory)
         (only-in :tao3k/yuanxu/module-system/source/directory module-directory-context)
         (only-in :tao3k/yuanxu/module-system/source/admission call-with-module-source-operation-measurement)

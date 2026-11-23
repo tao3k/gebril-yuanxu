@@ -9,7 +9,7 @@
 (import (only-in :clan/poo/object .o)
         (only-in :std/hash/misc hash-ensure-modify!)
         (only-in :std/struct/queue dequeue! enqueue! make-Queue queue-empty?)
-        (prefix-in :clan/poo/strong-components scc.)
+        (prefix-in :clan/poo/graph/scc scc.)
         (only-in :tao3k/yuanxu/utilities/functional
                  yuanxu-stable-duplicates)
         (only-in :std/list/list filter filter-map)

@@ -1,7 +1,7 @@
 ;;; SPDX-FileCopyrightText: 2026 tao3k team and Contributors
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
-        (only-in :clan/poo/object-contract ObjectContract.)
+        (only-in :clan/poo/types/object-contract ObjectContract.)
         (only-in :std/error Error? Error-message)
         (only-in :clan/poo/number IntegerRange)
         (only-in :tao3k/yuanxu/types/contracts yuanxu-classification-evidence)

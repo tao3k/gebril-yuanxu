@@ -13,7 +13,7 @@ No Loader integration, production MOP change, or admission-result cache is added
 
 The ordinary control uses compiled public operations at gerbil-poo 51a276a
 (immediately before recording) and ece6f60 (recording enabled). Both receive
-the identical [[file:../../../t/qualification/slot-read-replay/ordinary-cost.ss][ordinary-cost.ss]] source, copied into their source packages as
+the identical [[https://github.com/tao3k/gebril-yuanxu/blob/52130d2d338b09622a3f55e37987ddc0375b6187/t/qualification/slot-read-replay/ordinary-cost.ss][ordinary-cost.ss at the recorded Core revision]] source, copied into their source packages as
 t/slot-read-cost-test.ss. Its SHA256 is
 4f5fde253560ed34fe7879415112129e52724fa39f1c6ae8c651d4dcb1054aad.
 The producer implementation is not patched. The ordinary experiment uses no
@@ -219,8 +219,8 @@ operations, not a second evaluator. For each ordinary variant:
 
 #+begin_src sh
 # Populate ROOT/source/clan/poo using git archive of the fixed producer revision.
-cp t/qualification/slot-read-replay/ordinary-cost.ss \
-  "$ROOT/source/clan/poo/t/slot-read-cost-test.ss"
+git show 52130d2d338b09622a3f55e37987ddc0375b6187:t/qualification/slot-read-replay/ordinary-cost.ss \
+  > "$ROOT/source/clan/poo/t/slot-read-cost-test.ss"
 just compile-slot-read-costs "$ROOT" \
   "$ROOT/source/clan/poo/t/slot-read-cost-test.ss"
 just test-slot-read-costs "$ROOT" \

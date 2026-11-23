@@ -8,8 +8,8 @@
 
 (import (only-in :tao3k/yuanxu/module-system/config yuanxu-module-kind=? yuanxu-module-object-ref/default)
         (runtime: :clan/poo/object)
-        (only-in :clan/poo/value-diagnostics diagnose-value)
-        (only-in :clan/poo/object-contract checked-issues)
+        (only-in :clan/poo/types/value-diagnostics diagnose-value)
+        (only-in :clan/poo/types/object-contract checked-issues)
         :tao3k/yuanxu/module-system/projection/option-objects)
 
 (export yuanxu-module-find-schema

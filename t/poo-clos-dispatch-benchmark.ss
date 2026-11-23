@@ -11,7 +11,7 @@
         (only-in :clan/poo/mop clos-add-method clos-call
                  clos-compute-applicable-methods clos-generic-function
                  clos-method clos-prototype-specializer)
-        (only-in :clan/poo/read-projection call-with-owned-source-reads)
+        (only-in :clan/poo/object/read-projection call-with-owned-source-reads)
         (only-in :clan/poo/type Record)
         (only-in :tao3k/yuanxu/module-system/source/interface
                  yuanxu-module-interface yuanxu-module-interface-authoring)
