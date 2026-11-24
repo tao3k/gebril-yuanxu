@@ -274,7 +274,10 @@
                            (else (error "invalid compiled Module Feature inventory" id))))
           (unless (equal? names (.all-slots (.ref descriptor 'features)))
             (error "compiled Module Feature inventory changed" id))
-          (.cc value 'identity id 'features (.ref descriptor 'features)))))
+          (if (and (.slot? descriptor 'implied-features) (pair? (.ref descriptor 'implied-features)))
+            (.cc value 'identity id 'features (.ref descriptor 'features)
+                 'implied-features (.ref descriptor 'implied-features))
+            (.cc value 'identity id 'features (.ref descriptor 'features))))))
   (def selection (yuanxu-load-modules context))
   (if module-order selection (.ref selection 'modules)))
 

@@ -221,50 +221,60 @@
                           (unless (hash-get denied-index id)
                             (hash-put! tbl id #t)))
                         (.ref context 'selected))
-              (when (.slot? context 'loader-roots)
-                (for-each (lambda (id)
-                            (unless (hash-get denied-index id)
-                              (hash-put! tbl id #t)))
-                          (.ref context 'loader-roots)))
               tbl))
            (implied-candidates
             (foldr append '()
              (map
               (lambda (owner-id)
                 (let* ((publication (publication-for owner-id))
-                       (features (if (.slot? publication 'features)
-                                   (.ref publication 'features) '()))
-                       (feature-names
-                        (cond
-                         ((list? features) features)
-                         ((object? features) (.all-slots features))
-                         (else '()))))
-                  (filter-map
-                   (lambda (name)
-                     (let ((id (feature-node-id owner-id name)))
-                       (and (not (memq id negative))
-                            (not (and (row-for owner-id)
-                                      (let ((row (row-for owner-id)))
-                                        (ormap (lambda (flag)
-                                                 (let-values (((fname en?) (signed-feature flag)))
-                                                   (and en? (eq? fname name))))
-                                               (.ref (.ref row 'selection) 'selection-flags)))))
-                            (let* ((listed? (list? features))
-                                   (prereqs
-                                    (if listed?
-                                      (if (.slot? context 'feature-implied-modules)
-                                        ((.ref context 'feature-implied-modules) owner-id name)
-                                        '())
-                                      (let ((declared (.ref features name)))
-                                        (if (and (object? declared) (.slot? declared 'implied-modules))
-                                          (.ref declared 'implied-modules)
-                                          '())))))
-                              (and (pair? prereqs)
-                                   (andmap (lambda (req-mod)
-                                             (hash-get admitted-set (module-key owner-id req-mod)))
-                                           prereqs)
-                                   (list owner-id name (map (cut module-key owner-id <>) prereqs)))))))
-                   feature-names)))
+                       (dir-features? (.slot? publication 'feature-reader))
+                       (inline-implied? (.slot? publication 'implied-features)))
+                  (cond
+                   (dir-features?
+                    (let ((features (if (.slot? publication 'features)
+                                      (.ref publication 'features) '())))
+                      (if (and (pair? features) (.slot? context 'feature-implied-modules))
+                        (filter-map
+                         (lambda (name)
+                           (let ((id (feature-node-id owner-id name)))
+                             (and (not (memq id negative))
+                                  (not (and (row-for owner-id)
+                                            (let ((row (row-for owner-id)))
+                                              (ormap (lambda (flag)
+                                                       (let-values (((fname en?) (signed-feature flag)))
+                                                         (and en? (eq? fname name))))
+                                                     (.ref (.ref row 'selection) 'selection-flags)))))
+                                  (let ((prereqs ((.ref context 'feature-implied-modules) owner-id name)))
+                                    (and (pair? prereqs)
+                                         (andmap (lambda (req-mod)
+                                                   (hash-get admitted-set (module-key owner-id req-mod)))
+                                                 prereqs)
+                                         (list owner-id name (map (cut module-key owner-id <>) prereqs)))))))
+                         features)
+                        '())))
+                   (inline-implied?
+                    (let ((entries (.ref publication 'implied-features)))
+                      (if (pair? entries)
+                        (filter-map
+                         (lambda (entry)
+                           (let* ((name (car entry))
+                                  (prereqs (cdr entry))
+                                  (id (feature-node-id owner-id name)))
+                             (and (pair? prereqs)
+                                  (not (memq id negative))
+                                  (not (and (row-for owner-id)
+                                            (let ((row (row-for owner-id)))
+                                              (ormap (lambda (flag)
+                                                       (let-values (((fname en?) (signed-feature flag)))
+                                                         (and en? (eq? fname name))))
+                                                     (.ref (.ref row 'selection) 'selection-flags)))))
+                                  (andmap (lambda (req-mod)
+                                            (hash-get admitted-set (module-key owner-id req-mod)))
+                                          prereqs)
+                                  (list owner-id name (map (cut module-key owner-id <>) prereqs)))))
+                         entries)
+                        '())))
+                   (else '()))))
               modules)))
            (core-only?
             ;; Decision flags have already been demanded. Inspect the prepared
@@ -373,17 +383,39 @@
                                                 (.ref (hash-ref nodes required) 'identity) required))
                               (cons 'denied? (and (memq required negative) #t))
                               (cons 'detail (.ref diagnostic 'detail))))) diagnostics)))
-      (let* ((ordered (map (cut hash-ref nodes <>) (.ref resolution 'feature-ids)))
-             (g-profiles (if (and intent (.slot? intent 'global-profiles))
-                           (.ref intent 'global-profiles) '()))
-             (m-profiles
-              (filter-map
-               (lambda (row)
-                 (and (.slot? row 'profiles)
-                      (let ((ps (.ref row 'profiles)))
-                        (and (pair? ps) (cons (.ref row 'identity) ps)))))
-               decision-values))
-             (receipts-list
+      (let ((ordered (map (cut hash-ref nodes <>) (.ref resolution 'feature-ids))))
+        ;; Report completed topology before revalidating sources so the
+        ;; progress hook cannot leave an unchecked publication.
+        (when (pair? (current-execution-progress))
+          (call-with-module-source-callback
+            (lambda () (execution-progress! 'selected-topology (length ordered)))))
+        ;; Slot evaluation above can run author code. Never publish the candidate
+        ;; on the strength of an earlier source check.
+        (current!)
+        (.o admit-current: current! status: 'ready generation: (.ref context 'generation) init-source: origin
+            resolve-module-id: module-key
+            roots: root-values decisions: decision-values denied-modules: (.ref context 'denied-modules)
+            denied-features: negative
+            global-profiles:
+            (if (and intent (.slot? intent 'global-profiles))
+              (.ref intent 'global-profiles) '())
+            module-profiles:
+            (filter-map
+             (lambda (row)
+               (and (.slot? row 'profiles)
+                    (let ((ps (.ref row 'profiles)))
+                      (and (pair? ps) (cons (.ref row 'identity) ps)))))
+             decision-values)
+            activation-receipts:
+            (let ((g-profiles (if (and intent (.slot? intent 'global-profiles))
+                                (.ref intent 'global-profiles) '()))
+                  (m-profiles
+                   (filter-map
+                    (lambda (row)
+                      (and (.slot? row 'profiles)
+                           (let ((ps (.ref row 'profiles)))
+                             (and (pair? ps) (cons (.ref row 'identity) ps)))))
+                    decision-values)))
               (append
                (map (lambda (node)
                       (let ((id (.ref node 'identity)))
@@ -422,22 +454,7 @@
                                      (list (car entry) mp) 'module-profiles 'assembly 'explicit '()
                                      "Per-module Profile declared in yuanxu! profiles:"))
                                   (cdr entry)))
-                           m-profiles)))))
-        ;; Report completed topology before revalidating sources so the
-        ;; progress hook cannot leave an unchecked publication.
-        (when (pair? (current-execution-progress))
-          (call-with-module-source-callback
-            (lambda () (execution-progress! 'selected-topology (length ordered)))))
-        ;; Slot evaluation above can run author code. Never publish the candidate
-        ;; on the strength of an earlier source check.
-        (current!)
-        (.o admit-current: current! status: 'ready generation: (.ref context 'generation) init-source: origin
-            resolve-module-id: module-key
-            roots: root-values decisions: decision-values denied-modules: (.ref context 'denied-modules)
-            denied-features: negative
-            global-profiles: g-profiles
-            module-profiles: m-profiles
-            activation-receipts: receipts-list
+                           m-profiles))))
             nodes: ordered
             features-by-owner: (module-feature-index feature-descriptors)
             module-order: (map (cut .ref <> 'identity)

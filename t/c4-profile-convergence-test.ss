@@ -224,6 +224,7 @@
                   ((durable) (.o identity: 'durable features: (.o)))
                   ((ai-agentic-context)
                    (.o identity: 'ai-agentic-context
+                       implied-features: '((durable durable))
                        features: (.o durable: (.o implied-modules: '(durable)))))
                   (else (error "unknown test pub" id)))))
              (run-sel
