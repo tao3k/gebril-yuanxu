@@ -24,8 +24,7 @@
     (lambda (port) (for-each (cut pretty-print <> port) forms))))
 (def FixtureContract
   (.cc Type. identity: 'test/fixture-scope .element?: object?))
-;; This fixture supplies an inert publication, not a qualified domain scope.
-;; Real JsonSchema and Funflow are selected and executed by Core init above.
+;; This fixture supplies an inert publication for tests of source selection.
 (def (fixture-reader source)
   (when (string-contains (.get source value) "/poison/")
     (error "unselected publication reader called"))

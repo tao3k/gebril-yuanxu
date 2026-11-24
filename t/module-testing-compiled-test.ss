@@ -20,7 +20,6 @@
   (test-suite "Compiled init namespace across module boundaries"
     (yuanxu-test-case "compiled only-in and rename-in retain identity, laziness and guards"
       (with-yuanxu-fixture (fixture (compiled-selection-fixture repository))
-        (prepare-module-selection! fixture 'json-schema)
         (yuanxu-test-checkpoint 'selection-prepared)
         (def root (.get fixture root))
         (def state (.get fixture state))
