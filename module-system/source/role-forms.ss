@@ -321,9 +321,26 @@ prelude: :gerbil/core
     (error "init.ss contains non-declarative forms" source-path))
   (def declaration (car declarations))
   (def body (cdr declaration))
-  (when (and (pair? body) (eq? (car body) ':build-roots))
-    (module-init-build-roots declaration)
-    (set! body (cddr body)))
+  (def build-roots
+    (if (and (pair? body) (eq? (car body) ':build-roots))
+      (let (entries (module-init-build-roots declaration))
+        (set! body (cddr body))
+        entries)
+      '()))
+  (def (check-build-roots-disjoint! window-roots)
+    (def base (if source-path (path-directory source-path) (current-directory)))
+    (for-each
+      (lambda (entry)
+        (def target (path-strip-trailing-directory-separator (path-expand entry base)))
+        (for-each
+          (lambda (window-root)
+            (when (and (string? window-root)
+                       (or (string=? target window-root)
+                           (string-prefix? (string-append window-root "/") target)))
+              (error ":build-roots entry belongs inside a :load-modules window; declare it as a Yuanxu Module"
+                     entry window-root)))
+          window-roots))
+      build-roots))
   (if (or (null? body) (not (eq? (car body) ':load-modules)))
     (begin
       (when (memq ':load-modules body)
@@ -349,6 +366,7 @@ prelude: :gerbil/core
               (hash-put! bindings binding #t))
             (hash-put! names key #t)
             (hash-put! roots root #t))) windows)
+      (check-build-roots-disjoint! (hash-keys roots))
       (for-each
         (lambda (binding)
           (when (or (memq binding '(tests std-make-spec admit-current))

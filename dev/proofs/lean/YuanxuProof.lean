@@ -14,6 +14,7 @@ import YuanxuProof.ModuleSystem.Building.SelectedPackages
 import YuanxuProof.ModuleSystem.Building.PreludeEntry
 import YuanxuProof.ModuleSystem.Building.SourceView
 import YuanxuProof.ModuleSystem.Building.InterfaceRoots
+import YuanxuProof.ModuleSystem.Building.BuildRootOwnership
 import YuanxuProof.ModuleSystem.Workflow
 import YuanxuProof.ModuleSystem.Selection.FeatureScopes
 import YuanxuProof.ModuleSystem.Selection.CoreRows
