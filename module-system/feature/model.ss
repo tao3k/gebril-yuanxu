@@ -15,6 +15,7 @@
         feature-category
         feature-required-dependencies
         feature-optional-dependencies
+        feature-implied-modules
         feature-conflicts-with
         feature-required-features
         feature-optional-features
@@ -57,6 +58,9 @@
 
 (def (feature-optional-dependencies . feature-ids)
   (one-feature-slot 'optional-requires feature-ids))
+
+(def (feature-implied-modules . module-ids)
+  (one-feature-slot 'implied-modules module-ids))
 
 (def (feature-conflicts-with . feature-ids)
   (one-feature-slot 'conflicts feature-ids))
@@ -144,6 +148,9 @@
     (cons 'optional-requires
           (copy-feature-values
            (feature-slot/default spec 'optional-requires '())))
+    (cons 'implied-modules
+          (copy-feature-values
+           (feature-slot/default spec 'implied-modules '())))
     (cons 'conflicts
           (copy-feature-values
            (feature-slot/default spec 'conflicts '())))

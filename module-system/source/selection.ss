@@ -208,12 +208,51 @@
               (.cc descriptor-value 'feature-id id 'owner-module-id owner-id
                 'requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'requires))
                 'optional-requires (map (cut feature-key owner-id <>) (.ref descriptor-value 'optional-requires))
+                'implied-modules (if (.slot? descriptor-value 'implied-modules)
+                                   (map (cut module-key owner-id <>) (.ref descriptor-value 'implied-modules))
+                                   '())
                 'conflicts (map (cut feature-key owner-id <>) (.ref descriptor-value 'conflicts))))
             descriptor-value)))
-    (let* ((core-only?
+    (let* ((module-set (list->hash-table (map (lambda (id) (cons id #t)) modules)))
+           (implied-candidates
+            (foldr append '()
+             (map
+              (lambda (owner-id)
+                (let* ((publication (publication-for owner-id))
+                       (features (if (.slot? publication 'features)
+                                   (.ref publication 'features) '()))
+                       (feature-names
+                        (cond
+                         ((list? features) features)
+                         ((object? features) (.all-slots features))
+                         (else '()))))
+                  (filter-map
+                   (lambda (name)
+                     (let ((id (feature-node-id owner-id name)))
+                       (and (not (memq id negative))
+                            (not (and (row-for owner-id)
+                                      (let ((row (row-for owner-id)))
+                                        (ormap (lambda (flag)
+                                                 (let-values (((fname en?) (signed-feature flag)))
+                                                   (and en? (eq? fname name))))
+                                               (.ref (.ref row 'selection) 'selection-flags)))))
+                            (let* ((listed? (list? features))
+                                   (declared (if listed? #f (.ref features name))))
+                              (and (object? declared)
+                                   (.slot? declared 'implied-modules)
+                                   (let ((prereqs (.ref declared 'implied-modules)))
+                                     (and (pair? prereqs)
+                                          (andmap (lambda (req-mod)
+                                                    (hash-get module-set (module-key owner-id req-mod)))
+                                                  prereqs)
+                                          (cons owner-id name))))))))
+                   feature-names)))
+              modules)))
+           (core-only?
             ;; Decision flags have already been demanded. Inspect the prepared
             ;; values without running an author getter to qualify the shortcut.
-            (and read-owner-record (not (current-module-source-observer))
+            (and (null? implied-candidates)
+                 read-owner-record (not (current-module-source-observer))
                  (core-feature-template-current?)
                  (with-catch (lambda (_changed-route) #f)
                    (lambda ()
@@ -234,7 +273,7 @@
                        (let (descriptor-value (core-feature-descriptor key id required))
                          (register-core! key id owners)
                          (feature-selection descriptor-value))))) modules))))
-           (feature-selections
+           (explicit-feature-selections
             (foldr append '()
              (map
               (lambda (owner-id)
@@ -258,6 +297,7 @@
                                              (feature-descriptor-for owner-id name features source)))
                                  (def interface (if listed? source (feature-interface owner-id id name)))
                                  (hash-put! nodes id (.o kind: 'feature identity: id owner: owner-id interface
+                                                        activation: 'explicit
                                                         declaration descriptor: descriptor-value))
                                  (feature-selection
                                   (.+ descriptor-value
@@ -270,6 +310,26 @@
               (if core-only? '()
                 (filter (lambda (id) (hash-key? publications id))
                         (map (cut .ref <> 'identity) decision-values))))))
+           (implied-feature-selections
+            (if core-only? '()
+              (map
+               (lambda (pair)
+                 (let* ((owner-id (car pair))
+                        (name (cdr pair))
+                        (id (feature-node-id owner-id name))
+                        (publication (publication-for owner-id))
+                        (features (.ref publication 'features))
+                        (interface (feature-interface owner-id id name)))
+                   (let-values (((descriptor-value declaration)
+                                 (feature-descriptor-for owner-id name features interface)))
+                     (hash-put! nodes id (.o kind: 'feature identity: id owner: owner-id interface
+                                            activation: 'implied
+                                            declaration descriptor: descriptor-value))
+                     (feature-selection
+                      (.+ descriptor-value
+                          (.o requires: (cons (core-node-id owner-id) (.ref descriptor-value 'requires))))))))
+               implied-candidates)))
+           (feature-selections (append explicit-feature-selections implied-feature-selections))
            (resolution (module-source-measure-operation 'selected-topological-resolution
                          (lambda ()
                            (if core-only?
@@ -312,6 +372,12 @@
                                (filter (lambda (node) (eq? (.ref node 'kind) 'module-core)) ordered))
             feature-order: (map (cut .ref <> 'identity)
                                 (filter (lambda (node) (eq? (.ref node 'kind) 'feature)) ordered))
+            implied-features: (map (cut .ref <> 'identity)
+                                   (filter (lambda (node)
+                                             (and (eq? (.ref node 'kind) 'feature)
+                                                  (.slot? node 'activation)
+                                                  (eq? (.ref node 'activation) 'implied)))
+                                           ordered))
             feature-contributions:
             (begin
               (current!)

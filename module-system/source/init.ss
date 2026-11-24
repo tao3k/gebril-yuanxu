@@ -84,14 +84,15 @@
 
 (def (module-init-intent forms source-path)
   (def (decision row)
-    (with ([identity group module flags disabled? disable-specified? source-root] row)
+    (with ([identity group module flags disabled? disable-specified? source-root row-profiles] row)
       (.o identity disabled? disable-specified? source-root
+          profiles: row-profiles
           selection: (.+ (yuanxu-user-module-selection group module flags)
                           (.o enabled?: (not disabled?))))))
   (def (intent window)
-    (with ([mode root mount profile root-explicit? rows test-dir source-export] window)
+    (with ([mode root mount profile root-explicit? rows test-dir source-export g-profiles] window)
       (.o mode root mount profile root-explicit? init-source: source-path
-          test-dir source-export
+          test-dir source-export global-profiles: g-profiles
           decisions: (map decision rows))))
   (let-values (((windows mounted?) (parse-module-init forms source-path)))
     (def intents (map intent windows))
@@ -99,6 +100,7 @@
       (.o mode: (if (any (lambda (window) (eq? (.ref window 'mode) 'auto)) intents)
                   'auto 'explicit)
           root: (.ref (car intents) 'root) root-explicit?: #t init-source: source-path
+          global-profiles: (foldr append '() (map (cut .ref <> 'global-profiles) intents))
           windows: intents
           decisions: (foldr append '()
                        (map (lambda (window)
