@@ -401,7 +401,6 @@
         (yuanxu-test-observe 'build-source-resolutions (hash-ref costs '(calls reader-source-resolution) 0))
         (check-equal? (.get view selected-graph module-order)
                       '(tao3k/yuanxu/modules/json-schema/interface
-                        tao3k/yuanxu/modules/funflow/interface
                         tao3k/yuanxu/scenarios/gitea-postgresql/postgresql/interface
                         tao3k/yuanxu/scenarios/gitea-postgresql/gitea/interface
                         tao3k/yuanxu/scenarios/gitea-postgresql/interface))

@@ -6,7 +6,6 @@
 (yuanxu!
   :load-modules "./modules" mode: explicit mount: Modules export: ModulesSource
   (json-schema)
-  (funflow)
 
   ;; Same module protocol, separate window. Library roots never own Scenarios.
   :load-modules "./scenarios" mode: explicit mount: Scenarios :test-dir "./t"

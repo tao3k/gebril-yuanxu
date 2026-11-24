@@ -18,21 +18,16 @@
               (clear-temporary-file! root)
               (check-equal? (file-exists? root) #f)))
 (def module-testing-isolation-test
-  (test-suite "JsonSchema and Funflow init-owned qualifications"
-    (yuanxu-test-fixture "multi-owner selection and publication share one bounded Case"
+  (test-suite "JsonSchema init-owned qualifications"
+    (yuanxu-test-fixture "owner selection and publication share one bounded Case"
       (workspace Workspace)
       (yuanxu-test-checkpoint 'selection-start)
       (def json (.call (.get tao3k/yuanxu.init.exports tests) .select '(json-schema)))
-      (def flow (.call (.get tao3k/yuanxu.init.exports tests) .select '(funflow)))
-      (def unused flow)
       (def reads 0)
-      (def funflow-read? #f)
       (def previous-observer (current-module-source-observer))
       (def (observe key amount)
         (when (and (pair? key) (eq? (car key) 'file-read))
-          (set! reads (+ reads 1))
-          (let (name (path-strip-directory (caddr key)))
-            (when (string=? name "funflow-job-test.ss") (set! funflow-read? #t))))
+          (set! reads (+ reads 1)))
         (when previous-observer (previous-observer key amount)))
       (def all
         (parameterize ((current-module-source-observer observe))
@@ -41,34 +36,23 @@
       (check-equal? (.ref/cached all 'selected-graph) #f)
       (check-equal? (.ref/cached all 'execution) #f)
       (check-equal? (.ref/cached all 'spec) #f)
-      (check-equal? (.ref/cached flow 'qualification) #f)
       (def json-tests
         (parameterize ((current-module-source-observer observe))
           (.get json qualification)))
-      (check-equal? funflow-read? #f)
       (check-equal? (eq? json-tests (.call all .select '(json-schema))) #t)
-      (check-equal? (.ref/cached flow 'qualification) #f)
-      (def flow-tests (.get flow qualification))
-      (def selected (.call all .select '(json-schema funflow)))
-      (check-equal? (eq? selected (.call selected .select '(json-schema funflow))) #t)
-      (check-equal? (.get selected spec)
-        (append (.get json-tests spec) (.get flow-tests spec)))
+      (def selected (.call all .select '(json-schema)))
+      (check-equal? (eq? selected (.call selected .select '(json-schema))) #t)
+      (check-equal? (.get selected spec) (.get json-tests spec))
       (check-equal? (eq? (.get json-tests selected-graph) (.get selected selected-graph)) #t)
-      (check-equal? (eq? (.get flow-tests selected-graph) (.get selected selected-graph)) #t)
-      (check-equal? (.ref/cached unused 'integration) #f)
       (check-equal? (.get selected selected-graph module-order)
                     '(tao3k/yuanxu/modules/json-schema/interface
-                      tao3k/yuanxu/modules/funflow/interface
                       tao3k/yuanxu/scenarios/gitea-postgresql/postgresql/interface
                       tao3k/yuanxu/scenarios/gitea-postgresql/gitea/interface
                       tao3k/yuanxu/scenarios/gitea-postgresql/interface))
       (check-equal? (.ref/cached selected 'execution) #f)
       (yuanxu-test-checkpoint 'selection-verified)
       (check-equal? (.ref/cached all 'spec) #f)
-      (for-each (lambda (owner) (check-equal? (.ref/cached (.get tao3k/yuanxu.init.exports Modules) owner) #f))
-        '(json-schema funflow))
-      (check-equal?
-        (eq? selected (.call all .select '(json-schema funflow))) #t)
+      (check-equal? (.ref/cached (.get tao3k/yuanxu.init.exports Modules) 'json-schema) #f)
       (def source (.get selected source))
       (def guard (.get selected admit-current))
       (check-equal? (eq? guard (.get source admit-current)) #t)
@@ -76,8 +60,7 @@
                 '(.run .compile execution))
       (guard)
       ;; Qualification selection never runs a Suite or forces business scopes.
-      (check-equal? (.ref/cached flow 'integration) #f)
+      (check-equal? (.ref/cached json 'integration) #f)
       (check-equal? (.ref/cached all 'spec) #f)
       (check-equal? (directory-files workspace) '())
-      (for-each (lambda (module) (check-equal? (.ref/cached module 'scope) #f))
-                (list json flow)))))
+      (check-equal? (.ref/cached json 'scope) #f))))

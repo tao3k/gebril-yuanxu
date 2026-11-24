@@ -29,7 +29,6 @@
                           (properties . ((port . ((type . "integer") (minimum . 1)))))))))
         (check-equal? (.get view selected-graph module-order)
                       '(tao3k/yuanxu/modules/json-schema/interface
-                        tao3k/yuanxu/modules/funflow/interface
                         tao3k/yuanxu/scenarios/gitea-postgresql/postgresql/interface
                         tao3k/yuanxu/scenarios/gitea-postgresql/gitea/interface
                         tao3k/yuanxu/scenarios/gitea-postgresql/interface))

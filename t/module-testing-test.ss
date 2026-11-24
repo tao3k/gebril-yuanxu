@@ -57,20 +57,17 @@
       (check-equal? (eq? modules (.get ModuleNamespace Modules)) #t)
       (check-equal? (let ((init-modules-getter 'caller-binding))
                       (eq? modules (.get ModuleNamespace Modules))) #t)
-      (check-equal? (.all-slots/sort modules) '(funflow json-schema))
+      (check-equal? (.all-slots/sort modules) '(json-schema))
       (check-equal? (.slot? modules 'json-schema) #t)
       (check-equal? (.slot? modules 'missing) #f)
       (check-equal? (.slot? modules '.fallback-handler) #f)
       (check-equal? (.ref/cached modules 'json-schema) #f)
-      (check-equal? (.ref/cached modules 'funflow) #f)
       (check-equal? (.ref/cached (.get tao3k/yuanxu.init.exports tests) 'spec) #f)
       (check-equal? (.ref/cached (.get tao3k/yuanxu.init.exports tests) 'selected-graph) #f)
       (check-equal? (.ref/cached modules 'json-schema) #f))
     (test-case "init exports inert test files selected from its existing Graph"
       (def json (.get (.call (.get tao3k/yuanxu.init.exports tests) .select '(json-schema)) spec))
-      (def flow (.get (.call (.get tao3k/yuanxu.init.exports tests) .select '(funflow)) spec))
       (check-equal? (map path-strip-directory json) '("atomic-test.ss"))
-      (check-equal? (map path-strip-directory flow) '("atomic-test.ss"))
       (check-equal? (.get (.call (.get tao3k/yuanxu.init.exports tests) .select '()) spec) '())
       ;; Empty metadata must not expose an executor that could start the
       ;; official tool with no arguments and trigger its default directory scan.
@@ -82,7 +79,7 @@
       (check-equal? (map path-strip-directory scenarios) '("config-test.ss"))
       (def tests (.get tao3k/yuanxu.init.exports tests))
       (check-equal? (.get tests spec)
-                    (append json flow scenarios
+                    (append json scenarios
                             (.get tests integration spec)
                             (.get tests qualification spec)))
       (check-equal? (.slot? tests 'std-tests) #f)
@@ -102,7 +99,6 @@
       (check-equal? (eq? spec (.get tao3k/yuanxu.init.exports std-make-spec)) #t)
       (def names (map (lambda (target) (if (string? target) target (cadr target))) spec))
       (check-equal? (and (member "modules/json-schema/interface" names) #t) #t)
-      (check-equal? (and (member "modules/funflow/interface" names) #t) #t)
       (check-equal? (and (member "scenarios/gitea-postgresql/interface" names) #t) #t)
       (check-equal? (ormap (lambda (name) (string-contains name "/tests/")) names) #f)
       (check-equal? (eq? files (.get tao3k/yuanxu.init.exports tests spec)) #t)
