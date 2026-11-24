@@ -837,8 +837,10 @@
           (cond
            (build-selection (command-roots))
            (else
-            (append selected-values
-                    (foldr append '() (map auto-owners (or windows '(#f)))))))
+            (delete-duplicates/hash
+              (append selected-values
+                      (foldr append '() (map auto-owners (or windows '(#f)))))
+              from-end?: #t)))
           (feature-roots)
           denied-modules: denied-values intent: scoped-intent init-source: init-path source-root: root-path
           imported-source-roots:
@@ -856,6 +858,13 @@
               (module-publication-role-imports (path-directory entry)
                 (lambda (path) (observe! module-source-type path))))
             entry)
+          feature-implied-modules:
+          (lambda (owner name)
+            (def root (path-directory (yuanxu-module-source-ref-value (locate-source owner))))
+            (def entry (path-expand (string-append "features/" (symbol->string name) "/interface.ss") root))
+            (if (eq? (observe! module-source-type entry) 'regular)
+              (module-feature-implied-modules entry (observe! module-source-read entry #t #t))
+              '()))
           resolve-module-id: resolve-reference resolve-root: resolve-request-root current?: current-source? candidate-current?: candidate-location-current?
           %candidate-guard:
           (lambda (generation id stale!)

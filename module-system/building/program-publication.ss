@@ -52,8 +52,9 @@
                  (expected (map (lambda (key) (cons key (.ref declaration key)))
                                 '(kind feature-id owner-module-id requires optional-requires conflicts))))
             `(module-program-feature ,value ',declared-owner ',name ',expected ',id ',owner
-               ',(map (lambda (key) (.ref descriptor key))
-                      '(requires optional-requires conflicts))))))
+               ',(map (lambda (key)
+                        (if (.slot? descriptor key) (.ref descriptor key) '()))
+                      '(requires optional-requires conflicts implied-modules))))))
       (def publications
         (map (lambda (id)
                (def node (find (lambda (node) (and (eq? (.ref node 'kind) 'module-core)
@@ -122,7 +123,9 @@
             (expand-yuanxu-program-declaration ,declaration ,(.ref entry 'path)
               (lambda ()
                 (module-program-namespace ',(.ref input 'compiler-identity)
-                  (.o ,@publications) ',decisions ',rows ',ids))))))
+                  (.o ,@publications) ',decisions ',rows ',ids
+                  global-profiles: ',(if (.slot? graph 'global-profiles) (.ref graph 'global-profiles) '())
+                  module-profiles: ',(if (.slot? graph 'module-profiles) (.ref graph 'module-profiles) '())))))))
       (current!)
       (.cc entry 'kind 'init-publication
         'input (.cc input 'compiler-forms emitted 'admit-current current!)))))

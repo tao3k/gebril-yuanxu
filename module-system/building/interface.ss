@@ -407,6 +407,10 @@
       ((and unit (##lookup-registered-module unit))
        (error "init has no compiled Module publication" unit))
       (else (.get (selected!) modules))))
+  (def (active-selection!)
+    (if compiled-selection?
+      (.get compiled value)
+      (selected!)))
   (def exports
     (.o build: (prepare-build package-build-roots)
         std-make-spec: (build-spec build)
@@ -420,5 +424,13 @@
         (lambda ()
           (with-input-context #f
             (lambda () ((.ref/inline build source-current-site)))))
+        activation-receipts: (.get (active-selection!) activation-receipts)
+        convergence: (.get (active-selection!) convergence)
+        .converge-profiles:
+        (lambda args
+          (apply (.get (active-selection!) .converge-profiles) args))
+        .apply-runtime-overlay:
+        (lambda (assembly-result runtime-slot-updates)
+          ((.get (active-selection!) .apply-runtime-overlay) assembly-result runtime-slot-updates))
         tests: test-source-value))
   (values exports module-namespace))

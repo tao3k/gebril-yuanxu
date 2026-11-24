@@ -13,7 +13,8 @@
         (only-in :tao3k/yuanxu/module-system/feature/model feature-descriptor feature-selection feature-profile)
         (only-in :tao3k/yuanxu/module-system/feature/resolver resolve-feature-profile schedule-core-rows)
         (only-in :tao3k/yuanxu/module-system/feature/feature-manifest feature-manifest-bundle)
-        (only-in :tao3k/yuanxu/module-system/feature/composition feature-composition-plan))
+        (only-in :tao3k/yuanxu/module-system/feature/composition feature-composition-plan)
+        (only-in :tao3k/yuanxu/module-system/convergence/types make-activation-receipt))
 (export select-module-graph module-feature-declaration module-selected-feature?)
 
 ;; One complete value from the EXISTING Feature publisher. Runtime .cc copies
@@ -213,7 +214,19 @@
                                    '())
                 'conflicts (map (cut feature-key owner-id <>) (.ref descriptor-value 'conflicts))))
             descriptor-value)))
-    (let* ((module-set (list->hash-table (map (lambda (id) (cons id #t)) modules)))
+    (let* ((admitted-set
+            (let ((tbl (make-hash-table-eq)))
+              (for-each (lambda (id) (hash-put! tbl id #t)) modules)
+              (for-each (lambda (id)
+                          (unless (hash-get denied-index id)
+                            (hash-put! tbl id #t)))
+                        (.ref context 'selected))
+              (when (.slot? context 'loader-roots)
+                (for-each (lambda (id)
+                            (unless (hash-get denied-index id)
+                              (hash-put! tbl id #t)))
+                          (.ref context 'loader-roots)))
+              tbl))
            (implied-candidates
             (foldr append '()
              (map
@@ -237,15 +250,20 @@
                                                    (and en? (eq? fname name))))
                                                (.ref (.ref row 'selection) 'selection-flags)))))
                             (let* ((listed? (list? features))
-                                   (declared (if listed? #f (.ref features name))))
-                              (and (object? declared)
-                                   (.slot? declared 'implied-modules)
-                                   (let ((prereqs (.ref declared 'implied-modules)))
-                                     (and (pair? prereqs)
-                                          (andmap (lambda (req-mod)
-                                                    (hash-get module-set (module-key owner-id req-mod)))
-                                                  prereqs)
-                                          (cons owner-id name))))))))
+                                   (prereqs
+                                    (if listed?
+                                      (if (.slot? context 'feature-implied-modules)
+                                        ((.ref context 'feature-implied-modules) owner-id name)
+                                        '())
+                                      (let ((declared (.ref features name)))
+                                        (if (and (object? declared) (.slot? declared 'implied-modules))
+                                          (.ref declared 'implied-modules)
+                                          '())))))
+                              (and (pair? prereqs)
+                                   (andmap (lambda (req-mod)
+                                             (hash-get admitted-set (module-key owner-id req-mod)))
+                                           prereqs)
+                                   (list owner-id name (map (cut module-key owner-id <>) prereqs)))))))
                    feature-names)))
               modules)))
            (core-only?
@@ -313,9 +331,10 @@
            (implied-feature-selections
             (if core-only? '()
               (map
-               (lambda (pair)
-                 (let* ((owner-id (car pair))
-                        (name (cdr pair))
+               (lambda (entry)
+                 (let* ((owner-id (car entry))
+                        (name (cadr entry))
+                        (prereqs (caddr entry))
                         (id (feature-node-id owner-id name))
                         (publication (publication-for owner-id))
                         (features (.ref publication 'features))
@@ -324,6 +343,7 @@
                                  (feature-descriptor-for owner-id name features interface)))
                      (hash-put! nodes id (.o kind: 'feature identity: id owner: owner-id interface
                                             activation: 'implied
+                                            implied-prereqs: prereqs
                                             declaration descriptor: descriptor-value))
                      (feature-selection
                       (.+ descriptor-value
@@ -353,7 +373,56 @@
                                                 (.ref (hash-ref nodes required) 'identity) required))
                               (cons 'denied? (and (memq required negative) #t))
                               (cons 'detail (.ref diagnostic 'detail))))) diagnostics)))
-      (let (ordered (map (cut hash-ref nodes <>) (.ref resolution 'feature-ids)))
+      (let* ((ordered (map (cut hash-ref nodes <>) (.ref resolution 'feature-ids)))
+             (g-profiles (if (and intent (.slot? intent 'global-profiles))
+                           (.ref intent 'global-profiles) '()))
+             (m-profiles
+              (filter-map
+               (lambda (row)
+                 (and (.slot? row 'profiles)
+                      (let ((ps (.ref row 'profiles)))
+                        (and (pair? ps) (cons (.ref row 'identity) ps)))))
+               decision-values))
+             (receipts-list
+              (append
+               (map (lambda (node)
+                      (let ((id (.ref node 'identity)))
+                        (cond
+                         ((eq? (.ref node 'kind) 'module-core)
+                          (make-activation-receipt
+                           id 'core-defaults 'assembly 'explicit '()
+                           "Admitted module core in yuanxu! closure"))
+                         ((and (.slot? node 'activation)
+                               (eq? (.ref node 'activation) 'implied))
+                          (let ((prereqs (if (.slot? node 'implied-prereqs)
+                                           (.ref node 'implied-prereqs) '())))
+                            (make-activation-receipt
+                             id 'implied-bridge 'assembly 'implied
+                             (map (lambda (m) (list m 'enabled? #t)) prereqs)
+                             "Auto-bridged via implied-modules in yuanxu! closure")))
+                         (else
+                          (make-activation-receipt
+                           id 'explicit-feature 'assembly 'explicit '()
+                           "Explicit +feature selected in yuanxu!")))))
+                    ordered)
+               (map (lambda (fid)
+                      (make-activation-receipt
+                       fid 'module-profiles 'assembly 'vetoed '()
+                       "Explicit -feature veto in Band 4b"))
+                    negative)
+               (map (lambda (gp)
+                      (make-activation-receipt
+                       gp 'global-profiles 'assembly 'explicit '()
+                       "Global Profile declared in yuanxu! :profiles"))
+                    g-profiles)
+               (foldr append '()
+                      (map (lambda (entry)
+                             (map (lambda (mp)
+                                    (make-activation-receipt
+                                     (list (car entry) mp) 'module-profiles 'assembly 'explicit '()
+                                     "Per-module Profile declared in yuanxu! profiles:"))
+                                  (cdr entry)))
+                           m-profiles)))))
         ;; Report completed topology before revalidating sources so the
         ;; progress hook cannot leave an unchecked publication.
         (when (pair? (current-execution-progress))
@@ -366,6 +435,9 @@
             resolve-module-id: module-key
             roots: root-values decisions: decision-values denied-modules: (.ref context 'denied-modules)
             denied-features: negative
+            global-profiles: g-profiles
+            module-profiles: m-profiles
+            activation-receipts: receipts-list
             nodes: ordered
             features-by-owner: (module-feature-index feature-descriptors)
             module-order: (map (cut .ref <> 'identity)

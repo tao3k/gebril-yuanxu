@@ -9,7 +9,7 @@
                  module-feature-declaration?)
         (only-in :tao3k/yuanxu/module-system/selection/objects yuanxu-user-module-selection))
 (export module-init-intent module-init-export-name module-interface-tags module-init-source-root
-        module-interface-declaration?)
+        module-interface-declaration? module-feature-implied-modules)
 
 (def (module-init-source-root intent source-path)
   (path-expand (.ref intent 'root) (path-directory source-path)))
@@ -81,6 +81,30 @@
               (_ (error "Interface tags: must be a quoted list of symbols" path))))
            ((and (keyword? (car tail)) (pair? (cdr tail))) (walk (cddr tail)))
            (else (walk (cdr tail)))))))))
+
+;; Cold, zero-eval extraction of literal `implied-modules:` from a directory-hosted
+;; `features/<name>/interface.ss` file (INV-6: inactive features never load objects.ss).
+(def (module-feature-implied-modules path text)
+  (def forms (call-with-input-string text read-all))
+  (def declarations
+    (filter (lambda (form) (module-feature-declaration? path form)) forms))
+  (if (not (and (pair? declarations) (null? (cdr declarations)) (pair? (cdar declarations))))
+    '()
+    (let ((fields (cddar declarations)) (found #f))
+      (let walk ((tail fields))
+        (cond
+         ((null? tail) (or found '()))
+         ((eq? (car tail) 'implied-modules:)
+          (match (cdr tail)
+            ([['quote value] . rest]
+             (unless (and (not found) (list? value)
+                          (or (null? value) (valid-tags? value)))
+               (error "invalid or duplicate Feature implied-modules:" path value))
+             (set! found value)
+             (walk rest))
+            (_ (error "Feature implied-modules: must be a quoted list of module symbols" path))))
+         ((and (keyword? (car tail)) (pair? (cdr tail))) (walk (cddr tail)))
+         (else (walk (cdr tail))))))))
 
 (def (module-init-intent forms source-path)
   (def (decision row)

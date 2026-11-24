@@ -77,6 +77,10 @@
   (module-binding-action "tao3k/yuanxu/module-system/source/build" 'module-build-package-source-inspector))
 (def publication-reader-producer
   (module-binding-action "tao3k/yuanxu/module-system/source/reader" 'module-publication-reader))
+(def graph-convergence-runner
+  (module-binding-action "tao3k/yuanxu/module-system/convergence/bridge" 'converge-selected-graph))
+(def graph-runtime-overlay-runner
+  (module-binding-action "tao3k/yuanxu/module-system/convergence/bridge" 'apply-graph-runtime-overlay))
 (def (make-publication-reader)
   ;; The linker can enumerate or use a supplied reader without importing
   ;; the native Reader. reader-ref owns its independent entry and return.
@@ -217,13 +221,16 @@
       (unless (equal? (.ref declaration (car row)) (cdr row))
         (error "compiled Feature declaration changed" id (car row)))) expected)
   (.cc declaration 'feature-id id 'owner-module-id qualified
-    'requires (car constraints) 'optional-requires (cadr constraints) 'conflicts (caddr constraints)))
+    'requires (car constraints) 'optional-requires (cadr constraints) 'conflicts (caddr constraints)
+    'implied-modules (if (pair? (cdddr constraints)) (cadddr constraints) '())))
 
 ;; A compiler publication supplies native bindings, not filenames or a reader.
 ;; Keep dependency linking, Feature refinement and value Contracts in the same
 ;; linker as source consumption. Only the source acquisition capability differs.
 (def (module-program-namespace identity publications decision-rows namespace-rows
-                               (module-order #f))
+                               (module-order #f)
+                               global-profiles: (g-profiles '())
+                               module-profiles: (m-profiles '()))
   (def ids (or module-order (.all-slots publications)))
   (def generation (symbol->string identity))
   (def signed-feature-roots (map car (filter (lambda (row) (pair? (cdr row))) decision-rows)))
@@ -232,9 +239,14 @@
         feature-roots: signed-feature-roots
         intent:
         (.o mode: 'explicit
+            global-profiles: g-profiles
             decisions: (map (lambda (row)
-                              (.o identity: (car row)
-                                  selection: (.o selection-flags: (cdr row)))) decision-rows))
+                              (let* ((rid (car row))
+                                     (mp (assq rid m-profiles)))
+                                (.o identity: rid
+                                    profiles: (if mp (cdr mp) '())
+                                    selection: (.o selection-flags: (cdr row)))))
+                            decision-rows))
         current?: (lambda (requested) (equal? requested generation))
         locate:
         (lambda (id)
@@ -1082,6 +1094,17 @@
         (let (selection (resolve-linked-selection (selection-roots)))
           (set! init-selection selection)
           (linked-selection-graph selection))
+        activation-receipts:
+        (.ref selected-graph 'activation-receipts)
+        convergence:
+        (graph-convergence-runner (list selected-graph))
+        .converge-profiles:
+        (lambda (global-profiles: (gp #f) module-profiles: (mp #f))
+          (graph-convergence-runner
+           (list selected-graph global-profile-registry: gp module-profile-registry: mp)))
+        .apply-runtime-overlay:
+        (lambda (assembly-result runtime-slot-updates)
+          (graph-runtime-overlay-runner (list selected-graph assembly-result runtime-slot-updates)))
         selected-records:
         (let* ((roots (selection-roots)) (graph (resolve-selection-graph roots)))
           (map (lambda (id) (link id '() graph)) roots))
