@@ -94,6 +94,7 @@ renaming a dependency API locally does not change that dependency. Recorded
 evidence keeps its original payload bytes when its containing path is renamed.
 A renamed historical record is not a new qualification result.
 
-POO slot bindings are lexical: a helper that produces a slot value must not
-share that slot identifier. For example, =collect-program-targets= computes
-the =program-targets= slot without recursively reading the slot itself.
+Computed POO slot bindings are lexical: inside a =self=-dependent slot body
+(=slot: expr=), a helper must not share that slot identifier. For already-known
+boundary values independent of =self= and =super=, capture them directly via
+=(slot)= or =(slot := expr)= instead of adding =-value= suffixes to local names.

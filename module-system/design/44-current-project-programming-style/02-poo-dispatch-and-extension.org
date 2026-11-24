@@ -66,6 +66,18 @@ accepts one transform expression. For extra arguments use
 =(flags => append '("--debug"))= or a unary functional combinator. See
 [[file:../../../docs/10-19-design/13-module-loading/13.35-haumea-and-poo-namespace-projection/03-projection-build-and-leaf-expression.org][13.35 leaf receiver and namespace scope]] and the native leaf/path controls.
 
+When a slot carries an already-known boundary value independent of =self= and
+=super= (POOF's =$slot=, [[https://github.com/metareflection/poof/blob/59cecf050c8f2fab480175278c439410f3151cd6/poof-code-only.rkt#L21-L48][POOF slot constructors]]), bind it through the constant
+slot path instead of renaming local variables with =-value= suffixes:
+
+- =slot-name= or =(slot-name)= captures a same-named lexical binding once;
+- =(slot-name := expression)= evaluates =expression= once in the surrounding
+  lexical scope before receiver bindings are installed (e.g.
+  =(.o (:: @ Prototype.) (identity := identity-value) (generation := generation-value))=).
+
+Reserve computed slot forms (=slot: expr=, ==>=, ===>.+=) for formulas that
+actually depend on =self= or =super=.
+
 * Dispatch ownership
 
 | Behavior shape | Owner |
