@@ -345,7 +345,15 @@ prelude: :gerbil/core
     (begin
       (when (memq ':load-modules body)
         (error "options belong inside a :load-modules window" source-path))
-      (values (list (parse-init-window body source-path)) #f))
+      (let (window (parse-init-window body source-path))
+        (with ([_ directory _ _ _ _ _ _ _] window)
+          (when (string? directory)
+            (let* ((base (path-strip-trailing-directory-separator
+                           (if source-path (path-directory source-path) (current-directory))))
+                   (root (path-strip-trailing-directory-separator (path-expand directory base))))
+              (unless (string=? root base)
+                (check-build-roots-disjoint! (list root))))))
+        (values (list window) #f)))
     (let ((windows (parse-init-windows body source-path))
           (names (make-hash-table)) (roots (make-hash-table))
           (bindings (make-hash-table-eq)))
