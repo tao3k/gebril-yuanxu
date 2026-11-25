@@ -119,13 +119,13 @@
           (lambda ()
             (make-fixture-workspace!
              root
-             "(import (only-in :tao3k/yuanxu/prelude yuanxu!))\n(yuanxu!\n  :load-modules \"./modules\" mode: auto mount: Fixture\n  (env))\n")
+             "(import (only-in :tao3k/yuanxu/prelude yuanxu!))\n(yuanxu!\n  :load-modules \"./modules\" mode: auto)\n")
             (let* ((view (yuanxu-load-modules (path-expand "init.ss" root)
                            build-selection: (.o modules: '(modules/durable modules/ai-agentic-context)
                                                 mounts: '())))
                    (graph (.ref view 'selected-graph))
                    (implied (.ref graph 'implied-features))
-                   (ctx-scope (.ref (.ref (.ref view 'modules) 'Fixture) 'ai-agentic-context)))
+                   (ctx-scope (.ref (.ref (.ref view 'modules) 'modules) 'ai-agentic-context)))
               (check (and (memq 'c4-fixture/modules/ai-agentic-context/interface/durable implied) #t) => #t)
               (check (.slot? ctx-scope 'durable-bridge) => #t)
               (check (.ref ctx-scope 'durable-bridge) => 'active-org-durable-bridge)))
