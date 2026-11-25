@@ -1022,7 +1022,13 @@
       (def (delegate)
         (fallback-to
           (lambda ()
-            (def scope (.ref (or (hash-get cache id) (resolve id)) 'scope))
+            ;; Module resolution runs native/source initializers that construct
+            ;; and revise their own objects (e.g. CLOS .defgeneric + .defmethod).
+            ;; Confine resolution reads like compiled-role.ss; keep the returned
+            ;; scope and delegated slot reads in fallback-to's dependency scope.
+            (def scope
+              (without-observation
+                (lambda () (.ref (or (hash-get cache id) (resolve id)) 'scope))))
             (for-each (lambda (slot)
                         (when (.slot? scope slot)
                           (error "reserved module leaf slot in business scope" id slot)))

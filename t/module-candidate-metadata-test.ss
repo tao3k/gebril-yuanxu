@@ -29,6 +29,20 @@
           (check-equal? (length (.get graph module-order)) 2)
           (.call view sources-current)
           (check-equal? (eq? graph (.get view selected-graph)) #t))))
+    (yuanxu-test-case "lazy module leaf with build role confines initializer scratch revisions"
+      (with-other-source
+        (lambda (root first _other)
+          (write-file (path-expand "init.ss" root)
+            "(yuanxu! :test-dir \"./t\" mode: explicit :custom (example) (other))")
+          (write-file (path-expand "build.ss" first)
+            "(.def Build defbuild-script: (.o spec: '()))")
+          (write-file (path-expand "config.ss" first)
+            "(import (only-in :clan/poo/object .o .slot? .put!)) (def Scratch (.o)) (.slot? Scratch 'identity) (.put! Scratch 'identity 'temporary) (def Greeting \"hello\") (export Greeting)"))
+        (lambda (_root _first _other view)
+          (def leaf (.get view modules custom example))
+          (check-equal? (.slot? leaf '__std-make-spec) #t)
+          (check-equal? (.get leaf greeting) "hello")
+          (.call view sources-current))))
     (yuanxu-test-case "policy and actual Contract edits cannot publish an earlier candidate"
       ;; Policy first: the default Contract remains unchanged for the second
       ;; schedule. Restoring a value does NOT restore its runtime revision.
