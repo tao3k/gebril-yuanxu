@@ -177,6 +177,7 @@ prelude: :gerbil/core
     "module-system/building/test-projection"
     "module-system/building/test-observation"
     "module-system/building/test-retention"
+    "module-system/building/dependency-packages"
     "module-system/building/interface"
     "module-system/building/source-package"
     "module-system/source/imports"

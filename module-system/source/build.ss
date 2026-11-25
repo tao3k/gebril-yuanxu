@@ -246,8 +246,32 @@
         (cond
          ((hash-key? by-path path)
           (let (old (hash-ref by-path path))
-            (unless (eq? kind (.ref old 'kind))
-              (error "conflicting build contributions" path (.ref old 'contributor) contributor))))
+            (cond
+             ((eq? kind (.ref old 'kind)) (void))
+             ((and (eq? 'publication (.ref old 'kind))
+                   (eq? kind 'source)
+                   (eq? compiler-identity (.ref old 'compiler-identity)))
+              ;; The selected Module already owns and guards its publication.
+              ;; An import of that same source adds a dependency, not a conflicting target.
+              (void))
+             ((and (eq? 'source (.ref old 'kind))
+                   (eq? kind 'publication)
+                   (eq? compiler-identity (.ref old 'compiler-identity)))
+              ;; A consumer encountered this Module's interface as a source dependency
+              ;; before the owner's publication was enrolled. Upgrade ownership cleanly
+              ;; to the Module's publication without duplicating entries.
+              (set! entry-construction-intact?
+                (and entry-construction-intact? (object-construction-current?)))
+              (let (entry (.o kind path compiler-identity input options owner contributor))
+                (set! entry-construction-intact?
+                  (and entry-construction-intact? (object-construction-current?)))
+                (hash-put! by-path path entry)
+                (hash-put! by-id compiler-identity entry)
+                (add-check! input)
+                (set! entry-values
+                  (map (lambda (existing) (if (eq? existing old) entry existing)) entry-values))))
+             (else
+              (error "conflicting build contributions" path (.ref old 'contributor) contributor)))))
          ((hash-key? by-id compiler-identity)
           (error "duplicate compiler identity in selected build Graph" compiler-identity path
                  (.ref (hash-ref by-id compiler-identity) 'path)))

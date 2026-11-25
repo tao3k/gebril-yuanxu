@@ -22,10 +22,9 @@ prelude: :gerbil/core
                                  make-source: (make-source #f))
   (with-build-input-path output action refuse source-roots '() make-source))
 
-(def (call-with-build-source-fallbacks roots action)
-  (with-build-input-path #f action
-    (lambda () (error "source projection changed its compiler input context"))
-    '() roots #f))
+(def (call-with-build-source-fallbacks roots action
+       (refuse (lambda () (error "source projection changed its compiler input context"))))
+  (with-build-input-path #f action refuse '() roots #f))
 
 (def (with-build-input-path output action refuse source-roots source-fallbacks make-source)
   (def previous (load-path))

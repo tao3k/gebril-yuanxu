@@ -12,7 +12,8 @@
         (only-in :tao3k/yuanxu/module-system/building/products
                  build-output-directory
                  current-build-source-directory call-with-selected-output-lock)
-        (only-in :gerbil/expander core-import-module core-read-module/sexp expander-context-id)
+        (only-in :gerbil/expander core-import-module core-read-module/sexp
+                 core-library-package-plist expander-context-id)
         (only-in :std/list/list filter-map delete-duplicates/hash)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/object/slot-layout make-slot-cache)
@@ -39,6 +40,10 @@
   (module-binding-action "tao3k/yuanxu/module-system/interface" 'yuanxu-load-modules))
 (def build-projector
   (module-binding-action "tao3k/yuanxu/module-system/building/build-projection" 'yuanxu-project-source-spec))
+(def dependency-compiler
+  (module-binding-action "tao3k/yuanxu/module-system/building/dependency-packages"
+    'ensure-dependency-packages-compiled!))
+(def current-build-clean-phase? (make-parameter #f))
 ;; Source discovery is demanded separately from compilation/signing.
 (def test-source-projector
   (module-binding-action "tao3k/yuanxu/module-system/source/build" 'module-test-source-spec))
@@ -204,28 +209,46 @@
             add-load-path?: #f)
           (action))
         refuse-input-context! source-roots: (list root))))
+  (def (dependency-compile-command?)
+    (and (not (current-build-clean-phase?))
+         (let (args (let (cmd (command-line)) (if (pair? cmd) (cdr cmd) '())))
+           (not (or (equal? args '("clean")) (equal? args '("spec")))))))
+  (def (package-has-depends?)
+    (let (plist (with-catch (lambda (_) '())
+                  (lambda () (core-library-package-plist root #t))))
+      (and (list? plist) (pair? (pgetq depend: plist #f)) #t)))
+  (def (ensure-dependencies! (module-ids #f) (mount-names #f) (package-roots? #t))
+    (when (and (dependency-compile-command?) (package-has-depends?))
+      (dependency-compiler
+        (list root init-file declaration (build-output-directory) refuse-input-context!
+              module-ids mount-names package-roots?))))
   ;; A consumer may add its native entry targets to the same source epoch
   ;; used by the namespace and test projections.
   (def (prepare-build (retained '()) (command #f))
+    (when (not command)
+      (ensure-dependencies! #f #f (pair? retained)))
     (with-input-context #f
       (lambda ()
-        (module-source-measure-operation 'build-projection
+        (call-with-build-source-fallbacks (list root)
           (lambda ()
-            (call-with-build-expansion-accounting 'module-projection
+            (module-source-measure-operation 'build-projection
               (lambda ()
-                (let* ((root (path-directory init-file))
-                       (script (package-build-script-path root))
-                       (kind (module-source-type script)))
-                  (when (and kind (not (eq? kind 'regular)))
-                    (error "package build script must be a regular source" script))
-                  (build-projector
-                    (list (if command
-                            (begin
-                              (admit-init-declaration! (module-source-read init-file))
-                              (module-linker
-                                (list init-file build-selection: command)))
-                            (selected!))
-                          retained root (if kind script init-file)))))))))))
+                (call-with-build-expansion-accounting 'module-projection
+                  (lambda ()
+                    (let* ((root (path-directory init-file))
+                           (script (package-build-script-path root))
+                           (kind (module-source-type script)))
+                      (when (and kind (not (eq? kind 'regular)))
+                        (error "package build script must be a regular source" script))
+                      (build-projector
+                        (list (if command
+                                (begin
+                                  (admit-init-declaration! (module-source-read init-file))
+                                  (module-linker
+                                    (list init-file build-selection: command)))
+                                (selected!))
+                              retained root (if kind script init-file)))))))))
+          refuse-input-context!))))
   (def (prepare-selection module-ids mount-names (package-roots? #f))
     (prepare-build (if package-roots? package-build-roots '())
       (.o modules: module-ids mounts: mount-names)))
@@ -234,6 +257,7 @@
     ;; origins ahead of the output library for its pre- and post-build checks.
     (with-input-context (build-output-directory)
       (lambda ()
+        (ensure-dependencies! module-ids mount-names package-roots?)
         (def build
           (parameterize
               ((current-module-ffi-build
@@ -257,11 +281,12 @@
           (lambda () (action source-root))
           refuse-input-context! make-source: source-root))))
   (def (clean-selection module-ids mount-names clean package-roots?: (package-roots? #f))
-    (with-input-context (build-output-directory)
-      (lambda ()
-        (def build (prepare-selection module-ids mount-names package-roots?))
-        (clean-build build
-          (lambda (source-root) (clean (.get build std-make-spec) source-root))))))
+    (parameterize ((current-build-clean-phase? #t))
+      (with-input-context (build-output-directory)
+        (lambda ()
+          (def build (prepare-selection module-ids mount-names package-roots?))
+          (clean-build build
+            (lambda (source-root) (clean (.get build std-make-spec) source-root)))))))
   ;; Reuse the Make selection and its admitted leaf scopes.
   (def (selected-link-entries)
     (call-with-build-source-fallbacks (list (path-directory init-file))
@@ -335,11 +360,15 @@
         ;; Admit the same source owners before native Make changes its .ssi files.
         (def library (symbol->string (expander-context-id (core-import-module init-file))))
         ;; Linking can demand selection before Make constructs its spec.
-        ;; Resolve declared build roots in the same input context.
+        ;; Resolve declared build roots and package-local sources in the same
+        ;; input context, matching build-spec on cold builds.
         (defvalues (selection targets)
           (with-input-context #f
             (lambda ()
-              (values (.get (selected!) selected-graph) (selected-link-targets library)))))
+              (call-with-build-source-fallbacks (list root)
+                (lambda ()
+                  (values (.get (selected!) selected-graph) (selected-link-targets library)))
+                refuse-input-context!))))
         (def output (build-output-directory))
         (def (finish flags)
           (for-each (lambda (target)
@@ -361,6 +390,7 @@
                     (lambda () (finish flags)))))))))
       (match args
         ((or [] ["compile" . _])
+         (ensure-dependencies! #f #f #t)
          (with-targets options
            (lambda (target destination flags)
              (create-directory* destination)
@@ -368,8 +398,12 @@
                (list (.get target entry) destination (.get target imports)
                  gsc-options: flags)))))
         (["clean"]
-         (with-targets void (lambda (_target destination _flags)
-                              (program-cleaner (list destination))) #t))
+         (parameterize ((current-build-clean-phase? #t))
+           (with-targets void (lambda (_target destination _flags)
+                                (program-cleaner (list destination))) #t)))
+        (["spec"]
+         (parameterize ((current-build-clean-phase? #t))
+           (run-build)))
         (else (run-build)))))
   ;; The generated read-only identifier calls this accessor, as the existing
   ;; Build role binding does. Reflection receives the actual namespace object.
@@ -383,7 +417,8 @@
             (def spec (.ref/inline build source-spec-site))
             (.call build .admit-spec spec)
             (.call build .prepare-compiler-contexts)
-            spec)))))
+            spec)
+          refuse-input-context!))))
   (def window-build-protocol
     (.o fallback-slot-names: (lambda (_window names) (remq '__std-make-spec names))))
   (def (window-namespace mount)

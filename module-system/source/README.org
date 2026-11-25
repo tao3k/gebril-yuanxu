@@ -64,6 +64,43 @@ The consuming init's =std-make-spec= contains the selected targets from both
 packages in dependency order. Gerbil resolves the registered owner and
 compiles the targets with their original library identities.
 
+When a downstream package only consumes ordinary Gerbil libraries from an
+upstream dependency declared in =gerbil.pkg= (=depend:=) via plain
+=(import :upstream-pkg/...)=, it does NOT need a redundant
+=:load-modules (from: ...)= window or hand-maintained sentinel lists in
+=build.ss=. Yuanxu's two-stage cross-package prerequisite compiler in
+=module-system/building/dependency-packages.ss= keeps each package's
+=std-make-spec= and =clean= strictly single-package pure:
+
+1. *Stage 1 (Native import discovery and freshness analysis)*: During compile
+   actions (=.with-link= compile, =.compile-selection=, and default
+   =defbuild-script= compile), Yuanxu walks declared =gerbil.pkg= =depend:=
+   roots under active =pkg/= stores and reads selected source files via
+   Gerbil's native =core-read-module/sexp= reader (without evaluating module
+   bodies, executing =##c-declare= FFI forms, or constructing business
+   scopes). It groups only missing or transitively stale targets by external
+   dependency package root in topological package and module order. Already
+   compiled fresh =.ssi= libraries are reused directly with zero work.
+2. *Stage 2 (Per-package isolated =std/make=)*: Before running the consuming
+   package's own projection and =std-make-spec=, Yuanxu invokes native
+   =:std/make= independently per external dependency package that has missing
+   or stale targets, passing that dependency package's own =srcdir:= and
+   =gerbil.pkg= strictly inside =call-with-build-input-path= and
+   =call-with-selected-output-lock=. Unimported modules in upstream packages
+   are never compiled, and =clean= / =spec= never trigger dependency builds or
+   delete upstream artifacts.
+
+Within a single selected build graph, if one selected Module imports another
+selected Module's =interface.ss= as a Gerbil source dependency, =source/build.ss=
+reconciles the ='source= edge and the owner's ='publication= entry when path
+and compiler identity match (in either traversal order), avoiding false
+=conflicting build contributions= errors while still rejecting genuine
+identity or kind conflicts. See
+[[file:../../t/module-build-cross-package-test.ss][the cross-package demand build suite]]
+for cold/FFI compilation, hot reuse, stale incremental rebuild, transitive
+package chains, clean isolation, and ='source=/='publication= coexistence
+verification.
+
 Each window uses =t/= relative to the consuming declaration file by default.
 Set =:test-dir= inside a window to use another relative directory.
 Qualification discovery follows
