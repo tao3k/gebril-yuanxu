@@ -914,13 +914,21 @@
        (lambda ()
          (def roots (.ref context-value 'selected))
          (def selected (hash-get graphs roots))
-         (def sroots (selection-roots))
+         (def cached-loader-roots
+           (and (positive? (hash-length graphs))
+                (without-observation
+                  (lambda ()
+                    (and (.slot? context-value 'loader-roots)
+                         (.ref/cached context-value 'loader-roots))))))
          (def selected-by-loader
-           (and (not (equal? sroots roots)) (hash-get graphs sroots)))
+           (and cached-loader-roots
+                (not (equal? cached-loader-roots roots))
+                (hash-get graphs cached-loader-roots)))
          (def graph
            (cond
             ((and selected (memq id roots)) (linked-selection-graph selected))
-            ((and selected-by-loader (memq id sroots)) (linked-selection-graph selected-by-loader))
+            ((and selected-by-loader (memq id cached-loader-roots))
+             (linked-selection-graph selected-by-loader))
             ((and (.slot? context-value 'feature-roots)
                   (or (.slot? context-value 'compiled-leaves)
                       (and (not realization) candidate-read paired-context-current?
