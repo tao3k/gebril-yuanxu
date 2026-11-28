@@ -12,7 +12,7 @@ prelude: :gerbil/core
   depth: 0
   .when: (lambda (_facts) #t))
 
-(defstruct hook-entry (depth index events condition handler))
+(defstruct hook-entry (depth index events condition handler) final: #t)
 
 (def (admit-hook name hook index)
   (unless (and (object? hook) (andmap (cut .slot? hook <>) '(on depth .when .run))
@@ -26,10 +26,12 @@ prelude: :gerbil/core
                    (.get hook .when) (.get hook .run)))
 
 (def (hook-before? left right)
-  (let ((left-depth (hook-entry-depth left)) (right-depth (hook-entry-depth right)))
-    (or (< left-depth right-depth)
-        (and (= left-depth right-depth)
-             (< (hook-entry-index left) (hook-entry-index right))))))
+  (using ((left :- hook-entry)
+          (right :- hook-entry))
+    (let ((left-depth left.depth) (right-depth right.depth))
+      (or (< left-depth right-depth)
+          (and (= left-depth right-depth)
+               (< left.index right.index))))))
 
 (def (make-module-hooks declarations)
   (unless (object? declarations) (error "module hooks require named POO slots"))
@@ -41,8 +43,11 @@ prelude: :gerbil/core
         (lambda (event facts initial)
           (unless (symbol? event) (error "module hook event must be a symbol" event))
           (foldl (lambda (entry result)
-                   (if (and (memq event (hook-entry-events entry))
-                            ((hook-entry-condition entry) facts))
-                     ((hook-entry-handler entry) facts result)
-                     result))
+                   (using (entry :- hook-entry)
+                     (let ((cond-fn entry.condition)
+                           (run-fn entry.handler))
+                       (if (and (memq event entry.events)
+                                (cond-fn facts))
+                         (run-fn facts result)
+                         result))))
                  initial ordered)))))

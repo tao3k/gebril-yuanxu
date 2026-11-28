@@ -137,7 +137,7 @@
 
 ;; Retained job results are authoritative; the exported record is not an issuer.
 ;; Keys are exact build Graph receivers, not names or mutable disk labels.
-(defstruct issued-build (generation identities inputs libdir files record record-digest approval-current package-current) transparent: #f)
+(defstruct issued-build (generation identities inputs libdir files record record-digest approval-current package-current) transparent: #f final: #t)
 ;; Approval guards retain the selected external Source, not this Graph. A saved
 ;; publication keeps its own receiver alive; guards must not capture that key.
 (def issued (make-hash-table-eq weak-keys: #t))

@@ -8,7 +8,8 @@ prelude: :gerbil/core
 ;; owned libraries. Gerbil resolves their imports when compiling. Selected
 ;; Module targets come from init.exports.
 (def core-spec
-  '("prelude"
+  '("lang"
+    "prelude"
     "core-spec"
     "ops/config"
     "ops/types"

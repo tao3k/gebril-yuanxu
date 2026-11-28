@@ -3,7 +3,11 @@
         (only-in :clan/poo/object .o .cc .get .ref .set!)
         (only-in :clan/poo/type Type. define-type element? validate)
         (only-in :tao3k/yuanxu/types/contracts YuanxuObjectContract.
-                 yuanxu-classification-evidence yuanxu-validation-evidence))
+                 yuanxu-classification-evidence yuanxu-validation-evidence
+                 yuanxu-gerbil-type-contract yuanxu-contract-admit
+                 yuanxu-validation-evidence-accepted?
+                 ClassType InterfaceType Nullable
+                 type-gerbil-descriptor type-predicate type-contract-validator))
 
 (export contract-membership-test)
 
@@ -67,4 +71,27 @@
       (check-equal? calls 1)
       (check-equal? (.get (validate normalized raw) port) 5433)
       (check-equal? (.get raw port) 5432)
-      (check-equal? calls 2))))
+      (check-equal? calls 2))
+    (test-case "Gerbil v0.19 class/interface/nullable bridge integrates with Yuanxu contracts"
+      (defstruct sample-endpoint (host port) final: #t)
+      (interface SampleProbe (probe-host))
+      (defmethod {probe-host sample-endpoint}
+        (lambda (self) (sample-endpoint-host self)))
+      (def ep (make-sample-endpoint "localhost" 5432))
+      (def class-contract (yuanxu-gerbil-type-contract 'test/endpoint sample-endpoint::t))
+      (def iface-contract (yuanxu-gerbil-type-contract 'test/probe SampleProbe::interface))
+      (def nullable-contract (yuanxu-gerbil-type-contract 'test/nullable-endpoint (Nullable (ClassType sample-endpoint::t))))
+      (check-equal? (type-gerbil-descriptor class-contract) sample-endpoint::t)
+      (check-equal? (type-gerbil-descriptor iface-contract) SampleProbe::interface)
+      (check-equal? (yuanxu-validation-evidence-accepted? (yuanxu-contract-admit class-contract ep #f)) #t)
+      (check-equal? (yuanxu-validation-evidence-accepted? (yuanxu-contract-admit class-contract "bad" #f)) #f)
+      (check-equal? (yuanxu-validation-evidence-accepted? (yuanxu-contract-admit iface-contract ep #f)) #t)
+      (check-equal? (yuanxu-validation-evidence-accepted? (yuanxu-contract-admit iface-contract 42 #f)) #f)
+      (check-equal? (yuanxu-validation-evidence-accepted? (yuanxu-contract-admit nullable-contract #f #f)) #t)
+      (check-equal? (yuanxu-validation-evidence-accepted? (yuanxu-contract-admit nullable-contract ep #f)) #t)
+      (check-equal? (yuanxu-validation-evidence-accepted? (yuanxu-contract-admit nullable-contract "bad" #f)) #f)
+      (def pred (type-predicate class-contract))
+      (check-equal? (pred ep) #t)
+      (check-equal? (pred #f) #f)
+      (def validator (type-contract-validator class-contract))
+      (check-equal? (eq? (validator ep) ep) #t))))

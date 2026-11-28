@@ -66,7 +66,8 @@
    value-kind
    polarity
    metadata)
-  transparent: #t)
+  transparent: #t
+  final: #t)
 
 ;; : (-> Symbol Symbol Symbol Symbol Symbol Symbol Symbol [Alist] YuanxuTypeFactContract)
 (def (yuanxu-type-fact key kind owner name source-slot value-kind polarity
@@ -83,15 +84,17 @@
 
 ;; : (-> YuanxuTypeFactContract Alist)
 (def (yuanxu-type-fact-contract->alist fact)
-  (list
-   (cons 'key (yuanxu-type-fact-contract-key fact))
-   (cons 'kind (yuanxu-type-fact-contract-kind fact))
-   (cons 'owner (yuanxu-type-fact-contract-owner fact))
-   (cons 'name (yuanxu-type-fact-contract-name fact))
-   (cons 'source-slot (yuanxu-type-fact-contract-source-slot fact))
-   (cons 'value-kind (yuanxu-type-fact-contract-value-kind fact))
-   (cons 'polarity (yuanxu-type-fact-contract-polarity fact))
-   (cons 'metadata (yuanxu-type-fact-contract-metadata fact))))
+  (let (key (yuanxu-type-fact-contract-key fact))
+    (using (fact :- yuanxu-type-fact-contract)
+      (list
+       (cons 'key key)
+       (cons 'kind fact.kind)
+       (cons 'owner fact.owner)
+       (cons 'name fact.name)
+       (cons 'source-slot fact.source-slot)
+       (cons 'value-kind fact.value-kind)
+       (cons 'polarity fact.polarity)
+       (cons 'metadata fact.metadata)))))
 
 ;; yuanxu-lean-fact-contract
 ;;   : (-> Symbol Symbol Symbol Symbol Symbol Symbol Alist YuanxuLeanFactContract)
@@ -107,7 +110,8 @@
    source-slot
    polarity
    metadata)
-  transparent: #t)
+  transparent: #t
+  final: #t)
 
 ;; : (-> Symbol Symbol Symbol Symbol Symbol Symbol [Alist] YuanxuLeanFactContract)
 (def (yuanxu-lean-fact key kind lean-owner lean-name source-slot polarity
@@ -123,14 +127,16 @@
 
 ;; : (-> YuanxuLeanFactContract Alist)
 (def (yuanxu-lean-fact-contract->alist fact)
-  (list
-   (cons 'key (yuanxu-lean-fact-contract-key fact))
-   (cons 'kind (yuanxu-lean-fact-contract-kind fact))
-   (cons 'lean-owner (yuanxu-lean-fact-contract-lean-owner fact))
-   (cons 'lean-name (yuanxu-lean-fact-contract-lean-name fact))
-   (cons 'source-slot (yuanxu-lean-fact-contract-source-slot fact))
-   (cons 'polarity (yuanxu-lean-fact-contract-polarity fact))
-   (cons 'metadata (yuanxu-lean-fact-contract-metadata fact))))
+  (let (key (yuanxu-lean-fact-contract-key fact))
+    (using (fact :- yuanxu-lean-fact-contract)
+      (list
+       (cons 'key key)
+       (cons 'kind fact.kind)
+       (cons 'lean-owner fact.lean-owner)
+       (cons 'lean-name fact.lean-name)
+       (cons 'source-slot fact.source-slot)
+       (cons 'polarity fact.polarity)
+       (cons 'metadata fact.metadata)))))
 
 ;; yuanxu-contract-required-polarity
 ;;   : (-> Boolean Symbol)
