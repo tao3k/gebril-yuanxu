@@ -65,12 +65,64 @@
         (lambda (port)
           (display "prelude: :gerbil/core\n" port)
           (write '(export core-spec) port) (newline port)
-          ;; Both fixtures compile the prelude and its local imports. Gerbil
-          ;; orders those targets before checking fresh-process reuse.
+          ;; Derive the minimal bootstrap closure from prelude.ss's actual local
+          ;; imports instead of hardcoding internal helper module paths.
+          (def (local-import-targets root roots)
+            (def seen (make-hash-table))
+            (def out '())
+            (def (read-forms file)
+              (call-with-input-file file
+                (lambda (port)
+                  (let loop ((acc '()))
+                    (let (datum (read port))
+                      (if (eof-object? datum) (reverse acc) (loop (cons datum acc))))))))
+            (def (extract-spec spec base)
+              (cond
+               ((string? spec)
+                (let* ((with-ext (if (string-suffix? ".ss" spec) spec (string-append spec ".ss")))
+                       (full (path-normalize (path-expand with-ext base)))
+                       (prefix (string-append
+                                 (path-strip-trailing-directory-separator (path-normalize root))
+                                 "/")))
+                  (if (string-prefix? prefix full)
+                    (list (path-strip-extension (substring full (string-length prefix) (string-length full))))
+                    '())))
+               ((symbol? spec)
+                (let (s (symbol->string spec))
+                  (if (string-prefix? ":tao3k/yuanxu/" s)
+                    (list (substring s (string-length ":tao3k/yuanxu/") (string-length s)))
+                    '())))
+               ((pair? spec)
+                (case (car spec)
+                  ((only-in except-in except-out rename-in prefix-in)
+                   (if (pair? (cdr spec)) (extract-spec (cadr spec) base) '()))
+                  ((for-syntax for-template runtime: spec-in)
+                   (apply append (map (cut extract-spec <> base) (cdr spec))))
+                  ((phi:)
+                   (if (and (pair? (cdr spec)) (pair? (cddr spec)))
+                     (apply append (map (cut extract-spec <> base) (cddr spec)))
+                     '()))
+                  (else '())))
+               (else '())))
+            (def (walk target)
+              (unless (hash-key? seen target)
+                (hash-put! seen target #t)
+                (let (file (path-expand (string-append target ".ss") root))
+                  (when (file-exists? file)
+                    (let ((base (path-directory file)))
+                      (for-each
+                        (lambda (form)
+                          (when (and (pair? form) (eq? (car form) 'import))
+                            (for-each
+                              (lambda (spec)
+                                (for-each walk (extract-spec spec base)))
+                              (cdr form))))
+                        (read-forms file)))
+                    (set! out (cons target out))))))
+            (for-each walk roots)
+            (reverse out))
           (def bootstrap
-            '("prelude" "lang" "core-spec" "module-system/selection/init-syntax"
-              "module-system/source/module-binding"
-              "module-system/source/autoload-declarations"))
+            (local-import-targets fixture-root '("prelude" "core-spec")))
           (def targets
             (if sample bootstrap
               (append bootstrap
