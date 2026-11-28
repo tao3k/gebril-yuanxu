@@ -96,7 +96,8 @@
 ;; canonical plan order through ordinal insertion.
 (defstruct yuanxu-frontier-state
   (ready dependents remaining ordinals)
-  transparent: #t)
+  transparent: #t
+  final: #t)
 
 (def (yuanxu-frontier-state-ready-ids state)
   (yuanxu-frontier-state-ready state))
@@ -138,25 +139,24 @@
    (else (cons (car ids) (yuanxu-frontier-remove id (cdr ids))))))
 
 (def (yuanxu-frontier-state-complete! state completed-id)
-  (let ((remaining (yuanxu-frontier-state-remaining state))
-        (ordinals (yuanxu-frontier-state-ordinals state)))
-    (let loop
-        ((dependents
-          (reverse
-           (or (hash-get
-                (yuanxu-frontier-state-dependents state) completed-id)
-               '())))
-         (ready
-          (yuanxu-frontier-remove
-           completed-id (yuanxu-frontier-state-ready state))))
-      (if (null? dependents)
-        (begin
-          (yuanxu-frontier-state-ready-set! state ready)
-          state)
-        (let* ((dependent-id (car dependents))
-               (next-count (- (hash-get remaining dependent-id) 1)))
-          (hash-put! remaining dependent-id next-count)
-          (loop (cdr dependents)
-                (if (zero? next-count)
-                  (yuanxu-frontier-insert dependent-id ready ordinals)
-                  ready)))))))
+  (let (remaining (yuanxu-frontier-state-remaining state))
+    (using (state :- yuanxu-frontier-state)
+      (let (ordinals state.ordinals)
+        (let loop
+            ((dependents
+              (reverse
+               (or (hash-get state.dependents completed-id)
+                   '())))
+             (ready
+              (yuanxu-frontier-remove completed-id state.ready)))
+          (if (null? dependents)
+            (begin
+              (set! state.ready ready)
+              state)
+            (let* ((dependent-id (car dependents))
+                   (next-count (- (hash-get remaining dependent-id) 1)))
+              (hash-put! remaining dependent-id next-count)
+              (loop (cdr dependents)
+                    (if (zero? next-count)
+                      (yuanxu-frontier-insert dependent-id ready ordinals)
+                      ready)))))))))

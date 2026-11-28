@@ -8,7 +8,8 @@ prelude: :gerbil/core
 ;; owned libraries. Gerbil resolves their imports when compiling. Selected
 ;; Module targets come from init.exports.
 (def core-spec
-  '("prelude"
+  '("lang"
+    "prelude"
     "core-spec"
     "ops/config"
     "ops/types"
@@ -157,6 +158,11 @@ prelude: :gerbil/core
     "module-system/source/projection"
     "module-system/source/init"
     "module-system/source/directory"
+    "module-system/convergence/types"
+    "module-system/convergence/combiners"
+    "module-system/convergence/resolver"
+    "module-system/convergence/bridge"
+    "module-system/convergence/func"
     "module-system/source/selection"
     "module-system/building/package"
     "module-system/building/products"
@@ -172,6 +178,7 @@ prelude: :gerbil/core
     "module-system/building/test-projection"
     "module-system/building/test-observation"
     "module-system/building/test-retention"
+    "module-system/building/dependency-packages"
     "module-system/building/interface"
     "module-system/building/source-package"
     "module-system/source/imports"

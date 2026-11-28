@@ -19,7 +19,7 @@
                  ModuleBuildContract module-build-ffi-targets resolve-make-target-inputs)
         (only-in :tao3k/yuanxu/module-system/building/products
                  build-output-directory require-build-interface! call-with-selected-output-lock)
-        (only-in :clan/poo/read-route require-read-route!)
+        (only-in :clan/poo/object/read-route require-read-route!)
         (only-in :clan/poo/object .o .+ .ref .slot? object?)
         (only-in :tao3k/yuanxu/module-system/source/collection
                  yuanxu-module-source-collection-optional-entrypoint)

@@ -17,7 +17,7 @@ construction results use defstruct, not another public configuration model.
 CoreObjectAdmissionContract. below is a documentation-local name for the older
 Core prototype-aware admission base, currently exported as
 YuanxuObjectContract. It is not the public ObjectContract. value Type
-from :clan/poo/object-contract. The older descriptor carries proto and recursive
+from :clan/poo/types/object-contract. The older descriptor carries proto and recursive
 Core admission responsibilities; the public Type carries value responsibilities
 and validate/diagnose. This proposal does not add an alias export, rename the
 implementation or qualify the construction kernel. Its source remains in

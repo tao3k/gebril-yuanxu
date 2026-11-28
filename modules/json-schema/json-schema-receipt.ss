@@ -64,7 +64,8 @@
    type-facts
    lean-fact-contracts
    runtime-executed)
-  transparent: #t)
+  transparent: #t
+  final: #t)
 
 ;; : (-> Alist Symbol Value)
 (def (yuanxu-json-schema-option options key default-value)

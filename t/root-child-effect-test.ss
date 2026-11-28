@@ -1,6 +1,6 @@
 ;;; Real selected service publication, with one test-only package callback effect.
 (import :std/test :clan/poo/object
-        (prefix-in :clan/poo/declarative-metadata metadata.)
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.)
         (only-in :std/error Error? Error-message)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :tao3k/yuanxu/observability/testing-fixture with-yuanxu-fixture)

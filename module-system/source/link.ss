@@ -3,10 +3,10 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Generation-local linking over admitted source capabilities. The filesystem source adapter remains separate from runtime loading.
 (import (only-in :std/list/list delete-duplicates/hash foldl)
-        (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
-        (only-in :clan/poo/slot-observation without-observation %slot-read-active?
+        (only-in :clan/poo/object/prototype-map prototype-map prototype-map-ref prototype-map-put)
+        (only-in :clan/poo/object/slot-observation without-observation %slot-read-active?
                  slot-read-observers-compatible?)
-        (only-in :clan/poo/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/object/read-projection owned-read-function-scope?)
         (runtime: :clan/poo/object)
         :tao3k/yuanxu/module-system/source/objects
         :tao3k/yuanxu/module-system/source/publication
@@ -77,6 +77,10 @@
   (module-binding-action "tao3k/yuanxu/module-system/source/build" 'module-build-package-source-inspector))
 (def publication-reader-producer
   (module-binding-action "tao3k/yuanxu/module-system/source/reader" 'module-publication-reader))
+(def graph-convergence-runner
+  (module-binding-action "tao3k/yuanxu/module-system/convergence/bridge" 'converge-selected-graph))
+(def graph-runtime-overlay-runner
+  (module-binding-action "tao3k/yuanxu/module-system/convergence/bridge" 'apply-graph-runtime-overlay))
 (def (make-publication-reader)
   ;; The linker can enumerate or use a supplied reader without importing
   ;; the native Reader. reader-ref owns its independent entry and return.
@@ -217,13 +221,16 @@
       (unless (equal? (.ref declaration (car row)) (cdr row))
         (error "compiled Feature declaration changed" id (car row)))) expected)
   (.cc declaration 'feature-id id 'owner-module-id qualified
-    'requires (car constraints) 'optional-requires (cadr constraints) 'conflicts (caddr constraints)))
+    'requires (car constraints) 'optional-requires (cadr constraints) 'conflicts (caddr constraints)
+    'implied-modules (if (pair? (cdddr constraints)) (cadddr constraints) '())))
 
 ;; A compiler publication supplies native bindings, not filenames or a reader.
 ;; Keep dependency linking, Feature refinement and value Contracts in the same
 ;; linker as source consumption. Only the source acquisition capability differs.
 (def (module-program-namespace identity publications decision-rows namespace-rows
-                               (module-order #f))
+                               (module-order #f)
+                               global-profiles: (g-profiles '())
+                               module-profiles: (m-profiles '()))
   (def ids (or module-order (.all-slots publications)))
   (def generation (symbol->string identity))
   (def signed-feature-roots (map car (filter (lambda (row) (pair? (cdr row))) decision-rows)))
@@ -232,9 +239,14 @@
         feature-roots: signed-feature-roots
         intent:
         (.o mode: 'explicit
+            global-profiles: g-profiles
             decisions: (map (lambda (row)
-                              (.o identity: (car row)
-                                  selection: (.o selection-flags: (cdr row)))) decision-rows))
+                              (let* ((rid (car row))
+                                     (mp (assq rid m-profiles)))
+                                (.o identity: rid
+                                    profiles: (if mp (cdr mp) '())
+                                    selection: (.o selection-flags: (cdr row)))))
+                            decision-rows))
         current?: (lambda (requested) (equal? requested generation))
         locate:
         (lambda (id)
@@ -262,7 +274,10 @@
                            (else (error "invalid compiled Module Feature inventory" id))))
           (unless (equal? names (.all-slots (.ref descriptor 'features)))
             (error "compiled Module Feature inventory changed" id))
-          (.cc value 'identity id 'features (.ref descriptor 'features)))))
+          (if (and (.slot? descriptor 'implied-features) (pair? (.ref descriptor 'implied-features)))
+            (.cc value 'identity id 'features (.ref descriptor 'features)
+                 'implied-features (.ref descriptor 'implied-features))
+            (.cc value 'identity id 'features (.ref descriptor 'features))))))
   (def selection (yuanxu-load-modules context))
   (if module-order selection (.ref selection 'modules)))
 
@@ -899,9 +914,21 @@
        (lambda ()
          (def roots (.ref context-value 'selected))
          (def selected (hash-get graphs roots))
+         (def cached-loader-roots
+           (and (positive? (hash-length graphs))
+                (without-observation
+                  (lambda ()
+                    (and (.slot? context-value 'loader-roots)
+                         (.ref/cached context-value 'loader-roots))))))
+         (def selected-by-loader
+           (and cached-loader-roots
+                (not (equal? cached-loader-roots roots))
+                (hash-get graphs cached-loader-roots)))
          (def graph
            (cond
             ((and selected (memq id roots)) (linked-selection-graph selected))
+            ((and selected-by-loader (memq id cached-loader-roots))
+             (linked-selection-graph selected-by-loader))
             ((and (.slot? context-value 'feature-roots)
                   (or (.slot? context-value 'compiled-leaves)
                       (and (not realization) candidate-read paired-context-current?
@@ -995,7 +1022,13 @@
       (def (delegate)
         (fallback-to
           (lambda ()
-            (def scope (.ref (or (hash-get cache id) (resolve id)) 'scope))
+            ;; Module resolution runs native/source initializers that construct
+            ;; and revise their own objects (e.g. CLOS .defgeneric + .defmethod).
+            ;; Confine resolution reads like compiled-role.ss; keep the returned
+            ;; scope and delegated slot reads in fallback-to's dependency scope.
+            (def scope
+              (without-observation
+                (lambda () (.ref (or (hash-get cache id) (resolve id)) 'scope))))
             (for-each (lambda (slot)
                         (when (.slot? scope slot)
                           (error "reserved module leaf slot in business scope" id slot)))
@@ -1082,6 +1115,17 @@
         (let (selection (resolve-linked-selection (selection-roots)))
           (set! init-selection selection)
           (linked-selection-graph selection))
+        activation-receipts:
+        (.ref selected-graph 'activation-receipts)
+        convergence:
+        (graph-convergence-runner (list selected-graph))
+        .converge-profiles:
+        (lambda (global-profiles: (gp #f) module-profiles: (mp #f))
+          (graph-convergence-runner
+           (list selected-graph global-profile-registry: gp module-profile-registry: mp)))
+        .apply-runtime-overlay:
+        (lambda (assembly-result runtime-slot-updates)
+          (graph-runtime-overlay-runner (list selected-graph assembly-result runtime-slot-updates)))
         selected-records:
         (let* ((roots (selection-roots)) (graph (resolve-selection-graph roots)))
           (map (lambda (id) (link id '() graph)) roots))

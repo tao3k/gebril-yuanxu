@@ -11,8 +11,11 @@ projection are named pure functions.  Use Gerbil iteration, SRFI folds and
 standard hash/set operations when they improve clarity or complexity.  Keep
 explicit recursion where accumulator order or hot-path allocation is clearer.
 
-Private positional traversal state may use a small =defstruct=.  Public
-extension state remains POO.  Alists are allowed only at a final wire,
+Private positional traversal state may use a small =defstruct=.  Seal closed
+leaf =defstruct= / =defclass= definitions with =final: #t= so Gerbil v0.19
+compiles slot access to fixed-offset =##structure-ref=; leave base structs
+non-final whenever downstream subtypes exist (such as =$computed-slot-spec=).
+Public extension state remains POO.  Alists are allowed only at a final wire,
 receipt or diagnostic projection after the owning object is known.
 
 Read the routing key and contributor before invoking author-supplied schema

@@ -3,7 +3,7 @@
 ;;; The resolver is captured once by an admitted private wrapper, never a user
 ;;; purity flag or an alternate cache. POO owns all delayed role values.
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/prototype-map prototype-map)
+        (only-in :clan/poo/object/prototype-map prototype-map)
         (only-in :gerbil/expander datum->syntax eval-syntax resolve-identifier
                  current-expander-context expander-context-id
                  module-context? module-context-path make-top-context

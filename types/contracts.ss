@@ -9,16 +9,18 @@
 
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/type define-type Type Type. Bool Object element? TypeError? validate
-                 raise-type-error Record Symbol List)
+                 raise-type-error Record Symbol List
+                 ClassType. ClassType InterfaceType. InterfaceType Nullable. Nullable
+                 type-gerbil-descriptor type-predicate type-contract-validator)
         (only-in :clan/poo/mop .defgeneric Slot instance prototype-instance?
                  object-precedence-ready? object-find-in-precedence
                  object-direct-slot-specification
                  object-direct-protocol?)
-        (only-in :clan/poo/slot-observation %slot-read-active?)
-        (only-in :clan/poo/object-contract checked-action)
+        (only-in :clan/poo/object/slot-observation %slot-read-active?)
+        (only-in :clan/poo/types/object-contract checked-action)
         (only-in :std/error Error-irritants)
         (only-in :std/list/list every)
-        (only-in :clan/poo/read-projection
+        (only-in :clan/poo/object/read-projection
                  owned-read-leaf! owned-read-copy! owned-read-open!
                  current-owned-read-open-guard
                  make-owned-method-check call-with-owned-read-method-checks)
@@ -31,6 +33,16 @@
         YuanxuValidationEvidence
         yuanxu-predicate-type
         yuanxu-predicate-contract
+        yuanxu-gerbil-type-contract
+        ClassType.
+        ClassType
+        InterfaceType.
+        InterfaceType
+        Nullable.
+        Nullable
+        type-gerbil-descriptor
+        type-predicate
+        type-contract-validator
         yuanxu-type-classify
         yuanxu-contract-obligations
         yuanxu-context-contract-obligations
@@ -62,7 +74,7 @@
 ;; Only the kernel's explicit responsibility edge may request analysis. The
 ;; pending edge is consumed before classification or any replaceable callback;
 ;; an independent .admit inside an obligation cannot inherit this permission.
-(defstruct contract-analysis (contract candidate context child?))
+(defstruct contract-analysis (contract candidate context child?) final: #t)
 (def current-contract-analysis (make-parameter #f))
 (def (call-with-contract-analysis-root contract candidate context action)
   (parameterize ((current-contract-analysis
@@ -240,14 +252,15 @@
   (def pending (current-contract-analysis))
   (def owned?
     (and pending
-         (eq? contract (contract-analysis-contract pending))
-         (eq? candidate (contract-analysis-candidate pending))
-         (eq? context (contract-analysis-context pending))))
+         (using (pending :- contract-analysis)
+           (and (eq? contract pending.contract)
+                (eq? candidate pending.candidate)
+                (eq? context pending.context)))))
   ;; Consume, rather than temporarily hide, this one-shot edge. An .admit
   ;; override calling its inherited producer a second time must be independent.
   (current-contract-analysis #f)
   (contract-admit-evidence contract candidate context owned?
-    (and owned? (contract-analysis-child? pending))))
+    (and owned? (using (pending :- contract-analysis) pending.child?))))
 
 ;; Named runtime value Types are not contextual Contract adapters. Module
 ;; publication/scope admission uses this one value path; domain .admit retains
@@ -445,6 +458,25 @@
   (.cc YuanxuContract.
        'identity identity
        '.classify (yuanxu-predicate-classifier identity predicate)
+       '.obligations obligations
+       'sexp identity))
+
+;; Bridge native Gerbil v0.19 class/interface descriptors and POO Type bridges
+;; (ClassType / InterfaceType / Nullable) into evidence-bearing Yuanxu contracts
+;; without weakening open POO refinement or losing `.gerbil-type` metadata.
+(def (yuanxu-gerbil-type-contract identity descriptor
+       (obligations yuanxu-contract-empty-obligations))
+  (def value-type
+    (cond
+     ((class-type? descriptor) (ClassType descriptor))
+     ((interface-descriptor? descriptor) (InterfaceType descriptor))
+     ((element? Type descriptor) descriptor)
+     (else (error "yuanxu-gerbil-type-contract requires a Gerbil class/interface descriptor or POO Type"
+                  identity descriptor))))
+  (.cc YuanxuContract.
+       'identity identity
+       'value-contract value-type
+       '.gerbil-type (type-gerbil-descriptor value-type)
        '.obligations obligations
        'sexp identity))
 

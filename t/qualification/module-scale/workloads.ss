@@ -7,7 +7,7 @@
         (only-in :tao3k/yuanxu/observability/memory yuanxu-debug-memory-snapshot)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer module-source-read
                  call-with-module-source-operation-measurement)
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads))
+        (only-in :clan/poo/object/slot-observation %call-with-recorded-slot-reads))
 (export verify-declaration-scale verify-runtime-scale verify-runtime-selection verify-runtime-attribution
         verify-module-eval-once verify-business-eval-once
         verify-sparse-business-eval verify-sparse-business-attribution)

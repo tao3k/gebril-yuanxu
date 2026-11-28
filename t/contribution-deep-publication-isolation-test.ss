@@ -5,7 +5,7 @@
 (import :std/test :std/list/list :clan/poo/object
         (only-in :std/error Error? Error-message)
         (only-in :std/io/tempfile make-temporary-file-name)
-        (prefix-in :clan/poo/declarative-metadata metadata.)
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.)
         (only-in :tao3k/yuanxu/admission/publication AdmissionPublication.)
         (only-in :tao3k/yuanxu/module-system/source/link yuanxu-load-modules)
         (only-in :tao3k/yuanxu/module-system/source/admission module-source-read module-source-type)

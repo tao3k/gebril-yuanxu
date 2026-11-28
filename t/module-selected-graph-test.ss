@@ -9,7 +9,7 @@
                  core-import-module core-module->prelude-context)
         (only-in :clan/poo/object .o .+ .cc .ref .get .all-slots object::t object-slots
                  object-read-issued? object-construction-current?)
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
+        (only-in :clan/poo/object/slot-observation %call-with-recorded-slot-reads
                  call-with-slot-read-observer slot-read-receiver slot-read-key slot-read-value)
         (prefix-in (only-in :gerbil/runtime/mop find-method bind-method!) runtime.)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)

@@ -4,8 +4,8 @@
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/type define-type)
         (only-in :clan/poo/mop call-with-slot-read-observer replay-slot-reads!)
-        (only-in :clan/poo/object-contract diagnose)
-        (prefix-in (only-in :clan/poo/method-combination
+        (only-in :clan/poo/types/object-contract diagnose)
+        (prefix-in (only-in :clan/poo/mop/methods/combination
                            prepare-standard around primary) combination.)
         (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence
                  yuanxu-validation-evidence call-with-contract-analysis-root)

@@ -24,10 +24,8 @@ proposals. The runtime receiver probe covers the receiver behavior alone.
 The governing rules are [[file:44-current-project-programming-style/02-poo-dispatch-and-extension.org][Style 02]], [[file:44-current-project-programming-style/03-functional-kernel-and-runtime-projection.org][Style 03]] and [[file:44-current-project-programming-style/05-macro-phase-and-lowering.org][Style 05]].
 
 Bootstrap/source-role owners supply canonical language/Core bindings internally;
-Profile/Scenario authors continue to use the bounded Module scope. The CLOS
-declaration bindings below come from =:clan/poo/clos=. The one-receiver
-generics for =.admit=, =.classify= and =.obligations= use =:clan/poo/mop=.
-These imports belong to the integration owner.
+Profile/Scenario authors continue to use the bounded Module scope. The integration owner imports CLOS declarations and the one-receiver
+generics for =.admit=, =.classify= and =.obligations= from =:clan/poo/mop=.
 
 * Publication families and independently extensible resolver axis
 
@@ -144,7 +142,7 @@ product design; supplying their names does not make that integration complete.
 
 #+begin_src scheme
 (def ModuleOwnerExportProtocol
-  (poo-clos-generic-protocol 'module-system/owner-export))
+  (clos-generic-protocol 'module-system/owner-export))
 
 (.defgeneric resolve-owner-export
   (resolver source publication export-name)
@@ -186,7 +184,7 @@ product design; supplying their names does not make that integration complete.
     admit-runtime-profile-export))
 
 ;; Explicit runtime composition; no registration while declaring the bundle.
-(poo-clos-compose-method-bundle
+(clos-compose-method-bundle
   (.generic-object resolve-owner-export)
   ModuleOwnerLoaderMethods)
 
@@ -221,17 +219,17 @@ this simplified projection shows the body, specializers and lambda-list facts
 for a method that does not reference either lexical next-method operation.
 
 #+begin_src scheme
-(poo-clos-method
+(clos-method
   'resolve-owner-export
-  (list (poo-clos-prototype-specializer LoaderOwnerResolver.)
-        (poo-clos-any-specializer)
-        (poo-clos-prototype-specializer PrototypePublication.)
-        (poo-clos-any-specializer))
+  (list (clos-prototype-specializer LoaderOwnerResolver.)
+        (clos-any-specializer)
+        (clos-prototype-specializer PrototypePublication.)
+        (clos-any-specializer))
   (lambda (_frame resolver source publication export-name)
     (resolve-runtime-owner-export
       resolver source publication export-name admit-runtime-prototype-export))
   qualifier: 'primary
-  lambda-list: (poo-clos-lambda-list 4 0 #f #f '() #f))
+  lambda-list: (clos-lambda-list 4 0 #f #f '() #f))
 #+end_src
 
 The generic declaration expands through the existing generic binding owner.
@@ -239,14 +237,14 @@ Its protocol clause reaches the same kernel protocol slot:
 
 #+begin_src scheme
 (def resolve-owner-export$poo-clos-generic
-  (poo-clos-generic-binding
+  (clos-generic-binding
     'resolve-owner-export
-    (poo-clos-generic-function
+    (clos-generic-function
       'resolve-owner-export 4
       protocol: ModuleOwnerExportProtocol)))
 
 (def (resolve-owner-export . arguments)
-  (apply poo-clos-call resolve-owner-export$poo-clos-generic arguments))
+  (apply clos-call resolve-owner-export$poo-clos-generic arguments))
 #+end_src
 
 The real generic lowering retains all its existing lambda-list, precedence,

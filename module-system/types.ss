@@ -6,9 +6,9 @@
 ;;; Boundary: runtime Module System types and authoring role contracts.
 (import (runtime: :clan/poo/object)
         (only-in :clan/poo/type define-type Object Bool Symbol List)
-        (only-in :clan/poo/object-contract ObjectContract.)
-        (only-in :clan/poo/validation-rebinding rebind-validation)
-        (only-in :clan/poo/read-projection owned-read-derived!)
+        (only-in :clan/poo/types/object-contract ObjectContract.)
+        (only-in :clan/poo/types/validation-rebinding rebind-validation)
+        (only-in :clan/poo/object/read-projection owned-read-derived!)
         (only-in :tao3k/yuanxu/types/contracts
                  YuanxuContract. YuanxuObjectContract.
                  yuanxu-classification-evidence)

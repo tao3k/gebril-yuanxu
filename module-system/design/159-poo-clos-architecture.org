@@ -8,7 +8,7 @@
 * Scope and acceptance
 
 Gerbil-POO owns the runtime and conformance suites. Yuanxu imports
-=:clan/poo/clos= for roles requiring multiple dispatch.
+=:clan/poo/mop= for roles requiring multiple dispatch.
 
 This document defines the stable architecture and acceptance boundary for the
 POO CLOS extension.  It is not a delivery plan.  Implementation order,
@@ -40,7 +40,7 @@ makes an artifact-provenance claim.
 
 * Ownership boundary
 
-Gerbil-POO owns the runtime under =clos/= and exposes =:clan/poo/clos=.
+Gerbil-POO owns the runtime under =mop/clos/= and exposes =:clan/poo/mop=.
 Its declarations lower to POO metaobjects and functional dispatch. Yuanxu
 uses narrow imports for generic authoring when it only needs dispatch
 and method bundles. Class lifecycle remains opt-in for those consumers.
@@ -101,18 +101,18 @@ The explicit-frame kernel form remains available to low-level implementations:
 
 #+begin_src scheme
 (def generic
-  (poo-clos-generic-function
+  (clos-generic-function
    'route 2 argument-precedence-order: '(1 0)))
 
-(poo-clos-add-method
+(clos-add-method
  generic
- (poo-clos-method
+ (clos-method
   'route-by-class
-  (list (poo-clos-class-specializer request-prototype)
-        (poo-clos-eql-specializer 'priority))
+  (list (clos-class-specializer request-prototype)
+        (clos-eql-specializer 'priority))
   (lambda (frame request mode)
-    (if (poo-clos-next-method? frame)
-      (poo-clos-call-next-method frame request mode)
+    (if (clos-next-method? frame)
+      (clos-call-next-method frame request mode)
       request))))
 #+end_src
 

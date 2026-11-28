@@ -3,8 +3,8 @@
 ;;; Public binding and actual Core producer; no module adapter or receipt wrapper.
 (import :std/test :clan/poo/object
         (only-in :clan/poo/type element?)
-        :clan/poo/object-contract
-        (prefix-in :clan/poo/declarative-metadata metadata.)
+        :clan/poo/types/object-contract
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.)
         :tao3k/yuanxu/modules/json-schema/contracts
         (only-in :tao3k/yuanxu/types/contracts
           YuanxuContract. yuanxu-contract-admit

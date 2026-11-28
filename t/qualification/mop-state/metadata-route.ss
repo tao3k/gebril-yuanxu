@@ -2,9 +2,9 @@
 ;;; Exercise the producer's route guard; do not duplicate its storage model.
 (import (prefix-in (only-in :gerbil/runtime/mop slot-ref) poo-fixture.)
         :clan/poo/object
-        (rename-in (only-in :clan/poo/read-route require-read-route!)
+        (rename-in (only-in :clan/poo/object/read-route require-read-route!)
                    (require-read-route! producer-require-read-route!))
-        (only-in :clan/poo/slot-observation slot-read-receiver slot-read-key))
+        (only-in :clan/poo/object/slot-observation slot-read-receiver slot-read-key))
 (export require-read-route! guarded-current?)
 
 (def (require-read-route! read)

@@ -14,17 +14,17 @@
         (only-in :std/os/flock open-output-file/lock)
         (only-in :std/os/device device-close)
         (only-in :tao3k/yuanxu/ops/progress copy-process-output make-test-progress-reader)
-        (prefix-in :clan/poo/component-publication publication.)
-        (prefix-in :clan/poo/component-revision revision.)
-        (prefix-in :clan/poo/generalized-graph runtime-graph.)
-        (prefix-in :clan/poo/dependency-analysis computation.)
+        (prefix-in :clan/poo/graph/component/publication publication.)
+        (prefix-in :clan/poo/graph/component/revision revision.)
+        (prefix-in :clan/poo/graph/schedule runtime-graph.)
+        (prefix-in :clan/poo/graph/computation computation.)
         (only-in :clan/poo/support/option some)
         (only-in :clan/poo/mop lens-of-get-set .lens)
-        (only-in :clan/poo/lens-laws lens-check)
-        (only-in :clan/poo/component-closure component-group-builder)
-        (only-in :clan/poo/feedback-graph publish-feedback-graph graph-cache-ref)
-        (only-in :clan/poo/feedback-cache group-closed)
-        (only-in :clan/poo/generalized-closure closed-raw)
+        (only-in :clan/poo/mop/lens-laws lens-check)
+        (only-in :clan/poo/graph/feedback/builder component-group-builder)
+        (only-in :clan/poo/graph/feedback publish-feedback-graph graph-cache-ref)
+        (only-in :clan/poo/graph/feedback/cache group-closed)
+        (only-in :clan/poo/mop/generalized-closure closed-raw)
         (only-in :tao3k/yuanxu/module-system/source/admission module-source-type module-source-read module-source-admit-current!))
 (export call-with-build-artifact-issuance admit-build-artifacts! invalidate-build-artifacts!
         current-build-output-directory run-build-artifact-process
@@ -137,7 +137,7 @@
 
 ;; Retained job results are authoritative; the exported record is not an issuer.
 ;; Keys are exact build Graph receivers, not names or mutable disk labels.
-(defstruct issued-build (generation identities inputs libdir files record record-digest approval-current package-current) transparent: #f)
+(defstruct issued-build (generation identities inputs libdir files record record-digest approval-current package-current) transparent: #f final: #t)
 ;; Approval guards retain the selected external Source, not this Graph. A saved
 ;; publication keeps its own receiver alive; guards must not capture that key.
 (def issued (make-hash-table-eq weak-keys: #t))

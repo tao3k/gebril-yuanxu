@@ -50,7 +50,7 @@ the temporary view is not another receipt and is never an authority.
 
 #+begin_src scheme
 (import :clan/poo/object
-        (prefix-in :clan/poo/declarative-metadata metadata.))
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.))
 
 ;; Existing invocation input/output/formula remain effective.
 (def BoundAdmission

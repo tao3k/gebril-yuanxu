@@ -12,8 +12,8 @@
                  module-source-package-prefix module-source-package-info)
         (only-in :tao3k/yuanxu/module-system/source/collection yuanxu-module-source-collection-optional-entrypoint)
         (only-in :tao3k/yuanxu/module-system/source/role-forms module-publication-role-imports)
-        (only-in :clan/poo/prototype-map prototype-map prototype-map-ref prototype-map-put)
-        (only-in :clan/poo/slot-observation slot-read-observers-compatible?)
+        (only-in :clan/poo/object/prototype-map prototype-map prototype-map-ref prototype-map-put)
+        (only-in :clan/poo/object/slot-observation slot-read-observers-compatible?)
         :tao3k/yuanxu/module-system/source/objects
         :tao3k/yuanxu/module-system/source/admission
         (only-in :tao3k/yuanxu/module-system/source/observations module-source-object-policies
@@ -837,8 +837,10 @@
           (cond
            (build-selection (command-roots))
            (else
-            (append selected-values
-                    (foldr append '() (map auto-owners (or windows '(#f)))))))
+            (delete-duplicates/hash
+              (append selected-values
+                      (foldr append '() (map auto-owners (or windows '(#f)))))
+              from-end?: #t)))
           (feature-roots)
           denied-modules: denied-values intent: scoped-intent init-source: init-path source-root: root-path
           imported-source-roots:
@@ -856,6 +858,13 @@
               (module-publication-role-imports (path-directory entry)
                 (lambda (path) (observe! module-source-type path))))
             entry)
+          feature-implied-modules:
+          (lambda (owner name)
+            (def root (path-directory (yuanxu-module-source-ref-value (locate-source owner))))
+            (def entry (path-expand (string-append "features/" (symbol->string name) "/interface.ss") root))
+            (if (eq? (observe! module-source-type entry) 'regular)
+              (module-feature-implied-modules entry (observe! module-source-read entry #t #t))
+              '()))
           resolve-module-id: resolve-reference resolve-root: resolve-request-root current?: current-source? candidate-current?: candidate-location-current?
           %candidate-guard:
           (lambda (generation id stale!)

@@ -2,7 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :clan/poo/type Type. define-type TypeError? String)
-        (only-in :clan/poo/object-contract ObjectContract.)
+        (only-in :clan/poo/types/object-contract ObjectContract.)
         (only-in :tao3k/yuanxu/types/contracts
           YuanxuObjectContract. yuanxu-predicate-contract
           yuanxu-contract-admit yuanxu-validation-evidence-accepted?

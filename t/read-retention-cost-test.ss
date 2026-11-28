@@ -2,7 +2,7 @@
 ;;; Structural cost receipt, not a timing or retained-heap acceptance threshold.
 (import :std/test :clan/poo/object
         (only-in :std/error Error?)
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads
+        (only-in :clan/poo/object/slot-observation %call-with-recorded-slot-reads
                  call-with-slot-read-observer slot-read-dependencies slot-read-receiver slot-read-key)
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer)
         (only-in :tao3k/yuanxu/observability/debug yuanxu-debug-memory-snapshot)

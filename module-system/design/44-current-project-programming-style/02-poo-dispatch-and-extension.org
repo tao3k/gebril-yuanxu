@@ -66,6 +66,18 @@ accepts one transform expression. For extra arguments use
 =(flags => append '("--debug"))= or a unary functional combinator. See
 [[file:../../../docs/10-19-design/13-module-loading/13.35-haumea-and-poo-namespace-projection/03-projection-build-and-leaf-expression.org][13.35 leaf receiver and namespace scope]] and the native leaf/path controls.
 
+When a slot carries an already-known boundary value independent of =self= and
+=super= (POOF's =$slot=, [[https://github.com/metareflection/poof/blob/59cecf050c8f2fab480175278c439410f3151cd6/poof-code-only.rkt#L21-L48][POOF slot constructors]]), bind it through the constant
+slot path instead of renaming local variables with =-value= suffixes:
+
+- =slot-name= or =(slot-name)= captures a same-named lexical binding once;
+- =(slot-name := expression)= evaluates =expression= once in the surrounding
+  lexical scope before receiver bindings are installed (e.g.
+  =(.o (:: @ Prototype.) (identity := identity-value) (generation := generation-value))=).
+
+Reserve computed slot forms (=slot: expr=, ==>=, ===>.+=) for formulas that
+actually depend on =self= or =super=.
+
 * Dispatch ownership
 
 | Behavior shape | Owner |
@@ -101,3 +113,21 @@ Extract a capability prototype only for a stable orthogonal behavior axis with
 a disjoint slot set, a named operation, at least two real consumers and valid
 C4 composition semantics.  Shared field names alone do not justify
 inheritance.  Prototype metadata never leaks into JSON, ABI or receipt rows.
+
+* Gerbil v0.19 bidirectional type bridge
+
+Public extension points, prototypes, slots and Contracts remain 100% open POO
+objects.  When a boundary exchanges native Gerbil v0.19 structures, classes or
+interfaces, bridge both sides through =gerbil-poo= (=v0.1.3.2+=) rather than
+writing ad hoc predicates or bypassing POO validation:
+
+- Wrap native Gerbil descriptors as POO Types with =ClassType=, =InterfaceType=
+  and =Nullable=, or lift them into evidence-bearing Yuanxu Contracts via
+  =yuanxu-gerbil-type-contract=.
+- Preserve =.gerbil-type= metadata on bridged Types so Gerbil v0.19 callers can
+  inspect descriptors (=type-gerbil-descriptor=) and derive runtime contract
+  predicates/validators (=type-predicate=, =type-contract-validator=) from the
+  same authoritative POO Type.
+- Keep POO =Maybe= / =OrFalse= distinct from =Nullable=: =Nullable= matches
+  =:gerbil/core='s first-class =#f=-nullable contract (=:?= / ==>(Maybe T)=)
+  without altering POO's existing optional-value encodings.

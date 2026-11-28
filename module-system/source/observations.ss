@@ -3,7 +3,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 ;;; Source observation, replay and currentness share one runtime owner.
 (import (runtime: :clan/poo/object)
-        (only-in :clan/poo/slot-observation %slot-read-active? without-observation)
+        (only-in :clan/poo/object/slot-observation %slot-read-active? without-observation)
         (only-in :std/list/list any take)
         (only-in :gerbil/expander call-with-input-source-file source-file-settings)
         (only-in :std/misc/ports read-all-as-string read-all-as-u8vector))

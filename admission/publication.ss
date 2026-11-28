@@ -7,7 +7,7 @@
         (only-in :tao3k/yuanxu/module-system/building/artifacts admit-build-artifacts!
           admit-build-artifact-publication! build-artifact-publication-current)
         (only-in :tao3k/yuanxu/admission/contributions bind-publication-contributions)
-        (prefix-in :clan/poo/declarative-metadata metadata.)
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.)
         (only-in :std/string/path path-absolute?)
         (only-in :tao3k/yuanxu/types/contracts yuanxu-contract-admit yuanxu-validation-evidence-accepted?
                  call-with-contract-analysis-root)

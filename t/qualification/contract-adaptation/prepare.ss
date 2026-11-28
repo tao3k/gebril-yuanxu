@@ -41,12 +41,12 @@
     (write-source (path-expand "fixture-schema.ss" destination)
       (string-append
         "(import :clan/poo/object :clan/poo/mop :clan/poo/type\n"
-        " (only-in :std/list/list foldl) :clan/poo/object-contract\n"
+        " (only-in :std/list/list foldl) :clan/poo/types/object-contract\n"
         " :tao3k/yuanxu/modules/json-schema/contracts)\n(export #t)\n"
         (list-ref blocks 3)))
     (write-source (path-expand "fixture-core.ss" destination)
       (string-append
-        "(import :clan/poo/object (only-in :gerbil/core/contract using) :clan/poo/object-contract\n"
+        "(import :clan/poo/object (only-in :gerbil/core/contract using) :clan/poo/types/object-contract\n"
         " (only-in :tao3k/yuanxu/types/contracts YuanxuContract. yuanxu-classification-evidence\n"
         "  yuanxu-contract-admit yuanxu-validation-evidence-accepted?))\n(export #t)\n"
         (list-ref blocks 5)))))

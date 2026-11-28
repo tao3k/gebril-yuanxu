@@ -24,7 +24,10 @@ prelude: :gerbil/core
 
 (def (module-feature-declaration? path form)
   (and (string? path) (pair? form) (eq? (car form) '.def)
-       (pair? (cdr form)) (eq? (cadr form) 'Feature)
+       (pair? (cdr form))
+       (let ((head (cadr form)))
+         (or (eq? head 'Feature)
+             (and (pair? head) (eq? (car head) 'Feature))))
        (string=? (path-strip-directory path) "interface.ss")
        (string=? (path-strip-directory
                     (path-strip-trailing-directory-separator
@@ -125,10 +128,18 @@ prelude: :gerbil/core
     (error "test directory must be relative to the yuanxu! declaration" directory source-path))
   relative)
 
+(def (valid-profile-list? value)
+  (and (pair? value) (list? value) (andmap init-name? value)
+       (let loop ((rest value))
+         (or (null? rest)
+             (and (not (memq (car rest) (cdr rest)))
+                  (loop (cdr rest)))))))
+
 (def (parse-init-window body source-path (root #f))
   (def window? (and root #t))
   (def mount-value #f)
   (def profile-value #f)
+  (def global-profiles-value '())
   (def test-dir "t")
   (def source-export #f)
   (def seen (make-hash-table-eq))
@@ -144,9 +155,10 @@ prelude: :gerbil/core
         (unless (and (eq? mode-value 'auto) (or window? (memq 'source: options)))
           (error "profile selection requires source and auto mode" source-path)))
       [mode-value root-value mount-value profile-value
-       (or window? (and (memq 'source: options) #t)) (reverse rows) test-dir source-export])
+       (or window? (and (memq 'source: options) #t)) (reverse rows) test-dir source-export
+       global-profiles-value])
      ((not (pair? tail)) (error "improper init declaration" source-path))
-     ((memq (car tail) '(mode: source: mount: profile: :test-dir export:))
+     ((memq (car tail) '(mode: source: mount: profile: :profiles :test-dir export:))
       (let (key (car tail))
         (unless (and (pair? (cdr tail)) (not group) (null? rows) (not (memq key options)))
           (error "duplicate or misplaced init option" key source-path))
@@ -164,6 +176,10 @@ prelude: :gerbil/core
           ((profile:)
            (unless (init-name? value) (error "profile: requires a literal name" value))
            (set! profile-value value))
+          ((:profiles)
+           (unless (valid-profile-list? value)
+             (error ":profiles requires a non-empty list of unique POO profile names" value source-path))
+           (set! global-profiles-value value))
           ((mount:)
            (unless (and window? (or (string? value) (symbol? value)))
              (error "mount: requires a literal directory window name" value))
@@ -189,6 +205,8 @@ prelude: :gerbil/core
                (disabled-value #f)
                (disable-specified-value #f)
                (source-root-value #f)
+               (row-profiles-value '())
+               (profiles-specified? #f)
                (flags
                 (let flags-loop ((rest (cdr row)) (result '()) (disable-seen? #f))
                   (cond
@@ -198,6 +216,14 @@ prelude: :gerbil/core
                                  (string? (cadr rest)) (> (string-length (cadr rest)) 0))
                       (error "module @ requires one literal source directory" row source-path))
                     (set! source-root-value (cadr rest))
+                    (flags-loop (cddr rest) result disable-seen?))
+                   ((eq? (car rest) 'profiles:)
+                    (unless (and (not profiles-specified?) (pair? (cdr rest))
+                                 (valid-profile-list? (cadr rest)))
+                      (error "module profiles: requires a non-empty list of unique POO profile names"
+                             row source-path))
+                    (set! row-profiles-value (cadr rest))
+                    (set! profiles-specified? #t)
                     (flags-loop (cddr rest) result disable-seen?))
                    ((eq? (car rest) 'disable:)
                     (unless (and (not disable-seen?) (pair? (cdr rest)) (boolean? (cadr rest)))
@@ -220,12 +246,12 @@ prelude: :gerbil/core
                    (else (error "unsupported init flag or computed source" row source-path))))))
           (when (hash-key? seen id) (error "duplicate init module decision" id source-path))
           (when (and (eq? mode-value 'auto) (not source-root-value)
-                     (not disabled-value) (null? flags))
+                     (not disabled-value) (null? flags) (null? row-profiles-value))
             (error "auto Loader discovers modules; omit the redundant module row" id source-path))
           (hash-put! seen id #t)
           (parse (cdr tail) mode-value root-value group
                  (cons [id group (car row) flags disabled-value
-                        disable-specified-value source-root-value] rows)
+                        disable-specified-value source-root-value row-profiles-value] rows)
                  options)))))))
 
 ;; Windows normalize into the existing selection intent. Mount names route
@@ -249,7 +275,7 @@ prelude: :gerbil/core
        (error "directory window requires a path or a public ModuleSource reference" root))
      (let split ((rest tail) (clauses '()))
        (if (or (null? rest) (eq? (car rest) ':load-modules))
-         (with ([mode directory mount profile explicit? decisions test-dir binding]
+         (with ([mode directory mount profile explicit? decisions test-dir binding global-profiles]
                 (parse-init-window (reverse clauses) source-path root))
            (def name
              (or mount
@@ -265,10 +291,10 @@ prelude: :gerbil/core
            (when (and binding (not (string? root)))
              (error "only an owner path can export a ModuleSource" root binding))
            (when (and (not (string? root))
-                      (ormap (lambda (row) (with ([_ _ _ _ _ _ override] row) override))
+                      (ormap (lambda (row) (with ([_ _ _ _ _ _ override _] row) override))
                              decisions))
              (error "ModuleSource window cannot change the package source of a module" root))
-           (cons [mode directory name profile explicit? decisions test-dir binding]
+           (cons [mode directory name profile explicit? decisions test-dir binding global-profiles]
                  (parse-init-windows rest source-path)))
          (split (cdr rest) (cons (car rest) clauses)))))
     (_ (error "expected a :load-modules window" source-path))))
@@ -295,20 +321,45 @@ prelude: :gerbil/core
     (error "init.ss contains non-declarative forms" source-path))
   (def declaration (car declarations))
   (def body (cdr declaration))
-  (when (and (pair? body) (eq? (car body) ':build-roots))
-    (module-init-build-roots declaration)
-    (set! body (cddr body)))
+  (def build-roots
+    (if (and (pair? body) (eq? (car body) ':build-roots))
+      (let (entries (module-init-build-roots declaration))
+        (set! body (cddr body))
+        entries)
+      '()))
+  (def (check-build-roots-disjoint! window-roots)
+    (def base (if source-path (path-directory source-path) (current-directory)))
+    (for-each
+      (lambda (entry)
+        (def target (path-strip-trailing-directory-separator (path-expand entry base)))
+        (for-each
+          (lambda (window-root)
+            (when (and (string? window-root)
+                       (or (string=? target window-root)
+                           (string-prefix? (string-append window-root "/") target)))
+              (error ":build-roots entry belongs inside a :load-modules window; declare it as a Yuanxu Module"
+                     entry window-root)))
+          window-roots))
+      build-roots))
   (if (or (null? body) (not (eq? (car body) ':load-modules)))
     (begin
       (when (memq ':load-modules body)
         (error "options belong inside a :load-modules window" source-path))
-      (values (list (parse-init-window body source-path)) #f))
+      (let (window (parse-init-window body source-path))
+        (with ([_ directory _ _ _ _ _ _ _] window)
+          (when (string? directory)
+            (let* ((base (path-strip-trailing-directory-separator
+                           (if source-path (path-directory source-path) (current-directory))))
+                   (root (path-strip-trailing-directory-separator (path-expand directory base))))
+              (unless (string=? root base)
+                (check-build-roots-disjoint! (list root))))))
+        (values (list window) #f)))
     (let ((windows (parse-init-windows body source-path))
           (names (make-hash-table)) (roots (make-hash-table))
           (bindings (make-hash-table-eq)))
       (for-each
         (lambda (window)
-          (with ([_ directory name _ _ _ _ binding] window)
+          (with ([_ directory name _ _ _ _ binding _] window)
             (def key (string-downcase (symbol->string name)))
             (def root
               (if (string? directory)
@@ -323,6 +374,7 @@ prelude: :gerbil/core
               (hash-put! bindings binding #t))
             (hash-put! names key #t)
             (hash-put! roots root #t))) windows)
+      (check-build-roots-disjoint! (hash-keys roots))
       (for-each
         (lambda (binding)
           (when (or (memq binding '(tests std-make-spec admit-current))
@@ -334,5 +386,5 @@ prelude: :gerbil/core
 (def (module-init-windows forms (source-path #f))
   (let-values (((windows mounted?) (parse-module-init forms source-path)))
     (if mounted?
-      (map (lambda (window) (with ([_ _ mount _ _ _ _ binding] window) (cons mount binding))) windows)
+      (map (lambda (window) (with ([_ _ mount _ _ _ _ binding _] window) (cons mount binding))) windows)
       '())))

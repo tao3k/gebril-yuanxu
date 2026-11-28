@@ -1,5 +1,5 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
-(import :std/test :clan/poo/object :clan/poo/object-contract
+(import :std/test :clan/poo/object :clan/poo/types/object-contract
         (only-in :clan/poo/number IntegerRange)
         (only-in :clan/poo/type validate TypeError? element?)
         (only-in :tao3k/yuanxu/module-system/schema/relations SemanticSymbol)

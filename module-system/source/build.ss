@@ -18,12 +18,12 @@
         (only-in :tao3k/yuanxu/module-system/source/module-binding module-binding-action)
         (only-in :std/string/path path-absolute? path-default-extension subpath?)
         (only-in :std/list/list find foldl)
-        (only-in :clan/poo/slot-observation without-observation %slot-read-active?)
-        (only-in :clan/poo/read-route require-read-route!)
-        (only-in :clan/poo/read-projection owned-read-function-scope?)
+        (only-in :clan/poo/object/slot-observation without-observation %slot-read-active?)
+        (only-in :clan/poo/object/read-route require-read-route!)
+        (only-in :clan/poo/object/read-projection owned-read-function-scope?)
         (runtime: :clan/poo/object)
         (only-in :clan/poo/type define-type Type. List)
-        (only-in :clan/poo/object-contract ObjectContract.)
+        (only-in :clan/poo/types/object-contract ObjectContract.)
         (only-in :tao3k/yuanxu/module-system/source/admission admit-module-value! module-source-type module-source-read module-source-name? module-source-admit-current! call-with-module-source-read-cache module-source-observe module-source-object-policy current-module-source-phase current-module-source-observer module-source-measure-operation call-with-module-source-callback)
         (only-in :tao3k/yuanxu/module-system/source/preparation yuanxu-prepare-module-build-source
                  build-target-name yuanxu-prepare-module-retained-source module-compiler-source-owner?
@@ -246,8 +246,32 @@
         (cond
          ((hash-key? by-path path)
           (let (old (hash-ref by-path path))
-            (unless (eq? kind (.ref old 'kind))
-              (error "conflicting build contributions" path (.ref old 'contributor) contributor))))
+            (cond
+             ((eq? kind (.ref old 'kind)) (void))
+             ((and (eq? 'publication (.ref old 'kind))
+                   (eq? kind 'source)
+                   (eq? compiler-identity (.ref old 'compiler-identity)))
+              ;; The selected Module already owns and guards its publication.
+              ;; An import of that same source adds a dependency, not a conflicting target.
+              (void))
+             ((and (eq? 'source (.ref old 'kind))
+                   (eq? kind 'publication)
+                   (eq? compiler-identity (.ref old 'compiler-identity)))
+              ;; A consumer encountered this Module's interface as a source dependency
+              ;; before the owner's publication was enrolled. Upgrade ownership cleanly
+              ;; to the Module's publication without duplicating entries.
+              (set! entry-construction-intact?
+                (and entry-construction-intact? (object-construction-current?)))
+              (let (entry (.o kind path compiler-identity input options owner contributor))
+                (set! entry-construction-intact?
+                  (and entry-construction-intact? (object-construction-current?)))
+                (hash-put! by-path path entry)
+                (hash-put! by-id compiler-identity entry)
+                (add-check! input)
+                (set! entry-values
+                  (map (lambda (existing) (if (eq? existing old) entry existing)) entry-values))))
+             (else
+              (error "conflicting build contributions" path (.ref old 'contributor) contributor)))))
          ((hash-key? by-id compiler-identity)
           (error "duplicate compiler identity in selected build Graph" compiler-identity path
                  (.ref (hash-ref by-id compiler-identity) 'path)))

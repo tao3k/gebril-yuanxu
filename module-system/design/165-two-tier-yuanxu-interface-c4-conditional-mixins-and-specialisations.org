@@ -1,0 +1,270 @@
+# SPDX-FileCopyrightText: 2026 tao3k team and Contributors
+# SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
+
+#+title: Two-Tier Yuanxu Interface: Pure POO Slot-Observation & C4 Profile Convergence (`Tags` / `Profiles` / Native Slots)
+#+date: [2026-11-24]
+#+property: STATUS design-locked-ready-for-implementation
+
+* Motivation: Zero Invented Condition DSLs — Trust Native POO + =slot-observation=
+
+NixOS's module system achieves cross-module activation (=lib.mkIf=), typed
+options (=lib.mkOption=), and system specialisations (=specialisation.<name>=)
+inside a single flat attribute-set merge, forcing magic priority integers
+(=mkDefault 1000=, =mkOverride 100=, =mkForce 50=) and whole-tree
+=extendModules=. Nickel improves on Nix with algebraic =&= merge and contracts,
+yet still relies on flat record merges without C4 inheritance.
+
+Even more importantly, Yuanxu does *not* need to invent a mini condition DSL
+(=when-enabled:=, =when-case:=, =when-slot=, =slot-eq?=) on top of POO.
+=gerbil-poo= and =LeanPoo= *already provide* every underlying mechanism
+natively:
+
+1. *Native POO Slots & Lexical =self=*: Every module =interface.ss= and
+   =Feature= is already a POO prototype object whose slots (=enabled?:=,
+   =profiles:=, =defaults:=) are ordinary lazy POO computations over the
+   admitted module graph =sys= and local receiver =self=.
+2. *Native =gerbil-poo= Slot Observation (=slot-observation=)*:
+   =%call-with-recorded-slot-reads= (already proved in =LeanPoo= and used in
+   =selection.ss=) automatically captures the exact read-set of ordinary
+   =(.get sys ...)= reads — feeding directly into =:clan/poo/graph/scc= cycle
+   detection and stage enforcement without any synthetic =when-slot= AST!
+3. *Native Direct Path Assignment & Refinement (Design 164/11)*: Profiles
+   configure nested slots using ordinary POO path assignment
+   (=env.mode: 'ci-hermetic=) and ===>= / ===>.+= refinement.
+4. *Native C4 Linearization & CLOS Dispatch (=45-40-10=)*: Vertical layering is
+   pure C4 inheritance (zero magic integer priorities); multi-axis conditional
+   Profile selection uses plain POO slot expressions or fail-closed CLOS
+   =.defgeneric= / =.defmethod-bundle= over typed state prototypes.
+
+| Dimension | NixOS (=lib.evalModules=) | Nickel (Merge + Contracts) | Yuanxu (Native POO + =slot-observation= + C4) |
+|-----------+---------------------------+----------------------------+-----------------------------------------------|
+| Evaluation model | Untyped global lazy =fix= | Algebraic =&= merge + contracts | Two-phase =slot-observation= proxy + C4 linearization |
+| Condition syntax | =lib.mkIf= / =lib.mkMerge= | Conditional records | *Zero custom DSL*: ordinary POO slots (=.get sys ...=) or CLOS =.defmethod= |
+| Priority & layering | Magic integers (=50=/=100=/=1000=) | =default= / =force= tags | Explicit C4 Precedence Bands (0..5); zero magic numbers |
+| Inheritance & =super= | None (flat merge) | Limited self; no C4 | Native C4 linearization, =@=, ===>=, ===>.+=, path assignment |
+| Cross-module scaling | Superlinear thunk blowup | Local interfaces; flat merge | Closed =yuanxu!= closure + plural Global/Module =Profiles= + =Tags= + Open Extension Slots |
+| Security invariants | =mkForce 50= defeatable | Final contract check | Band-5 =GovernanceFloor= with monotonic =lattice-meet= |
+
+* Concept Hygiene: Zero Mini-DSLs — =Tags=, Plural =Profiles=, and Native POO Slots
+
+Everything converges onto *three strictly orthogonal, 100% POO-native concepts*
+(eliminating =specialisations=, bare =:cases= keywords, and synthetic
+=when-slot= / =slot-eq?= wrappers):
+
+| Concept | Exact Ontology | Representation | Role |
+|---------+----------------+----------------+------|
+| *=Tags=* | *WHO / WHAT* (inert classification) | Plural =tags: '(engine durable)= | Discovery, grouping, and =by-tag= Global Profile targeting (never carries config values) |
+| *=Profiles=* | *HOW* (reusable POO config mixin) | *ALWAYS PLURAL* =:profiles (...)= / =profiles: (...)= | The *single* reusable configuration unit across the entire system (global, per-module, or derived) |
+| *Native POO Interface Slots* | *WHEN* (typed state & derivations) | Ordinary POO slots on =interface.ss= + =(.get sys ...)= / CLOS =.defmethod= | Single unified mechanism for auto-bridging (=enabled?:=) and conditional Profile derivation (=profiles:=); tracked automatically by =slot-observation= |
+
+* How =slot-observation= Makes Native POO Expressions Fail-Closed
+
+During Phase 1 (Assembly), Yuanxu evaluates each module/feature's =enabled?:=
+and assembly-stage =profiles:= slots against a *closed, contract-checked =sys=
+Interface proxy* inside =%call-with-recorded-slot-reads=:
+
+1. *Explicit Closure Conservation (=INV-1=)*: The =sys= proxy exposes *only*
+   modules explicitly admitted by =yuanxu!=. Reading an absent module via
+   =(.slot? sys 'durable)= returns =#f= cleanly; it can *never* silently import
+   or pull an undeclared module into =module-closure=.
+2. *Contract-Checked & Typo-Proof (=INV-2=)*: Reading a slot on an admitted
+   module validates the slot name against that module's =ObjectContract=
+   immediately (fail-closed on typos).
+3. *Automatic Cycle Detection (=INV-2=)*: =%call-with-recorded-slot-reads=
+   records every =(.get sys mod slot)= access automatically, feeding the exact
+   dependency graph directly into =:clan/poo/graph/scc= — zero custom AST
+   walker needed!
+4. *Automatic Stage Separation (=INV-6=)*: Every slot in a module's
+   =ObjectContract= declares =stage: 'assembly= (e.g., =enabled?=, =env.mode=)
+   or =stage: 'runtime= (e.g., =durable.detour-state=). The assembly =sys= proxy
+   separates assembly-stage derivations (governing compilation & load closure)
+   from runtime-stage derivations (pure C4 overlay with zero recompilation)
+   automatically.
+
+* Two-Tier Interface Architecture
+
+** Tier 1: =yuanxu!= (=init.ss=) — Maximally Restrained System-Wide Assembly Entrypoint
+
+=yuanxu!= owns *only three orthogonal constructs* (auditable on one screen):
+
+| Surface Construct | Role | Restraint Boundary |
+|-------------------+------+--------------------|
+| =:load-modules= / =mode: explicit= / =mount:= | Closed module universe | Explicit closure only; no silent external imports |
+| =:profiles (P1. P2. ...)= | Plural Global Profiles (Band 4a) | Named POO =Profile= prototypes targeting admitted modules (by module ID or =by-tag=) |
+| =(mod +feat -feat profiles: (L1. L2. ...))= | Module toggles + plural Module Profiles (Band 4b) | =+feat= / =-feat= is pure C4 override of =enabled?:= in Band 4b; =profiles:= references named POO prototypes only |
+
+Example (locked target shape — 100% native POO, zero keywords, zero DSLs):
+
+#+begin_src scheme
+(yuanxu!
+  :load-modules "./modules"
+  mode: explicit
+  mount: Lab
+  :profiles (LocalDevProfile. StrictSoDProfile.)
+  (env)
+  (durable)
+  (ai-agentic-context +memory
+                      profiles: (WorkspaceContextProfile. OrgProgressiveProfile.))
+  ;; `LocalDevProfile.` sets `env.mode: 'local-dev` via direct path assignment.
+  ;; `ai-agentic-context/durable`'s native POO slot `enabled?:` reads
+  ;; `(and (.slot? sys 'durable) (.get sys durable enabled?))` -> #t in Band 1.
+  ;; Writing `(ai-agentic-context +memory -durable)` overrides `enabled?: #f` in Band 4b.
+  )
+#+end_src
+
+** Tier 2: Per-Module =interface.ss= — Concise POO Dotted Paths & Object-Table Dispatch
+
+Each module owns its local contract and derivations using *pure, minimal POO
+objects and dotted-path slots* (Design 164/11) — zero =case=/=if=/=(list ...)=
+boilerplate, zero synthetic =when-slot= wrappers, and every branch directly
+extensible downstream via POO direct path assignment / ===>.+=:
+
+1. *Cross-Module Auto-Bridge (4 lines — dotted path on =sys=, =#f= when absent)*:
+   Every declared module exposes =<mod>.enabled?= on the closed =sys= view
+   (defaulting to =#f= when not selected in =yuanxu!=, so no =.slot?= guard is
+   ever needed):
+   #+begin_src scheme
+   ;; modules/ai-agentic-context/features/durable/interface.ss
+   (.def (Feature @ ModuleFeature.)
+     enabled?: durable.enabled?
+     refine: EnableContextDurable
+     contract: ContextDurableFeatureContract)
+   #+end_src
+2. *Conditional Profiles — Primary Style (Concise POO =.o= Dispatch Table)*:
+   A POO object *is* an inheritable, contract-checked map from Interface slot
+   paths to Profiles (single Profile or list of Profiles). Stage (='assembly=
+   vs ='runtime=) is inferred automatically from each key slot's
+   =ObjectContract= — no manual =assembly-profiles:= / =runtime-profiles:=
+   split, no =case= / =else '()= noise:
+   #+begin_src scheme
+   ;; modules/ai-agentic-context/interface.ss
+   (.def (Context @ Module.)
+     identity: 'ai-agentic-context
+     tags: '(context org-backed)
+     features: '(memory worktree work worktrunk durable)
+     profiles: (.o
+       env.mode: (.o ci-hermetic: AirgappedContextProfile.
+                     airgapped:   AirgappedContextProfile.)
+       durable.detour-state: (.o blocker-active: DetourBlockerProfile.)))
+   #+end_src
+   Downstream projects can add or refine a single branch in *one line* using
+   Yuanxu's native direct path assignment (Design 164/11), without ever copying
+   a =case= block:
+   #+begin_src scheme
+   profiles.env.mode.staging: StagingContextProfile.
+   #+end_src
+3. *Conditional Profiles — Multi-Axis Escape Hatch (CLOS =.defmethod=)*:
+   Only when *multiple* independent axes (module x several typed state
+   prototypes simultaneously) determine active Profiles, modules use standard
+   Yuanxu CLOS dispatch (=45-40-10=):
+   #+begin_src scheme
+   (.defgeneric (derive-profiles module state) => '())
+   (.defmethod (derive-profiles (m Context.) (s CiHermetic.))
+     (list AirgappedContextProfile.))
+   #+end_src
+
+* Native POO C4 Precedence Bands & Plural Profile Convergence Layer
+
+Vertical precedence and plural Profile convergence are governed natively by
+*explicit C4 linearization bands* (zero Nix magic priority integers):
+
+#+begin_example
+Band 0:  CoreDefaults     (module `defaults:` prototype)
+  < Band 1:  ImpliedBridge   (Feature `enabled?:` slot resolving to #t via `slot-observation`)
+  < Band 2:  ExplicitFeature (`+feature` explicitly selected in `yuanxu!`)
+  < Band 3:  DerivedProfiles (module `assembly-profiles:` / `runtime-profiles:` / CLOS `derive-profiles`)
+  < Band 4a: GlobalProfiles  (`:profiles (P1. P2. ...)` cross-module Profiles, by ID or `by-tag`)
+  < Band 4b: ModuleProfiles  (`(mod profiles: (L1. L2. ...))` per-module Profiles + `-feature` C4 override `enabled?: #f`)
+  < Band 5:  GovernanceFloor (`ObjectContract` + monotonic `lattice-meet` floor)
+#+end_example
+
+** Plural Profile Composition & Controlled Cross-Module Extension Slots
+
+- *Plural Global Profiles (=:profiles (P1. P2. ...)=)*: Multiple orthogonal
+  Global Profiles compose cleanly via C4 + direct path assignment (e.g.,
+  =LocalDevProfile.= + =StrictSoDProfile.=). Each Global Profile targets
+  admitted modules either by module identity or by *=by-tag=* selector.
+- *Plural Module Profiles (=profiles: (L1. L2. ...)=)*: Multiple orthogonal
+  local Profiles specialize one module at Band 4b atop Band 4a via C4.
+- *Controlled Cross-Module Extension Slots*: A module may explicitly publish
+  open =union=, =refine=, or =meet= slots on its =interface.ss= contract
+  (e.g., =ui-workbench.tab-providers= (=union=), =policy.invariants= (=union=),
+  =security.restriction-envelope= (=meet=)). Active sibling features or Global
+  Profiles may contribute to those published extension slots while strictly
+  obeying =INV-1= (never pulling in unselected modules) and =INV-4= (never
+  mutating private or =exclusive= scalar slots without fail-closed conflict
+  checks).
+
+* Horizontal Peer Composition Law (Within the Same C4 Band)
+
+When two independent peer mixins inside the same band touch the same slot, the
+slot's POO =ObjectContract= governs composition via four algebraic combiners:
+
+| Combiner | Slot Kinds | Same-Band Peer Behavior |
+|----------+------------+-------------------------|
+| =exclusive= | Scalars (=Bool=, =String=, =Enum=, =Int=) | Identical values collapse; *disagreeing values fail closed* with dual-source conflict diagnostics (never silent C4 order luck) |
+| =refine= | Nested POO prototypes / records | Recursive POO ===>.+= refinement (applying the same combiner law per nested slot) |
+| =union= | Lists / Sets (hooks, selectors, tab providers) | Deterministic topological deduplicated union |
+| =meet= | Security / Governance envelopes (=RestrictionEnvelope=, trust ceilings) | Monotonic lower-semilattice =meet=; order-independent and strictly non-escalating |
+
+* Concrete Ownership Case Study: =Durable= vs =Context=
+
+- *=durable= (=modules/durable/interface.ss=)*: 100% pure, domain-agnostic
+  Durable Work Engine with =tags: '(engine durable)= and =features: '()= —
+  *zero Org-mode, zero =orgize=, zero =ai-agentic-context=*.
+- *=ai-agentic-context= (=modules/ai-agentic-context/features/durable/interface.ss=)*:
+  Owns Org shared context (=tags: '(context org-backed)=) and owns the thin
+  =Org <-> Durable= bridge via its native POO =enabled?:= slot:
+  1. =(durable)= alone -> pure Durable Work Engine; zero Org code loaded.
+  2. =(ai-agentic-context)= alone -> =(.slot? sys 'durable)= is =#f=; Durable
+     bridge stays unloaded.
+  3. =(durable)= + =(ai-agentic-context)= -> =(.get sys durable enabled?)= is
+     =#t=; =ai-agentic-context/durable= *auto-activates* in Band 1
+     (=activation: 'implied=), zero duplicate flag.
+  4. =(durable)= + =(ai-agentic-context -durable)= -> Band 4b C4 override sets
+     =enabled?: #f=, cleanly disabling the bridge without conflict.
+
+* Six Formal Invariants (Machine-Verifiable Contract)
+
+1. *INV-1 (Explicit Closure Conservation)*: The assembly =sys= proxy and
+   =by-tag= Profile targeting operate strictly over the module universe
+   explicitly admitted by =yuanxu!=. They MUST NEVER silently pull an
+   undeclared external module into =module-closure=.
+2. *INV-2 (Bounded Monotone Fixpoint & =slot-observation= Cycle Check)*:
+   =%call-with-recorded-slot-reads= validates every slot read against the
+   target =ObjectContract= and feeds all recorded read edges into
+   =:clan/poo/graph/scc=. Cyclic dependencies fail closed; acyclic activation
+   converges in at most =|F|= iterations.
+3. *INV-3 (Explicit Veto Dominance)*: =-feature= in =yuanxu!= overrides
+   =enabled?: #f= in Band 4b, dominating Band 1 implied activation via pure C4.
+4. *INV-4 (Same-Band Peer Conflict Fail-Closed)*: Two active peer mixins in the
+   same C4 band disagreeing on an =exclusive= slot MUST raise a structured
+   dual-provenance conflict diagnostic.
+5. *INV-5 (Monotonic Governance Floor)*: Slots declared with combiner =meet=
+   (=RestrictionEnvelope=, trust bounds) satisfy =effective <= parent= across
+   every band and Profile; escalation is unrepresentable.
+6. *INV-6 (Zero Cost for Inactive Units / Stage Separation)*: =interface.ss=
+   declares inert =tags:=, contracts, slot schemas (=stage: 'assembly |
+   'runtime=), and lazy =refine:= / Profile references only. Heavy runtime
+   units enter compilation/load closures *only* when Phase-1 assembly-stage
+   activation admits them.
+
+* Activation Receipt & Planned Execution Sequence
+
+=yuanxu.init.exports= publishes an auditable =activation-receipt= recording
+=identity=, =band=, =stage= (='assembly= | ='runtime=), =activation=
+(='explicit= | ='implied= | ='derived= | ='tag-targeted= | ='vetoed=),
+=observed-reads= (exact slot-read provenance captured by =slot-observation=),
+and =reason= for every admitted module, feature, and Profile slice.
+
+When authorized to begin implementation:
+1. *Formal Proof Alignment (Slice 50)*: Machine-check =INV-1..INV-6= in Lean 4,
+   Quint, and OpenSysML v2.
+2. *Lab + Marlin Ownership Cleanup*: Remove =modules/durable/features/org/=
+   (restoring =modules/durable= to pure =features: '()=) and move the thin
+   =org-adapter.ss= into =modules/ai-agentic-context/features/durable/=.
+3. *Yuanxu Convergence Layer Implementation*: Implement
+   =core/module-system/convergence/= atop existing =gerbil-poo=
+   =slot-observation= + C4 precedence bands + plural Global/Module Profiles +
+   =by-tag= targeting + open extension-slot combiners + =activation-receipt=,
+   with full positive and negative-control test suites.

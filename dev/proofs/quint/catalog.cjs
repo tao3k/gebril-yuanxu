@@ -14,7 +14,7 @@ function files(directory,extension,recursive=false) {
 function owners(producer=[]) {
   const paths=new Set(catalog.owners.map(name=>path.join(core,name)));
   for(const [directory,extension,recursive] of [['graph','.ss',false],
-    ['module-system/schema/support','.ss',false],['modules/funflow/control-plane','.ss',false],
+    ['module-system/schema/support','.ss',false],
     ['dev/proofs/lean/YuanxuProof','.lean',true],['dev/proofs/quint','.qnt',false],
     ['dev/proofs/quint','.cjs',false]])
     for(const name of files(path.join(core,directory),extension,recursive))paths.add(name);

@@ -73,6 +73,45 @@ The [[file:../../t/module-build-command-test.ss][selection regression]] checks
 real Gerbil products, repeated and overlapping roots, and the unchanged
 default spec. It covers missing and disabled leaves and unrelated cold Modules.
 
+* Cross-package on-demand prerequisite compilation
+
+A downstream package keeps its =build.ss= minimal (ordinary =defbuild-script=
+consuming =std-make-spec=, optionally wrapped by =.with-link=) and declares
+upstream packages through standard Gerbil =gerbil.pkg= =depend:= entries plus
+ordinary =(import :upstream-pkg/...)= edges. =from:= windows remain dedicated
+to mounting upstream Yuanxu =ModuleSource= selections rather than duplicating
+ordinary Gerbil library imports.
+
+=module-system/building/dependency-packages.ss= owns two-stage cross-package
+prerequisite compilation while preserving single-package purity for
+=std-make-spec= and =clean=:
+
+1. *Discovery (=plan-dependency-package-builds=)*: Resolve declared =depend:=
+   packages transitively under active =pkg/= stores, seed selected local
+   sources from =init.ss= / =:build-roots= purely as declaration data, and walk
+   imports via Gerbil's native =core-read-module/sexp= reader (no custom parser,
+   no module evaluation, zero business scopes constructed). Group missing or
+   transitively stale targets by external dependency package root in
+   topological order.
+2. *Isolated compilation (=ensure-dependency-packages-compiled!=)*: For each
+   dependency package with missing or stale targets, run native =:std/make=
+   with that dependency package's own =srcdir:= (preserving its own
+   =gerbil.pkg=, =package:= prefix, =prelude:=, and native =gxc= FFI support)
+   inside =call-with-build-input-path= and =call-with-selected-output-lock=,
+   restoring the caller's load-path order on exit. Fresh =.ssi= artifacts are
+   reused with zero recompilation; =clean= and =spec= never compile or remove
+   upstream artifacts.
+
+In =module-system/source/build.ss=, cross-module imports of another selected
+Module's =interface.ss= reconcile ='source= and ='publication= ownership in
+either discovery order when path and =compiler-identity= match.
+
+The [[file:../../t/module-build-cross-package-test.ss][cross-package demand build regression]]
+verifies cold on-demand compilation (including =C-declare= FFI leaves), unused
+module isolation, hot =.ssi= reuse, stale incremental rebuilds, transitive
+multi-package topological order, clean isolation, and ='source=/='publication=
+coexistence.
+
 * Evidence after migration
 
 Maintained examples and historical Scheme probes use the current namespace.

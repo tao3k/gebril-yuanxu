@@ -80,11 +80,35 @@
     (test-case "Prelude and explicit declaration import retain one terminal binding"
       (parameterize ((current-expander-context (make-top-context)))
         (eval-syntax '(import :gerbil/core))
-        (eval-syntax '(import (only-in :tao3k/yuanxu/prelude yuanxu!)))
-        (def inherited (resolve-identifier (datum->syntax #f 'yuanxu!)))
-        (check-equal? (and inherited #t) #t)
+        (eval-syntax '(import (only-in :tao3k/yuanxu/prelude yuanxu! yuanxu-autoload define-yuanxu-module-declaration)))
+        (def inherited-yuanxu (resolve-identifier (datum->syntax #f 'yuanxu!)))
+        (def inherited-autoload (resolve-identifier (datum->syntax #f 'yuanxu-autoload)))
+        (def inherited-decl (resolve-identifier (datum->syntax #f 'define-yuanxu-module-declaration)))
+        (check-equal? (and inherited-yuanxu #t) #t)
+        (eval-syntax '(import :tao3k/yuanxu/lang))
+        (check-equal? (eq? inherited-yuanxu (resolve-identifier (datum->syntax #f 'yuanxu!))) #t)
+        (check-equal? (eq? inherited-autoload (resolve-identifier (datum->syntax #f 'yuanxu-autoload))) #t)
+        (check-equal? (eq? inherited-decl (resolve-identifier (datum->syntax #f 'define-yuanxu-module-declaration))) #t)
         (eval-syntax '(import (only-in :tao3k/yuanxu/module-system/selection/init-syntax yuanxu!)))
-        (check-equal? (eq? inherited (resolve-identifier (datum->syntax #f 'yuanxu!))) #t)))
+        (check-equal? (eq? inherited-yuanxu (resolve-identifier (datum->syntax #f 'yuanxu!))) #t)))
+    (test-case "ordinary :tao3k/yuanxu/lang stays on :gerbil/core without POO or semantic bootstrap bloat"
+      (def lang-identities '())
+      (for-each-build-module (core-import-module ':tao3k/yuanxu/lang)
+        (lambda (context) (set! lang-identities (cons (expander-context-id context) lang-identities))))
+      (check-equal? (and (memq 'tao3k/yuanxu/module-system/selection/init-syntax lang-identities) #t) #t)
+      (for-each (lambda (identity) (check-equal? (and (memq identity lang-identities) #t) #f))
+        '(tao3k/yuanxu/prelude
+          tao3k/yuanxu/module-system/selection/init-expansion
+          tao3k/yuanxu/module-system/source/init
+          tao3k/yuanxu/module-system/building/interface))
+      ;; Importing :tao3k/yuanxu/lang must NOT shadow :gerbil/core's object?/make-object.
+      (parameterize ((current-expander-context (make-top-context)))
+        (eval-syntax '(import :gerbil/core))
+        (def core-object? (resolve-identifier (datum->syntax #f 'object?)))
+        (def core-make-object (resolve-identifier (datum->syntax #f 'make-object)))
+        (eval-syntax '(import :tao3k/yuanxu/lang))
+        (check-equal? (eq? core-object? (resolve-identifier (datum->syntax #f 'object?))) #t)
+        (check-equal? (eq? core-make-object (resolve-identifier (datum->syntax #f 'make-object))) #t)))
     (test-case "language bootstrap has no semantic declaration implementation dependency"
       (def identities '())
       (for-each-build-module (core-import-module ':tao3k/yuanxu/prelude)

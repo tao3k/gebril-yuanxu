@@ -9,7 +9,7 @@
         (only-in :tao3k/yuanxu/module-system/source/admission current-module-source-observer
                  admit-module-publication! module-source-admit-current!)
         (only-in :tao3k/yuanxu/module-system/source/objects make-yuanxu-module-source-ref)
-        (only-in :clan/poo/slot-observation
+        (only-in :clan/poo/object/slot-observation
                  call-with-slot-read-observer slot-read-receiver slot-read-key))
 (export module-demand-projection-test)
 (def (observed action)

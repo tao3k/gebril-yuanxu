@@ -27,7 +27,7 @@
   (def (expand-declaration stx (program #f) (origin #f))
   (syntax-case stx ()
     ((ctx option value init-clause ...)
-     (memq (syntax->datum (syntax option)) '(mode: source: :load-modules :test-dir :build-roots))
+     (memq (syntax->datum (syntax option)) '(mode: source: :load-modules :profiles :test-dir :build-roots))
      ;; Normalize literal data only. One private getter is shared by all mounts;
      ;; expansion does not demand a Module scope or a test executor.
      (let* ((owner (core-context-top (current-expander-context) module-context?))
@@ -37,7 +37,7 @@
                              (list (cons 'yuanxu! (cdr (syntax->datum stx))))
                              (or (and origin (syntax->datum origin)) (and owner (module-context-path owner))))))
                (if mounted? parsed '())))
-            (mounts (if (null? windows) '(#f) (map (lambda (window) (with ([_ _ mount _ _ _ _ _] window) mount)) windows)))
+            (mounts (if (null? windows) '(#f) (map (lambda (window) (with ([_ _ mount _ _ _ _ _ _] window) mount)) windows)))
             (getter (genident 'init-modules-getter))
             (base-exports (genident 'init-exports))
             ;; An exported identifier transformer needs a stable private runtime
@@ -67,7 +67,7 @@
                      (id (identifier? #'id) (.ref value 'name))))
                  (export name)))))
        (def (source-export window)
-         (with ([_ _ name _ _ _ _ binding] window)
+         (with ([_ _ name _ _ _ _ binding _] window)
            (and binding
                 (with-syntax ((binding (datum->syntax (syntax ctx) binding))
                               (id (datum->syntax (syntax ctx) (expander-context-id owner)))

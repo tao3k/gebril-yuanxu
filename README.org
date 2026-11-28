@@ -103,7 +103,7 @@ evaluator. Explicit graph contributions execute once in declaration order.
 Their receipts record application and whether that pass changed the graph; they
 do not assert idempotence or fixed-point convergence.
 
-CLOS consumers import =:clan/poo/clos= from Gerbil-POO. Its CLOS layer
+Gerbil-POO exposes its CLOS-like extension through =:clan/poo/mop=. It
 adds multiple dispatch, method combination, and class lifecycle over
 the existing object and Slot model.
 

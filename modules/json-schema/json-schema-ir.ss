@@ -99,7 +99,8 @@
 ;;     %
 (defstruct yuanxu-json-schema-node
   (kind value metadata)
-  transparent: #t)
+  transparent: #t
+  final: #t)
 
 ;; : (-> Symbol JsonSchemaDatum [Alist] YuanxuJsonSchemaNode)
 (def (yuanxu-json-schema-node-record kind value . maybe-metadata)
@@ -116,7 +117,8 @@
 ;;     %
 (defstruct yuanxu-json-schema-property
   (name schema required? doc metadata)
-  transparent: #t)
+  transparent: #t
+  final: #t)
 
 ;; : (-> Symbol YuanxuJsonSchemaNode Boolean MaybeString [Alist] YuanxuJsonSchemaProperty)
 (def (yuanxu-json-schema-property-record name schema required? doc
@@ -137,7 +139,8 @@
 ;;     %
 (defstruct yuanxu-json-schema-object
   (properties additional-properties pattern-properties metadata)
-  transparent: #t)
+  transparent: #t
+  final: #t)
 
 ;; : (-> [YuanxuJsonSchemaProperty] JsonSchemaMapValueSchema [YuanxuJsonSchemaPatternProperty] [Alist] YuanxuJsonSchemaObject)
 (def (yuanxu-json-schema-object-record properties additional-properties
@@ -157,7 +160,8 @@
 ;;     %
 (defstruct yuanxu-json-schema-pattern-property
   (pattern compiled schema)
-  transparent: #t)
+  transparent: #t
+  final: #t)
 
 ;; : (-> String Object YuanxuJsonSchemaNode YuanxuJsonSchemaPatternProperty)
 (def (yuanxu-json-schema-pattern-property-record pattern compiled schema)
@@ -170,7 +174,8 @@
 ;;     %
 (defstruct yuanxu-json-schema-diagnostic
   (severity reason message value metadata)
-  transparent: #t)
+  transparent: #t
+  final: #t)
 
 ;; : (-> Symbol Symbol String JsonSchemaDatum [Alist] YuanxuJsonSchemaDiagnostic)
 (def (yuanxu-json-schema-diagnostic-record severity reason message value
@@ -190,7 +195,8 @@
 ;;     %
 (defstruct yuanxu-json-schema-normalization
   (schema references diagnostics)
-  transparent: #t)
+  transparent: #t
+  final: #t)
 
 ;; : (-> YuanxuJsonSchemaNode Alist [YuanxuJsonSchemaDiagnostic] YuanxuJsonSchemaNormalization)
 (def (yuanxu-json-schema-normalization-record schema references diagnostics)

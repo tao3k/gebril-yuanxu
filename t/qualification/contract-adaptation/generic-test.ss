@@ -2,8 +2,8 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :clan/poo/type String Bool element?)
-        (prefix-in :clan/poo/declarative-metadata metadata.)
-        :clan/poo/object-contract ./receipt-fixture)
+        (prefix-in :clan/poo/mop/declarative-metadata metadata.)
+        :clan/poo/types/object-contract ./receipt-fixture)
 (export generic-test)
 
 (def generic-test

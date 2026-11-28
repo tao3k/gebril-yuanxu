@@ -14,6 +14,7 @@ import YuanxuProof.ModuleSystem.Building.SelectedPackages
 import YuanxuProof.ModuleSystem.Building.PreludeEntry
 import YuanxuProof.ModuleSystem.Building.SourceView
 import YuanxuProof.ModuleSystem.Building.InterfaceRoots
+import YuanxuProof.ModuleSystem.Building.BuildRootOwnership
 import YuanxuProof.ModuleSystem.Workflow
 import YuanxuProof.ModuleSystem.Selection.FeatureScopes
 import YuanxuProof.ModuleSystem.Selection.CoreRows
@@ -320,6 +321,10 @@ run_cmd do
       `YuanxuProof.ModuleSystem.Loading.NamespaceProjection.admitted_branch_rows_no_growth,
       `YuanxuProof.ModuleSystem.Building.InterfaceRoots.contribution_root_has_selected_owner,
       `YuanxuProof.ModuleSystem.Building.InterfaceRoots.demanded_roots_split,
+      `YuanxuProof.ModuleSystem.Building.BuildRootOwnership.build_root_inside_window_rejected,
+      `YuanxuProof.ModuleSystem.Building.BuildRootOwnership.admitted_build_roots_disjoint_from_windows,
+      `YuanxuProof.ModuleSystem.Building.BuildRootOwnership.unowned_target_inside_window_rejected,
+      `YuanxuProof.ModuleSystem.Building.BuildRootOwnership.admitted_window_target_has_declared_owner,
       `YuanxuProof.ModuleSystem.Building.Inputs.tool_source_accepted_iff,
       `YuanxuProof.ModuleSystem.Building.Inputs.publication_role_not_a_tool,
       `YuanxuProof.Admission.RootChild.Routing.callback_reentry_is_independent,

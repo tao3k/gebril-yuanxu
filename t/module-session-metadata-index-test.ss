@@ -6,7 +6,7 @@
         (only-in :tao3k/yuanxu/module-system/source/admission
                  call-with-module-source-operation-measurement current-module-source-observer
                  module-source-measure-replay)
-        (only-in :clan/poo/slot-observation %call-with-recorded-slot-reads)
+        (only-in :clan/poo/object/slot-observation %call-with-recorded-slot-reads)
         (only-in :tao3k/yuanxu/module-system/source/reader-support
                  merge-publication-root-segments publication-read-current)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case))

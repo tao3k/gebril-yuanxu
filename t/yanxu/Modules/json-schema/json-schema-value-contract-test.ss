@@ -2,7 +2,7 @@
 ;;; SPDX-License-Identifier: Apache-2.0 AND LGPL-2.1-or-later
 (import :std/test :clan/poo/object
         (only-in :clan/poo/type element? validate Bool String)
-        :clan/poo/object-contract
+        :clan/poo/types/object-contract
         :tao3k/yuanxu/modules/json-schema/contracts)
 (export json-schema-value-contract-test)
 

@@ -93,7 +93,7 @@
       (call-with-temporary-directory "configuration-public-dependency"
         (lambda (root)
           (def config (path-expand "config.ss" root))
-          (def dependency (core-resolve-library-module-path ':clan/poo/declarative-metadata))
+          (def dependency (core-resolve-library-module-path ':clan/poo/mop/declarative-metadata))
           (write-source (path-expand "gerbil.pkg" root) "(package: configuration-public-control)")
           (write-source config
             (call-with-output-string

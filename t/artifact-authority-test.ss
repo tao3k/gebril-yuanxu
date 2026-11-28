@@ -4,7 +4,7 @@
         (only-in :std/error Error? Error-message)
         (only-in :std/encoding/json write-json)
         (only-in :std/misc/ports read-all-as-u8vector)
-        (only-in :clan/poo/slot-observation call-with-slot-read-observer)
+        (only-in :clan/poo/object/slot-observation call-with-slot-read-observer)
         (only-in :gerbil/runtime/loader load-module load-path set-load-path!)
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in "./qualification/testing/directory.ss" DirectoryFixture)

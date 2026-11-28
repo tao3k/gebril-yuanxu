@@ -4,7 +4,7 @@
         (only-in :tao3k/yuanxu/observability/testing-case yuanxu-test-case)
         (only-in :clan/poo/object .get .+ .cc .all-slots .put! object-slots with-slots
                  object-%declarations)
-        (only-in :clan/poo/prototype-map prototype-map)
+        (only-in :clan/poo/object/prototype-map prototype-map)
         (prefix-in (only-in :clan/poo/object make-object) poo-)
         (only-in :clan/poo/mop Slot)
         (only-in :tao3k/yuanxu/configuration/slot-origin field-slot-origins/value admit-field-sources!)

@@ -66,6 +66,23 @@ The broad runtime unit batch cannot substitute its longer aggregate deadline.
 
 ** Source and native imports
 
+*** No package-level custom prelude abuse
+
+Downstream packages and ordinary libraries MUST stay on Gerbil's standard
+=:gerbil/core= prelude (omit =prelude:= from =gerbil.pkg=).  Do NOT set
+=prelude: :tao3k/yuanxu/prelude= (or another custom prelude) in a downstream
+package's =gerbil.pkg= merely to depend on Yuanxu or POO:
+
+- Files that declare a package selection or deferred loader explicitly import
+  =:tao3k/yuanxu/lang= (which stays on =:gerbil/core=, preserves native Gerbil
+  v0.19 =object?=/=make-object=, and adds zero POO or semantic-loader bloat).
+- Files that construct or refine POO objects explicitly import =:clan/poo/object=
+  (and =:clan/poo/type= / =:clan/poo/mop= when needed), matching =gerbil-poo=,
+  =lambda-aitia=, and =marlin-agent-core=.
+- Reserve custom =prelude:= strictly for file-level language DSLs (such as
+  Yuanxu's Module/Config role preludes) and legacy migration bridges, never for
+  hijacking an entire downstream package's default language.
+
 An enrolled package's native language entry retains its compiler forms in the
 unified source view: Gerbil resolves that prelude directly, outside ordinary
 import redirection. It must not become an ordinary library's metadata-only stamp.
@@ -186,6 +203,21 @@ Avoid repeated list scans and repeated closure/index construction.  Reuse
 stable prototypes and derived indexes.  Do not lower concurrency to hide a
 regression.  Performance changes require an A/B scenario with the same source
 and semantic result; an optimization without a receipt is not project style.
+
+** Gerbil v0.19 typed-kernel hot-path rules
+
+- Seal closed leaf structs/classes with =final: #t= and publish nullable/typed
+  signatures (=:?=, =:=, =:~=, ==>(Maybe T)=) at module boundaries so =gxc -O=
+  propagates cross-module =.ssxi.ss= types and branch refinement.
+- On dynamic inner-loop hot functions called from untyped or polymorphic sites,
+  avoid parameter-level =:= / =:-= annotations that emit a two-procedure wrapper
+  hop.  Keep a single-entry header, validate the receiver once via a checked
+  =final: #t= accessor (so adversarial non-struct inputs still raise a clean
+  exception rather than invoking unsafe unchecked memory reads), and bind
+  subsequent field reads inside body-level =(using (x :- Struct) ...)=.
+- Never name a parameter =values= inside a contract-annotated =def=, and export
+  internal struct type descriptors under prefixed names (via =rename-out=) when
+  bare names like =layout= or =shape= could shadow caller destructuring variables.
 
 ** Built-in library ownership
 
