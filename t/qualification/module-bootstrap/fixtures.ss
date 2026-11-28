@@ -68,7 +68,7 @@
           ;; Both fixtures compile the prelude and its local imports. Gerbil
           ;; orders those targets before checking fresh-process reuse.
           (def bootstrap
-            '("prelude" "core-spec" "module-system/selection/init-syntax"
+            '("prelude" "lang" "core-spec" "module-system/selection/init-syntax"
               "module-system/source/module-binding"
               "module-system/source/autoload-declarations"))
           (def targets
